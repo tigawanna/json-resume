@@ -7,7 +7,12 @@
     "build": "vp build",
     "preview": "vp preview",
     "test": "vp test run",
-    "check-types": "tsc -b --noEmit"
+    "check-types": "tsc -b --noEmit",
+    "auth:migrate": "npx auth@latest generate --output ./src/lib/drizzle/scheam/auth-schema.ts",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
     "@base-ui/react": "^1.1.0",
