@@ -1,4 +1,4 @@
-import type { TViewer } from "@/data-access-layer/auth/viewer";
+import { viewerqueryOptions, type TViewer } from "@/data-access-layer/auth/viewer";
 import { HeadContent, Scripts, createRootRouteWithContext } from "@tanstack/react-router";
 
 import appCss from "../styles.css?url";
@@ -23,6 +23,10 @@ const searchparams = z.object({
 });
 
 export const Route = createRootRouteWithContext<MyRouterContext>()({
+  beforeLoad: async ({ context }) => {
+    const viewer = await context.queryClient.ensureQueryData(viewerqueryOptions);
+    return { viewer: viewer.data };
+  },
   head: () => ({
     meta: [
       {

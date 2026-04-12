@@ -52,12 +52,12 @@ export function SignupComponent() {
       await qc.fetchQuery(viewerqueryOptions);
       navigate({ to: returnTo ?? "/profile" });
     },
-    onError(error) {
-      toast.error("Something went wrong", {
-        description: error instanceof Error ? error.message : "Unknown error",
-        duration: 10_000,
-      });
-    },
+    // onError(error) {
+    //   toast.error("Something went wrong", {
+    //     description: error instanceof Error ? error.message : "Unknown error",
+    //     duration: 10_000,
+    //   });
+    // },
   });
 
   const form = useAppForm({
@@ -71,16 +71,9 @@ export function SignupComponent() {
       try {
         await mutation.mutateAsync(formData);
       } catch (err) {
-        const message =
-          err instanceof Error
-            ? err.message
-            : typeof err === "object" && err !== null && "message" in err
-              ? String((err as { message: unknown }).message)
-              : "Something went wrong";
-        toast.error("Something went wrong", {
-          description: message,
-          position: "top-center",
-        });
+        const message = err instanceof Error ? err.message : String(err);
+        console.log(" = error creating user = ",message);
+        toast.error("Something went wrong", { description: message, position: "top-center" });
       }
     },
   });
