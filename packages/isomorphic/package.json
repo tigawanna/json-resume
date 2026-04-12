@@ -1,0 +1,22 @@
+{
+  "name": "@repo/isomorphic",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./*": "./src/*.ts"
+  },
+  "scripts": {
+    "dev": "tsc --watch",
+    "build": "tsc",
+    "check-types": "tsc --noEmit",
+    "test": "echo 'Add test script here'"
+  },
+  "dependencies": {
+    "better-auth": "^1.4.20"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
+    "typescript": "*"
+  }
+}

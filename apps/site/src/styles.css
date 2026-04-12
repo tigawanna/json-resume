@@ -1,0 +1,430 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&display=swap");
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* DaisyUI */
+/* @plugin "daisyui" {
+  themes: light --default, dark --prefersdark;
+  logs: false;
+} */
+
+@plugin "daisyui" {
+  themes:
+    light --default,
+    dark --prefersdark;
+  /* themes: all; */
+  logs: false;
+}
+
+@plugin "daisyui/theme" {
+  name: "light";
+  default: true;
+  color-scheme: light;
+
+  /* Base surfaces - warm, airy light theme for real estate */
+  --color-base-100: oklch(from #fbfbf9 l c h); /* background */
+  --color-base-200: oklch(from #ffffff l c h); /* card */
+  --color-base-300: oklch(from #ffffff l c h); /* popover */
+  --color-base-content: oklch(from #1b1d1a l c h); /* foreground */
+
+  /* Brand colors using earth green palette */
+  --color-primary: oklch(from #267d42 l c h); /* earth-green-600 */
+  --color-primary-content: oklch(from #ffffff l c h);
+
+  --color-secondary: oklch(from #f3efe7 l c h);
+  --color-secondary-content: oklch(from #1b1d1a l c h);
+
+  --color-accent: oklch(from #ffedd5 l c h); /* earth-orange-100 */
+  --color-accent-content: oklch(from #fb923c l c h); /* lighter earth-orange-400 */
+
+  --color-neutral: oklch(from #f5f5f4 l c h); /* muted */
+  --color-neutral-content: oklch(from #6b7280 l c h); /* muted-foreground */
+
+  /* Status colors */
+  --color-info: oklch(from #f97316 l c h); /* chart-2 */
+  --color-info-content: oklch(from #1b1d1a l c h);
+  --color-success: oklch(from #2f8f4f l c h); /* chart-1 */
+  --color-success-content: oklch(from #ffffff l c h);
+  --color-warning: oklch(from #56bc7d l c h); /* chart-4 */
+  --color-warning-content: oklch(from #1b1d1a l c h);
+  --color-error: oklch(from #c2410c l c h); /* destructive */
+  --color-error-content: oklch(from #ffffff l c h);
+
+  --radius-selector: 0.5rem;
+  --radius-field: 0.5rem;
+  --radius-box: 0.5rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 1;
+  --noise: 0;
+}
+
+@plugin "daisyui/theme" {
+  name: "dark";
+  default: false;
+  color-scheme: dark;
+
+  /* Base surfaces - sophisticated dark with forest undertones */
+  --color-base-100: oklch(from #121613 l c h); /* background */
+  --color-base-200: oklch(from #171c18 l c h); /* card */
+  --color-base-300: oklch(from #171c18 l c h); /* popover */
+  --color-base-content: oklch(from #e8ede9 l c h); /* foreground */
+
+  /* Brand colors using earth green palette - brighter for dark mode */
+  --color-primary: oklch(from #56bc7d l c h); /* earth-green-400 brighter for dark */
+  --color-primary-content: oklch(from #0b0f0d l c h);
+
+  --color-secondary: oklch(from #1a201c l c h);
+  --color-secondary-content: oklch(from #e8ede9 l c h);
+
+  --color-accent: oklch(50% 0.15 25); /* Darker, more readable earth-orange */
+  --color-accent-content: oklch(90% 0.08 25); /* Softer but still readable content color */
+
+  --color-neutral: oklch(from #1a201c l c h); /* muted */
+  --color-neutral-content: oklch(from #b6c2ba l c h); /* muted-foreground */
+
+  /* Status colors */
+  --color-info: oklch(from #f59e0b l c h); /* chart-2 */
+  --color-info-content: oklch(from #e8ede9 l c h);
+  --color-success: oklch(from #56bc7d l c h); /* chart-1 */
+  --color-success-content: oklch(from #0b0f0d l c h);
+  --color-warning: oklch(from #fb923c l c h); /* chart-4 */
+  --color-warning-content: oklch(from #e8ede9 l c h);
+  --color-error: oklch(from #f04438 l c h); /* destructive */
+  --color-error-content: oklch(from #0b0f0d l c h);
+
+  --radius-selector: 0.5rem;
+  --radius-field: 0.5rem;
+  --radius-box: 0.5rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 1;
+  --noise: 0;
+}
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --font-sans: "DM Sans", system-ui, sans-serif;
+  --font-serif: "DM Serif Display", Georgia, serif;
+
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+  --animate-fade-in: fade-in 0.6s ease-out;
+  --animate-scale-in: scale-in 0.3s ease-out;
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-float-delayed: float-delayed 8s ease-in-out infinite;
+  --animate-float-slow: float-slow 10s ease-in-out infinite;
+
+  --color-sidebar: oklch(var(--color-base-100));
+  --color-sidebar-foreground: oklch(var(--color-base-content));
+  --color-sidebar-primary: oklch(var(--color-primary));
+  --color-sidebar-primary-foreground: oklch(var(--color-primary-content));
+  --color-sidebar-accent: oklch(var(--color-accent));
+  --color-sidebar-accent-foreground: oklch(var(--color-accent-content));
+  --color-sidebar-border: oklch(var(--color-base-300));
+  --color-sidebar-ring: oklch(var(--color-neutral));
+
+  @keyframes accordion-down {
+    from {
+      height: 0;
+    }
+    to {
+      height: var(--radix-accordion-content-height);
+    }
+  }
+  @keyframes accordion-up {
+    from {
+      height: var(--radix-accordion-content-height);
+    }
+    to {
+      height: 0;
+    }
+  }
+  @keyframes fade-in {
+    0% {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes scale-in {
+    0% {
+      transform: scale(0.95);
+      opacity: 0;
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0px) rotate(0deg);
+    }
+    50% {
+      transform: translateY(-20px) rotate(180deg);
+    }
+  }
+  @keyframes float-delayed {
+    0%,
+    100% {
+      transform: translateY(0px) rotate(0deg);
+    }
+    50% {
+      transform: translateY(-15px) rotate(-180deg);
+    }
+  }
+  @keyframes float-slow {
+    0%,
+    100% {
+      transform: translateY(0px) scale(1);
+    }
+    50% {
+      transform: translateY(-10px) scale(1.1);
+    }
+  }
+}
+
+/*
+  The default border color has changed to `currentColor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentColor);
+  }
+  .dark *,
+  .dark ::after,
+  .dark ::before,
+  .dark ::backdrop,
+  .dark ::file-selector-button {
+    border-color: transparent !important;
+  }
+}
+
+/* Responsive centered container utility */
+@utility container {
+  margin-inline: auto;
+  padding-inline: 2rem;
+  @media (width >= --theme(--breakpoint-sm)) {
+    max-width: none;
+  }
+  @media (width >= 1400px) {
+    max-width: 1400px;
+  }
+}
+
+:root {
+  /* Map DaisyUI tokens to intermediate variables for shadcn */
+  --background-base: var(--color-base-100);
+  --foreground-base: var(--color-base-content);
+
+  /* --card-base: var(--color-neutral); */
+  --card-base: color-mix(in oklch, var(--color-base-content) 3%, transparent);
+  --card-foreground-base: var(--color-base-content);
+
+  --popover-base: var(--color-base-200);
+  --popover-foreground-base: var(--color-base-content);
+
+  --primary-base: var(--color-primary);
+  --primary-foreground-base: var(--color-primary-content);
+  --secondary-base: var(--color-secondary);
+  --secondary-foreground-base: var(--color-secondary-content);
+  --muted-base: var(--color-neutral);
+  --muted-foreground-base: var(--color-neutral-content);
+  --accent-base: var(--color-accent);
+  --accent-foreground-base: var(--color-accent-content);
+  --destructive-base: var(--color-error);
+  --destructive-foreground-base: var(--color-error-content);
+
+  /* Use color-mix to create percentage variations of base colors */
+  --border: color-mix(in oklch, var(--color-base-content) 20%, transparent);
+  --input: color-mix(in oklch, var(--color-base-content) 20%, transparent);
+  --ring: var(--color-primary);
+
+  --radius: var(--radius-box);
+
+  --chart-1: var(--color-success);
+  --chart-2: var(--color-info);
+  --chart-3: var(--color-warning);
+  --chart-4: var(--color-accent);
+  --chart-5: var(--color-error);
+
+  --sidebar-background: var(--color-base-100);
+  --sidebar-foreground: var(--color-base-content);
+  --sidebar-primary: var(--color-primary);
+  --sidebar-primary-foreground: var(--color-primary-content);
+  --sidebar-accent: var(--color-accent);
+  --sidebar-accent-foreground: var(--color-accent-content);
+  --sidebar-border: var(--color-base-content);
+  --sidebar-ring: var(--color-neutral);
+}
+
+@theme inline {
+  /* Map intermediate variables to Tailwind color tokens */
+  --color-background: var(--background-base);
+  --color-foreground: var(--foreground-base);
+  --color-card: var(--card-base);
+  --color-card-foreground: var(--card-foreground-base);
+  --color-popover: var(--popover-base);
+  --color-popover-foreground: var(--popover-foreground-base);
+  --color-primary: var(--primary-base);
+  --color-primary-foreground: var(--primary-foreground-base);
+  --color-secondary: var(--secondary-base);
+  --color-secondary-foreground: var(--secondary-foreground-base);
+  --color-muted: var(--muted-base);
+  --color-muted-foreground: var(--muted-foreground-base);
+  --color-accent: var(--accent-base);
+  --color-accent-foreground: var(--accent-foreground-base);
+  --color-destructive: var(--destructive-base);
+  --color-destructive-foreground: var(--destructive-foreground-base);
+
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  /* --border: var(--border); */
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  /* Earth brand palette (OKLCH). Keep these as stable brand colors. */
+  --color-earth-green-50: oklch(from #f0f9f4 l c h);
+  --color-earth-green-100: oklch(from #dcf2e4 l c h);
+  --color-earth-green-200: oklch(from #bce5cc l c h);
+  --color-earth-green-300: oklch(from #8dd3a8 l c h);
+  --color-earth-green-400: oklch(from #56bc7d l c h);
+  --color-earth-green-500: oklch(from #2f8f4f l c h);
+  --color-earth-green-600: oklch(from #267d42 l c h);
+  --color-earth-green-700: oklch(from #1e6635 l c h);
+  --color-earth-green-800: oklch(from #1a512c l c h);
+  --color-earth-green-900: oklch(from #164324 l c h);
+
+  --color-earth-orange-50: oklch(from #fff7ed l c h);
+  --color-earth-orange-100: oklch(from #ffedd5 l c h);
+  --color-earth-orange-200: oklch(from #fed7aa l c h);
+  --color-earth-orange-300: oklch(from #fdba74 l c h);
+  --color-earth-orange-400: oklch(from #fb923c l c h);
+  --color-earth-orange-500: oklch(from #f97316 l c h);
+  --color-earth-orange-600: oklch(from #ea580c l c h);
+  --color-earth-orange-700: oklch(from #c2410c l c h);
+  --color-earth-orange-800: oklch(from #9a3412 l c h);
+  --color-earth-orange-900: oklch(from #7c2d12 l c h);
+
+  --color-warm-cream: oklch(from #faf5ee l c h);
+  --color-terracotta: oklch(from #c45b3c l c h);
+
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar-background);
+}
+
+@layer base {
+  * {
+    @apply border-neutral;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 0.7vw;
+  height: 3.3vh;
+}
+
+::-webkit-scrollbar-track {
+  background-color: var(--color-base-200);
+  box-shadow: inset 0 0 6px var(--color-base-300);
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--color-accent);
+  background-image: -webkit-linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.2) 25%,
+    transparent 25%,
+    transparent 50%,
+    rgba(255, 255, 255, 0.2) 50%,
+    rgba(255, 255, 255, 0.2) 75%,
+    transparent 75%,
+    transparent
+  );
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-accent);
+}
+
+::-webkit-scrollbar:vertical {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar:horizontal {
+  width: 10px;
+  height: 10px;
+}
+
+/* Glass effect */
+.glass-card {
+  @apply bg-base-100/50 border-base-content/10 border backdrop-blur-md;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@utility animate-fade-in {
+  animation: fade-in 0.6s ease-out both;
+}
+
+@utility btn {
+  @apply rounded-xl hover:brightness-125;
+}
+@utility btn-outline {
+  @apply border-border hover:bg-primary/10 hover:text-primary;
+}
+.dark {
+  --sidebar-background: var(--color-base-100);
+  --sidebar-foreground: var(--color-base-content);
+  --sidebar-primary: var(--color-primary);
+  --sidebar-primary-foreground: var(--color-primary-content);
+  --sidebar-accent: var(--color-accent);
+  --sidebar-accent-foreground: var(--color-accent-content);
+  --sidebar-border: var(--color-base-content);
+  --sidebar-ring: var(--color-neutral);
+}
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}

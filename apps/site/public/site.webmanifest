@@ -1,0 +1,10 @@
+{
+  "name": "Starter",
+  "short_name": "Starter",
+  "description": "Vite+ monorepo with TanStack Start",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#000000",
+  "icons": []
+}

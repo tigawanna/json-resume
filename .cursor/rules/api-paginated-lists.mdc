@@ -1,0 +1,84 @@
+---
+description: All API list endpoints must return the standard PaginatedResponse format
+globs: "apps/api/src/modules/**/*.ts"
+alwaysApply: false
+---
+
+# Paginated List Endpoints
+
+Every API endpoint that returns a list **must** return the standard `PaginatedResponse<T>` format and accept `listQueryParamsSchema` query parameters.
+
+## Required response shape
+
+```typescript
+{
+  items: T[];
+  page: number;
+  perPage: number;
+  totalItems: number;
+  totalPages: number;
+  status: "success";
+}
+```
+
+## When QueryEngine fits (single table, no joins)
+
+Use `createSimpleQueryEngine` from `@backend/db/helpers/QueryEngine`:
+
+```typescript
+import { createSimpleQueryEngine, listQueryParamsSchema } from "@backend/db/helpers/QueryEngine";
+
+.get("/items", async ({ query }) => {
+  const engine = createSimpleQueryEngine(myTable);
+  return engine.listPaged({
+    page: query.page,
+    perPage: query.perPage,
+    sortBy: query.sortBy,
+    sortOrder: query.sortOrder,
+    searchTerm: query.searchTerm,
+    searchOn: ["name"],
+  });
+}, { query: listQueryParamsSchema })
+```
+
+## When QueryEngine does NOT fit (joins, custom queries)
+
+Manually build the query but return the same shape via `buildPaginatedResponse`:
+
+```typescript
+import {
+  buildOrderBy,
+  buildPaginatedResponse,
+  calculateOffset,
+  listQueryParamsSchema,
+} from "@backend/db/helpers/QueryEngine";
+
+.get("/joined-items", async ({ query }) => {
+  const { page = 1, perPage = 30, sortOrder = "asc" } = query;
+  const offset = calculateOffset(page, perPage);
+
+  const [{ count: totalItems }] = await db
+    .select({ count: count() })
+    .from(tableA)
+    .innerJoin(tableB, eq(tableA.bId, tableB.id))
+    .where(/* conditions */);
+
+  const items = await db
+    .select({ /* fields */ })
+    .from(tableA)
+    .innerJoin(tableB, eq(tableA.bId, tableB.id))
+    .where(/* conditions */)
+    .limit(perPage)
+    .offset(offset)
+    .orderBy(buildOrderBy({ sortBy, sortOrder, columnMap, defaultColumn }));
+
+  return buildPaginatedResponse({ items, page, perPage, totalItems });
+}, { query: listQueryParamsSchema })
+```
+
+## Rules
+
+- Always accept `listQueryParamsSchema` as query validation
+- Never return a bare `{ items: T[] }` from a list endpoint
+- Use `createSimpleQueryEngine` for single-table queries
+- Use `buildPaginatedResponse` + `calculateOffset` + `buildOrderBy` for join queries

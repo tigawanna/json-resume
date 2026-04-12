@@ -1,0 +1,33 @@
+{
+  "name": "agentic-json-resume",
+  "private": true,
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "vp lint .",
+    "lint:fix": "vp lint --fix .",
+    "format": "vp fmt .",
+    "format:fix": "vp fmt .",
+    "check-types": "turbo run check-types",
+    "quality": "turbo run //#lint //#format",
+    "quality:fix": "turbo run //#lint:fix //#format:fix",
+    "prepare": "vp config"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "site": "^2.60.4",
+    "turbo": "^2.7.3",
+    "typescript": "5.9.2",
+    "vite-plus": "catalog:"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "packageManager": "pnpm@10.27.0",
+  "pnpm": {
+    "overrides": {
+      "@types/react": "^19.2.14",
+      "@types/react-dom": "^19.2.3"
+    }
+  }
+}
