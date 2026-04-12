@@ -32,6 +32,7 @@ function CreateResumePage() {
   const [jobDescription, setJobDescription] = useState("");
   const [selectedBaseId, setSelectedBaseId] = useState<string | null>(null);
   const [resolvedData, setResolvedData] = useState<ResumeDocumentV1 | null>(null);
+  const [pastedPlainResume, setPastedPlainResume] = useState("");
 
   const baseResume = (() => {
     if (resolvedData) return resolvedData;
@@ -79,7 +80,8 @@ function CreateResumePage() {
         <div>
           <h1 className="text-2xl font-bold">Create resume</h1>
           <p className="text-base-content/60 text-sm">
-            Start from an existing resume or a blank template, then tailor it with an LLM.
+            Start from a saved resume, a blank template, or paste text from an existing file, then
+            tailor with an LLM.
           </p>
         </div>
       </div>
@@ -120,6 +122,26 @@ function CreateResumePage() {
         }}
       />
 
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Existing resume (plain text)</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-2">
+          <p className="text-base-content/60 text-sm">
+            Optional. Paste your current resume from a PDF, Word doc, or the web. It is included in
+            the LLM prompt so the model can map your real experience into the JSON schema—useful
+            when you have no saved resumes yet or want to override sample template content.
+          </p>
+          <Textarea
+            rows={8}
+            placeholder="Paste resume text here (e.g. copy from a PDF)..."
+            value={pastedPlainResume}
+            onChange={(e) => setPastedPlainResume(e.target.value)}
+            data-test="pasted-plain-resume-input"
+          />
+        </CardContent>
+      </Card>
+
       <Separator />
 
       <Card>
@@ -139,7 +161,11 @@ function CreateResumePage() {
 
       {jobDescription.trim() && (
         <>
-          <PromptCopySection baseResume={baseResume} jobDescription={jobDescription} />
+          <PromptCopySection
+            baseResume={baseResume}
+            jobDescription={jobDescription}
+            pastedPlainResume={pastedPlainResume}
+          />
           <JsonPasteSection onApply={handleJsonApply} />
         </>
       )}

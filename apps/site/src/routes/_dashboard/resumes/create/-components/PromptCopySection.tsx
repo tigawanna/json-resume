@@ -10,12 +10,17 @@ import { toast } from "sonner";
 interface PromptCopySectionProps {
   baseResume: ResumeDocumentV1;
   jobDescription: string;
+  pastedPlainResume?: string;
 }
 
-export function PromptCopySection({ baseResume, jobDescription }: PromptCopySectionProps) {
+export function PromptCopySection({
+  baseResume,
+  jobDescription,
+  pastedPlainResume,
+}: PromptCopySectionProps) {
   const [copied, setCopied] = useState(false);
 
-  const prompt = buildTailorPrompt(baseResume, jobDescription);
+  const prompt = buildTailorPrompt(baseResume, jobDescription, pastedPlainResume);
 
   async function handleCopy() {
     await navigator.clipboard.writeText(prompt);
@@ -29,8 +34,8 @@ export function PromptCopySection({ baseResume, jobDescription }: PromptCopySect
       <CardHeader>
         <CardTitle className="text-base">Copy LLM prompt</CardTitle>
         <CardDescription>
-          Paste this into ChatGPT, Claude, or any LLM. It includes your base resume and job
-          description with instructions to return tailored JSON.
+          Paste this into ChatGPT, Claude, or any LLM. It includes your starter JSON, optional
+          pasted resume text, the job description, and instructions to return tailored JSON.
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">

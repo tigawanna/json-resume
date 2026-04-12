@@ -16,6 +16,7 @@ import { Route as DashboardLayoutRouteImport } from './routes/_dashboard/layout'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthIndexRouteImport } from './routes/auth/index'
 import { Route as AuthSignupRouteImport } from './routes/auth/signup'
+import { Route as DashboardSetiingsRouteImport } from './routes/_dashboard/setiings'
 import { Route as DashboardProfileRouteImport } from './routes/_dashboard/profile'
 import { Route as DashboardDashboardRouteImport } from './routes/_dashboard/dashboard'
 import { Route as PublicResumeIndexRouteImport } from './routes/_public/resume/index'
@@ -56,6 +57,11 @@ const AuthSignupRoute = AuthSignupRouteImport.update({
   id: '/signup',
   path: '/signup',
   getParentRoute: () => AuthLayoutRoute,
+} as any)
+const DashboardSetiingsRoute = DashboardSetiingsRouteImport.update({
+  id: '/setiings',
+  path: '/setiings',
+  getParentRoute: () => DashboardLayoutRoute,
 } as any)
 const DashboardProfileRoute = DashboardProfileRouteImport.update({
   id: '/profile',
@@ -101,6 +107,7 @@ export interface FileRoutesByFullPath {
   '/search': typeof SearchRoute
   '/dashboard': typeof DashboardDashboardRoute
   '/profile': typeof DashboardProfileRoute
+  '/setiings': typeof DashboardSetiingsRoute
   '/auth/signup': typeof AuthSignupRoute
   '/auth/': typeof AuthIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -114,6 +121,7 @@ export interface FileRoutesByTo {
   '/search': typeof SearchRoute
   '/dashboard': typeof DashboardDashboardRoute
   '/profile': typeof DashboardProfileRoute
+  '/setiings': typeof DashboardSetiingsRoute
   '/auth/signup': typeof AuthSignupRoute
   '/auth': typeof AuthIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -131,6 +139,7 @@ export interface FileRoutesById {
   '/search': typeof SearchRoute
   '/_dashboard/dashboard': typeof DashboardDashboardRoute
   '/_dashboard/profile': typeof DashboardProfileRoute
+  '/_dashboard/setiings': typeof DashboardSetiingsRoute
   '/auth/signup': typeof AuthSignupRoute
   '/auth/': typeof AuthIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -147,6 +156,7 @@ export interface FileRouteTypes {
     | '/search'
     | '/dashboard'
     | '/profile'
+    | '/setiings'
     | '/auth/signup'
     | '/auth/'
     | '/api/auth/$'
@@ -160,6 +170,7 @@ export interface FileRouteTypes {
     | '/search'
     | '/dashboard'
     | '/profile'
+    | '/setiings'
     | '/auth/signup'
     | '/auth'
     | '/api/auth/$'
@@ -176,6 +187,7 @@ export interface FileRouteTypes {
     | '/search'
     | '/_dashboard/dashboard'
     | '/_dashboard/profile'
+    | '/_dashboard/setiings'
     | '/auth/signup'
     | '/auth/'
     | '/api/auth/$'
@@ -245,6 +257,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthSignupRouteImport
       parentRoute: typeof AuthLayoutRoute
     }
+    '/_dashboard/setiings': {
+      id: '/_dashboard/setiings'
+      path: '/setiings'
+      fullPath: '/setiings'
+      preLoaderRoute: typeof DashboardSetiingsRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
     '/_dashboard/profile': {
       id: '/_dashboard/profile'
       path: '/profile'
@@ -300,6 +319,7 @@ declare module '@tanstack/react-router' {
 interface DashboardLayoutRouteChildren {
   DashboardDashboardRoute: typeof DashboardDashboardRoute
   DashboardProfileRoute: typeof DashboardProfileRoute
+  DashboardSetiingsRoute: typeof DashboardSetiingsRoute
   DashboardResumesIndexRoute: typeof DashboardResumesIndexRoute
   DashboardResumesResumeIdIndexRoute: typeof DashboardResumesResumeIdIndexRoute
   DashboardResumesCreateIndexRoute: typeof DashboardResumesCreateIndexRoute
@@ -308,6 +328,7 @@ interface DashboardLayoutRouteChildren {
 const DashboardLayoutRouteChildren: DashboardLayoutRouteChildren = {
   DashboardDashboardRoute: DashboardDashboardRoute,
   DashboardProfileRoute: DashboardProfileRoute,
+  DashboardSetiingsRoute: DashboardSetiingsRoute,
   DashboardResumesIndexRoute: DashboardResumesIndexRoute,
   DashboardResumesResumeIdIndexRoute: DashboardResumesResumeIdIndexRoute,
   DashboardResumesCreateIndexRoute: DashboardResumesCreateIndexRoute,

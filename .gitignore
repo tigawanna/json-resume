@@ -39,3 +39,4 @@ yarn-error.log*
 minio/
 .references
 /.stash
+apps/site/db.sqlite
