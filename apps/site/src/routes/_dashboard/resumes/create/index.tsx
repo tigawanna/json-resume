@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { resumeListQueryOptions } from "@/data-access-layer/resume/resume-query-options";
-import { createResume } from "@/data-access-layer/resume/resume.server.fns";
+import { createResume } from "@/data-access-layer/resume/resume.functions";
 import { createDefaultResume, type ResumeDocumentV1 } from "@/features/resume/resume-schema";
 import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";

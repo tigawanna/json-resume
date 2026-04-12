@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { ListPageHeader } from "@/components/wrappers/ListPageHeader";
 import { resumeListQueryOptions } from "@/data-access-layer/resume/resume-query-options";
-import { deleteResume } from "@/data-access-layer/resume/resume.server.fns";
+import { deleteResume } from "@/data-access-layer/resume/resume.functions";
 import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Plus } from "lucide-react";

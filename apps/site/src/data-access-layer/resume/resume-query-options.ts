@@ -1,5 +1,5 @@
 import { queryOptions } from "@tanstack/react-query";
-import { getResume, listResumes } from "./resume.server.fns";
+import { getResume, listResumes } from "./resume.functions";
 
 export const resumeListQueryOptions = queryOptions({
   queryKey: ["resumes"],

@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { updateResume } from "@/data-access-layer/resume/resume.server.fns";
+import { updateResume } from "@/data-access-layer/resume/resume.functions";
 import type { ResumeDTO } from "@/data-access-layer/resume/resume.types";
 import { resumeRegistry } from "@/features/resume/resume-catalog";
 import { ResumePdfDocument } from "@/features/resume/resume-pdf";
