@@ -348,13 +348,13 @@ function ModernPdf({ doc }: { doc: ResumeDocumentV1 }) {
   const leftKeys: SectionKey[] = ["experience", "education"];
   const rightKeys: SectionKey[] = ["summary", "skills", "projects"];
 
-  const buildSection = (key: SectionKey, h2Style: Record<string, unknown>): React.ReactNode => {
+  const buildSection = (key: SectionKey): React.ReactNode => {
     switch (key) {
       case "summary":
         if (!doc.summary.enabled) return null;
         return (
           <View>
-            <Text style={h2Style}>Summary</Text>
+            <Text style={modernStyles.h2}>Summary</Text>
             <Text style={base.body}>{doc.summary.text}</Text>
           </View>
         );
@@ -362,7 +362,7 @@ function ModernPdf({ doc }: { doc: ResumeDocumentV1 }) {
         if (!doc.experience.enabled) return null;
         return (
           <View>
-            <Text style={h2Style}>Experience</Text>
+            <Text style={modernStyles.h2}>Experience</Text>
             {doc.experience.items.map((ex) => (
               <View key={ex.company + ex.role} wrap={false}>
                 <Text style={base.h3}>
@@ -384,7 +384,7 @@ function ModernPdf({ doc }: { doc: ResumeDocumentV1 }) {
         if (!doc.education.enabled) return null;
         return (
           <View>
-            <Text style={h2Style}>Education</Text>
+            <Text style={modernStyles.h2}>Education</Text>
             {doc.education.items.map((ed) => (
               <Text key={ed.school} style={base.body}>
                 {ed.degree} — {ed.school} ({ed.year})
@@ -396,7 +396,7 @@ function ModernPdf({ doc }: { doc: ResumeDocumentV1 }) {
         if (!doc.projects.enabled) return null;
         return (
           <View>
-            <Text style={h2Style}>Projects</Text>
+            <Text style={modernStyles.h2}>Projects</Text>
             {doc.projects.items.map((p) => (
               <View key={p.name} wrap={false}>
                 <Link src={p.url} style={{ ...base.h3, color: MODERN_COLOR }}>
@@ -414,7 +414,7 @@ function ModernPdf({ doc }: { doc: ResumeDocumentV1 }) {
         if (!doc.skills.enabled) return null;
         return (
           <View>
-            <Text style={h2Style}>Skills</Text>
+            <Text style={modernStyles.h2}>Skills</Text>
             {doc.skills.groups.map((g) => (
               <View key={g.name} style={{ marginBottom: 4 }}>
                 <Text style={base.h3}>{g.name}</Text>
@@ -447,7 +447,7 @@ function ModernPdf({ doc }: { doc: ResumeDocumentV1 }) {
           {doc.sectionOrder
             .filter((k) => leftKeys.includes(k))
             .map((key) => {
-              const node = buildSection(key, modernStyles.h2);
+              const node = buildSection(key);
               return node ? <View key={key}>{node}</View> : null;
             })}
         </View>
@@ -455,7 +455,7 @@ function ModernPdf({ doc }: { doc: ResumeDocumentV1 }) {
           {doc.sectionOrder
             .filter((k) => rightKeys.includes(k))
             .map((key) => {
-              const node = buildSection(key, modernStyles.h2);
+              const node = buildSection(key);
               return node ? <View key={key}>{node}</View> : null;
             })}
         </View>
