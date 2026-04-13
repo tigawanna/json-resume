@@ -11,7 +11,7 @@ import {
 } from "./-components/dashoboard-sidebar/dashboard_routes";
 import { viewerMiddleware } from "@/data-access-layer/auth/viewer";
 
-export const Route = createFileRoute("/_dashboard")({
+export const Route = createFileRoute("/_dashboard/layout")({
   pendingComponent: () => <RouterPendingComponent />,
   notFoundComponent: () => <RouterNotFoundComponent />,
   errorComponent: ({ error }) => <RouterErrorComponent error={error} />,
