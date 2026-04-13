@@ -7,7 +7,7 @@ import { Github, Loader } from "lucide-react";
 
 export const Route = createFileRoute("/_public/repos")({
   component: RouteComponent,
-  beforeLoad: async (context) => {
+  beforeLoad: async () => {
     // console.log(context.context.viewer);
     // if (context.context.viewer?.user) {
     //   throw redirect({ to: "/dashboard" });

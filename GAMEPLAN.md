@@ -86,42 +86,23 @@ These are not in scope for the immediate phases but fit naturally:
 
 ---
 
-### Phase 2 — AI Resume Tailoring
-
-**Goal:** One-click tailoring of a resume to a job description using the user's pinned projects and stored experience as context.
-
-#### 2a — AI Provider Setup
-- Use a single server function `tailorResume` that accepts `resumeId` and `jobDescription`.
-- Call an LLM (OpenAI `gpt-4o` or Anthropic `claude-3-5-sonnet` — user's API key stored in an encrypted `user_settings` record, or env var for personal use). No SaaS billing complexity; bring-your-own-key.
-- The prompt includes: the current resume JSON, the job description, and the user's pinned projects list. Output is a new valid `ResumeDocumentV1` JSON.
-
-#### 2b — Diff Review UI
-- Before the AI-tailored version replaces anything, show a structured diff (already have `diff` and `@pierre/diffs` in dependencies).
-- Per-section diff: the user accepts or rejects each changed section individually.
-- "Accept all" shortcut.
-- Saving creates a new resume record (keep the original; don't mutate it) so there's always a history.
-
-#### 2c — Improve the Prompt
-- Surface the existing `resume-prompt.ts` in the create flow so users can copy the full LLM context easily.
-- Add a "Generate with AI" mode to the create flow that calls `tailorResume` directly if a job description is pasted.
-
----
-
-### Phase 3 — Remote MCP Server
+### Phase 2 — Remote MCP Server
 
 **Goal:** Expose resume operations as MCP tools so developers can call them from Claude Desktop, Cursor Agent, or any MCP client.
 
-#### 3a — Transport
+> **Why this replaces in-app AI:** The app's job is to manage structured resume data and supply great context. The LLM lives in the user's environment (Claude Desktop, Cursor, OpenAI API — their keys, their cost, their choice). The copy-prompt flow already handles the manual path; MCP handles the automated path. No in-app AI provider, no billing complexity, no key management UI.
+
+#### 2a — Transport
 - TanStack Start on Vercel supports standard HTTP routes. Use the **MCP Streamable HTTP transport** (the current spec, replaces SSE). One endpoint: `POST /api/mcp`.
 - Add `src/routes/api/mcp.ts` — a TanStack Start API route that handles the MCP protocol.
 - Use the official `@modelcontextprotocol/sdk` server package to wire up tools.
 
-#### 3b — Authentication
+#### 2b — Authentication
 - Add an `api_key` table: `id`, `user_id`, `key_hash` (bcrypt), `name`, `created_at`, `last_used_at`.
 - Dashboard UI to generate/revoke API keys (`/_dashboard/settings/api-keys`).
 - MCP endpoint reads `Authorization: Bearer <key>` header, validates against `api_key` table, resolves the `user_id`.
 
-#### 3c — MCP Tools (v1 scope)
+#### 2c — MCP Tools (v1 scope)
 | Tool | Description |
 |---|---|
 | `list_resumes` | Returns all resume records for the authenticated user (id, name, updatedAt) |
@@ -131,7 +112,7 @@ These are not in scope for the immediate phases but fit naturally:
 | `list_pinned_projects` | Returns the user's shortlisted GitHub projects |
 | `get_prompt` | Returns the system prompt template so the caller can run the LLM themselves |
 
-#### 3d — MCP Client Config Snippet
+#### 2d — MCP Client Config Snippet
 - Add a docs page or README section with the config snippet users paste into Claude Desktop / Cursor `mcp.json`:
   ```json
   {
@@ -146,7 +127,7 @@ These are not in scope for the immediate phases but fit naturally:
 
 ---
 
-### Phase 4 — Polish & Infrastructure
+### Phase 3 — Polish & Infrastructure
 
 **Goal:** Close the gaps in the current app before it feels production-ready.
 
@@ -162,10 +143,10 @@ These are not in scope for the immediate phases but fit naturally:
 
 ## What We Are Deliberately Not Doing
 
-- No separate Elysia API app. The TanStack Start server functions pattern is already working and sufficient. The alias in `tsconfig`/`vite.config` pointing to a missing `apps/elysia` can be removed.
-- No paid AI subscriptions managed by this app. Bring-your-own-key only.
-- No real-time collaboration.
-- No org/team features (the org/role/kitchen schema from the starter template can be stripped out; it's dead weight).
+- **No in-app AI calls.** The app supplies structured data and a great prompt. The LLM lives in the user's environment — Claude Desktop, Cursor, local Ollama, whatever. The copy-prompt flow covers manual use. The MCP server covers automated use. No API key storage, no billing, no diff UI to maintain.
+- **No separate Elysia API app.** The TanStack Start server functions pattern is already working and sufficient. The alias in `tsconfig`/`vite.config` pointing to a missing `apps/elysia` can be removed.
+- **No real-time collaboration.**
+- **No org/team features.** The org/role/kitchen schema from the starter template is dead weight and can be stripped.
 
 ---
 
@@ -176,12 +157,11 @@ Phase 1a  →  DB schema (pinned_project table) + Octokit install
 Phase 1b  →  Move repos route into dashboard, add GitHub token guard
 Phase 1c  →  Repo browser (list + pin/unpin)
 Phase 1d  →  Pinned projects management + "use in resume" action
-Phase 2a  →  AI tailoring server function (bring-your-own-key)
-Phase 2b  →  Diff review UI
-Phase 2c  →  Prompt improvements + AI mode in create flow
-Phase 3a  →  MCP HTTP endpoint skeleton
-Phase 3b  →  API key management (DB + dashboard UI)
-Phase 3c  →  Wire up MCP tools
-Phase 3d  →  Docs / config snippet
-Phase 4   →  Navigation fixes, settings page, public share, onboarding
+Phase 2a  →  MCP HTTP endpoint skeleton
+Phase 2b  →  API key management (DB + dashboard UI)
+Phase 2c  →  Wire up MCP tools
+Phase 2d  →  Docs / config snippet
+Phase 3   →  Navigation fixes, settings page, public share, onboarding
 ```
+
+> **AI strategy:** No in-app LLM calls. The copy-prompt flow (existing `resume-prompt.ts`) handles manual use. The MCP server handles automated use — the user's own LLM client calls `get_resume`, `get_prompt`, and `list_pinned_projects`, runs the tailoring itself, then calls `create_resume` with the result. The app is the data layer; the intelligence lives outside it.
