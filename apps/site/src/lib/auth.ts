@@ -24,6 +24,12 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
   },
+  socialProviders: {
+    github: {
+      clientId: serverEnv.GITHUB_CLIENT_ID,
+      clientSecret: serverEnv.GITHUB_CLIENT_SECRET,
+    },
+  },
   plugins: [
     admin(),
     organization({

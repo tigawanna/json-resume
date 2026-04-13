@@ -3,4 +3,5 @@ export const queryKeyPrefixes = {
   users: "users",
   resumes: "resumes",
   deviceSessions: "deviceSessions",
+  ghAccessToken: "ghAccessToken",
 } as const;

@@ -16,6 +16,7 @@ import { Route as DashboardLayoutRouteImport } from './routes/_dashboard/layout'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthIndexRouteImport } from './routes/auth/index'
 import { Route as AuthSignupRouteImport } from './routes/auth/signup'
+import { Route as PublicReposRouteImport } from './routes/_public/repos'
 import { Route as DashboardSetiingsRouteImport } from './routes/_dashboard/setiings'
 import { Route as DashboardProfileRouteImport } from './routes/_dashboard/profile'
 import { Route as DashboardDashboardRouteImport } from './routes/_dashboard/dashboard'
@@ -58,6 +59,11 @@ const AuthSignupRoute = AuthSignupRouteImport.update({
   id: '/signup',
   path: '/signup',
   getParentRoute: () => AuthLayoutRoute,
+} as any)
+const PublicReposRoute = PublicReposRouteImport.update({
+  id: '/repos',
+  path: '/repos',
+  getParentRoute: () => PublicLayoutRoute,
 } as any)
 const DashboardSetiingsRoute = DashboardSetiingsRouteImport.update({
   id: '/setiings',
@@ -114,6 +120,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardDashboardRoute
   '/profile': typeof DashboardProfileRoute
   '/setiings': typeof DashboardSetiingsRoute
+  '/repos': typeof PublicReposRoute
   '/auth/signup': typeof AuthSignupRoute
   '/auth/': typeof AuthIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -129,6 +136,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardDashboardRoute
   '/profile': typeof DashboardProfileRoute
   '/setiings': typeof DashboardSetiingsRoute
+  '/repos': typeof PublicReposRoute
   '/auth/signup': typeof AuthSignupRoute
   '/auth': typeof AuthIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -148,6 +156,7 @@ export interface FileRoutesById {
   '/_dashboard/dashboard': typeof DashboardDashboardRoute
   '/_dashboard/profile': typeof DashboardProfileRoute
   '/_dashboard/setiings': typeof DashboardSetiingsRoute
+  '/_public/repos': typeof PublicReposRoute
   '/auth/signup': typeof AuthSignupRoute
   '/auth/': typeof AuthIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -166,6 +175,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/profile'
     | '/setiings'
+    | '/repos'
     | '/auth/signup'
     | '/auth/'
     | '/api/auth/$'
@@ -181,6 +191,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/profile'
     | '/setiings'
+    | '/repos'
     | '/auth/signup'
     | '/auth'
     | '/api/auth/$'
@@ -199,6 +210,7 @@ export interface FileRouteTypes {
     | '/_dashboard/dashboard'
     | '/_dashboard/profile'
     | '/_dashboard/setiings'
+    | '/_public/repos'
     | '/auth/signup'
     | '/auth/'
     | '/api/auth/$'
@@ -269,6 +281,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/auth/signup'
       preLoaderRoute: typeof AuthSignupRouteImport
       parentRoute: typeof AuthLayoutRoute
+    }
+    '/_public/repos': {
+      id: '/_public/repos'
+      path: '/repos'
+      fullPath: '/repos'
+      preLoaderRoute: typeof PublicReposRouteImport
+      parentRoute: typeof PublicLayoutRoute
     }
     '/_dashboard/setiings': {
       id: '/_dashboard/setiings'
@@ -359,10 +378,12 @@ const DashboardLayoutRouteWithChildren = DashboardLayoutRoute._addFileChildren(
 )
 
 interface PublicLayoutRouteChildren {
+  PublicReposRoute: typeof PublicReposRoute
   PublicResumeIndexRoute: typeof PublicResumeIndexRoute
 }
 
 const PublicLayoutRouteChildren: PublicLayoutRouteChildren = {
+  PublicReposRoute: PublicReposRoute,
   PublicResumeIndexRoute: PublicResumeIndexRoute,
 }
 
