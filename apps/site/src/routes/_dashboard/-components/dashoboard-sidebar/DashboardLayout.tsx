@@ -40,7 +40,7 @@ export function DashboardLayout({
   sidebar_props,
 }: DashboardLayoutProps) {
   return (
-    <SidebarProvider defaultOpen={false}>
+    <SidebarProvider defaultOpen={false} className="h-svh overflow-hidden">
       <Helmet
         title={`${AppConfig.name} | Dashboard`}
         description="Edit your JSON résumé, preview layout, and export PDF."
@@ -78,7 +78,7 @@ export function DashboardLayout({
         </SidebarFooter>
         <SidebarRail />
       </Sidebar>
-      <SidebarInset>
+      <SidebarInset className="min-h-0">
         <header className="bg-base-100 sticky top-0 z-30 flex h-16 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
           <div className="flex items-center gap-2 px-4">
             <SidebarTrigger className="-ml-1" />

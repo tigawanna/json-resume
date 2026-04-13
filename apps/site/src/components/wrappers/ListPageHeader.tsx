@@ -6,7 +6,7 @@ interface ListPageHeaderProps {
 
 export function ListPageHeader({ title, formTrigger, searchBox }: ListPageHeaderProps) {
   return (
-    <div className="sticky top-[10%] z-20 flex w-full flex-wrap justify-between gap-3 px-3 pr-5">
+    <div className="flex w-full flex-wrap justify-between gap-3 px-3 pr-5">
       <div className="flex w-full items-center justify-between gap-5 md:w-fit">
         <h1 className="text-2xl font-bold">{title}</h1>
         <div className="">{formTrigger}</div>
