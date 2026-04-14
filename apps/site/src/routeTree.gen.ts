@@ -16,16 +16,20 @@ import { Route as DashboardLayoutRouteImport } from './routes/_dashboard/layout'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthIndexRouteImport } from './routes/auth/index'
 import { Route as AuthSignupRouteImport } from './routes/auth/signup'
-import { Route as PublicReposRouteImport } from './routes/_public/repos'
-import { Route as DashboardSetiingsRouteImport } from './routes/_dashboard/setiings'
 import { Route as DashboardProfileRouteImport } from './routes/_dashboard/profile'
 import { Route as DashboardDashboardRouteImport } from './routes/_dashboard/dashboard'
+import { Route as DotwellKnownOauthProtectedResourceRouteImport } from './routes/[.]well-known/oauth-protected-resource'
+import { Route as DotwellKnownOauthAuthorizationServerRouteImport } from './routes/[.]well-known/oauth-authorization-server'
 import { Route as VerificationFailedIndexRouteImport } from './routes/verification/failed/index'
 import { Route as PublicResumeIndexRouteImport } from './routes/_public/resume/index'
+import { Route as DashboardSettingsIndexRouteImport } from './routes/_dashboard/settings/index'
 import { Route as DashboardResumesIndexRouteImport } from './routes/_dashboard/resumes/index'
+import { Route as DashboardReposIndexRouteImport } from './routes/_dashboard/repos/index'
+import { Route as ApiMcpSplatRouteImport } from './routes/api/mcp/$'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as DashboardResumesCreateIndexRouteImport } from './routes/_dashboard/resumes/create/index'
 import { Route as DashboardResumesResumeIdIndexRouteImport } from './routes/_dashboard/resumes/$resumeId/index'
+import { Route as DashboardReposPinnedIndexRouteImport } from './routes/_dashboard/repos/pinned/index'
 
 const SearchRoute = SearchRouteImport.update({
   id: '/search',
@@ -60,16 +64,6 @@ const AuthSignupRoute = AuthSignupRouteImport.update({
   path: '/signup',
   getParentRoute: () => AuthLayoutRoute,
 } as any)
-const PublicReposRoute = PublicReposRouteImport.update({
-  id: '/repos',
-  path: '/repos',
-  getParentRoute: () => PublicLayoutRoute,
-} as any)
-const DashboardSetiingsRoute = DashboardSetiingsRouteImport.update({
-  id: '/setiings',
-  path: '/setiings',
-  getParentRoute: () => DashboardLayoutRoute,
-} as any)
 const DashboardProfileRoute = DashboardProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
@@ -80,6 +74,18 @@ const DashboardDashboardRoute = DashboardDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => DashboardLayoutRoute,
 } as any)
+const DotwellKnownOauthProtectedResourceRoute =
+  DotwellKnownOauthProtectedResourceRouteImport.update({
+    id: '/.well-known/oauth-protected-resource',
+    path: '/.well-known/oauth-protected-resource',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const DotwellKnownOauthAuthorizationServerRoute =
+  DotwellKnownOauthAuthorizationServerRouteImport.update({
+    id: '/.well-known/oauth-authorization-server',
+    path: '/.well-known/oauth-authorization-server',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const VerificationFailedIndexRoute = VerificationFailedIndexRouteImport.update({
   id: '/verification/failed/',
   path: '/verification/failed/',
@@ -90,10 +96,25 @@ const PublicResumeIndexRoute = PublicResumeIndexRouteImport.update({
   path: '/resume/',
   getParentRoute: () => PublicLayoutRoute,
 } as any)
+const DashboardSettingsIndexRoute = DashboardSettingsIndexRouteImport.update({
+  id: '/settings/',
+  path: '/settings/',
+  getParentRoute: () => DashboardLayoutRoute,
+} as any)
 const DashboardResumesIndexRoute = DashboardResumesIndexRouteImport.update({
   id: '/resumes/',
   path: '/resumes/',
   getParentRoute: () => DashboardLayoutRoute,
+} as any)
+const DashboardReposIndexRoute = DashboardReposIndexRouteImport.update({
+  id: '/repos/',
+  path: '/repos/',
+  getParentRoute: () => DashboardLayoutRoute,
+} as any)
+const ApiMcpSplatRoute = ApiMcpSplatRouteImport.update({
+  id: '/api/mcp/$',
+  path: '/api/mcp/$',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
@@ -112,37 +133,51 @@ const DashboardResumesResumeIdIndexRoute =
     path: '/resumes/$resumeId/',
     getParentRoute: () => DashboardLayoutRoute,
   } as any)
+const DashboardReposPinnedIndexRoute =
+  DashboardReposPinnedIndexRouteImport.update({
+    id: '/repos/pinned/',
+    path: '/repos/pinned/',
+    getParentRoute: () => DashboardLayoutRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthLayoutRouteWithChildren
   '/search': typeof SearchRoute
+  '/.well-known/oauth-authorization-server': typeof DotwellKnownOauthAuthorizationServerRoute
+  '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRoute
   '/dashboard': typeof DashboardDashboardRoute
   '/profile': typeof DashboardProfileRoute
-  '/setiings': typeof DashboardSetiingsRoute
-  '/repos': typeof PublicReposRoute
   '/auth/signup': typeof AuthSignupRoute
   '/auth/': typeof AuthIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/mcp/$': typeof ApiMcpSplatRoute
+  '/repos/': typeof DashboardReposIndexRoute
   '/resumes/': typeof DashboardResumesIndexRoute
+  '/settings/': typeof DashboardSettingsIndexRoute
   '/resume/': typeof PublicResumeIndexRoute
   '/verification/failed/': typeof VerificationFailedIndexRoute
+  '/repos/pinned/': typeof DashboardReposPinnedIndexRoute
   '/resumes/$resumeId/': typeof DashboardResumesResumeIdIndexRoute
   '/resumes/create/': typeof DashboardResumesCreateIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/search': typeof SearchRoute
+  '/.well-known/oauth-authorization-server': typeof DotwellKnownOauthAuthorizationServerRoute
+  '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRoute
   '/dashboard': typeof DashboardDashboardRoute
   '/profile': typeof DashboardProfileRoute
-  '/setiings': typeof DashboardSetiingsRoute
-  '/repos': typeof PublicReposRoute
   '/auth/signup': typeof AuthSignupRoute
   '/auth': typeof AuthIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/mcp/$': typeof ApiMcpSplatRoute
+  '/repos': typeof DashboardReposIndexRoute
   '/resumes': typeof DashboardResumesIndexRoute
+  '/settings': typeof DashboardSettingsIndexRoute
   '/resume': typeof PublicResumeIndexRoute
   '/verification/failed': typeof VerificationFailedIndexRoute
+  '/repos/pinned': typeof DashboardReposPinnedIndexRoute
   '/resumes/$resumeId': typeof DashboardResumesResumeIdIndexRoute
   '/resumes/create': typeof DashboardResumesCreateIndexRoute
 }
@@ -153,16 +188,20 @@ export interface FileRoutesById {
   '/_public': typeof PublicLayoutRouteWithChildren
   '/auth': typeof AuthLayoutRouteWithChildren
   '/search': typeof SearchRoute
+  '/.well-known/oauth-authorization-server': typeof DotwellKnownOauthAuthorizationServerRoute
+  '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRoute
   '/_dashboard/dashboard': typeof DashboardDashboardRoute
   '/_dashboard/profile': typeof DashboardProfileRoute
-  '/_dashboard/setiings': typeof DashboardSetiingsRoute
-  '/_public/repos': typeof PublicReposRoute
   '/auth/signup': typeof AuthSignupRoute
   '/auth/': typeof AuthIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/mcp/$': typeof ApiMcpSplatRoute
+  '/_dashboard/repos/': typeof DashboardReposIndexRoute
   '/_dashboard/resumes/': typeof DashboardResumesIndexRoute
+  '/_dashboard/settings/': typeof DashboardSettingsIndexRoute
   '/_public/resume/': typeof PublicResumeIndexRoute
   '/verification/failed/': typeof VerificationFailedIndexRoute
+  '/_dashboard/repos/pinned/': typeof DashboardReposPinnedIndexRoute
   '/_dashboard/resumes/$resumeId/': typeof DashboardResumesResumeIdIndexRoute
   '/_dashboard/resumes/create/': typeof DashboardResumesCreateIndexRoute
 }
@@ -172,32 +211,40 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/search'
+    | '/.well-known/oauth-authorization-server'
+    | '/.well-known/oauth-protected-resource'
     | '/dashboard'
     | '/profile'
-    | '/setiings'
-    | '/repos'
     | '/auth/signup'
     | '/auth/'
     | '/api/auth/$'
+    | '/api/mcp/$'
+    | '/repos/'
     | '/resumes/'
+    | '/settings/'
     | '/resume/'
     | '/verification/failed/'
+    | '/repos/pinned/'
     | '/resumes/$resumeId/'
     | '/resumes/create/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/search'
+    | '/.well-known/oauth-authorization-server'
+    | '/.well-known/oauth-protected-resource'
     | '/dashboard'
     | '/profile'
-    | '/setiings'
-    | '/repos'
     | '/auth/signup'
     | '/auth'
     | '/api/auth/$'
+    | '/api/mcp/$'
+    | '/repos'
     | '/resumes'
+    | '/settings'
     | '/resume'
     | '/verification/failed'
+    | '/repos/pinned'
     | '/resumes/$resumeId'
     | '/resumes/create'
   id:
@@ -207,16 +254,20 @@ export interface FileRouteTypes {
     | '/_public'
     | '/auth'
     | '/search'
+    | '/.well-known/oauth-authorization-server'
+    | '/.well-known/oauth-protected-resource'
     | '/_dashboard/dashboard'
     | '/_dashboard/profile'
-    | '/_dashboard/setiings'
-    | '/_public/repos'
     | '/auth/signup'
     | '/auth/'
     | '/api/auth/$'
+    | '/api/mcp/$'
+    | '/_dashboard/repos/'
     | '/_dashboard/resumes/'
+    | '/_dashboard/settings/'
     | '/_public/resume/'
     | '/verification/failed/'
+    | '/_dashboard/repos/pinned/'
     | '/_dashboard/resumes/$resumeId/'
     | '/_dashboard/resumes/create/'
   fileRoutesById: FileRoutesById
@@ -227,7 +278,10 @@ export interface RootRouteChildren {
   PublicLayoutRoute: typeof PublicLayoutRouteWithChildren
   AuthLayoutRoute: typeof AuthLayoutRouteWithChildren
   SearchRoute: typeof SearchRoute
+  DotwellKnownOauthAuthorizationServerRoute: typeof DotwellKnownOauthAuthorizationServerRoute
+  DotwellKnownOauthProtectedResourceRoute: typeof DotwellKnownOauthProtectedResourceRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  ApiMcpSplatRoute: typeof ApiMcpSplatRoute
   VerificationFailedIndexRoute: typeof VerificationFailedIndexRoute
 }
 
@@ -282,20 +336,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthSignupRouteImport
       parentRoute: typeof AuthLayoutRoute
     }
-    '/_public/repos': {
-      id: '/_public/repos'
-      path: '/repos'
-      fullPath: '/repos'
-      preLoaderRoute: typeof PublicReposRouteImport
-      parentRoute: typeof PublicLayoutRoute
-    }
-    '/_dashboard/setiings': {
-      id: '/_dashboard/setiings'
-      path: '/setiings'
-      fullPath: '/setiings'
-      preLoaderRoute: typeof DashboardSetiingsRouteImport
-      parentRoute: typeof DashboardLayoutRoute
-    }
     '/_dashboard/profile': {
       id: '/_dashboard/profile'
       path: '/profile'
@@ -309,6 +349,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/dashboard'
       preLoaderRoute: typeof DashboardDashboardRouteImport
       parentRoute: typeof DashboardLayoutRoute
+    }
+    '/.well-known/oauth-protected-resource': {
+      id: '/.well-known/oauth-protected-resource'
+      path: '/.well-known/oauth-protected-resource'
+      fullPath: '/.well-known/oauth-protected-resource'
+      preLoaderRoute: typeof DotwellKnownOauthProtectedResourceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.well-known/oauth-authorization-server': {
+      id: '/.well-known/oauth-authorization-server'
+      path: '/.well-known/oauth-authorization-server'
+      fullPath: '/.well-known/oauth-authorization-server'
+      preLoaderRoute: typeof DotwellKnownOauthAuthorizationServerRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/verification/failed/': {
       id: '/verification/failed/'
@@ -324,12 +378,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicResumeIndexRouteImport
       parentRoute: typeof PublicLayoutRoute
     }
+    '/_dashboard/settings/': {
+      id: '/_dashboard/settings/'
+      path: '/settings'
+      fullPath: '/settings/'
+      preLoaderRoute: typeof DashboardSettingsIndexRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
     '/_dashboard/resumes/': {
       id: '/_dashboard/resumes/'
       path: '/resumes'
       fullPath: '/resumes/'
       preLoaderRoute: typeof DashboardResumesIndexRouteImport
       parentRoute: typeof DashboardLayoutRoute
+    }
+    '/_dashboard/repos/': {
+      id: '/_dashboard/repos/'
+      path: '/repos'
+      fullPath: '/repos/'
+      preLoaderRoute: typeof DashboardReposIndexRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
+    '/api/mcp/$': {
+      id: '/api/mcp/$'
+      path: '/api/mcp/$'
+      fullPath: '/api/mcp/$'
+      preLoaderRoute: typeof ApiMcpSplatRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/auth/$': {
       id: '/api/auth/$'
@@ -352,14 +427,23 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardResumesResumeIdIndexRouteImport
       parentRoute: typeof DashboardLayoutRoute
     }
+    '/_dashboard/repos/pinned/': {
+      id: '/_dashboard/repos/pinned/'
+      path: '/repos/pinned'
+      fullPath: '/repos/pinned/'
+      preLoaderRoute: typeof DashboardReposPinnedIndexRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
   }
 }
 
 interface DashboardLayoutRouteChildren {
   DashboardDashboardRoute: typeof DashboardDashboardRoute
   DashboardProfileRoute: typeof DashboardProfileRoute
-  DashboardSetiingsRoute: typeof DashboardSetiingsRoute
+  DashboardReposIndexRoute: typeof DashboardReposIndexRoute
   DashboardResumesIndexRoute: typeof DashboardResumesIndexRoute
+  DashboardSettingsIndexRoute: typeof DashboardSettingsIndexRoute
+  DashboardReposPinnedIndexRoute: typeof DashboardReposPinnedIndexRoute
   DashboardResumesResumeIdIndexRoute: typeof DashboardResumesResumeIdIndexRoute
   DashboardResumesCreateIndexRoute: typeof DashboardResumesCreateIndexRoute
 }
@@ -367,8 +451,10 @@ interface DashboardLayoutRouteChildren {
 const DashboardLayoutRouteChildren: DashboardLayoutRouteChildren = {
   DashboardDashboardRoute: DashboardDashboardRoute,
   DashboardProfileRoute: DashboardProfileRoute,
-  DashboardSetiingsRoute: DashboardSetiingsRoute,
+  DashboardReposIndexRoute: DashboardReposIndexRoute,
   DashboardResumesIndexRoute: DashboardResumesIndexRoute,
+  DashboardSettingsIndexRoute: DashboardSettingsIndexRoute,
+  DashboardReposPinnedIndexRoute: DashboardReposPinnedIndexRoute,
   DashboardResumesResumeIdIndexRoute: DashboardResumesResumeIdIndexRoute,
   DashboardResumesCreateIndexRoute: DashboardResumesCreateIndexRoute,
 }
@@ -378,12 +464,10 @@ const DashboardLayoutRouteWithChildren = DashboardLayoutRoute._addFileChildren(
 )
 
 interface PublicLayoutRouteChildren {
-  PublicReposRoute: typeof PublicReposRoute
   PublicResumeIndexRoute: typeof PublicResumeIndexRoute
 }
 
 const PublicLayoutRouteChildren: PublicLayoutRouteChildren = {
-  PublicReposRoute: PublicReposRoute,
   PublicResumeIndexRoute: PublicResumeIndexRoute,
 }
 
@@ -411,7 +495,12 @@ const rootRouteChildren: RootRouteChildren = {
   PublicLayoutRoute: PublicLayoutRouteWithChildren,
   AuthLayoutRoute: AuthLayoutRouteWithChildren,
   SearchRoute: SearchRoute,
+  DotwellKnownOauthAuthorizationServerRoute:
+    DotwellKnownOauthAuthorizationServerRoute,
+  DotwellKnownOauthProtectedResourceRoute:
+    DotwellKnownOauthProtectedResourceRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  ApiMcpSplatRoute: ApiMcpSplatRoute,
   VerificationFailedIndexRoute: VerificationFailedIndexRoute,
 }
 export const routeTree = rootRouteImport

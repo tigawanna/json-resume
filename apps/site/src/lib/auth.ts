@@ -1,8 +1,10 @@
+import { apiKey } from "@better-auth/api-key";
 import { organizationAc, organizationRoles } from "@repo/isomorphic/auth-roles";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import type { AccessControl } from "better-auth/plugins/access";
 import { admin } from "better-auth/plugins/admin";
+import { mcp } from "better-auth/plugins";
 import { multiSession } from "better-auth/plugins/multi-session";
 import { organization } from "better-auth/plugins/organization";
 import { tanstackStartCookies } from "better-auth/tanstack-start";
@@ -38,5 +40,11 @@ export const auth = betterAuth({
     }),
     multiSession(),
     tanstackStartCookies(),
+    mcp({
+      loginPage: "/auth",
+    }),
+    apiKey({
+      defaultPrefix: "ajr",
+    }),
   ],
 });

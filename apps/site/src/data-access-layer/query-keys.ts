@@ -4,4 +4,7 @@ export const queryKeyPrefixes = {
   resumes: "resumes",
   deviceSessions: "deviceSessions",
   ghAccessToken: "ghAccessToken",
+  github: "github",
+  pinnedProjects: "pinned-projects",
+  apiKeys: "api-keys",
 } as const;

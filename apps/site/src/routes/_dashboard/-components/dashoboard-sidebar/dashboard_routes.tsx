@@ -1,5 +1,5 @@
 import { SidebarItem } from "@/components/sidebar/types";
-import { FileText, LayoutDashboard, Settings, Shield } from "lucide-react";
+import { FileText, FolderGit2, LayoutDashboard, Settings, Shield } from "lucide-react";
 
 export const dashboard_account_routes = [
   { title: "Settings", href: "/settings", icon: Settings },
@@ -13,6 +13,7 @@ export function getDashboardPrimaryRoutes(): SidebarItem[] {
   return [
     { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     { title: "Resumes", href: "/resumes", icon: FileText },
+    { title: "Repositories", href: "/repos", icon: FolderGit2 },
   ];
 }
 

@@ -66,7 +66,7 @@ export function DashboardSidebarUser() {
         toast.success("Account switched");
         await qc.invalidateQueries({ queryKey: ["viewer"] });
         await qc.invalidateQueries({
-          queryKey: [deviceSessionsQueryOptions.queryKey],
+          queryKey: deviceSessionsQueryOptions.queryKey,
         });
         await router.invalidate();
         await qc.fetchQuery(viewerqueryOptions);

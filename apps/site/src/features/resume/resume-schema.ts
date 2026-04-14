@@ -67,6 +67,7 @@ const educationBlock = z.object({
 const projectItem = z.object({
   name: z.string(),
   url: z.string(),
+  homepageUrl: z.string().optional(),
   description: z.string(),
   tech: z.array(z.string()),
 });
