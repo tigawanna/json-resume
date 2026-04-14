@@ -11,7 +11,7 @@ import {
   type ResumeDocumentV1,
   type SectionKey,
 } from "@/features/resume/resume-schema";
-import { ChevronDown, ChevronUp, Plus, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronUp, GripVertical, Plus, Trash2 } from "lucide-react";
 
 function SectionOrderControls({
   sectionKey,
@@ -51,6 +51,14 @@ function SectionOrderControls({
       </Button>
     </div>
   );
+}
+
+function reorderArray<T>(arr: T[], fromIdx: number, toIdx: number): T[] {
+  const copy = [...arr];
+  const [removed] = copy.splice(fromIdx, 1);
+  if (removed === undefined) return arr;
+  copy.splice(toIdx, 0, removed);
+  return copy;
 }
 
 function normalizeSectionOrder(order: SectionKey[]): SectionKey[] {
@@ -311,21 +319,100 @@ export function ResumeEditForm({
                         </div>
                       </div>
                       <div className="space-y-2">
-                        <Label>Bullets (one per line)</Label>
-                        <Textarea
-                          rows={4}
-                          value={ex.bullets.join("\n")}
-                          onChange={(e) => {
-                            const items = [...doc.experience.items];
-                            const cur = items[i];
-                            if (cur)
-                              items[i] = {
-                                ...cur,
-                                bullets: e.target.value.split("\n").filter(Boolean),
-                              };
-                            set("experience", { ...doc.experience, items });
-                          }}
-                        />
+                        <Label>Bullets</Label>
+                        <div className="flex flex-col gap-2" data-test={`experience-bullets-${i}`}>
+                          {(ex.bullets.length > 0 ? ex.bullets : [""]).map((bullet, bi) => (
+                            <div
+                              key={`${i}-${bi}`}
+                              className="border-base-300 flex items-start gap-2 rounded-md border bg-transparent p-1.5"
+                              onDragOver={(e) => {
+                                e.preventDefault();
+                                e.dataTransfer.dropEffect = "move";
+                              }}
+                              onDrop={(e) => {
+                                e.preventDefault();
+                                const from = Number(e.dataTransfer.getData("text/plain"));
+                                if (Number.isNaN(from)) return;
+                                const to = bi;
+                                if (from === to) return;
+                                const items = [...doc.experience.items];
+                                const cur = items[i];
+                                if (!cur) return;
+                                const raw = cur.bullets.length > 0 ? [...cur.bullets] : [""];
+                                const nextBullets = reorderArray(raw, from, to);
+                                items[i] = { ...cur, bullets: nextBullets };
+                                set("experience", { ...doc.experience, items });
+                              }}
+                            >
+                              <button
+                                type="button"
+                                draggable
+                                onDragStart={(e) => {
+                                  e.dataTransfer.setData("text/plain", String(bi));
+                                  e.dataTransfer.effectAllowed = "move";
+                                }}
+                                className="text-muted-foreground hover:text-foreground mt-2 cursor-grab p-0.5 active:cursor-grabbing"
+                                aria-label="Drag to reorder bullet"
+                              >
+                                <GripVertical className="size-4 shrink-0" />
+                              </button>
+                              <Input
+                                className="min-w-0 flex-1"
+                                value={bullet}
+                                placeholder="Achievement or responsibility"
+                                onChange={(e) => {
+                                  const items = [...doc.experience.items];
+                                  const cur = items[i];
+                                  if (!cur) return;
+                                  const padded =
+                                    cur.bullets.length > 0 ? [...cur.bullets] : [""];
+                                  while (padded.length <= bi) padded.push("");
+                                  padded[bi] = e.target.value;
+                                  items[i] = { ...cur, bullets: padded };
+                                  set("experience", { ...doc.experience, items });
+                                }}
+                              />
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="size-8 shrink-0"
+                                aria-label="Remove bullet"
+                                onClick={() => {
+                                  const items = [...doc.experience.items];
+                                  const cur = items[i];
+                                  if (!cur) return;
+                                  const rowCount = cur.bullets.length > 0 ? cur.bullets.length : 1;
+                                  const next = cur.bullets.filter((_, j) => j !== bi);
+                                  items[i] = {
+                                    ...cur,
+                                    bullets: rowCount <= 1 && next.length === 0 ? [] : next,
+                                  };
+                                  set("experience", { ...doc.experience, items });
+                                }}
+                              >
+                                <Trash2 className="size-4" />
+                              </Button>
+                            </div>
+                          ))}
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="self-start"
+                            onClick={() => {
+                              const items = [...doc.experience.items];
+                              const cur = items[i];
+                              if (!cur) return;
+                              const base = cur.bullets.length > 0 ? [...cur.bullets] : [""];
+                              items[i] = { ...cur, bullets: [...base, ""] };
+                              set("experience", { ...doc.experience, items });
+                            }}
+                          >
+                            <Plus className="mr-1 size-4" />
+                            Add bullet
+                          </Button>
+                        </div>
                       </div>
                       <Button
                         type="button"

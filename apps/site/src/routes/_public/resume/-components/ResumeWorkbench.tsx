@@ -10,6 +10,7 @@ import {
   type TemplateId,
 } from "@/features/resume/resume-schema";
 import { resumeDocumentToSpec } from "@/features/resume/resume-to-spec";
+import { CollapsibleJsonView } from "@/components/CollapsibleJsonView";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -21,7 +22,7 @@ import { Link } from "@tanstack/react-router";
 import { createPatch } from "diff";
 import { twMerge } from "tailwind-merge";
 import { Check, ClipboardCopy, ClipboardPaste, Download, Loader2, RefreshCw } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { toast } from "sonner";
 import { ResumeEditForm } from "./ResumeEditForm";
 
@@ -118,6 +119,13 @@ export function ResumeWorkbench() {
 
   const previewSpec = resumeDocumentToSpec(doc, templateId);
   const currentJson = JSON.stringify(doc, null, 2);
+  const exportJsonTree = useMemo(() => {
+    try {
+      return JSON.parse(currentJson) as unknown;
+    } catch {
+      return null;
+    }
+  }, [currentJson]);
 
   const diffPatch = (() => {
     const before = baselineJson ?? "";
@@ -210,13 +218,16 @@ export function ResumeWorkbench() {
               </CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-3">
-              <Textarea
-                readOnly
-                className="font-mono text-xs"
-                rows={12}
-                value={currentJson}
-                data-test="resume-json-export"
-              />
+              <CardDescription>
+                Expand keys to inspect nested data. Long strings stay collapsed until opened.
+              </CardDescription>
+              {exportJsonTree !== null ? (
+                <div data-test="resume-json-export">
+                  <CollapsibleJsonView data={exportJsonTree} />
+                </div>
+              ) : (
+                <Textarea readOnly className="font-mono text-xs" rows={12} value={currentJson} />
+              )}
               <Button
                 type="button"
                 variant="secondary"

@@ -3,14 +3,20 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Textarea } from "@/components/ui/textarea";
 import { safeParseResumeJson, type ResumeDocumentV1 } from "@/features/resume/resume-schema";
 import { ClipboardPaste } from "lucide-react";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { toast } from "sonner";
 
 interface JsonPasteSectionProps {
   onApply: (data: ResumeDocumentV1) => void;
+  title?: string;
+  description?: ReactNode;
 }
 
-export function JsonPasteSection({ onApply }: JsonPasteSectionProps) {
+export function JsonPasteSection({
+  onApply,
+  title = "Paste LLM output",
+  description,
+}: JsonPasteSectionProps) {
   const [pasteText, setPasteText] = useState("");
 
   function handleApply() {
@@ -31,10 +37,14 @@ export function JsonPasteSection({ onApply }: JsonPasteSectionProps) {
   return (
     <Card data-test="json-paste-section">
       <CardHeader>
-        <CardTitle className="text-base">Paste LLM output</CardTitle>
+        <CardTitle className="text-base">{title}</CardTitle>
         <CardDescription>
-          After the LLM returns tailored JSON, paste it here. It will be validated against the
-          resume schema before applying.
+          {description ?? (
+            <>
+              After the LLM returns tailored JSON, paste it here. It will be validated against the
+              resume schema before applying.
+            </>
+          )}
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">

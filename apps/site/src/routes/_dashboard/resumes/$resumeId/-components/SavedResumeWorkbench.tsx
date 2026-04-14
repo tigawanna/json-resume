@@ -1,3 +1,4 @@
+import { CollapsibleJsonView } from "@/components/CollapsibleJsonView";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -23,7 +24,7 @@ import { pdf } from "@react-pdf/renderer";
 import { useMutation } from "@tanstack/react-query";
 import { createPatch } from "diff";
 import { Download, Loader2, RefreshCw, Save } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { twMerge } from "tailwind-merge";
 
@@ -85,6 +86,13 @@ export function SavedResumeWorkbench({ savedResume }: SavedResumeWorkbenchProps)
 
   const previewSpec = resumeDocumentToSpec(doc, templateId);
   const currentJson = JSON.stringify(doc, null, 2);
+  const exportJsonTree = useMemo(() => {
+    try {
+      return JSON.parse(currentJson) as unknown;
+    } catch {
+      return null;
+    }
+  }, [currentJson]);
 
   const diffPatch = (() => {
     const before = baselineJson ?? "";
@@ -205,13 +213,16 @@ export function SavedResumeWorkbench({ savedResume }: SavedResumeWorkbenchProps)
               </CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-3">
-              <Textarea
-                readOnly
-                className="font-mono text-xs"
-                rows={12}
-                value={currentJson}
-                data-test="resume-json-export"
-              />
+              <CardDescription className="pb-1">
+                Expand keys to inspect nested data. Long strings stay collapsed until opened.
+              </CardDescription>
+              {exportJsonTree !== null ? (
+                <div data-test="resume-json-export">
+                  <CollapsibleJsonView data={exportJsonTree} />
+                </div>
+              ) : (
+                <Textarea readOnly className="font-mono text-xs" rows={12} value={currentJson} />
+              )}
               <Button
                 type="button"
                 variant="secondary"

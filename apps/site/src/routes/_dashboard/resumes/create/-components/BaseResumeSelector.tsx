@@ -1,9 +1,11 @@
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import type { ResumeDTO } from "@/data-access-layer/resume/resume.types";
 import { formatDistanceToNow } from "date-fns";
-import { FileText, Sparkles } from "lucide-react";
+import { FileText, Search, Sparkles } from "lucide-react";
+import { useMemo, useState } from "react";
 
 interface BaseResumeSelectorProps {
   resumes: ResumeDTO[];
@@ -14,7 +16,26 @@ interface BaseResumeSelectorProps {
 const BLANK_VALUE = "__blank__";
 
 export function BaseResumeSelector({ resumes, selectedId, onSelect }: BaseResumeSelectorProps) {
+  const [query, setQuery] = useState("");
   const value = selectedId ?? BLANK_VALUE;
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    const list = !q
+      ? resumes
+      : resumes.filter((r) => {
+          const name = r.name.toLowerCase();
+          const author = r.data.header.fullName.toLowerCase();
+          return name.includes(q) || author.includes(q);
+        });
+    if (selectedId) {
+      const selected = resumes.find((r) => r.id === selectedId);
+      if (selected && !list.some((r) => r.id === selectedId)) {
+        return [selected, ...list];
+      }
+    }
+    return list;
+  }, [resumes, query, selectedId]);
 
   function handleChange(val: string) {
     onSelect(val === BLANK_VALUE ? null : val);
@@ -23,6 +44,19 @@ export function BaseResumeSelector({ resumes, selectedId, onSelect }: BaseResume
   return (
     <div className="flex flex-col gap-3" data-test="base-resume-selector">
       <Label className="text-sm font-medium">Start from</Label>
+      {resumes.length > 0 && (
+        <div className="relative">
+          <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2" />
+          <Input
+            type="search"
+            placeholder="Search saved resumes..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className="pl-9"
+            data-test="base-resume-search"
+          />
+        </div>
+      )}
       <RadioGroup value={value} onValueChange={handleChange} className="grid gap-2 sm:grid-cols-2">
         <Label
           htmlFor="base-blank"
@@ -40,7 +74,7 @@ export function BaseResumeSelector({ resumes, selectedId, onSelect }: BaseResume
           </div>
         </Label>
 
-        {resumes.map((r) => {
+        {filtered.map((r) => {
           return (
             <Label
               key={r.id}
