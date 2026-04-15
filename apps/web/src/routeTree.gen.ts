@@ -17,6 +17,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthIndexRouteImport } from './routes/auth/index'
 import { Route as AuthSignupRouteImport } from './routes/auth/signup'
 import { Route as PublicWorkbenchRouteImport } from './routes/_public/workbench'
+import { Route as DashboardResumeRouteImport } from './routes/_dashboard/resume'
 import { Route as DashboardProfileRouteImport } from './routes/_dashboard/profile'
 import { Route as DashboardDashboardRouteImport } from './routes/_dashboard/dashboard'
 import { Route as DotwellKnownOauthProtectedResourceRouteImport } from './routes/[.]well-known/oauth-protected-resource'
@@ -62,6 +63,11 @@ const PublicWorkbenchRoute = PublicWorkbenchRouteImport.update({
   path: '/workbench',
   getParentRoute: () => PublicLayoutRoute,
 } as any)
+const DashboardResumeRoute = DashboardResumeRouteImport.update({
+  id: '/resume',
+  path: '/resume',
+  getParentRoute: () => DashboardLayoutRoute,
+} as any)
 const DashboardProfileRoute = DashboardProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
@@ -103,6 +109,7 @@ export interface FileRoutesByFullPath {
   '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRoute
   '/dashboard': typeof DashboardDashboardRoute
   '/profile': typeof DashboardProfileRoute
+  '/resume': typeof DashboardResumeRoute
   '/workbench': typeof PublicWorkbenchRoute
   '/auth/signup': typeof AuthSignupRoute
   '/auth/': typeof AuthIndexRoute
@@ -116,6 +123,7 @@ export interface FileRoutesByTo {
   '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRoute
   '/dashboard': typeof DashboardDashboardRoute
   '/profile': typeof DashboardProfileRoute
+  '/resume': typeof DashboardResumeRoute
   '/workbench': typeof PublicWorkbenchRoute
   '/auth/signup': typeof AuthSignupRoute
   '/auth': typeof AuthIndexRoute
@@ -133,6 +141,7 @@ export interface FileRoutesById {
   '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRoute
   '/_dashboard/dashboard': typeof DashboardDashboardRoute
   '/_dashboard/profile': typeof DashboardProfileRoute
+  '/_dashboard/resume': typeof DashboardResumeRoute
   '/_public/workbench': typeof PublicWorkbenchRoute
   '/auth/signup': typeof AuthSignupRoute
   '/auth/': typeof AuthIndexRoute
@@ -149,6 +158,7 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/dashboard'
     | '/profile'
+    | '/resume'
     | '/workbench'
     | '/auth/signup'
     | '/auth/'
@@ -162,6 +172,7 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/dashboard'
     | '/profile'
+    | '/resume'
     | '/workbench'
     | '/auth/signup'
     | '/auth'
@@ -178,6 +189,7 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/_dashboard/dashboard'
     | '/_dashboard/profile'
+    | '/_dashboard/resume'
     | '/_public/workbench'
     | '/auth/signup'
     | '/auth/'
@@ -254,6 +266,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicWorkbenchRouteImport
       parentRoute: typeof PublicLayoutRoute
     }
+    '/_dashboard/resume': {
+      id: '/_dashboard/resume'
+      path: '/resume'
+      fullPath: '/resume'
+      preLoaderRoute: typeof DashboardResumeRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
     '/_dashboard/profile': {
       id: '/_dashboard/profile'
       path: '/profile'
@@ -302,12 +321,14 @@ declare module '@tanstack/react-router' {
 interface DashboardLayoutRouteChildren {
   DashboardDashboardRoute: typeof DashboardDashboardRoute
   DashboardProfileRoute: typeof DashboardProfileRoute
+  DashboardResumeRoute: typeof DashboardResumeRoute
   DashboardSettingsIndexRoute: typeof DashboardSettingsIndexRoute
 }
 
 const DashboardLayoutRouteChildren: DashboardLayoutRouteChildren = {
   DashboardDashboardRoute: DashboardDashboardRoute,
   DashboardProfileRoute: DashboardProfileRoute,
+  DashboardResumeRoute: DashboardResumeRoute,
   DashboardSettingsIndexRoute: DashboardSettingsIndexRoute,
 }
 
