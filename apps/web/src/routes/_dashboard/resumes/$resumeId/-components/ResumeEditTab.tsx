@@ -13,6 +13,7 @@ import { MetadataForm } from "./MetadataForm";
 import { ProjectSection } from "./ProjectSection";
 import { SkillsForm } from "./SkillsForm";
 import { SummaryForm } from "./SummaryForm";
+import { TalksSection } from "./TalksSection";
 
 interface ResumeEditTabProps {
   resume: ResumeDetailDTO;
@@ -26,7 +27,8 @@ export function ResumeEditTab({ resume }: ResumeEditTabProps) {
       <Accordion
         type="multiple"
         defaultValue={["contacts", "summary", "experience"]}
-        className="w-full">
+        className="w-full"
+      >
         <AccordionItem value="contacts">
           <AccordionTrigger>Contacts</AccordionTrigger>
           <AccordionContent>
@@ -73,6 +75,13 @@ export function ResumeEditTab({ resume }: ResumeEditTabProps) {
           <AccordionTrigger>Skills</AccordionTrigger>
           <AccordionContent>
             <SkillsForm resume={resume} />
+          </AccordionContent>
+        </AccordionItem>
+
+        <AccordionItem value="talks">
+          <AccordionTrigger>Talks</AccordionTrigger>
+          <AccordionContent>
+            <TalksSection resume={resume} />
           </AccordionContent>
         </AccordionItem>
       </Accordion>

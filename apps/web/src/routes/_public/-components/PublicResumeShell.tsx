@@ -1,4 +1,3 @@
-import { AppConfig } from "@/utils/system";
 import { Separator } from "@/components/ui/separator";
 import {
   Sidebar,
@@ -14,10 +13,11 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { TSRBreadCrumbs } from "@/lib/tanstack/router/TSRBreadCrumbs";
+import { AppConfig } from "@/utils/system";
 import { Link, Outlet } from "@tanstack/react-router";
 import { FileJson, FileText } from "lucide-react";
 
-const NAV = [{ title: "Résumé builder", href: "/resume" as const, icon: FileText }];
+const NAV = [{ title: "Résumé builder", href: "/resumes" as const, icon: FileText }];
 
 export function PublicResumeShell() {
   return (
@@ -59,7 +59,7 @@ export function PublicResumeShell() {
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton asChild>
-                <Link to="/resume" className="gap-2 text-muted-foreground text-xs">
+                <Link to="/resumes" className="gap-2 text-muted-foreground text-xs">
                   <FileJson className="size-4" />
                   <span>JSON → PDF</span>
                 </Link>

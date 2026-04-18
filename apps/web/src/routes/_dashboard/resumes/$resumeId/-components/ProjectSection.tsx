@@ -4,8 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   createProject,
+  editProject,
   removeProject,
   searchProjects,
 } from "@/data-access-layer/resume/resume.functions";
@@ -14,7 +16,7 @@ import { useAppForm } from "@/lib/tanstack/form";
 import { unwrapUnknownError } from "@/utils/errors";
 import { formOptions } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
-import { Library, Plus, Trash2, X } from "lucide-react";
+import { Library, Pencil, Plus, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -61,16 +63,22 @@ export function ProjectSection({ resume }: ProjectSectionProps) {
   );
 }
 
-// ─── Single Project Card ────────────────────────────────────
+// ─── Single Project Card (editable) ─────────────────────────
 
 function ProjectCard({ project }: { project: ResumeDetailDTO["projects"][number] }) {
-  const tech: string[] = (() => {
+  const [editing, setEditing] = useState(false);
+  const [name, setName] = useState(project.name);
+  const [url, setUrl] = useState(project.url);
+  const [homepageUrl, setHomepageUrl] = useState(project.homepageUrl);
+  const [description, setDescription] = useState(project.description);
+  const [techTags, setTechTags] = useState<string[]>(() => {
     try {
-      return JSON.parse(project.tech);
+      const parsed: unknown = JSON.parse(project.tech);
+      return Array.isArray(parsed) ? parsed.filter((x): x is string => typeof x === "string") : [];
     } catch {
       return [];
     }
-  })();
+  });
 
   const deleteMutation = useMutation({
     mutationFn: async () => removeProject({ data: { id: project.id } }),
@@ -85,30 +93,140 @@ function ProjectCard({ project }: { project: ResumeDetailDTO["projects"][number]
     meta: { invalidates: [["resumes"]] },
   });
 
+  const saveMutation = useMutation({
+    mutationFn: async () =>
+      editProject({
+        data: {
+          id: project.id,
+          name,
+          url,
+          homepageUrl,
+          description,
+          tech: techTags,
+        },
+      }),
+    onSuccess() {
+      toast.success("Project saved");
+      setEditing(false);
+    },
+    onError(err: unknown) {
+      toast.error("Failed to save project", {
+        description: unwrapUnknownError(err).message,
+      });
+    },
+    meta: { invalidates: [["resumes"]] },
+  });
+
+  function handleTechKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "Enter" || e.key === ",") {
+      e.preventDefault();
+      const val = e.currentTarget.value.trim();
+      if (val && !techTags.includes(val)) {
+        setTechTags((prev) => [...prev, val]);
+        e.currentTarget.value = "";
+      }
+    }
+  }
+
+  if (!editing) {
+    return (
+      <Card data-test={`project-card-${project.id}`}>
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <CardTitle className="text-base">{project.name}</CardTitle>
+          <div className="flex gap-1">
+            <Button variant="ghost" size="icon" className="size-7" onClick={() => setEditing(true)}>
+              <Pencil className="size-3.5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-7"
+              onClick={() => deleteMutation.mutate()}
+              disabled={deleteMutation.isPending}
+            >
+              <Trash2 className="size-3.5" />
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-1.5">
+          {project.url && <p className="text-muted-foreground truncate text-xs">{project.url}</p>}
+          <p className="text-sm">{project.description}</p>
+          {techTags.length > 0 && (
+            <div className="mt-1 flex flex-wrap gap-1">
+              {techTags.map((t) => (
+                <Badge key={t} variant="secondary" className="text-xs">
+                  {t}
+                </Badge>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card data-test={`project-card-${project.id}`}>
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-base">{project.name}</CardTitle>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="size-7"
-          onClick={() => deleteMutation.mutate()}
-          disabled={deleteMutation.isPending}>
-          <Trash2 className="size-3.5" />
-        </Button>
-      </CardHeader>
-      <CardContent>
-        <p className="text-sm">{project.description}</p>
-        {tech.length > 0 && (
-          <div className="mt-2 flex flex-wrap gap-1">
-            {tech.map((t) => (
-              <Badge key={t} variant="secondary" className="text-xs">
-                {t}
-              </Badge>
-            ))}
+      <CardContent className="flex flex-col gap-3 pt-4">
+        <div>
+          <Label className="text-xs">Project Name</Label>
+          <Input value={name} onChange={(e) => setName(e.target.value)} className="mt-1" />
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div>
+            <Label className="text-xs">Repository URL</Label>
+            <Input value={url} onChange={(e) => setUrl(e.target.value)} className="mt-1" />
           </div>
-        )}
+          <div>
+            <Label className="text-xs">Homepage URL</Label>
+            <Input
+              value={homepageUrl}
+              onChange={(e) => setHomepageUrl(e.target.value)}
+              className="mt-1"
+            />
+          </div>
+        </div>
+        <div>
+          <Label className="text-xs">Description</Label>
+          <Textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            className="mt-1"
+            rows={3}
+          />
+        </div>
+        <div>
+          <Label className="text-xs">Technologies (press Enter to add)</Label>
+          <Input onKeyDown={handleTechKeyDown} placeholder="e.g. React" className="mt-1" />
+          {techTags.length > 0 && (
+            <div className="mt-2 flex flex-wrap gap-1">
+              {techTags.map((t) => (
+                <Badge key={t} variant="secondary" className="text-xs">
+                  {t}
+                  <button
+                    type="button"
+                    className="ml-1"
+                    onClick={() => setTechTags((prev) => prev.filter((x) => x !== t))}
+                  >
+                    <X className="size-3" />
+                  </button>
+                </Badge>
+              ))}
+            </div>
+          )}
+        </div>
+        <div className="flex gap-2">
+          <Button
+            size="sm"
+            onClick={() => saveMutation.mutate()}
+            disabled={saveMutation.isPending || !name.trim()}
+          >
+            Save
+          </Button>
+          <Button variant="ghost" size="sm" onClick={() => setEditing(false)}>
+            Cancel
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );
@@ -192,7 +310,8 @@ function AddProjectForm({ resumeId, existingCount }: { resumeId: string; existin
             form.handleSubmit();
           }}
           className="flex flex-col gap-3"
-          data-test="add-project-form">
+          data-test="add-project-form"
+        >
           <form.AppField name="name" validators={{ onChange: z.string().min(1, "Required") }}>
             {(field) => <field.TextField label="Project Name" />}
           </form.AppField>
@@ -206,7 +325,8 @@ function AddProjectForm({ resumeId, existingCount }: { resumeId: string; existin
           </div>
           <form.AppField
             name="description"
-            validators={{ onChange: z.string().min(1, "Required") }}>
+            validators={{ onChange: z.string().min(1, "Required") }}
+          >
             {(field) => <field.TextAreaField label="Description" />}
           </form.AppField>
 
@@ -221,7 +341,8 @@ function AddProjectForm({ resumeId, existingCount }: { resumeId: string; existin
                     <button
                       type="button"
                       className="ml-1"
-                      onClick={() => setTechTags((prev) => prev.filter((x) => x !== t))}>
+                      onClick={() => setTechTags((prev) => prev.filter((x) => x !== t))}
+                    >
                       <X className="size-3" />
                     </button>
                   </Badge>
@@ -241,7 +362,8 @@ function AddProjectForm({ resumeId, existingCount }: { resumeId: string; existin
               onClick={() => {
                 setOpen(false);
                 setTechTags([]);
-              }}>
+              }}
+            >
               Cancel
             </Button>
           </div>

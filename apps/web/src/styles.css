@@ -428,3 +428,17 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Force dark text inside resume preview paper regardless of theme */
+.resume-preview-paper,
+.resume-preview-paper * {
+  color: #1a1a1a;
+}
+.resume-preview-paper a {
+  color: #2563eb;
+}
+.resume-preview-paper h1,
+.resume-preview-paper h2,
+.resume-preview-paper h3 {
+  color: #111;
+}

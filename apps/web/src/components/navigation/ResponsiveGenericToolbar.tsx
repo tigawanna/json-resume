@@ -119,7 +119,7 @@ export function ResponsiveGenericToolbar({ children }: ResponsiveGenericToolbarP
 
           <div className="divider my-2">Explore</div>
           <li>
-            <Link to="/resume" className="gap-3">
+            <Link to="/resumes" className="gap-3">
               <ShoppingBag className="size-5" />
               <span>Résumé builder</span>
             </Link>
