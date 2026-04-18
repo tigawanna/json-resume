@@ -52,7 +52,7 @@ function RouteComponent() {
         <div className="relative flex min-h-screen items-center justify-center px-4 py-10">
           <div className="bg-base-300/40 pointer-events-none absolute inset-0 backdrop-blur-[2px]" />
 
-          <div className="bg-base-100/95 border-base-content/10 relative w-full max-w-md rounded-2xl border p-8 shadow-2xl">
+          <div className="bg-base-100/95 border-base-content/10 relative w-full max-w-md rounded-2xl border p-8 shadow-[0_22px_48px_rgba(0,0,0,0.12)] dark:shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_24px_56px_rgba(16,185,129,0.18)]">
             <div className="flex flex-col items-center gap-3 text-center">
               <div className="bg-base-200 text-base-content grid size-14 place-items-center rounded-full">
                 <GithubIcon className="size-7" />
@@ -68,8 +68,7 @@ function RouteComponent() {
               data-test="github-signin-btn"
               disabled={mutation.isPending}
               className="btn btn-primary mt-7 w-full"
-              onClick={handleGitHubSignin}
-            >
+              onClick={handleGitHubSignin}>
               <GithubIcon className="size-4" />
               {mutation.isPending ? "Redirecting to GitHub..." : "Continue with GitHub"}
             </button>
