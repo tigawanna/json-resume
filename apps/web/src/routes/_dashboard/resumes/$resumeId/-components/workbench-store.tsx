@@ -17,6 +17,8 @@ export interface WorkbenchState {
   selectedTemplate: TemplateId;
   /** Pending document edits (null = no unsaved doc changes) */
   pendingDoc: ResumeDocumentV1 | null;
+  /** Increments whenever server data syncs — used as React key to re-init forms */
+  resumeVersion: number;
 }
 
 /* ------------------------------------------------------------------ */
@@ -68,6 +70,7 @@ export function WorkbenchStoreProvider({
       initialTemplateId: resume.templateId as TemplateId,
       selectedTemplate: resume.templateId as TemplateId,
       pendingDoc: null,
+      resumeVersion: 0,
     });
   }
 
@@ -77,15 +80,20 @@ export function WorkbenchStoreProvider({
   if (resume.id !== prevResumeId.current || resume.templateId !== prevTemplateId.current) {
     prevResumeId.current = resume.id;
     prevTemplateId.current = resume.templateId;
-    storeRef.current.setState(() => ({
+    storeRef.current.setState((prev) => ({
       resume,
       initialTemplateId: resume.templateId as TemplateId,
       selectedTemplate: resume.templateId as TemplateId,
       pendingDoc: null,
+      resumeVersion: prev.resumeVersion + 1,
     }));
   } else if (storeRef.current.state.resume !== resume) {
     // Same id/template but fresh query data — update the reference
-    storeRef.current.setState((prev) => ({ ...prev, resume }));
+    storeRef.current.setState((prev) => ({
+      ...prev,
+      resume,
+      resumeVersion: prev.resumeVersion + 1,
+    }));
   }
 
   return (

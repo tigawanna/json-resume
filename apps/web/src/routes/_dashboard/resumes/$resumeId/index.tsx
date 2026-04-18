@@ -94,6 +94,7 @@ function ResumeWorkbenchInner() {
   const resume = useWorkbench((s) => s.resume);
   const selectedTemplate = useWorkbench((s) => s.selectedTemplate);
   const hasUnsavedChanges = useWorkbench(selectHasUnsavedChanges);
+  const resumeVersion = useWorkbench((s) => s.resumeVersion);
 
   const saveMutation = useMutation({
     mutationFn: async () => {
@@ -169,15 +170,15 @@ function ResumeWorkbenchInner() {
           </Button>
         </div>
 
-        <TabsContent value="edit" className="mt-4">
-          <ResumeEditTab />
+        <TabsContent value="edit" forceMount className="mt-4 data-[state=inactive]:hidden">
+          <ResumeEditTab key={resumeVersion} />
         </TabsContent>
 
         <TabsContent value="preview" className="mt-4">
           <ResumePreviewTab />
         </TabsContent>
 
-        <TabsContent value="json" className="mt-4">
+        <TabsContent value="json" forceMount className="mt-4 data-[state=inactive]:hidden">
           <ResumeJsonTab />
         </TabsContent>
 
