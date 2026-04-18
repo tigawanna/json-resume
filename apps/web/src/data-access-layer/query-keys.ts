@@ -8,4 +8,5 @@ export const queryKeyPrefixes = {
   pinnedProjects: "pinned-projects",
   savedProjects: "saved-projects",
   apiKeys: "api-keys",
+  githubAccessToken: "github-access-token",
 } as const;

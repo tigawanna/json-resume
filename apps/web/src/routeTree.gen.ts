@@ -8,321 +8,340 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from './routes/__root'
-import { Route as SearchRouteImport } from './routes/search'
-import { Route as AuthLayoutRouteImport } from './routes/auth/layout'
-import { Route as PublicLayoutRouteImport } from './routes/_public/layout'
-import { Route as DashboardLayoutRouteImport } from './routes/_dashboard/layout'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as AuthIndexRouteImport } from './routes/auth/index'
-import { Route as AuthSignupRouteImport } from './routes/auth/signup'
-import { Route as PublicWorkbenchRouteImport } from './routes/_public/workbench'
-import { Route as DashboardResumeRouteImport } from './routes/_dashboard/resume'
-import { Route as DashboardProfileRouteImport } from './routes/_dashboard/profile'
-import { Route as DashboardDashboardRouteImport } from './routes/_dashboard/dashboard'
-import { Route as DotwellKnownOauthProtectedResourceRouteImport } from './routes/[.]well-known/oauth-protected-resource'
-import { Route as DotwellKnownOauthAuthorizationServerRouteImport } from './routes/[.]well-known/oauth-authorization-server'
-import { Route as DashboardSettingsIndexRouteImport } from './routes/_dashboard/settings/index'
-import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as rootRouteImport } from "./routes/__root";
+import { Route as SearchRouteImport } from "./routes/search";
+import { Route as AuthLayoutRouteImport } from "./routes/auth/layout";
+import { Route as PublicLayoutRouteImport } from "./routes/_public/layout";
+import { Route as DashboardLayoutRouteImport } from "./routes/_dashboard/layout";
+import { Route as IndexRouteImport } from "./routes/index";
+import { Route as AuthIndexRouteImport } from "./routes/auth/index";
+import { Route as AuthSignupRouteImport } from "./routes/auth/signup";
+import { Route as AuthGithubRouteImport } from "./routes/auth/github";
+import { Route as PublicWorkbenchRouteImport } from "./routes/_public/workbench";
+import { Route as DashboardResumeRouteImport } from "./routes/_dashboard/resume";
+import { Route as DashboardProfileRouteImport } from "./routes/_dashboard/profile";
+import { Route as DashboardDashboardRouteImport } from "./routes/_dashboard/dashboard";
+import { Route as DotwellKnownOauthProtectedResourceRouteImport } from "./routes/[.]well-known/oauth-protected-resource";
+import { Route as DotwellKnownOauthAuthorizationServerRouteImport } from "./routes/[.]well-known/oauth-authorization-server";
+import { Route as DashboardSettingsIndexRouteImport } from "./routes/_dashboard/settings/index";
+import { Route as ApiAuthSplatRouteImport } from "./routes/api/auth/$";
 
 const SearchRoute = SearchRouteImport.update({
-  id: '/search',
-  path: '/search',
+  id: "/search",
+  path: "/search",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const AuthLayoutRoute = AuthLayoutRouteImport.update({
-  id: '/auth',
-  path: '/auth',
+  id: "/auth",
+  path: "/auth",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const PublicLayoutRoute = PublicLayoutRouteImport.update({
-  id: '/_public',
+  id: "/_public",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const DashboardLayoutRoute = DashboardLayoutRouteImport.update({
-  id: '/_dashboard',
+  id: "/_dashboard",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+  id: "/",
+  path: "/",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const AuthIndexRoute = AuthIndexRouteImport.update({
-  id: '/',
-  path: '/',
+  id: "/",
+  path: "/",
   getParentRoute: () => AuthLayoutRoute,
-} as any)
+} as any);
 const AuthSignupRoute = AuthSignupRouteImport.update({
-  id: '/signup',
-  path: '/signup',
+  id: "/signup",
+  path: "/signup",
   getParentRoute: () => AuthLayoutRoute,
-} as any)
+} as any);
+const AuthGithubRoute = AuthGithubRouteImport.update({
+  id: "/github",
+  path: "/github",
+  getParentRoute: () => AuthLayoutRoute,
+} as any);
 const PublicWorkbenchRoute = PublicWorkbenchRouteImport.update({
-  id: '/workbench',
-  path: '/workbench',
+  id: "/workbench",
+  path: "/workbench",
   getParentRoute: () => PublicLayoutRoute,
-} as any)
+} as any);
 const DashboardResumeRoute = DashboardResumeRouteImport.update({
-  id: '/resume',
-  path: '/resume',
+  id: "/resume",
+  path: "/resume",
   getParentRoute: () => DashboardLayoutRoute,
-} as any)
+} as any);
 const DashboardProfileRoute = DashboardProfileRouteImport.update({
-  id: '/profile',
-  path: '/profile',
+  id: "/profile",
+  path: "/profile",
   getParentRoute: () => DashboardLayoutRoute,
-} as any)
+} as any);
 const DashboardDashboardRoute = DashboardDashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
+  id: "/dashboard",
+  path: "/dashboard",
   getParentRoute: () => DashboardLayoutRoute,
-} as any)
+} as any);
 const DotwellKnownOauthProtectedResourceRoute =
   DotwellKnownOauthProtectedResourceRouteImport.update({
-    id: '/.well-known/oauth-protected-resource',
-    path: '/.well-known/oauth-protected-resource',
+    id: "/.well-known/oauth-protected-resource",
+    path: "/.well-known/oauth-protected-resource",
     getParentRoute: () => rootRouteImport,
-  } as any)
+  } as any);
 const DotwellKnownOauthAuthorizationServerRoute =
   DotwellKnownOauthAuthorizationServerRouteImport.update({
-    id: '/.well-known/oauth-authorization-server',
-    path: '/.well-known/oauth-authorization-server',
+    id: "/.well-known/oauth-authorization-server",
+    path: "/.well-known/oauth-authorization-server",
     getParentRoute: () => rootRouteImport,
-  } as any)
+  } as any);
 const DashboardSettingsIndexRoute = DashboardSettingsIndexRouteImport.update({
-  id: '/settings/',
-  path: '/settings/',
+  id: "/settings/",
+  path: "/settings/",
   getParentRoute: () => DashboardLayoutRoute,
-} as any)
+} as any);
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
-  id: '/api/auth/$',
-  path: '/api/auth/$',
+  id: "/api/auth/$",
+  path: "/api/auth/$",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/auth': typeof AuthLayoutRouteWithChildren
-  '/search': typeof SearchRoute
-  '/.well-known/oauth-authorization-server': typeof DotwellKnownOauthAuthorizationServerRoute
-  '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRoute
-  '/dashboard': typeof DashboardDashboardRoute
-  '/profile': typeof DashboardProfileRoute
-  '/resume': typeof DashboardResumeRoute
-  '/workbench': typeof PublicWorkbenchRoute
-  '/auth/signup': typeof AuthSignupRoute
-  '/auth/': typeof AuthIndexRoute
-  '/api/auth/$': typeof ApiAuthSplatRoute
-  '/settings/': typeof DashboardSettingsIndexRoute
+  "/": typeof IndexRoute;
+  "/auth": typeof AuthLayoutRouteWithChildren;
+  "/search": typeof SearchRoute;
+  "/.well-known/oauth-authorization-server": typeof DotwellKnownOauthAuthorizationServerRoute;
+  "/.well-known/oauth-protected-resource": typeof DotwellKnownOauthProtectedResourceRoute;
+  "/dashboard": typeof DashboardDashboardRoute;
+  "/profile": typeof DashboardProfileRoute;
+  "/resume": typeof DashboardResumeRoute;
+  "/workbench": typeof PublicWorkbenchRoute;
+  "/auth/github": typeof AuthGithubRoute;
+  "/auth/signup": typeof AuthSignupRoute;
+  "/auth/": typeof AuthIndexRoute;
+  "/api/auth/$": typeof ApiAuthSplatRoute;
+  "/settings/": typeof DashboardSettingsIndexRoute;
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/search': typeof SearchRoute
-  '/.well-known/oauth-authorization-server': typeof DotwellKnownOauthAuthorizationServerRoute
-  '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRoute
-  '/dashboard': typeof DashboardDashboardRoute
-  '/profile': typeof DashboardProfileRoute
-  '/resume': typeof DashboardResumeRoute
-  '/workbench': typeof PublicWorkbenchRoute
-  '/auth/signup': typeof AuthSignupRoute
-  '/auth': typeof AuthIndexRoute
-  '/api/auth/$': typeof ApiAuthSplatRoute
-  '/settings': typeof DashboardSettingsIndexRoute
+  "/": typeof IndexRoute;
+  "/search": typeof SearchRoute;
+  "/.well-known/oauth-authorization-server": typeof DotwellKnownOauthAuthorizationServerRoute;
+  "/.well-known/oauth-protected-resource": typeof DotwellKnownOauthProtectedResourceRoute;
+  "/dashboard": typeof DashboardDashboardRoute;
+  "/profile": typeof DashboardProfileRoute;
+  "/resume": typeof DashboardResumeRoute;
+  "/workbench": typeof PublicWorkbenchRoute;
+  "/auth/github": typeof AuthGithubRoute;
+  "/auth/signup": typeof AuthSignupRoute;
+  "/auth": typeof AuthIndexRoute;
+  "/api/auth/$": typeof ApiAuthSplatRoute;
+  "/settings": typeof DashboardSettingsIndexRoute;
 }
 export interface FileRoutesById {
-  __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/_dashboard': typeof DashboardLayoutRouteWithChildren
-  '/_public': typeof PublicLayoutRouteWithChildren
-  '/auth': typeof AuthLayoutRouteWithChildren
-  '/search': typeof SearchRoute
-  '/.well-known/oauth-authorization-server': typeof DotwellKnownOauthAuthorizationServerRoute
-  '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRoute
-  '/_dashboard/dashboard': typeof DashboardDashboardRoute
-  '/_dashboard/profile': typeof DashboardProfileRoute
-  '/_dashboard/resume': typeof DashboardResumeRoute
-  '/_public/workbench': typeof PublicWorkbenchRoute
-  '/auth/signup': typeof AuthSignupRoute
-  '/auth/': typeof AuthIndexRoute
-  '/api/auth/$': typeof ApiAuthSplatRoute
-  '/_dashboard/settings/': typeof DashboardSettingsIndexRoute
+  __root__: typeof rootRouteImport;
+  "/": typeof IndexRoute;
+  "/_dashboard": typeof DashboardLayoutRouteWithChildren;
+  "/_public": typeof PublicLayoutRouteWithChildren;
+  "/auth": typeof AuthLayoutRouteWithChildren;
+  "/search": typeof SearchRoute;
+  "/.well-known/oauth-authorization-server": typeof DotwellKnownOauthAuthorizationServerRoute;
+  "/.well-known/oauth-protected-resource": typeof DotwellKnownOauthProtectedResourceRoute;
+  "/_dashboard/dashboard": typeof DashboardDashboardRoute;
+  "/_dashboard/profile": typeof DashboardProfileRoute;
+  "/_dashboard/resume": typeof DashboardResumeRoute;
+  "/_public/workbench": typeof PublicWorkbenchRoute;
+  "/auth/github": typeof AuthGithubRoute;
+  "/auth/signup": typeof AuthSignupRoute;
+  "/auth/": typeof AuthIndexRoute;
+  "/api/auth/$": typeof ApiAuthSplatRoute;
+  "/_dashboard/settings/": typeof DashboardSettingsIndexRoute;
 }
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath
+  fileRoutesByFullPath: FileRoutesByFullPath;
   fullPaths:
-    | '/'
-    | '/auth'
-    | '/search'
-    | '/.well-known/oauth-authorization-server'
-    | '/.well-known/oauth-protected-resource'
-    | '/dashboard'
-    | '/profile'
-    | '/resume'
-    | '/workbench'
-    | '/auth/signup'
-    | '/auth/'
-    | '/api/auth/$'
-    | '/settings/'
-  fileRoutesByTo: FileRoutesByTo
+    | "/"
+    | "/auth"
+    | "/search"
+    | "/.well-known/oauth-authorization-server"
+    | "/.well-known/oauth-protected-resource"
+    | "/dashboard"
+    | "/profile"
+    | "/resume"
+    | "/workbench"
+    | "/auth/github"
+    | "/auth/signup"
+    | "/auth/"
+    | "/api/auth/$"
+    | "/settings/";
+  fileRoutesByTo: FileRoutesByTo;
   to:
-    | '/'
-    | '/search'
-    | '/.well-known/oauth-authorization-server'
-    | '/.well-known/oauth-protected-resource'
-    | '/dashboard'
-    | '/profile'
-    | '/resume'
-    | '/workbench'
-    | '/auth/signup'
-    | '/auth'
-    | '/api/auth/$'
-    | '/settings'
+    | "/"
+    | "/search"
+    | "/.well-known/oauth-authorization-server"
+    | "/.well-known/oauth-protected-resource"
+    | "/dashboard"
+    | "/profile"
+    | "/resume"
+    | "/workbench"
+    | "/auth/github"
+    | "/auth/signup"
+    | "/auth"
+    | "/api/auth/$"
+    | "/settings";
   id:
-    | '__root__'
-    | '/'
-    | '/_dashboard'
-    | '/_public'
-    | '/auth'
-    | '/search'
-    | '/.well-known/oauth-authorization-server'
-    | '/.well-known/oauth-protected-resource'
-    | '/_dashboard/dashboard'
-    | '/_dashboard/profile'
-    | '/_dashboard/resume'
-    | '/_public/workbench'
-    | '/auth/signup'
-    | '/auth/'
-    | '/api/auth/$'
-    | '/_dashboard/settings/'
-  fileRoutesById: FileRoutesById
+    | "__root__"
+    | "/"
+    | "/_dashboard"
+    | "/_public"
+    | "/auth"
+    | "/search"
+    | "/.well-known/oauth-authorization-server"
+    | "/.well-known/oauth-protected-resource"
+    | "/_dashboard/dashboard"
+    | "/_dashboard/profile"
+    | "/_dashboard/resume"
+    | "/_public/workbench"
+    | "/auth/github"
+    | "/auth/signup"
+    | "/auth/"
+    | "/api/auth/$"
+    | "/_dashboard/settings/";
+  fileRoutesById: FileRoutesById;
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  DashboardLayoutRoute: typeof DashboardLayoutRouteWithChildren
-  PublicLayoutRoute: typeof PublicLayoutRouteWithChildren
-  AuthLayoutRoute: typeof AuthLayoutRouteWithChildren
-  SearchRoute: typeof SearchRoute
-  DotwellKnownOauthAuthorizationServerRoute: typeof DotwellKnownOauthAuthorizationServerRoute
-  DotwellKnownOauthProtectedResourceRoute: typeof DotwellKnownOauthProtectedResourceRoute
-  ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  IndexRoute: typeof IndexRoute;
+  DashboardLayoutRoute: typeof DashboardLayoutRouteWithChildren;
+  PublicLayoutRoute: typeof PublicLayoutRouteWithChildren;
+  AuthLayoutRoute: typeof AuthLayoutRouteWithChildren;
+  SearchRoute: typeof SearchRoute;
+  DotwellKnownOauthAuthorizationServerRoute: typeof DotwellKnownOauthAuthorizationServerRoute;
+  DotwellKnownOauthProtectedResourceRoute: typeof DotwellKnownOauthProtectedResourceRoute;
+  ApiAuthSplatRoute: typeof ApiAuthSplatRoute;
 }
 
-declare module '@tanstack/react-router' {
+declare module "@tanstack/react-router" {
   interface FileRoutesByPath {
-    '/search': {
-      id: '/search'
-      path: '/search'
-      fullPath: '/search'
-      preLoaderRoute: typeof SearchRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthLayoutRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_public': {
-      id: '/_public'
-      path: ''
-      fullPath: '/'
-      preLoaderRoute: typeof PublicLayoutRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_dashboard': {
-      id: '/_dashboard'
-      path: ''
-      fullPath: '/'
-      preLoaderRoute: typeof DashboardLayoutRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/auth/': {
-      id: '/auth/'
-      path: '/'
-      fullPath: '/auth/'
-      preLoaderRoute: typeof AuthIndexRouteImport
-      parentRoute: typeof AuthLayoutRoute
-    }
-    '/auth/signup': {
-      id: '/auth/signup'
-      path: '/signup'
-      fullPath: '/auth/signup'
-      preLoaderRoute: typeof AuthSignupRouteImport
-      parentRoute: typeof AuthLayoutRoute
-    }
-    '/_public/workbench': {
-      id: '/_public/workbench'
-      path: '/workbench'
-      fullPath: '/workbench'
-      preLoaderRoute: typeof PublicWorkbenchRouteImport
-      parentRoute: typeof PublicLayoutRoute
-    }
-    '/_dashboard/resume': {
-      id: '/_dashboard/resume'
-      path: '/resume'
-      fullPath: '/resume'
-      preLoaderRoute: typeof DashboardResumeRouteImport
-      parentRoute: typeof DashboardLayoutRoute
-    }
-    '/_dashboard/profile': {
-      id: '/_dashboard/profile'
-      path: '/profile'
-      fullPath: '/profile'
-      preLoaderRoute: typeof DashboardProfileRouteImport
-      parentRoute: typeof DashboardLayoutRoute
-    }
-    '/_dashboard/dashboard': {
-      id: '/_dashboard/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof DashboardDashboardRouteImport
-      parentRoute: typeof DashboardLayoutRoute
-    }
-    '/.well-known/oauth-protected-resource': {
-      id: '/.well-known/oauth-protected-resource'
-      path: '/.well-known/oauth-protected-resource'
-      fullPath: '/.well-known/oauth-protected-resource'
-      preLoaderRoute: typeof DotwellKnownOauthProtectedResourceRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/.well-known/oauth-authorization-server': {
-      id: '/.well-known/oauth-authorization-server'
-      path: '/.well-known/oauth-authorization-server'
-      fullPath: '/.well-known/oauth-authorization-server'
-      preLoaderRoute: typeof DotwellKnownOauthAuthorizationServerRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_dashboard/settings/': {
-      id: '/_dashboard/settings/'
-      path: '/settings'
-      fullPath: '/settings/'
-      preLoaderRoute: typeof DashboardSettingsIndexRouteImport
-      parentRoute: typeof DashboardLayoutRoute
-    }
-    '/api/auth/$': {
-      id: '/api/auth/$'
-      path: '/api/auth/$'
-      fullPath: '/api/auth/$'
-      preLoaderRoute: typeof ApiAuthSplatRouteImport
-      parentRoute: typeof rootRouteImport
-    }
+    "/search": {
+      id: "/search";
+      path: "/search";
+      fullPath: "/search";
+      preLoaderRoute: typeof SearchRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/auth": {
+      id: "/auth";
+      path: "/auth";
+      fullPath: "/auth";
+      preLoaderRoute: typeof AuthLayoutRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/_public": {
+      id: "/_public";
+      path: "";
+      fullPath: "/";
+      preLoaderRoute: typeof PublicLayoutRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/_dashboard": {
+      id: "/_dashboard";
+      path: "";
+      fullPath: "/";
+      preLoaderRoute: typeof DashboardLayoutRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/": {
+      id: "/";
+      path: "/";
+      fullPath: "/";
+      preLoaderRoute: typeof IndexRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/auth/": {
+      id: "/auth/";
+      path: "/";
+      fullPath: "/auth/";
+      preLoaderRoute: typeof AuthIndexRouteImport;
+      parentRoute: typeof AuthLayoutRoute;
+    };
+    "/auth/signup": {
+      id: "/auth/signup";
+      path: "/signup";
+      fullPath: "/auth/signup";
+      preLoaderRoute: typeof AuthSignupRouteImport;
+      parentRoute: typeof AuthLayoutRoute;
+    };
+    "/auth/github": {
+      id: "/auth/github";
+      path: "/github";
+      fullPath: "/auth/github";
+      preLoaderRoute: typeof AuthGithubRouteImport;
+      parentRoute: typeof AuthLayoutRoute;
+    };
+    "/_public/workbench": {
+      id: "/_public/workbench";
+      path: "/workbench";
+      fullPath: "/workbench";
+      preLoaderRoute: typeof PublicWorkbenchRouteImport;
+      parentRoute: typeof PublicLayoutRoute;
+    };
+    "/_dashboard/resume": {
+      id: "/_dashboard/resume";
+      path: "/resume";
+      fullPath: "/resume";
+      preLoaderRoute: typeof DashboardResumeRouteImport;
+      parentRoute: typeof DashboardLayoutRoute;
+    };
+    "/_dashboard/profile": {
+      id: "/_dashboard/profile";
+      path: "/profile";
+      fullPath: "/profile";
+      preLoaderRoute: typeof DashboardProfileRouteImport;
+      parentRoute: typeof DashboardLayoutRoute;
+    };
+    "/_dashboard/dashboard": {
+      id: "/_dashboard/dashboard";
+      path: "/dashboard";
+      fullPath: "/dashboard";
+      preLoaderRoute: typeof DashboardDashboardRouteImport;
+      parentRoute: typeof DashboardLayoutRoute;
+    };
+    "/.well-known/oauth-protected-resource": {
+      id: "/.well-known/oauth-protected-resource";
+      path: "/.well-known/oauth-protected-resource";
+      fullPath: "/.well-known/oauth-protected-resource";
+      preLoaderRoute: typeof DotwellKnownOauthProtectedResourceRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/.well-known/oauth-authorization-server": {
+      id: "/.well-known/oauth-authorization-server";
+      path: "/.well-known/oauth-authorization-server";
+      fullPath: "/.well-known/oauth-authorization-server";
+      preLoaderRoute: typeof DotwellKnownOauthAuthorizationServerRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/_dashboard/settings/": {
+      id: "/_dashboard/settings/";
+      path: "/settings";
+      fullPath: "/settings/";
+      preLoaderRoute: typeof DashboardSettingsIndexRouteImport;
+      parentRoute: typeof DashboardLayoutRoute;
+    };
+    "/api/auth/$": {
+      id: "/api/auth/$";
+      path: "/api/auth/$";
+      fullPath: "/api/auth/$";
+      preLoaderRoute: typeof ApiAuthSplatRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
   }
 }
 
 interface DashboardLayoutRouteChildren {
-  DashboardDashboardRoute: typeof DashboardDashboardRoute
-  DashboardProfileRoute: typeof DashboardProfileRoute
-  DashboardResumeRoute: typeof DashboardResumeRoute
-  DashboardSettingsIndexRoute: typeof DashboardSettingsIndexRoute
+  DashboardDashboardRoute: typeof DashboardDashboardRoute;
+  DashboardProfileRoute: typeof DashboardProfileRoute;
+  DashboardResumeRoute: typeof DashboardResumeRoute;
+  DashboardSettingsIndexRoute: typeof DashboardSettingsIndexRoute;
 }
 
 const DashboardLayoutRouteChildren: DashboardLayoutRouteChildren = {
@@ -330,37 +349,35 @@ const DashboardLayoutRouteChildren: DashboardLayoutRouteChildren = {
   DashboardProfileRoute: DashboardProfileRoute,
   DashboardResumeRoute: DashboardResumeRoute,
   DashboardSettingsIndexRoute: DashboardSettingsIndexRoute,
-}
+};
 
 const DashboardLayoutRouteWithChildren = DashboardLayoutRoute._addFileChildren(
   DashboardLayoutRouteChildren,
-)
+);
 
 interface PublicLayoutRouteChildren {
-  PublicWorkbenchRoute: typeof PublicWorkbenchRoute
+  PublicWorkbenchRoute: typeof PublicWorkbenchRoute;
 }
 
 const PublicLayoutRouteChildren: PublicLayoutRouteChildren = {
   PublicWorkbenchRoute: PublicWorkbenchRoute,
-}
+};
 
-const PublicLayoutRouteWithChildren = PublicLayoutRoute._addFileChildren(
-  PublicLayoutRouteChildren,
-)
+const PublicLayoutRouteWithChildren = PublicLayoutRoute._addFileChildren(PublicLayoutRouteChildren);
 
 interface AuthLayoutRouteChildren {
-  AuthSignupRoute: typeof AuthSignupRoute
-  AuthIndexRoute: typeof AuthIndexRoute
+  AuthGithubRoute: typeof AuthGithubRoute;
+  AuthSignupRoute: typeof AuthSignupRoute;
+  AuthIndexRoute: typeof AuthIndexRoute;
 }
 
 const AuthLayoutRouteChildren: AuthLayoutRouteChildren = {
+  AuthGithubRoute: AuthGithubRoute,
   AuthSignupRoute: AuthSignupRoute,
   AuthIndexRoute: AuthIndexRoute,
-}
+};
 
-const AuthLayoutRouteWithChildren = AuthLayoutRoute._addFileChildren(
-  AuthLayoutRouteChildren,
-)
+const AuthLayoutRouteWithChildren = AuthLayoutRoute._addFileChildren(AuthLayoutRouteChildren);
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -368,21 +385,19 @@ const rootRouteChildren: RootRouteChildren = {
   PublicLayoutRoute: PublicLayoutRouteWithChildren,
   AuthLayoutRoute: AuthLayoutRouteWithChildren,
   SearchRoute: SearchRoute,
-  DotwellKnownOauthAuthorizationServerRoute:
-    DotwellKnownOauthAuthorizationServerRoute,
-  DotwellKnownOauthProtectedResourceRoute:
-    DotwellKnownOauthProtectedResourceRoute,
+  DotwellKnownOauthAuthorizationServerRoute: DotwellKnownOauthAuthorizationServerRoute,
+  DotwellKnownOauthProtectedResourceRoute: DotwellKnownOauthProtectedResourceRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
-}
+};
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>()
+  ._addFileTypes<FileRouteTypes>();
 
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
+import type { getRouter } from "./router.tsx";
+import type { createStart } from "@tanstack/react-start";
+declare module "@tanstack/react-start" {
   interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
+    ssr: true;
+    router: Awaited<ReturnType<typeof getRouter>>;
   }
 }
