@@ -1,26 +1,20 @@
 import { Button } from "@/components/ui/button";
-import { resumeDetailToDocument } from "@/data-access-layer/resume/resume-converters";
-import type { ResumeDetailDTO } from "@/data-access-layer/resume/resume.types";
 import { resumeRegistry } from "@/features/resume/resume-catalog";
 import { ResumePdfDocument } from "@/features/resume/resume-pdf";
 import { resumePdfFileStem } from "@/features/resume/resume-pdf-filename";
-import type { TemplateId } from "@/features/resume/resume-schema";
 import { resumeDocumentToSpec } from "@/features/resume/resume-to-spec";
 import { JSONUIProvider, Renderer } from "@json-render/react";
 import { pdf } from "@react-pdf/renderer";
 import { Download, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { selectDoc, useWorkbench } from "./workbench-store";
 
-interface ResumePreviewTabProps {
-  resume: ResumeDetailDTO;
-  templateId?: TemplateId;
-}
-
-export function ResumePreviewTab({ resume, templateId }: ResumePreviewTabProps) {
-  const tid = (templateId ?? resume.templateId) as TemplateId;
-  const doc = resumeDetailToDocument(resume);
-  const spec = resumeDocumentToSpec(doc, tid);
+export function ResumePreviewTab() {
+  const resume = useWorkbench((s) => s.resume);
+  const selectedTemplate = useWorkbench((s) => s.selectedTemplate);
+  const doc = useWorkbench(selectDoc);
+  const spec = resumeDocumentToSpec(doc, selectedTemplate);
   const [downloading, setDownloading] = useState(false);
 
   const fileStem = resumePdfFileStem(resume.name, doc);
@@ -29,7 +23,7 @@ export function ResumePreviewTab({ resume, templateId }: ResumePreviewTabProps) 
     setDownloading(true);
     try {
       const blob = await pdf(
-        <ResumePdfDocument doc={doc} templateId={tid} pdfTitle={fileStem} />,
+        <ResumePdfDocument doc={doc} templateId={selectedTemplate} pdfTitle={fileStem} />,
       ).toBlob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");

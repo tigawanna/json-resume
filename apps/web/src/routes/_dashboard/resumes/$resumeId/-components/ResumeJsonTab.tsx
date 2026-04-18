@@ -11,7 +11,6 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { resumeDetailToDocument } from "@/data-access-layer/resume/resume-converters";
-import type { ResumeDetailDTO } from "@/data-access-layer/resume/resume.types";
 import {
   resumeDocumentV1Schema,
   safeParseResumeJson,
@@ -31,6 +30,7 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { useWorkbench, useWorkbenchStore } from "./workbench-store";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -43,11 +43,6 @@ const VIEW_MODES: { id: ViewMode; label: string }[] = [
   { id: "diff", label: "Diff" },
   { id: "raw", label: "Raw" },
 ];
-
-interface ResumeJsonTabProps {
-  resume: ResumeDetailDTO;
-  onImport?: (doc: ResumeDocumentV1) => void;
-}
 
 /* ------------------------------------------------------------------ */
 /*  Settings Dialog                                                    */
@@ -302,7 +297,9 @@ const VJ_THEME_VARS = {
 /*  Main Component                                                     */
 /* ------------------------------------------------------------------ */
 
-export function ResumeJsonTab({ resume, onImport }: ResumeJsonTabProps) {
+export function ResumeJsonTab() {
+  const store = useWorkbenchStore();
+  const resume = useWorkbench((s) => s.resume);
   const doc = resumeDetailToDocument(resume);
   const [jsonValue, setJsonValue] = useState<JsonValue>(doc as JsonValue);
   const [originalJson] = useState<JsonValue>(structuredClone(doc) as JsonValue);
@@ -329,17 +326,29 @@ export function ResumeJsonTab({ resume, onImport }: ResumeJsonTabProps) {
   const { debouncedValue: debouncedJson } = useDebouncedValue(jsonValue, 500);
   const lastPropagatedRef = useRef<JsonValue>(jsonValue);
 
-  // Propagate valid edits back to parent (marks form dirty + updates pendingDoc)
+  // Propagate valid edits back to store (marks form dirty + updates pendingDoc)
   useEffect(() => {
     if (debouncedJson === lastPropagatedRef.current) return;
     const result = resumeDocumentV1Schema.safeParse(debouncedJson);
     if (result.success) {
       lastPropagatedRef.current = debouncedJson;
-      onImport?.(result.data);
+      store.setState((prev) => ({
+        ...prev,
+        pendingDoc: result.data,
+        selectedTemplate: result.data.meta.templateId,
+      }));
     }
-  }, [debouncedJson, onImport]);
+  }, [debouncedJson, store]);
 
   /* ---- helpers ---- */
+
+  function importDoc(doc: ResumeDocumentV1) {
+    store.setState((prev) => ({
+      ...prev,
+      pendingDoc: doc,
+      selectedTemplate: doc.meta.templateId,
+    }));
+  }
 
   function loadAndValidateJson(text: string) {
     const result = safeParseResumeJson(text);
@@ -348,7 +357,7 @@ export function ResumeJsonTab({ resume, onImport }: ResumeJsonTabProps) {
       setRawText(JSON.stringify(result.data, null, 2));
       setRawError(null);
       setParseError(null);
-      onImport?.(result.data);
+      importDoc(result.data);
       toast.success("Resume JSON imported");
     } else {
       setParseError(result.error);

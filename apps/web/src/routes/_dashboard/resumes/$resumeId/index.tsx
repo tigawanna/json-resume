@@ -1,26 +1,25 @@
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { resumeDetailToDocument } from "@/data-access-layer/resume/resume-converters";
 import { resumeDetailQueryOptions } from "@/data-access-layer/resume/resume-query-options";
 import { replaceResumeDoc, updateResumeMeta } from "@/data-access-layer/resume/resume.functions";
-import type { ResumeDetailDTO } from "@/data-access-layer/resume/resume.types";
-import {
-  TEMPLATE_IDS,
-  TEMPLATE_LABELS,
-  type ResumeDocumentV1,
-  type TemplateId,
-} from "@/features/resume/resume-schema";
+import { TEMPLATE_IDS, TEMPLATE_LABELS, type TemplateId } from "@/features/resume/resume-schema";
 import { unwrapUnknownError } from "@/utils/errors";
 import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { Save } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { twMerge } from "tailwind-merge";
 import { PromptCopySection } from "./-components/PromptCopySection";
 import { ResumeEditTab } from "./-components/ResumeEditTab";
 import { ResumeJsonTab } from "./-components/ResumeJsonTab";
 import { ResumePreviewTab } from "./-components/ResumePreviewTab";
+import {
+  WorkbenchStoreProvider,
+  selectDoc,
+  selectHasUnsavedChanges,
+  useWorkbench,
+  useWorkbenchStore,
+} from "./-components/workbench-store";
 
 export const Route = createFileRoute("/_dashboard/resumes/$resumeId/")({
   component: ResumeWorkbench,
@@ -83,42 +82,42 @@ function ResumeWorkbench() {
     return <p className="text-muted-foreground py-8 text-center">Resume not found.</p>;
   }
 
-  return <ResumeWorkbenchInner resume={resume} />;
+  return (
+    <WorkbenchStoreProvider resume={resume}>
+      <ResumeWorkbenchInner />
+    </WorkbenchStoreProvider>
+  );
 }
 
-function ResumeWorkbenchInner({ resume }: { resume: ResumeDetailDTO }) {
-  const [selectedTemplate, setSelectedTemplate] = useState<TemplateId>(
-    resume.templateId as TemplateId,
-  );
-  const [pendingDoc, setPendingDoc] = useState<ResumeDocumentV1 | null>(null);
-  const initialTemplateRef = useRef(resume.templateId);
-
-  const hasUnsavedChanges = pendingDoc !== null || selectedTemplate !== initialTemplateRef.current;
-
-  // When resume data updates from server, reset pending state
-  useEffect(() => {
-    initialTemplateRef.current = resume.templateId;
-    setSelectedTemplate(resume.templateId as TemplateId);
-    setPendingDoc(null);
-  }, [resume.id, resume.templateId]);
+function ResumeWorkbenchInner() {
+  const store = useWorkbenchStore();
+  const resume = useWorkbench((s) => s.resume);
+  const selectedTemplate = useWorkbench((s) => s.selectedTemplate);
+  const hasUnsavedChanges = useWorkbench(selectHasUnsavedChanges);
 
   const saveMutation = useMutation({
     mutationFn: async () => {
+      const state = store.state;
       const promises: Promise<unknown>[] = [];
 
-      if (selectedTemplate !== initialTemplateRef.current) {
-        promises.push(updateResumeMeta({ data: { id: resume.id, templateId: selectedTemplate } }));
+      if (state.selectedTemplate !== state.initialTemplateId) {
+        promises.push(
+          updateResumeMeta({ data: { id: state.resume.id, templateId: state.selectedTemplate } }),
+        );
       }
 
-      if (pendingDoc) {
-        promises.push(replaceResumeDoc({ data: { id: resume.id, doc: pendingDoc } }));
+      if (state.pendingDoc) {
+        promises.push(replaceResumeDoc({ data: { id: state.resume.id, doc: state.pendingDoc } }));
       }
 
       await Promise.all(promises);
     },
     onSuccess() {
-      initialTemplateRef.current = selectedTemplate;
-      setPendingDoc(null);
+      store.setState((prev) => ({
+        ...prev,
+        initialTemplateId: prev.selectedTemplate,
+        pendingDoc: null,
+      }));
       toast.success("Resume saved");
     },
     onError(err: unknown) {
@@ -128,13 +127,6 @@ function ResumeWorkbenchInner({ resume }: { resume: ResumeDetailDTO }) {
     },
     meta: { invalidates: [["resumes"]] },
   });
-
-  const doc = pendingDoc ?? resumeDetailToDocument(resume);
-
-  function handleImportDoc(imported: ResumeDocumentV1) {
-    setPendingDoc(imported);
-    setSelectedTemplate(imported.meta.templateId);
-  }
 
   return (
     <div className="flex w-full flex-col gap-6 pb-24" data-test="resume-workbench">
@@ -149,7 +141,10 @@ function ResumeWorkbenchInner({ resume }: { resume: ResumeDetailDTO }) {
       </div>
 
       {/* Template Picker */}
-      <TemplatePicker selected={selectedTemplate} onSelect={setSelectedTemplate} />
+      <TemplatePicker
+        selected={selectedTemplate}
+        onSelect={(tid) => store.setState((prev) => ({ ...prev, selectedTemplate: tid }))}
+      />
 
       {/* Tabs + Save */}
       <Tabs defaultValue="edit" className="w-full">
@@ -175,23 +170,32 @@ function ResumeWorkbenchInner({ resume }: { resume: ResumeDetailDTO }) {
         </div>
 
         <TabsContent value="edit" className="mt-4">
-          <ResumeEditTab resume={resume} />
+          <ResumeEditTab />
         </TabsContent>
 
         <TabsContent value="preview" className="mt-4">
-          <ResumePreviewTab resume={resume} templateId={selectedTemplate} />
+          <ResumePreviewTab />
         </TabsContent>
 
         <TabsContent value="json" className="mt-4">
-          <ResumeJsonTab resume={resume} onImport={handleImportDoc} />
+          <ResumeJsonTab />
         </TabsContent>
 
         <TabsContent value="prompt" className="mt-4">
-          <div className="mx-auto max-w-3xl">
-            <PromptCopySection doc={doc} jobDescription={resume.jobDescription} />
-          </div>
+          <PromptTab />
         </TabsContent>
       </Tabs>
+    </div>
+  );
+}
+
+function PromptTab() {
+  const doc = useWorkbench(selectDoc);
+  const jobDescription = useWorkbench((s) => s.resume.jobDescription);
+
+  return (
+    <div className="mx-auto max-w-3xl">
+      <PromptCopySection doc={doc} jobDescription={jobDescription} />
     </div>
   );
 }

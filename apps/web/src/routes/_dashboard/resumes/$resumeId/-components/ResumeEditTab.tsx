@@ -4,7 +4,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import type { ResumeDetailDTO } from "@/data-access-layer/resume/resume.types";
 import { ContactsForm } from "./ContactsForm";
 import { EducationSection } from "./EducationSection";
 import { ExperienceSection } from "./ExperienceSection";
@@ -14,12 +13,10 @@ import { ProjectSection } from "./ProjectSection";
 import { SkillsForm } from "./SkillsForm";
 import { SummaryForm } from "./SummaryForm";
 import { TalksSection } from "./TalksSection";
+import { useWorkbench } from "./workbench-store";
 
-interface ResumeEditTabProps {
-  resume: ResumeDetailDTO;
-}
-
-export function ResumeEditTab({ resume }: ResumeEditTabProps) {
+export function ResumeEditTab() {
+  const resume = useWorkbench((s) => s.resume);
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6" data-test="resume-edit-tab">
       <MetadataForm resume={resume} />
