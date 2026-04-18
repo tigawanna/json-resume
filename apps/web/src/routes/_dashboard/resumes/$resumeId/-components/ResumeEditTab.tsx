@@ -4,14 +4,14 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { ContactsForm } from "./ContactsForm";
 import { EducationSection } from "./EducationSection";
-import { ExperienceSection } from "./ExperienceSection";
-import { LinksForm } from "./LinksForm";
-import { MetadataForm } from "./MetadataForm";
-import { ProjectSection } from "./ProjectSection";
-import { SkillsForm } from "./SkillsForm";
-import { SummaryForm } from "./SummaryForm";
+import { ExperienceSection } from "./resume-editor-forms/ExperienceSection";
+import { ProjectSection } from "./resume-editor-forms/ProjectSection";
+import { ContactsForm } from "./resume-editor-forms/ContactsForm";
+import { LinksForm } from "./resume-editor-forms/LinksForm";
+import { MetadataForm } from "./resume-editor-forms/MetadataForm";
+import { SkillsForm } from "./resume-editor-forms/SkillsForm";
+import { SummaryForm } from "./resume-editor-forms/SummaryForm";
 import { TalksSection } from "./TalksSection";
 import { useWorkbench } from "./workbench-store";
 
@@ -36,7 +36,7 @@ export function ResumeEditTab() {
         <AccordionItem value="links">
           <AccordionTrigger>Links</AccordionTrigger>
           <AccordionContent>
-            <LinksForm resume={resume} />
+            <LinksForm />
           </AccordionContent>
         </AccordionItem>
 

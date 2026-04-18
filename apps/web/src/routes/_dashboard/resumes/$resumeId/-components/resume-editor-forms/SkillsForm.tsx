@@ -84,7 +84,8 @@ export function SkillsForm({ resume }: SkillsFormProps) {
               variant="ghost"
               size="icon"
               className="size-7 shrink-0"
-              onClick={() => removeGroup(groupIndex)}>
+              onClick={() => removeGroup(groupIndex)}
+            >
               <Trash2 className="size-3.5" />
             </Button>
           </div>
@@ -95,7 +96,8 @@ export function SkillsForm({ resume }: SkillsFormProps) {
                 <button
                   type="button"
                   className="ml-1"
-                  onClick={() => removeSkillFromGroup(groupIndex, skillIndex)}>
+                  onClick={() => removeSkillFromGroup(groupIndex, skillIndex)}
+                >
                   <X className="size-3" />
                 </button>
               </Badge>

@@ -131,7 +131,8 @@ function ExperienceCard({ resumeId, experience }: ExperienceCardProps) {
           size="icon"
           className="size-7"
           onClick={() => deleteMutation.mutate()}
-          disabled={deleteMutation.isPending}>
+          disabled={deleteMutation.isPending}
+        >
           <Trash2 className="size-3.5" />
         </Button>
       </CardHeader>
@@ -155,7 +156,8 @@ function ExperienceCard({ resumeId, experience }: ExperienceCardProps) {
                 variant="ghost"
                 size="icon"
                 className="size-6 shrink-0"
-                onClick={() => removeBullet(index)}>
+                onClick={() => removeBullet(index)}
+              >
                 <X className="size-3" />
               </Button>
             </div>
@@ -168,13 +170,15 @@ function ExperienceCard({ resumeId, experience }: ExperienceCardProps) {
               type="button"
               variant="outline"
               size="sm"
-              onClick={() => setBulletPickOpen(true)}>
+              onClick={() => setBulletPickOpen(true)}
+            >
               <Library className="mr-1 size-3" /> Pick Bullets
             </Button>
             <Button
               size="sm"
               onClick={() => bulletMutation.mutate()}
-              disabled={bulletMutation.isPending}>
+              disabled={bulletMutation.isPending}
+            >
               Save Bullets
             </Button>
           </div>
@@ -267,7 +271,8 @@ function AddExperienceForm({
             form.handleSubmit();
           }}
           className="flex flex-col gap-3"
-          data-test="add-experience-form">
+          data-test="add-experience-form"
+        >
           <div className="grid gap-3 sm:grid-cols-2">
             <form.AppField name="company" validators={{ onChange: z.string().min(1, "Required") }}>
               {(field) => <field.TextField label="Company" />}

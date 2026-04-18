@@ -47,7 +47,8 @@ export function SummaryForm({ resume }: SummaryFormProps) {
         form.handleSubmit();
       }}
       className="flex flex-col gap-4"
-      data-test="summary-form">
+      data-test="summary-form"
+    >
       <form.AppField name="text">
         {(field) => <field.TextAreaField label="Professional Summary" />}
       </form.AppField>

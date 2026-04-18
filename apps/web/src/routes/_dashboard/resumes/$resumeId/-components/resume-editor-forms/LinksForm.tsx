@@ -2,16 +2,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { updateLinks } from "@/data-access-layer/resume/resume.functions";
-import type { ResumeDetailDTO } from "@/data-access-layer/resume/resume.types";
 import { unwrapUnknownError } from "@/utils/errors";
 import { useMutation } from "@tanstack/react-query";
 import { Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-
-interface LinksFormProps {
-  resume: ResumeDetailDTO;
-}
+import { useWorkbench } from "../workbench-store";
 
 interface LinkRow {
   label: string;
@@ -19,7 +15,8 @@ interface LinkRow {
   icon?: string;
 }
 
-export function LinksForm({ resume }: LinksFormProps) {
+export function LinksForm() {
+  const resume = useWorkbench((s) => s.resume);
   const [links, setLinks] = useState<LinkRow[]>(
     resume.links.map((l) => ({ label: l.label, url: l.url, icon: l.icon ?? undefined })),
   );
@@ -81,7 +78,8 @@ export function LinksForm({ resume }: LinksFormProps) {
             variant="ghost"
             size="icon"
             className="shrink-0"
-            onClick={() => removeLink(index)}>
+            onClick={() => removeLink(index)}
+          >
             <Trash2 className="size-4" />
           </Button>
         </div>

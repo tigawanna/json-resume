@@ -60,7 +60,8 @@ export function MetadataForm({ resume }: MetadataFormProps) {
         form.handleSubmit();
       }}
       className="flex flex-col gap-4"
-      data-test="metadata-form">
+      data-test="metadata-form"
+    >
       <form.AppField name="name" validators={{ onChange: z.string().min(1, "Name is required") }}>
         {(field) => <field.TextField label="Resume Name" />}
       </form.AppField>
@@ -82,21 +83,6 @@ export function MetadataForm({ resume }: MetadataFormProps) {
       <form.AppField name="jobDescription">
         {(field) => <field.TextAreaField label="Job Description" />}
       </form.AppField>
-
-      <form.AppField name="templateId">
-        {(field) => (
-          <field.SelectField
-            label="Template"
-            items={[
-              { label: "Classic", value: "classic" },
-              { label: "Sidebar", value: "sidebar" },
-              { label: "Accent", value: "accent" },
-              { label: "Modern", value: "modern" },
-            ]}
-          />
-        )}
-      </form.AppField>
-
       <form.AppForm>
         <form.SubmitButton label="Save" />
       </form.AppForm>

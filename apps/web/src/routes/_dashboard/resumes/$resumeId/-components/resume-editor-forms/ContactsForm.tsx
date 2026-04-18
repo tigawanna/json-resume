@@ -81,7 +81,8 @@ export function ContactsForm({ resume }: ContactsFormProps) {
             variant="ghost"
             size="icon"
             className="shrink-0"
-            onClick={() => removeContact(index)}>
+            onClick={() => removeContact(index)}
+          >
             <Trash2 className="size-4" />
           </Button>
         </div>
