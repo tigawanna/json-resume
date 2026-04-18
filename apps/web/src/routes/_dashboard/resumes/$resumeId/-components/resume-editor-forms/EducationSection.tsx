@@ -86,7 +86,8 @@ function EducationCard({ education }: { education: ResumeDetailDTO["education"][
           size="icon"
           className="size-7"
           onClick={() => deleteMutation.mutate()}
-          disabled={deleteMutation.isPending}>
+          disabled={deleteMutation.isPending}
+        >
           <Trash2 className="size-3.5" />
         </Button>
       </CardHeader>
@@ -165,7 +166,8 @@ function AddEducationForm({
             form.handleSubmit();
           }}
           className="flex flex-col gap-3"
-          data-test="add-education-form">
+          data-test="add-education-form"
+        >
           <div className="grid gap-3 sm:grid-cols-2">
             <form.AppField name="school" validators={{ onChange: z.string().min(1, "Required") }}>
               {(field) => <field.TextField label="School" />}

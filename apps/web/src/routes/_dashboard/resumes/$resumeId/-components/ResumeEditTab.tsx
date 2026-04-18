@@ -4,7 +4,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { EducationSection } from "./EducationSection";
+import { EducationSection } from "./resume-editor-forms/EducationSection";
 import { ExperienceSection } from "./resume-editor-forms/ExperienceSection";
 import { ProjectSection } from "./resume-editor-forms/ProjectSection";
 import { ContactsForm } from "./resume-editor-forms/ContactsForm";
@@ -12,7 +12,7 @@ import { LinksForm } from "./resume-editor-forms/LinksForm";
 import { MetadataForm } from "./resume-editor-forms/MetadataForm";
 import { SkillsForm } from "./resume-editor-forms/SkillsForm";
 import { SummaryForm } from "./resume-editor-forms/SummaryForm";
-import { TalksSection } from "./TalksSection";
+import { TalksSection } from "./resume-editor-forms/TalksSection";
 import { useWorkbench } from "./workbench-store";
 
 export function ResumeEditTab() {

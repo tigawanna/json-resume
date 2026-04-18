@@ -12,6 +12,7 @@ import { selectDoc, useWorkbench } from "./workbench-store";
 
 export function ResumePreviewTab() {
   const resume = useWorkbench((s) => s.resume);
+  console.log("Rendering ResumePreviewTab with resume:", resume.fullName);
   const selectedTemplate = useWorkbench((s) => s.selectedTemplate);
   const doc = useWorkbench(selectDoc);
   const spec = resumeDocumentToSpec(doc, selectedTemplate);

@@ -77,7 +77,7 @@ interface ExperienceCardProps {
   experience: ResumeDetailDTO["experiences"][number];
 }
 
-function ExperienceCard({ resumeId, experience }: ExperienceCardProps) {
+function ExperienceCard({ experience }: ExperienceCardProps) {
   const [bullets, setBullets] = useState(experience.bullets.map((b) => b.text));
   const [bulletPickOpen, setBulletPickOpen] = useState(false);
 
