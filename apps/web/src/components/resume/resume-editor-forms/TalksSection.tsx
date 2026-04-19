@@ -4,8 +4,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createTalk, editTalk, removeTalk } from "@/data-access-layer/resume/resume.functions";
 import type { ResumeDetailDTO } from "@/data-access-layer/resume/resume.types";
+import { resumeCollection } from "@/data-access-layer/resume/resumes-query-collection";
 import { useAppForm } from "@/lib/tanstack/form";
 import { unwrapUnknownError } from "@/utils/errors";
+import { eq, useLiveQuery } from "@tanstack/react-db";
 import { formOptions } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
 import { Plus, Trash2, X } from "lucide-react";
@@ -14,16 +16,24 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 interface TalksSectionProps {
-  resume: ResumeDetailDTO;
+  resumeId: string;
 }
 
-export function TalksSection({ resume }: TalksSectionProps) {
+export function TalksSection({ resumeId }: TalksSectionProps) {
+  const { data: resume } = useLiveQuery((q) =>
+    q
+      .from({ resume: resumeCollection })
+      .where(({ resume }) => eq(resume.id, resumeId))
+      .findOne(),
+  );
+
+  if (!resume) return null;
   return (
     <div className="flex flex-col gap-4" data-test="talks-section">
       {resume.talks.map((talk) => (
         <TalkCard key={talk.id} talk={talk} />
       ))}
-      <AddTalkForm resumeId={resume.id} existingCount={resume.talks.length} />
+      <AddTalkForm resumeId={resumeId} existingCount={resume.talks.length} />
     </div>
   );
 }
@@ -100,8 +110,7 @@ function TalkCard({ talk }: TalkCardProps) {
           size="icon"
           className="size-7"
           onClick={() => deleteMutation.mutate()}
-          disabled={deleteMutation.isPending}
-        >
+          disabled={deleteMutation.isPending}>
           <Trash2 className="size-3.5" />
         </Button>
       </CardHeader>
@@ -131,8 +140,7 @@ function TalkCard({ talk }: TalkCardProps) {
                 variant="ghost"
                 size="icon"
                 className="size-6 shrink-0"
-                onClick={() => removeLink(index)}
-              >
+                onClick={() => removeLink(index)}>
                 <X className="size-3" />
               </Button>
             </div>
@@ -144,8 +152,7 @@ function TalkCard({ talk }: TalkCardProps) {
             <Button
               size="sm"
               onClick={() => updateMutation.mutate()}
-              disabled={updateMutation.isPending}
-            >
+              disabled={updateMutation.isPending}>
               Save Links
             </Button>
           </div>
@@ -205,12 +212,10 @@ function AddTalkForm({ resumeId, existingCount }: { resumeId: string; existingCo
             e.stopPropagation();
             form.handleSubmit();
           }}
-          className="flex flex-col gap-3"
-        >
+          className="flex flex-col gap-3">
           <form.AppField
             name="title"
-            validators={{ onChange: z.string().min(1, "Title is required") }}
-          >
+            validators={{ onChange: z.string().min(1, "Title is required") }}>
             {(field) => <field.TextField label="Title" />}
           </form.AppField>
 

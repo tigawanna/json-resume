@@ -2,15 +2,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { updateContacts } from "@/data-access-layer/resume/resume.functions";
-import type { ResumeDetailDTO } from "@/data-access-layer/resume/resume.types";
+import { resumeCollection } from "@/data-access-layer/resume/resumes-query-collection";
 import { unwrapUnknownError } from "@/utils/errors";
+import { eq, useLiveQuery } from "@tanstack/react-db";
 import { useMutation } from "@tanstack/react-query";
 import { Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
 interface ContactsFormProps {
-  resume: ResumeDetailDTO;
+  resumeId: string;
 }
 
 interface ContactRow {
@@ -19,15 +20,26 @@ interface ContactRow {
   label: string;
 }
 
-export function ContactsForm({ resume }: ContactsFormProps) {
+export function ContactsForm({ resumeId }: ContactsFormProps) {
+  const { data: resume } = useLiveQuery((q) =>
+    q
+      .from({ resume: resumeCollection })
+      .where(({ resume }) => eq(resume.id, resumeId))
+      .findOne(),
+  );
+
   const [contacts, setContacts] = useState<ContactRow[]>(
-    resume.contacts.map((c) => ({ type: c.type, value: c.value, label: c.label })),
+    resume?.contacts.map((c) => ({ type: c.type, value: c.value, label: c.label })) ?? [],
   );
 
   const mutation = useMutation({
-    mutationFn: async () => updateContacts({ data: { resumeId: resume.id, contacts } }),
+    mutationFn: async () => updateContacts({ data: { resumeId, contacts } }),
     onSuccess() {
       toast.success("Contacts saved");
+      resumeCollection.utils.writeUpdate({
+        id: resumeId,
+        contacts: contacts.map((c, i) => ({ ...c, id: "", resumeId, sortOrder: i })),
+      });
     },
     onError(err: unknown) {
       toast.error("Failed to save contacts", {
@@ -36,6 +48,8 @@ export function ContactsForm({ resume }: ContactsFormProps) {
     },
     meta: { invalidates: [["resumes"]] },
   });
+
+  if (!resume) return null;
 
   function addContact() {
     setContacts((prev) => [...prev, { type: "email", value: "", label: "" }]);
@@ -81,8 +95,7 @@ export function ContactsForm({ resume }: ContactsFormProps) {
             variant="ghost"
             size="icon"
             className="shrink-0"
-            onClick={() => removeContact(index)}
-          >
+            onClick={() => removeContact(index)}>
             <Trash2 className="size-4" />
           </Button>
         </div>

@@ -3,15 +3,16 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { searchSkills, updateSkillGroups } from "@/data-access-layer/resume/resume.functions";
-import type { ResumeDetailDTO } from "@/data-access-layer/resume/resume.types";
+import { resumeCollection } from "@/data-access-layer/resume/resumes-query-collection";
 import { unwrapUnknownError } from "@/utils/errors";
+import { eq, useLiveQuery } from "@tanstack/react-db";
 import { useMutation } from "@tanstack/react-query";
 import { Library, Plus, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
 interface SkillsFormProps {
-  resume: ResumeDetailDTO;
+  resumeId: string;
 }
 
 interface SkillGroupDraft {
@@ -19,17 +20,24 @@ interface SkillGroupDraft {
   items: string[];
 }
 
-export function SkillsForm({ resume }: SkillsFormProps) {
+export function SkillsForm({ resumeId }: SkillsFormProps) {
+  const { data: resume } = useLiveQuery((q) =>
+    q
+      .from({ resume: resumeCollection })
+      .where(({ resume }) => eq(resume.id, resumeId))
+      .findOne(),
+  );
+
   const [groups, setGroups] = useState<SkillGroupDraft[]>(
-    resume.skillGroups.map((g) => ({
+    resume?.skillGroups.map((g) => ({
       name: g.name,
       items: g.skills.map((s) => s.name),
-    })),
+    })) ?? [],
   );
   const [pickOpen, setPickOpen] = useState(false);
 
   const mutation = useMutation({
-    mutationFn: async () => updateSkillGroups({ data: { resumeId: resume.id, groups } }),
+    mutationFn: async () => updateSkillGroups({ data: { resumeId, groups } }),
     onSuccess() {
       toast.success("Skills saved");
     },
@@ -40,6 +48,8 @@ export function SkillsForm({ resume }: SkillsFormProps) {
     },
     meta: { invalidates: [["resumes"]] },
   });
+
+  if (!resume) return null;
 
   function addGroup() {
     setGroups((prev) => [...prev, { name: "", items: [] }]);
@@ -84,8 +94,7 @@ export function SkillsForm({ resume }: SkillsFormProps) {
               variant="ghost"
               size="icon"
               className="size-7 shrink-0"
-              onClick={() => removeGroup(groupIndex)}
-            >
+              onClick={() => removeGroup(groupIndex)}>
               <Trash2 className="size-3.5" />
             </Button>
           </div>
@@ -96,8 +105,7 @@ export function SkillsForm({ resume }: SkillsFormProps) {
                 <button
                   type="button"
                   className="ml-1"
-                  onClick={() => removeSkillFromGroup(groupIndex, skillIndex)}
-                >
+                  onClick={() => removeSkillFromGroup(groupIndex, skillIndex)}>
                   <X className="size-3" />
                 </button>
               </Badge>

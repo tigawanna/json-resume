@@ -16,6 +16,7 @@ export const Route = createFileRoute("/_dashboard/resumes/")({
   head: () => ({
     meta: [{ title: "Resumes", description: "Manage your resumes" }],
   }),
+  ssr:false
 });
 
 function ResumeListPage() {

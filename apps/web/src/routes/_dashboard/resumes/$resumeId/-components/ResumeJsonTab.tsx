@@ -11,12 +11,15 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { resumeDetailToDocument } from "@/data-access-layer/resume/resume-converters";
+import { resumeCollection } from "@/data-access-layer/resume/resumes-query-collection";
 import {
   resumeDocumentV1Schema,
   safeParseResumeJson,
   type ResumeDocumentV1,
+  type TemplateId,
 } from "@/features/resume/resume-schema";
 import { useDebouncedValue } from "@/hooks/use-debouncer";
+import { eq, useLiveQuery } from "@tanstack/react-db";
 import type { JsonValue } from "@visual-json/core";
 import { DiffView, JsonEditor } from "@visual-json/react";
 import {
@@ -30,7 +33,6 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { useWorkbench, useWorkbenchStore } from "./workbench-store";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -205,8 +207,7 @@ function JsonToolbar({
         size="icon"
         className="hidden h-7 w-7 md:inline-flex"
         onClick={() => setSidebarOpen(!sidebarOpen)}
-        title={sidebarOpen ? "Hide sidebar" : "Show sidebar"}
-      >
+        title={sidebarOpen ? "Hide sidebar" : "Show sidebar"}>
         {sidebarOpen ? (
           <PanelLeftClose className="h-3.5 w-3.5" />
         ) : (
@@ -221,8 +222,7 @@ function JsonToolbar({
           size="icon"
           className="h-7 w-7"
           onClick={onPaste}
-          title="Paste JSON (validates as resume)"
-        >
+          title="Paste JSON (validates as resume)">
           <ClipboardPaste className="h-3.5 w-3.5" />
         </Button>
         <Button
@@ -230,8 +230,7 @@ function JsonToolbar({
           size="icon"
           className="h-7 w-7"
           onClick={onDownload}
-          title="Download"
-        >
+          title="Download">
           <Download className="h-3.5 w-3.5" />
         </Button>
         <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onCopy} title="Copy JSON">
@@ -247,8 +246,7 @@ function JsonToolbar({
         }}
         variant="outline"
         size="sm"
-        className="ml-auto"
-      >
+        className="ml-auto">
         {VIEW_MODES.map((m) => (
           <ToggleGroupItem key={m.id} value={m.id} className="px-3 text-xs">
             {m.label}
@@ -261,8 +259,7 @@ function JsonToolbar({
         size="icon"
         className="h-7 w-7"
         onClick={onOpenSettings}
-        title="Settings"
-      >
+        title="Settings">
         <Settings className="h-3.5 w-3.5" />
       </Button>
     </div>
@@ -297,12 +294,27 @@ const VJ_THEME_VARS = {
 /*  Main Component                                                     */
 /* ------------------------------------------------------------------ */
 
-export function ResumeJsonTab() {
-  const store = useWorkbenchStore();
-  const resume = useWorkbench((s) => s.resume);
-  const doc = resumeDetailToDocument(resume);
-  const [jsonValue, setJsonValue] = useState<JsonValue>(doc as JsonValue);
-  const [originalJson] = useState<JsonValue>(structuredClone(doc) as JsonValue);
+interface ResumeJsonTabProps {
+  resumeId: string;
+  setPendingDoc: (doc: ResumeDocumentV1 | null) => void;
+  setSelectedTemplate: (t: TemplateId) => void;
+}
+
+export function ResumeJsonTab({
+  resumeId,
+  setPendingDoc,
+  setSelectedTemplate,
+}: ResumeJsonTabProps) {
+  const { data: resume } = useLiveQuery((q) =>
+    q
+      .from({ resume: resumeCollection })
+      .where(({ resume }) => eq(resume.id, resumeId))
+      .findOne(),
+  );
+
+  const doc = resume ? resumeDetailToDocument(resume) : null;
+  const [jsonValue, setJsonValue] = useState<JsonValue>((doc ?? {}) as JsonValue);
+  const [originalJson] = useState<JsonValue>(structuredClone(doc ?? {}) as JsonValue);
   const [viewMode, setViewMode] = useState<ViewMode>("tree");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [rawText, setRawText] = useState(JSON.stringify(doc, null, 2));
@@ -326,28 +338,22 @@ export function ResumeJsonTab() {
   const { debouncedValue: debouncedJson } = useDebouncedValue(jsonValue, 500);
   const lastPropagatedRef = useRef<JsonValue>(jsonValue);
 
-  // Propagate valid edits back to store (marks form dirty + updates pendingDoc)
+  // Propagate valid edits back to parent (marks form dirty + updates pendingDoc)
   useEffect(() => {
     if (debouncedJson === lastPropagatedRef.current) return;
     const result = resumeDocumentV1Schema.safeParse(debouncedJson);
     if (result.success) {
       lastPropagatedRef.current = debouncedJson;
-      store.setState((prev) => ({
-        ...prev,
-        pendingDoc: result.data,
-        selectedTemplate: result.data.meta.templateId,
-      }));
+      setPendingDoc(result.data);
+      setSelectedTemplate(result.data.meta.templateId);
     }
-  }, [debouncedJson, store]);
+  }, [debouncedJson, setPendingDoc, setSelectedTemplate]);
 
   /* ---- helpers ---- */
 
   function importDoc(doc: ResumeDocumentV1) {
-    store.setState((prev) => ({
-      ...prev,
-      pendingDoc: doc,
-      selectedTemplate: doc.meta.templateId,
-    }));
+    setPendingDoc(doc);
+    setSelectedTemplate(doc.meta.templateId);
   }
 
   function loadAndValidateJson(text: string) {
@@ -379,7 +385,7 @@ export function ResumeJsonTab() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${resume.name.replace(/\s+/g, "_").toLowerCase()}.json`;
+    a.download = `${(resume?.name ?? "resume").replace(/\s+/g, "_").toLowerCase()}.json`;
     a.click();
     URL.revokeObjectURL(url);
   }

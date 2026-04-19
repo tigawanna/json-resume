@@ -11,8 +11,10 @@ import {
   updateExperienceBullets,
 } from "@/data-access-layer/resume/resume.functions";
 import type { ResumeDetailDTO } from "@/data-access-layer/resume/resume.types";
+import { resumeCollection } from "@/data-access-layer/resume/resumes-query-collection";
 import { useAppForm } from "@/lib/tanstack/form";
 import { unwrapUnknownError } from "@/utils/errors";
+import { eq, useLiveQuery } from "@tanstack/react-db";
 import { formOptions } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
 import { Library, Plus, Trash2, X } from "lucide-react";
@@ -21,11 +23,20 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 interface ExperienceSectionProps {
-  resume: ResumeDetailDTO;
+  resumeId: string;
 }
 
-export function ExperienceSection({ resume }: ExperienceSectionProps) {
+export function ExperienceSection({ resumeId }: ExperienceSectionProps) {
+  const { data: resume } = useLiveQuery((q) =>
+    q
+      .from({ resume: resumeCollection })
+      .where(({ resume }) => eq(resume.id, resumeId))
+      .findOne(),
+  );
+
   const [pickOpen, setPickOpen] = useState(false);
+
+  if (!resume) return null;
 
   return (
     <div className="flex flex-col gap-4" data-test="experience-section">
@@ -131,8 +142,7 @@ function ExperienceCard({ experience }: ExperienceCardProps) {
           size="icon"
           className="size-7"
           onClick={() => deleteMutation.mutate()}
-          disabled={deleteMutation.isPending}
-        >
+          disabled={deleteMutation.isPending}>
           <Trash2 className="size-3.5" />
         </Button>
       </CardHeader>
@@ -156,8 +166,7 @@ function ExperienceCard({ experience }: ExperienceCardProps) {
                 variant="ghost"
                 size="icon"
                 className="size-6 shrink-0"
-                onClick={() => removeBullet(index)}
-              >
+                onClick={() => removeBullet(index)}>
                 <X className="size-3" />
               </Button>
             </div>
@@ -170,15 +179,13 @@ function ExperienceCard({ experience }: ExperienceCardProps) {
               type="button"
               variant="outline"
               size="sm"
-              onClick={() => setBulletPickOpen(true)}
-            >
+              onClick={() => setBulletPickOpen(true)}>
               <Library className="mr-1 size-3" /> Pick Bullets
             </Button>
             <Button
               size="sm"
               onClick={() => bulletMutation.mutate()}
-              disabled={bulletMutation.isPending}
-            >
+              disabled={bulletMutation.isPending}>
               Save Bullets
             </Button>
           </div>
@@ -271,8 +278,7 @@ function AddExperienceForm({
             form.handleSubmit();
           }}
           className="flex flex-col gap-3"
-          data-test="add-experience-form"
-        >
+          data-test="add-experience-form">
           <div className="grid gap-3 sm:grid-cols-2">
             <form.AppField name="company" validators={{ onChange: z.string().min(1, "Required") }}>
               {(field) => <field.TextField label="Company" />}

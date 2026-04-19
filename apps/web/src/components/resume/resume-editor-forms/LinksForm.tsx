@@ -2,12 +2,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { updateLinks } from "@/data-access-layer/resume/resume.functions";
+import { resumeCollection } from "@/data-access-layer/resume/resumes-query-collection";
 import { unwrapUnknownError } from "@/utils/errors";
+import { eq, useLiveQuery } from "@tanstack/react-db";
 import { useMutation } from "@tanstack/react-query";
 import { Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-
 
 interface LinkRow {
   label: string;
@@ -15,16 +16,30 @@ interface LinkRow {
   icon?: string;
 }
 
-export function LinksForm() {
-  const resume = useWorkbench((s) => s.resume);
+interface LinksFormProps {
+  resumeId: string;
+}
+
+export function LinksForm({ resumeId }: LinksFormProps) {
+  const { data: resume } = useLiveQuery((q) =>
+    q
+      .from({ resume: resumeCollection })
+      .where(({ resume }) => eq(resume.id, resumeId))
+      .findOne(),
+  );
+
   const [links, setLinks] = useState<LinkRow[]>(
-    resume.links.map((l) => ({ label: l.label, url: l.url, icon: l.icon ?? undefined })),
+    resume?.links.map((l) => ({ label: l.label, url: l.url, icon: l.icon ?? undefined })) ?? [],
   );
 
   const mutation = useMutation({
-    mutationFn: async () => updateLinks({ data: { resumeId: resume.id, links } }),
+    mutationFn: async () => updateLinks({ data: { resumeId, links } }),
     onSuccess() {
       toast.success("Links saved");
+      resumeCollection.utils.writeUpdate({
+        id: resumeId,
+        links: links.map((l, i) => ({ ...l, id: "", resumeId, icon: l.icon ?? "", sortOrder: i })),
+      });
     },
     onError(err: unknown) {
       toast.error("Failed to save links", {
@@ -33,6 +48,8 @@ export function LinksForm() {
     },
     meta: { invalidates: [["resumes"]] },
   });
+
+  if (!resume) return null;
 
   function addLink() {
     setLinks((prev) => [...prev, { label: "", url: "" }]);
@@ -78,8 +95,7 @@ export function LinksForm() {
             variant="ghost"
             size="icon"
             className="shrink-0"
-            onClick={() => removeLink(index)}
-          >
+            onClick={() => removeLink(index)}>
             <Trash2 className="size-4" />
           </Button>
         </div>

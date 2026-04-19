@@ -1,5 +1,4 @@
 import { updateResumeMeta } from "@/data-access-layer/resume/resume.functions";
-import type { ResumeDetailDTO } from "@/data-access-layer/resume/resume.types";
 import { resumeCollection } from "@/data-access-layer/resume/resumes-query-collection";
 import { useAppForm } from "@/lib/tanstack/form";
 import { unwrapUnknownError } from "@/utils/errors";
@@ -10,7 +9,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 interface MetadataFormProps {
-  resume: ResumeDetailDTO;
+  resumeId: string;
 }
 
 const formOpts = formOptions({
@@ -24,23 +23,21 @@ const formOpts = formOptions({
   },
 });
 
-export function MetadataForm({ resume }: MetadataFormProps) {
-  const { data } = useLiveQuery((q) =>
+export function MetadataForm({ resumeId }: MetadataFormProps) {
+  const { data: resume } = useLiveQuery((q) =>
     q
       .from({ resume: resumeCollection })
-      .where(({ resume }) => eq(resume.id, "3d93e569-ef45-40de-9efa-6050d93fbea2" // this should idealy come frm the params
-
-      ))
+      .where(({ resume }) => eq(resume.id, resumeId))
       .findOne(),
   );
+
   const mutation = useMutation({
     mutationFn: async (values: typeof formOpts.defaultValues) =>
-      updateResumeMeta({ data: { id: resume.id, ...values } }),
+      updateResumeMeta({ data: { id: resumeId, ...values } }),
     async onSuccess() {
       toast.success("Resume updated");
-      if (!data) return;
       resumeCollection.utils.writeUpdate({
-        id: resume.id,
+        id: resumeId,
         name: form.state.values.name,
         fullName: form.state.values.fullName,
         headline: form.state.values.headline,
@@ -60,17 +57,19 @@ export function MetadataForm({ resume }: MetadataFormProps) {
   const form = useAppForm({
     ...formOpts,
     defaultValues: {
-      name: resume.name,
-      fullName: resume.fullName,
-      headline: resume.headline,
-      description: resume.description,
-      jobDescription: resume.jobDescription,
-      templateId: resume.templateId,
+      name: resume?.name ?? "",
+      fullName: resume?.fullName ?? "",
+      headline: resume?.headline ?? "",
+      description: resume?.description ?? "",
+      jobDescription: resume?.jobDescription ?? "",
+      templateId: resume?.templateId ?? "classic",
     },
     onSubmit: async ({ value }) => {
       await mutation.mutateAsync(value);
     },
   });
+
+  if (!resume) return null;
 
   return (
     <form

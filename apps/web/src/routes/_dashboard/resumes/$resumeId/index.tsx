@@ -1,25 +1,28 @@
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { resumeDetailToDocument } from "@/data-access-layer/resume/resume-converters";
 import { resumeDetailQueryOptions } from "@/data-access-layer/resume/resume-query-options";
 import { replaceResumeDoc, updateResumeMeta } from "@/data-access-layer/resume/resume.functions";
-import { TEMPLATE_IDS, TEMPLATE_LABELS, type TemplateId } from "@/features/resume/resume-schema";
+import type { ResumeDetailDTO } from "@/data-access-layer/resume/resume.types";
+import { resumeCollection } from "@/data-access-layer/resume/resumes-query-collection";
+import {
+  TEMPLATE_IDS,
+  TEMPLATE_LABELS,
+  type ResumeDocumentV1,
+  type TemplateId,
+} from "@/features/resume/resume-schema";
 import { unwrapUnknownError } from "@/utils/errors";
+import { eq, useLiveQuery } from "@tanstack/react-db";
 import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { Save } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { twMerge } from "tailwind-merge";
 import { PromptCopySection } from "./-components/PromptCopySection";
 import { ResumeEditTab } from "./-components/ResumeEditTab";
 import { ResumeJsonTab } from "./-components/ResumeJsonTab";
 import { ResumePreviewTab } from "./-components/ResumePreviewTab";
-import {
-  WorkbenchStoreProvider,
-  selectDoc,
-  selectHasUnsavedChanges,
-  useWorkbench,
-  useWorkbenchStore,
-} from "./-components/workbench-store";
 
 export const Route = createFileRoute("/_dashboard/resumes/$resumeId/")({
   component: ResumeWorkbench,
@@ -28,6 +31,7 @@ export const Route = createFileRoute("/_dashboard/resumes/$resumeId/")({
   head: () => ({
     meta: [{ title: "Edit Resume", description: "Resume workbench" }],
   }),
+  ssr:false
 });
 
 // ─── Template Picker ────────────────────────────────────────
@@ -61,8 +65,7 @@ function TemplatePicker({
                 ? "border-primary bg-primary/5"
                 : "border-border hover:border-muted-foreground/30",
             )}
-            data-test={`template-${tid}`}
-          >
+            data-test={`template-${tid}`}>
             <span className="text-sm font-semibold">{TEMPLATE_LABELS[tid]}</span>
             <span className="text-muted-foreground text-xs">{TEMPLATE_DESCRIPTIONS[tid]}</span>
           </button>
@@ -76,49 +79,88 @@ function TemplatePicker({
 
 function ResumeWorkbench() {
   const { resumeId } = Route.useParams();
-  const { data: resume } = useSuspenseQuery(resumeDetailQueryOptions(resumeId));
+  const { data: serverResume } = useSuspenseQuery(resumeDetailQueryOptions(resumeId));
 
-  if (!resume) {
+  // Read reactively from the collection (on-demand fetch triggered by the where clause)
+  const { data: resume } = useLiveQuery((q) =>
+    q
+      .from({ resume: resumeCollection })
+      .where(({ resume }) => eq(resume.id, resumeId))
+      .findOne(),
+  );
+
+  const [selectedTemplate, setSelectedTemplate] = useState<TemplateId>(
+    (serverResume?.templateId as TemplateId) ?? "classic",
+  );
+  const [initialTemplateId] = useState<TemplateId>(
+    (serverResume?.templateId as TemplateId) ?? "classic",
+  );
+  const [pendingDoc, setPendingDoc] = useState<ResumeDocumentV1 | null>(null);
+
+  const displayResume = resume ?? serverResume;
+
+  if (!displayResume) {
     return <p className="text-muted-foreground py-8 text-center">Resume not found.</p>;
   }
 
+  const doc = pendingDoc ?? resumeDetailToDocument(displayResume);
+  const hasUnsavedChanges = pendingDoc !== null || selectedTemplate !== initialTemplateId;
+
   return (
-    <WorkbenchStoreProvider resume={resume}>
-      <ResumeWorkbenchInner />
-    </WorkbenchStoreProvider>
+    <ResumeWorkbenchInner
+      resumeId={resumeId}
+      resume={displayResume}
+      selectedTemplate={selectedTemplate}
+      setSelectedTemplate={setSelectedTemplate}
+      pendingDoc={pendingDoc}
+      setPendingDoc={setPendingDoc}
+      doc={doc}
+      hasUnsavedChanges={hasUnsavedChanges}
+    />
   );
 }
 
-function ResumeWorkbenchInner() {
-  const store = useWorkbenchStore();
-  const resume = useWorkbench((s) => s.resume);
-  const selectedTemplate = useWorkbench((s) => s.selectedTemplate);
-  const hasUnsavedChanges = useWorkbench(selectHasUnsavedChanges);
-  const resumeVersion = useWorkbench((s) => s.resumeVersion);
+interface ResumeWorkbenchInnerProps {
+  resumeId: string;
+  resume: ResumeDetailDTO;
+  selectedTemplate: TemplateId;
+  setSelectedTemplate: (t: TemplateId) => void;
+  pendingDoc: ResumeDocumentV1 | null;
+  setPendingDoc: (doc: ResumeDocumentV1 | null) => void;
+  doc: ResumeDocumentV1;
+  hasUnsavedChanges: boolean;
+}
 
+function ResumeWorkbenchInner({
+  resumeId,
+  resume,
+  selectedTemplate,
+  setSelectedTemplate,
+  pendingDoc,
+  setPendingDoc,
+  doc,
+  hasUnsavedChanges,
+}: ResumeWorkbenchInnerProps) {
   const saveMutation = useMutation({
     mutationFn: async () => {
-      const state = store.state;
       const promises: Promise<unknown>[] = [];
 
-      if (state.selectedTemplate !== state.initialTemplateId) {
-        promises.push(
-          updateResumeMeta({ data: { id: state.resume.id, templateId: state.selectedTemplate } }),
-        );
+      if (selectedTemplate !== (resume.templateId as TemplateId)) {
+        promises.push(updateResumeMeta({ data: { id: resumeId, templateId: selectedTemplate } }));
       }
 
-      if (state.pendingDoc) {
-        promises.push(replaceResumeDoc({ data: { id: state.resume.id, doc: state.pendingDoc } }));
+      if (pendingDoc) {
+        promises.push(replaceResumeDoc({ data: { id: resumeId, doc: pendingDoc } }));
       }
 
       await Promise.all(promises);
     },
     onSuccess() {
-      store.setState((prev) => ({
-        ...prev,
-        initialTemplateId: prev.selectedTemplate,
-        pendingDoc: null,
-      }));
+      setPendingDoc(null);
+      resumeCollection.utils.writeUpdate({
+        id: resumeId,
+        templateId: selectedTemplate,
+      });
       toast.success("Resume saved");
     },
     onError(err: unknown) {
@@ -142,10 +184,7 @@ function ResumeWorkbenchInner() {
       </div>
 
       {/* Template Picker */}
-      <TemplatePicker
-        selected={selectedTemplate}
-        onSelect={(tid) => store.setState((prev) => ({ ...prev, selectedTemplate: tid }))}
-      />
+      <TemplatePicker selected={selectedTemplate} onSelect={setSelectedTemplate} />
 
       {/* Tabs + Save */}
       <Tabs defaultValue="edit" className="w-full">
@@ -163,40 +202,47 @@ function ResumeWorkbenchInner() {
             disabled={saveMutation.isPending || !hasUnsavedChanges}
             className="gap-2"
             size="sm"
-            data-test="resume-save-button"
-          >
+            data-test="resume-save-button">
             <Save className="size-4" />
             {saveMutation.isPending ? "Saving..." : hasUnsavedChanges ? "Save changes" : "Saved"}
           </Button>
         </div>
 
         <TabsContent value="edit" forceMount className="mt-4 data-[state=inactive]:hidden">
-          <ResumeEditTab key={resumeVersion} />
+          <ResumeEditTab resumeId={resumeId} />
         </TabsContent>
 
         <TabsContent value="preview" className="mt-4">
-          <ResumePreviewTab />
+          <ResumePreviewTab resumeId={resumeId} selectedTemplate={selectedTemplate} doc={doc} />
         </TabsContent>
 
         <TabsContent value="json" forceMount className="mt-4 data-[state=inactive]:hidden">
-          <ResumeJsonTab />
+          <ResumeJsonTab
+            resumeId={resumeId}
+            setPendingDoc={setPendingDoc}
+            setSelectedTemplate={setSelectedTemplate}
+          />
         </TabsContent>
 
         <TabsContent value="prompt" className="mt-4">
-          <PromptTab />
+          <PromptTab resumeId={resumeId} doc={doc} />
         </TabsContent>
       </Tabs>
     </div>
   );
 }
 
-function PromptTab() {
-  const doc = useWorkbench(selectDoc);
-  const jobDescription = useWorkbench((s) => s.resume.jobDescription);
+function PromptTab({ resumeId, doc }: { resumeId: string; doc: ResumeDocumentV1 }) {
+  const { data: resume } = useLiveQuery((q) =>
+    q
+      .from({ resume: resumeCollection })
+      .where(({ resume }) => eq(resume.id, resumeId))
+      .findOne(),
+  );
 
   return (
     <div className="mx-auto max-w-3xl">
-      <PromptCopySection doc={doc} jobDescription={jobDescription} />
+      <PromptCopySection doc={doc} jobDescription={resume?.jobDescription ?? ""} />
     </div>
   );
 }
