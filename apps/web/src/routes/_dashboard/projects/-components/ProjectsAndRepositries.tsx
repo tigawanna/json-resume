@@ -1,16 +1,9 @@
 import { Empty, EmptyDescription, EmptyTitle } from "@/components/ui/empty";
 import { githubReposCollection } from "@/data-access-layer/github/repos-collections";
-import { useLiveQuery } from "@tanstack/react-db";
+import { useLiveSuspenseQuery } from "@tanstack/react-db";
 
 export default function ProjectsAndRepositries() {
-  const { data, isLoading } = useLiveQuery((q) => q.from({ repos: githubReposCollection }));
-  if (isLoading) {
-    return (
-      <div className="w-full h-full flex flex-col items-center justify-center">
-        <p className="text-muted-foreground">Loading your GitHub repositories...</p>
-      </div>
-    );
-  }
+  const { data } = useLiveSuspenseQuery((q) => q.from({ repos: githubReposCollection }));
   if (!data || data.length === 0) {
     return (
       <div className="w-full h-full flex flex-col items-center justify-center">
