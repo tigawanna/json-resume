@@ -1,9 +1,15 @@
+import { PickFromExistingDialog } from "@/components/PickFromExistingDialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { createTalk, editTalk, removeTalk } from "@/data-access-layer/resume/resume.functions";
+import {
+  createTalk,
+  editTalk,
+  removeTalk,
+  searchTalks,
+} from "@/data-access-layer/resume/resume.functions";
 import type { ResumeDetailDTO } from "@/data-access-layer/resume/resume.types";
 import { resumeCollection } from "@/data-access-layer/resume/resumes-query-collection";
 import { useAppForm } from "@/lib/tanstack/form";
@@ -11,7 +17,7 @@ import { unwrapUnknownError } from "@/utils/errors";
 import { eq, useLiveQuery } from "@tanstack/react-db";
 import { formOptions } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
-import { ExternalLink, Pencil, Plus, Trash2, X } from "lucide-react";
+import { ExternalLink, Library, Pencil, Plus, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -46,16 +52,42 @@ export function TalksSection({ resumeId }: TalksSectionProps) {
       .findOne(),
   );
 
+  const [pickOpen, setPickOpen] = useState(false);
+
   if (!resume) return null;
   return (
     <div className="flex flex-col gap-4" data-test="talks-section">
       {resume.talks.map((talk) => (
         <TalkCard key={talk.id} talk={talk} resumeId={resumeId} allTalks={resume.talks} />
       ))}
-      <AddTalkForm
-        resumeId={resumeId}
-        existingCount={resume.talks.length}
-        allTalks={resume.talks}
+      <div className="flex gap-2">
+        <AddTalkForm
+          resumeId={resumeId}
+          existingCount={resume.talks.length}
+          allTalks={resume.talks}
+        />
+        <Button variant="outline" size="sm" onClick={() => setPickOpen(true)}>
+          <Library className="mr-1 size-3" /> Pick from Existing
+        </Button>
+      </div>
+
+      <PickFromExistingDialog
+        open={pickOpen}
+        onOpenChange={setPickOpen}
+        title="Pick from Existing Talks"
+        description="Search across all your resumes to copy a talk entry."
+        getSearchQueryKey={(q) => ["resumes", "search", "talks", q]}
+        getSearchQueryFn={(q) => () => searchTalks({ data: { query: q } })}
+        mapToItems={(data) =>
+          data.map((talk: { id: string; title: string; event: string; date: string }) => ({
+            id: talk.id,
+            primary: talk.title,
+            secondary: `${talk.event}${talk.date ? ` · ${talk.date}` : ""}`,
+          }))
+        }
+        onPick={(items) => {
+          toast.info(`Selected ${items.length} talk(s) — add them via the form`);
+        }}
       />
     </div>
   );

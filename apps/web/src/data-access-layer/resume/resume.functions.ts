@@ -21,6 +21,7 @@ import {
   searchUserExperiences,
   searchUserProjects,
   searchUserSkills,
+  searchUserTalks,
   setExperienceBullets,
   setResumeContacts,
   setResumeLinks,
@@ -404,4 +405,11 @@ export const searchSkills = createServerFn({ method: "GET" })
   .inputValidator((input: { query: string }) => input)
   .handler(async ({ context, data }) => {
     return searchUserSkills(context.viewer.user.id, data.query);
+  });
+
+export const searchTalks = createServerFn({ method: "GET" })
+  .middleware([viewerMiddleware])
+  .inputValidator((input: { query: string }) => input)
+  .handler(async ({ context, data }) => {
+    return searchUserTalks(context.viewer.user.id, data.query);
   });

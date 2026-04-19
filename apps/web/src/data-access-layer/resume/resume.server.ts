@@ -795,3 +795,28 @@ export async function searchUserSkills(
   const q = query.toLowerCase();
   return rows.filter((r) => r.name.toLowerCase().includes(q));
 }
+
+export async function searchUserTalks(
+  userId: string,
+  query: string,
+): Promise<{ id: string; title: string; event: string; date: string }[]> {
+  const rows = await db
+    .select({
+      id: resumeTalk.id,
+      title: resumeTalk.title,
+      event: resumeTalk.event,
+      date: resumeTalk.date,
+    })
+    .from(resumeTalk)
+    .innerJoin(resume, eq(resumeTalk.resumeId, resume.id))
+    .where(eq(resume.userId, userId));
+
+  if (!query) return rows;
+  const q = query.toLowerCase();
+  return rows.filter(
+    (r) =>
+      r.title.toLowerCase().includes(q) ||
+      r.event.toLowerCase().includes(q) ||
+      r.date.toLowerCase().includes(q),
+  );
+}
