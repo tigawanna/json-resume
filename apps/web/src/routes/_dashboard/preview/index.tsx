@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { lazy } from "react";
+import { FormContainer } from "./-components/FormContainer";
 
 const SingleResumeTestBed = lazy(() => import("./-components/SingleResumeTestBed"));
 
@@ -19,7 +20,7 @@ function RouteComponent() {
         </p>
       </div>
       <div className="flex flex-col gap-4">
-        <h2 className="text-xl font-semibold">Single Resume Test Bed</h2>
+        <FormContainer />
         <div className="w-full h-96 border rounded">
           <SingleResumeTestBed />
         </div>

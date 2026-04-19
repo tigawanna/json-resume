@@ -1,7 +1,9 @@
 import { updateResumeMeta } from "@/data-access-layer/resume/resume.functions";
 import type { ResumeDetailDTO } from "@/data-access-layer/resume/resume.types";
+import { resumeCollection } from "@/data-access-layer/resume/resumes-query-collection";
 import { useAppForm } from "@/lib/tanstack/form";
 import { unwrapUnknownError } from "@/utils/errors";
+import { eq, useLiveQuery } from "@tanstack/react-db";
 import { formOptions } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -23,11 +25,29 @@ const formOpts = formOptions({
 });
 
 export function MetadataForm({ resume }: MetadataFormProps) {
+  const { data } = useLiveQuery((q) =>
+    q
+      .from({ resume: resumeCollection })
+      .where(({ resume }) => eq(resume.id, "3d93e569-ef45-40de-9efa-6050d93fbea2" // this should idealy come frm the params
+
+      ))
+      .findOne(),
+  );
   const mutation = useMutation({
     mutationFn: async (values: typeof formOpts.defaultValues) =>
       updateResumeMeta({ data: { id: resume.id, ...values } }),
-    onSuccess() {
+    async onSuccess() {
       toast.success("Resume updated");
+      if (!data) return;
+      resumeCollection.utils.writeUpdate({
+        id: resume.id,
+        name: form.state.values.name,
+        fullName: form.state.values.fullName,
+        headline: form.state.values.headline,
+        description: form.state.values.description,
+        jobDescription: form.state.values.jobDescription,
+        templateId: form.state.values.templateId,
+      });
     },
     onError(err: unknown) {
       toast.error("Failed to update resume", {
@@ -60,8 +80,7 @@ export function MetadataForm({ resume }: MetadataFormProps) {
         form.handleSubmit();
       }}
       className="flex flex-col gap-4"
-      data-test="metadata-form"
-    >
+      data-test="metadata-form">
       <form.AppField name="name" validators={{ onChange: z.string().min(1, "Name is required") }}>
         {(field) => <field.TextField label="Resume Name" />}
       </form.AppField>
