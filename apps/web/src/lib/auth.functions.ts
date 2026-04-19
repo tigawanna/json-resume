@@ -15,3 +15,11 @@ export const ensureSession = createServerFn({ method: "GET" }).handler(async () 
   }
   return session;
 });
+
+export const deleteAccount = createServerFn({ method: "POST" })
+  .inputValidator((input: { userId: string }) => input)
+  .handler(async ({ data }) => {
+    // Delete user using admin API
+    await auth.admin.deleteUser({ userId: data.userId });
+    return { success: true };
+  });
