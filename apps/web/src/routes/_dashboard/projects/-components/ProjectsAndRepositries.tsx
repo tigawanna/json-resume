@@ -6,16 +6,41 @@ import { savedProjectsCollection } from "@/data-access-layer/saved-project/saved
 import type { SavedProjectRow } from "@/data-access-layer/saved-project/saved-project.server";
 import { useDebouncedValue } from "@/hooks/use-debouncer";
 import { eq, useLiveQuery } from "@tanstack/react-db";
-import { useState } from "react";
+import { useRouter, useSearch } from "@tanstack/react-router";
 import RepoCard from "./RepoCard";
 import RepoFilters, { type ForkFilter, type SortField } from "./RepoFilters";
 
 export default function ProjectsAndRepositries() {
-  const [search, setSearch] = useState("");
-  const [sortField, setSortField] = useState<SortField>("updated");
-  const [forkFilter, setForkFilter] = useState<ForkFilter>("all");
+  const router = useRouter();
+  const { search, sort, forks } = useSearch({ from: "/_dashboard/projects/" });
+
+  const handleSearchChange = (value: string) => {
+    void router.navigate({
+      to: ".",
+      search: (prev: Record<string, unknown>) => ({ ...prev, search: value }),
+      replace: true,
+    });
+  };
+
+  const handleSortChange = (value: SortField) => {
+    void router.navigate({
+      to: ".",
+      search: (prev: Record<string, unknown>) => ({ ...prev, sort: value }),
+      replace: true,
+    });
+  };
+
+  const handleForkFilterChange = (value: ForkFilter) => {
+    void router.navigate({
+      to: ".",
+      search: (prev: Record<string, unknown>) => ({ ...prev, forks: value }),
+      replace: true,
+    });
+  };
 
   const { debouncedValue: debouncedSearch } = useDebouncedValue(search, 250);
+  const sortField = sort as SortField;
+  const forkFilter = forks as ForkFilter;
 
   // Total count (unfiltered)
   const { data: allRepos } = useLiveQuery((q) => q.from({ repo: githubReposCollection }));
@@ -85,11 +110,11 @@ export default function ProjectsAndRepositries() {
 
       <RepoFilters
         search={search}
-        onSearchChange={setSearch}
+        onSearchChange={handleSearchChange}
         sortField={sortField}
-        onSortChange={setSortField}
+        onSortChange={handleSortChange}
         forkFilter={forkFilter}
-        onForkFilterChange={setForkFilter}
+        onForkFilterChange={handleForkFilterChange}
         totalCount={totalCount}
         filteredCount={filteredCount}
       />
