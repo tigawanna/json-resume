@@ -22,7 +22,7 @@ export const githubAccessTokenQueryOptions = queryOptions({
   },
 });
 
-export const shoppingItemsCollection = createCollection(
+export const githubReposCollection = createCollection(
   persistedCollectionOptions<RepositoryResponse, number>({
     persistence: tanstackDBPersistence,
     schemaVersion: 1,

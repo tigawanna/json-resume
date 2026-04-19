@@ -13,7 +13,7 @@ export function getDashboardPrimaryRoutes(): SidebarItem[] {
   return [
     { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     { title: "Resumes", href: "/resumes", icon: FileText },
-    { title: "Repositories", href: "/repos", icon: FolderGit2 },
+    { title: "Projects", href: "/projects", icon: FolderGit2 },
   ];
 }
 
