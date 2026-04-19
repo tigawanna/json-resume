@@ -24,6 +24,8 @@ import { Route as DotwellKnownOauthProtectedResourceRouteImport } from './routes
 import { Route as DotwellKnownOauthAuthorizationServerRouteImport } from './routes/[.]well-known/oauth-authorization-server'
 import { Route as DashboardSettingsIndexRouteImport } from './routes/_dashboard/settings/index'
 import { Route as DashboardResumesIndexRouteImport } from './routes/_dashboard/resumes/index'
+import { Route as DashboardProjectsIndexRouteImport } from './routes/_dashboard/projects/index'
+import { Route as DashboardAdminIndexRouteImport } from './routes/_dashboard/admin/index'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as DashboardResumesResumeIdIndexRouteImport } from './routes/_dashboard/resumes/$resumeId/index'
 
@@ -102,6 +104,16 @@ const DashboardResumesIndexRoute = DashboardResumesIndexRouteImport.update({
   path: '/resumes/',
   getParentRoute: () => DashboardLayoutRoute,
 } as any)
+const DashboardProjectsIndexRoute = DashboardProjectsIndexRouteImport.update({
+  id: '/projects/',
+  path: '/projects/',
+  getParentRoute: () => DashboardLayoutRoute,
+} as any)
+const DashboardAdminIndexRoute = DashboardAdminIndexRouteImport.update({
+  id: '/admin/',
+  path: '/admin/',
+  getParentRoute: () => DashboardLayoutRoute,
+} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
@@ -127,6 +139,8 @@ export interface FileRoutesByFullPath {
   '/auth/signup': typeof AuthSignupRoute
   '/auth/': typeof AuthIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/admin/': typeof DashboardAdminIndexRoute
+  '/projects/': typeof DashboardProjectsIndexRoute
   '/resumes/': typeof DashboardResumesIndexRoute
   '/settings/': typeof DashboardSettingsIndexRoute
   '/resumes/$resumeId/': typeof DashboardResumesResumeIdIndexRoute
@@ -143,6 +157,8 @@ export interface FileRoutesByTo {
   '/auth/signup': typeof AuthSignupRoute
   '/auth': typeof AuthIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/admin': typeof DashboardAdminIndexRoute
+  '/projects': typeof DashboardProjectsIndexRoute
   '/resumes': typeof DashboardResumesIndexRoute
   '/settings': typeof DashboardSettingsIndexRoute
   '/resumes/$resumeId': typeof DashboardResumesResumeIdIndexRoute
@@ -163,6 +179,8 @@ export interface FileRoutesById {
   '/auth/signup': typeof AuthSignupRoute
   '/auth/': typeof AuthIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/_dashboard/admin/': typeof DashboardAdminIndexRoute
+  '/_dashboard/projects/': typeof DashboardProjectsIndexRoute
   '/_dashboard/resumes/': typeof DashboardResumesIndexRoute
   '/_dashboard/settings/': typeof DashboardSettingsIndexRoute
   '/_dashboard/resumes/$resumeId/': typeof DashboardResumesResumeIdIndexRoute
@@ -182,6 +200,8 @@ export interface FileRouteTypes {
     | '/auth/signup'
     | '/auth/'
     | '/api/auth/$'
+    | '/admin/'
+    | '/projects/'
     | '/resumes/'
     | '/settings/'
     | '/resumes/$resumeId/'
@@ -198,6 +218,8 @@ export interface FileRouteTypes {
     | '/auth/signup'
     | '/auth'
     | '/api/auth/$'
+    | '/admin'
+    | '/projects'
     | '/resumes'
     | '/settings'
     | '/resumes/$resumeId'
@@ -217,6 +239,8 @@ export interface FileRouteTypes {
     | '/auth/signup'
     | '/auth/'
     | '/api/auth/$'
+    | '/_dashboard/admin/'
+    | '/_dashboard/projects/'
     | '/_dashboard/resumes/'
     | '/_dashboard/settings/'
     | '/_dashboard/resumes/$resumeId/'
@@ -340,6 +364,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardResumesIndexRouteImport
       parentRoute: typeof DashboardLayoutRoute
     }
+    '/_dashboard/projects/': {
+      id: '/_dashboard/projects/'
+      path: '/projects'
+      fullPath: '/projects/'
+      preLoaderRoute: typeof DashboardProjectsIndexRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
+    '/_dashboard/admin/': {
+      id: '/_dashboard/admin/'
+      path: '/admin'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof DashboardAdminIndexRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
@@ -360,6 +398,8 @@ declare module '@tanstack/react-router' {
 interface DashboardLayoutRouteChildren {
   DashboardDashboardRoute: typeof DashboardDashboardRoute
   DashboardProfileRoute: typeof DashboardProfileRoute
+  DashboardAdminIndexRoute: typeof DashboardAdminIndexRoute
+  DashboardProjectsIndexRoute: typeof DashboardProjectsIndexRoute
   DashboardResumesIndexRoute: typeof DashboardResumesIndexRoute
   DashboardSettingsIndexRoute: typeof DashboardSettingsIndexRoute
   DashboardResumesResumeIdIndexRoute: typeof DashboardResumesResumeIdIndexRoute
@@ -368,6 +408,8 @@ interface DashboardLayoutRouteChildren {
 const DashboardLayoutRouteChildren: DashboardLayoutRouteChildren = {
   DashboardDashboardRoute: DashboardDashboardRoute,
   DashboardProfileRoute: DashboardProfileRoute,
+  DashboardAdminIndexRoute: DashboardAdminIndexRoute,
+  DashboardProjectsIndexRoute: DashboardProjectsIndexRoute,
   DashboardResumesIndexRoute: DashboardResumesIndexRoute,
   DashboardSettingsIndexRoute: DashboardSettingsIndexRoute,
   DashboardResumesResumeIdIndexRoute: DashboardResumesResumeIdIndexRoute,
