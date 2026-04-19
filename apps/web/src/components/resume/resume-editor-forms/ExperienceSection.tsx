@@ -41,11 +41,20 @@ export function ExperienceSection({ resumeId }: ExperienceSectionProps) {
   return (
     <div className="flex flex-col gap-4" data-test="experience-section">
       {resume.experiences.map((exp) => (
-        <ExperienceCard key={exp.id} resumeId={resume.id} experience={exp} />
+        <ExperienceCard
+          key={exp.id}
+          resumeId={resume.id}
+          experience={exp}
+          allExperiences={resume.experiences}
+        />
       ))}
 
       <div className="flex gap-2">
-        <AddExperienceForm resumeId={resume.id} existingCount={resume.experiences.length} />
+        <AddExperienceForm
+          resumeId={resume.id}
+          existingCount={resume.experiences.length}
+          allExperiences={resume.experiences}
+        />
         <Button variant="outline" size="sm" onClick={() => setPickOpen(true)}>
           <Library className="mr-1 size-3" /> Pick from Existing
         </Button>
@@ -86,9 +95,10 @@ export function ExperienceSection({ resumeId }: ExperienceSectionProps) {
 interface ExperienceCardProps {
   resumeId: string;
   experience: ResumeDetailDTO["experiences"][number];
+  allExperiences: ResumeDetailDTO["experiences"];
 }
 
-function ExperienceCard({ experience }: ExperienceCardProps) {
+function ExperienceCard({ resumeId, experience, allExperiences }: ExperienceCardProps) {
   const [bullets, setBullets] = useState(experience.bullets.map((b) => b.text));
   const [bulletPickOpen, setBulletPickOpen] = useState(false);
 
@@ -96,6 +106,10 @@ function ExperienceCard({ experience }: ExperienceCardProps) {
     mutationFn: async () => removeExperience({ data: { id: experience.id } }),
     onSuccess() {
       toast.success("Experience removed");
+      resumeCollection.utils.writeUpdate({
+        id: resumeId,
+        experiences: allExperiences.filter((e) => e.id !== experience.id),
+      });
     },
     onError(err: unknown) {
       toast.error("Failed to remove experience", {
@@ -110,6 +124,22 @@ function ExperienceCard({ experience }: ExperienceCardProps) {
       updateExperienceBullets({ data: { experienceId: experience.id, bullets } }),
     onSuccess() {
       toast.success("Bullets saved");
+      resumeCollection.utils.writeUpdate({
+        id: resumeId,
+        experiences: allExperiences.map((e) =>
+          e.id === experience.id
+            ? {
+                ...e,
+                bullets: bullets.map((text, i) => ({
+                  id: "",
+                  experienceId: experience.id,
+                  text,
+                  sortOrder: i,
+                })),
+              }
+            : e,
+        ),
+      });
     },
     onError(err: unknown) {
       toast.error("Failed to save bullets", {
@@ -230,9 +260,11 @@ const addExpOpts = formOptions({
 function AddExperienceForm({
   resumeId,
   existingCount,
+  allExperiences,
 }: {
   resumeId: string;
   existingCount: number;
+  allExperiences: ResumeDetailDTO["experiences"];
 }) {
   const [open, setOpen] = useState(false);
 
@@ -241,9 +273,26 @@ function AddExperienceForm({
       createExperience({
         data: { resumeId, ...values, sortOrder: existingCount, bullets: [] },
       }),
-    onSuccess() {
+    onSuccess(data, values) {
       toast.success("Experience added");
       setOpen(false);
+      resumeCollection.utils.writeUpdate({
+        id: resumeId,
+        experiences: [
+          ...allExperiences,
+          {
+            id: data.id,
+            resumeId,
+            company: values.company,
+            role: values.role,
+            startDate: values.startDate,
+            endDate: values.endDate,
+            location: values.location || "",
+            sortOrder: existingCount,
+            bullets: [],
+          },
+        ],
+      });
     },
     onError(err: unknown) {
       toast.error("Failed to add experience", {

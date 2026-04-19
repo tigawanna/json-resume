@@ -40,6 +40,22 @@ export function SkillsForm({ resumeId }: SkillsFormProps) {
     mutationFn: async () => updateSkillGroups({ data: { resumeId, groups } }),
     onSuccess() {
       toast.success("Skills saved");
+      resumeCollection.utils.writeUpdate({
+        id: resumeId,
+        skillGroups: groups.map((g, gi) => ({
+          id: "",
+          resumeId,
+          name: g.name,
+          sortOrder: gi,
+          skills: g.items.map((s, si) => ({
+            id: "",
+            groupId: "",
+            name: s,
+            level: null,
+            sortOrder: si,
+          })),
+        })),
+      });
     },
     onError(err: unknown) {
       toast.error("Failed to save skills", {

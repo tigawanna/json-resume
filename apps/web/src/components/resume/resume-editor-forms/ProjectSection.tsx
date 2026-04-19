@@ -42,11 +42,20 @@ export function ProjectSection({ resumeId }: ProjectSectionProps) {
   return (
     <div className="flex flex-col gap-4" data-test="project-section">
       {resume.projects.map((project) => (
-        <ProjectCard key={project.id} project={project} />
+        <ProjectCard
+          key={project.id}
+          project={project}
+          resumeId={resume.id}
+          allProjects={resume.projects}
+        />
       ))}
 
       <div className="flex gap-2">
-        <AddProjectForm resumeId={resume.id} existingCount={resume.projects.length} />
+        <AddProjectForm
+          resumeId={resume.id}
+          existingCount={resume.projects.length}
+          allProjects={resume.projects}
+        />
         <Button variant="outline" size="sm" onClick={() => setPickOpen(true)}>
           <Library className="mr-1 size-3" /> Pick from Existing
         </Button>
@@ -76,7 +85,15 @@ export function ProjectSection({ resumeId }: ProjectSectionProps) {
 
 // ─── Single Project Card (editable) ─────────────────────────
 
-function ProjectCard({ project }: { project: ResumeDetailDTO["projects"][number] }) {
+function ProjectCard({
+  project,
+  resumeId,
+  allProjects,
+}: {
+  project: ResumeDetailDTO["projects"][number];
+  resumeId: string;
+  allProjects: ResumeDetailDTO["projects"];
+}) {
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(project.name);
   const [url, setUrl] = useState(project.url);
@@ -95,6 +112,10 @@ function ProjectCard({ project }: { project: ResumeDetailDTO["projects"][number]
     mutationFn: async () => removeProject({ data: { id: project.id } }),
     onSuccess() {
       toast.success("Project removed");
+      resumeCollection.utils.writeUpdate({
+        id: resumeId,
+        projects: allProjects.filter((p) => p.id !== project.id),
+      });
     },
     onError(err: unknown) {
       toast.error("Failed to remove project", {
@@ -119,6 +140,14 @@ function ProjectCard({ project }: { project: ResumeDetailDTO["projects"][number]
     onSuccess() {
       toast.success("Project saved");
       setEditing(false);
+      resumeCollection.utils.writeUpdate({
+        id: resumeId,
+        projects: allProjects.map((p) =>
+          p.id === project.id
+            ? { ...p, name, url, homepageUrl, description, tech: JSON.stringify(techTags) }
+            : p,
+        ),
+      });
     },
     onError(err: unknown) {
       toast.error("Failed to save project", {
@@ -252,7 +281,15 @@ const addProjectOpts = formOptions({
   },
 });
 
-function AddProjectForm({ resumeId, existingCount }: { resumeId: string; existingCount: number }) {
+function AddProjectForm({
+  resumeId,
+  existingCount,
+  allProjects,
+}: {
+  resumeId: string;
+  existingCount: number;
+  allProjects: ResumeDetailDTO["projects"];
+}) {
   const [open, setOpen] = useState(false);
   const [techTags, setTechTags] = useState<string[]>([]);
 
@@ -269,9 +306,25 @@ function AddProjectForm({ resumeId, existingCount }: { resumeId: string; existin
           sortOrder: existingCount,
         },
       }),
-    onSuccess() {
+    onSuccess(data, values) {
       toast.success("Project added");
       setOpen(false);
+      resumeCollection.utils.writeUpdate({
+        id: resumeId,
+        projects: [
+          ...allProjects,
+          {
+            id: data.id,
+            resumeId,
+            name: values.name,
+            url: values.url || "",
+            homepageUrl: values.homepageUrl || "",
+            description: values.description,
+            tech: JSON.stringify(techTags),
+            sortOrder: existingCount,
+          },
+        ],
+      });
       setTechTags([]);
     },
     onError(err: unknown) {

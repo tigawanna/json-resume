@@ -37,11 +37,20 @@ export function EducationSection({ resumeId }: EducationSectionProps) {
   return (
     <div className="flex flex-col gap-4" data-test="education-section">
       {resume.education.map((edu) => (
-        <EducationCard key={edu.id} education={edu} />
+        <EducationCard
+          key={edu.id}
+          education={edu}
+          resumeId={resume.id}
+          allEducation={resume.education}
+        />
       ))}
 
       <div className="flex gap-2">
-        <AddEducationForm resumeId={resume.id} existingCount={resume.education.length} />
+        <AddEducationForm
+          resumeId={resume.id}
+          existingCount={resume.education.length}
+          allEducation={resume.education}
+        />
         <Button variant="outline" size="sm" onClick={() => setPickOpen(true)}>
           <Library className="mr-1 size-3" /> Pick from Existing
         </Button>
@@ -71,11 +80,23 @@ export function EducationSection({ resumeId }: EducationSectionProps) {
 
 // ─── Single Education Card ──────────────────────────────────
 
-function EducationCard({ education }: { education: ResumeDetailDTO["education"][number] }) {
+function EducationCard({
+  education,
+  resumeId,
+  allEducation,
+}: {
+  education: ResumeDetailDTO["education"][number];
+  resumeId: string;
+  allEducation: ResumeDetailDTO["education"];
+}) {
   const deleteMutation = useMutation({
     mutationFn: async () => removeEducation({ data: { id: education.id } }),
     onSuccess() {
       toast.success("Education removed");
+      resumeCollection.utils.writeUpdate({
+        id: resumeId,
+        education: allEducation.filter((e) => e.id !== education.id),
+      });
     },
     onError(err: unknown) {
       toast.error("Failed to remove education", {
@@ -128,9 +149,11 @@ const addEduOpts = formOptions({
 function AddEducationForm({
   resumeId,
   existingCount,
+  allEducation,
 }: {
   resumeId: string;
   existingCount: number;
+  allEducation: ResumeDetailDTO["education"];
 }) {
   const [open, setOpen] = useState(false);
 
@@ -139,9 +162,27 @@ function AddEducationForm({
       createEducation({
         data: { resumeId, ...values, sortOrder: existingCount },
       }),
-    onSuccess() {
+    onSuccess(data, values) {
       toast.success("Education added");
       setOpen(false);
+      resumeCollection.utils.writeUpdate({
+        id: resumeId,
+        education: [
+          ...allEducation,
+          {
+            id: data.id,
+            resumeId,
+            school: values.school,
+            degree: values.degree,
+            field: values.field || "",
+            startDate: values.startDate || "",
+            endDate: values.endDate || "",
+            description: values.description || "",
+            sortOrder: existingCount,
+            bullets: [],
+          },
+        ],
+      });
     },
     onError(err: unknown) {
       toast.error("Failed to add education", {

@@ -31,9 +31,9 @@ export function TalksSection({ resumeId }: TalksSectionProps) {
   return (
     <div className="flex flex-col gap-4" data-test="talks-section">
       {resume.talks.map((talk) => (
-        <TalkCard key={talk.id} talk={talk} />
+        <TalkCard key={talk.id} talk={talk} resumeId={resumeId} allTalks={resume.talks} />
       ))}
-      <AddTalkForm resumeId={resumeId} existingCount={resume.talks.length} />
+      <AddTalkForm resumeId={resumeId} existingCount={resume.talks.length} allTalks={resume.talks} />
     </div>
   );
 }
@@ -42,9 +42,11 @@ export function TalksSection({ resumeId }: TalksSectionProps) {
 
 interface TalkCardProps {
   talk: ResumeDetailDTO["talks"][number];
+  resumeId: string;
+  allTalks: ResumeDetailDTO["talks"];
 }
 
-function TalkCard({ talk }: TalkCardProps) {
+function TalkCard({ talk, resumeId, allTalks }: TalkCardProps) {
   const [links, setLinks] = useState<{ label: string; url: string }[]>(() => {
     try {
       const parsed: unknown = JSON.parse(talk.links);
@@ -67,6 +69,10 @@ function TalkCard({ talk }: TalkCardProps) {
     mutationFn: async () => removeTalk({ data: { id: talk.id } }),
     onSuccess() {
       toast.success("Talk removed");
+      resumeCollection.utils.writeUpdate({
+        id: resumeId,
+        talks: allTalks.filter((t) => t.id !== talk.id),
+      });
     },
     onError(err: unknown) {
       toast.error("Failed to remove talk", {
@@ -80,6 +86,12 @@ function TalkCard({ talk }: TalkCardProps) {
     mutationFn: async () => editTalk({ data: { id: talk.id, links } }),
     onSuccess() {
       toast.success("Talk links saved");
+      resumeCollection.utils.writeUpdate({
+        id: resumeId,
+        talks: allTalks.map((t) =>
+          t.id === talk.id ? { ...t, links: JSON.stringify(links) } : t,
+        ),
+      });
     },
     onError(err: unknown) {
       toast.error("Failed to update talk", {
@@ -172,7 +184,15 @@ const addTalkFormOpts = formOptions({
   },
 });
 
-function AddTalkForm({ resumeId, existingCount }: { resumeId: string; existingCount: number }) {
+function AddTalkForm({
+  resumeId,
+  existingCount,
+  allTalks,
+}: {
+  resumeId: string;
+  existingCount: number;
+  allTalks: ResumeDetailDTO["talks"];
+}) {
   const mutation = useMutation({
     mutationFn: async (values: typeof addTalkFormOpts.defaultValues) =>
       createTalk({
@@ -184,8 +204,24 @@ function AddTalkForm({ resumeId, existingCount }: { resumeId: string; existingCo
           sortOrder: existingCount,
         },
       }),
-    onSuccess() {
+    onSuccess(data, values) {
       toast.success("Talk added");
+      resumeCollection.utils.writeUpdate({
+        id: resumeId,
+        talks: [
+          ...allTalks,
+          {
+            id: data.id,
+            resumeId,
+            title: values.title,
+            event: values.event || "",
+            date: values.date || "",
+            description: "",
+            links: "[]",
+            sortOrder: existingCount,
+          },
+        ],
+      });
     },
     onError(err: unknown) {
       toast.error("Failed to add talk", {

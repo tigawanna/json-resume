@@ -313,11 +313,11 @@ export function ResumeJsonTab({
   );
 
   const doc = resume ? resumeDetailToDocument(resume) : null;
-  const [jsonValue, setJsonValue] = useState<JsonValue>((doc ?? {}) as JsonValue);
-  const [originalJson] = useState<JsonValue>(structuredClone(doc ?? {}) as JsonValue);
+  const [jsonValue, setJsonValue] = useState<JsonValue>({} as JsonValue);
+  const [originalJson, setOriginalJson] = useState<JsonValue>({} as JsonValue);
   const [viewMode, setViewMode] = useState<ViewMode>("tree");
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [rawText, setRawText] = useState(JSON.stringify(doc, null, 2));
+  const [rawText, setRawText] = useState("");
   const [rawError, setRawError] = useState<string | null>(null);
   const [parseError, setParseError] = useState<string | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
@@ -337,6 +337,21 @@ export function ResumeJsonTab({
   // Debounce jsonValue changes so we don't validate on every keystroke
   const { debouncedValue: debouncedJson } = useDebouncedValue(jsonValue, 500);
   const lastPropagatedRef = useRef<JsonValue>(jsonValue);
+
+  // Sync editor state when the collection loads (on-demand) or updates externally
+  const lastSyncedDocRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!doc) return;
+    const docStr = JSON.stringify(doc);
+    if (lastSyncedDocRef.current === docStr) return;
+    lastSyncedDocRef.current = docStr;
+
+    const asJson = doc as unknown as JsonValue;
+    setJsonValue(asJson);
+    setOriginalJson(structuredClone(asJson));
+    setRawText(JSON.stringify(doc, null, 2));
+    lastPropagatedRef.current = asJson;
+  }, [doc]);
 
   // Propagate valid edits back to parent (marks form dirty + updates pendingDoc)
   useEffect(() => {
