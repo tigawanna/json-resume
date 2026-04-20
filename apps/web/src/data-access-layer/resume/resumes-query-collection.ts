@@ -1,5 +1,5 @@
 import { queryClient } from "@/lib/tanstack/query/queryclient";
-import { createCollection, parseLoadSubsetOptions } from "@tanstack/db";
+import { createCollection, parseLoadSubsetOptions, parseWhereExpression } from "@tanstack/db";
 import { queryCollectionOptions } from "@tanstack/query-db-collection";
 import { getResume, listResumes } from "./resume.functions";
 
@@ -9,18 +9,13 @@ export const resumeCollection = createCollection(
     queryKey: ["one-resume"],
     syncMode: "on-demand",
     queryFn: async (ctx) => {
-      const parsed = parseLoadSubsetOptions(ctx.meta?.loadSubsetOptions);
-      const whereId = parsed.filters.find(
+      const { filters } = parseLoadSubsetOptions(ctx.meta?.loadSubsetOptions);
+      const idFilter = filters.find(
         ({ field, operator }) => field.join(".") === "id" && operator === "eq",
       );
-      if (!whereId) {
-        return [];
-      }
-      const resume = await getResume({ data: { id: whereId?.value } });
-      if (!resume) {
-        return [];
-      }
-      return [resume];
+      if (!idFilter) return [];
+      const resume = await getResume({ data: { id: String(idFilter.value) } });
+      return resume ? [resume] : [];
     },
     getKey: (resume) => resume.id,
     queryClient,
@@ -32,14 +27,24 @@ export const resumesCollection = createCollection(
     id: "resumes-list",
     queryKey: ["resumes"],
     syncMode: "on-demand",
+    staleTime: 1000 * 60 * 60, // 1 hour
     queryFn: async (ctx) => {
-      const parsed = parseLoadSubsetOptions(ctx.meta?.loadSubsetOptions);
-      const nameFilter = parsed.filters.find(
-        ({ field, operator }) => field.join(".") === "name" && operator === "eq",
-      );
-      console.log("nameFilter == ", nameFilter?.value);
-      const keyword = nameFilter?.value as string | undefined;
-      return listResumes({ data: keyword ? { keyword } : undefined })??[]
+      const where = ctx.meta?.loadSubsetOptions?.where;
+      let keyword: string | undefined;
+
+      if (where) {
+        parseWhereExpression(where, {
+          handlers: {
+            ilike: (_field, value: unknown) => {
+              if (typeof value === "string" && !keyword) {
+                keyword = value.replaceAll("%", "");
+              }
+            },
+            or: (...conditions) => conditions,
+          },
+        });
+      }
+      return listResumes({ data: keyword ? { keyword } : undefined }) ?? [];
     },
     getKey: (resume) => resume.id,
     queryClient,

@@ -1,6 +1,6 @@
 import { cloneResumeMuationOptions } from "@/data-access-layer/resume/resume-mutatin-options";
 import { resumesCollection } from "@/data-access-layer/resume/resumes-query-collection";
-import { eq, useLiveSuspenseQuery } from "@tanstack/react-db";
+import { ilike, or, useLiveSuspenseQuery } from "@tanstack/react-db";
 import { useMutation } from "@tanstack/react-query";
 import { FileText } from "lucide-react";
 import { Route } from "..";
@@ -13,7 +13,15 @@ export function ResumeListPage() {
     (q) => {
       let query = q.from({ resume: resumesCollection });
       if (sq) {
-        query = query.where(({ resume }) => eq(resume.name, sq));
+        const pattern = `%${sq}%`;
+        query = query.where(({ resume }) =>
+          or(
+            ilike(resume.name, pattern),
+            ilike(resume.fullName, pattern),
+            ilike(resume.headline, pattern),
+            ilike(resume.description, pattern),
+          ),
+        );
       }
       return query;
     },

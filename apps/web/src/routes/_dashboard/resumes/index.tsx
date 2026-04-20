@@ -20,7 +20,8 @@ export const Route = createFileRoute("/_dashboard/resumes/")({
   validateSearch: (search) => resumesSearchSchema.parse(search),
 });
 
-export function RouteComponent() {
+
+function RouteComponent() {
   const { sq } = Route.useSearch();
   const navigate = useNavigate();
   const [keyword, setKeyword] = useState(sq);
