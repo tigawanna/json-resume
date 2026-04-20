@@ -24,6 +24,7 @@ import { Route as DotwellKnownOauthProtectedResourceRouteImport } from './routes
 import { Route as DotwellKnownOauthAuthorizationServerRouteImport } from './routes/[.]well-known/oauth-authorization-server'
 import { Route as DashboardVolunteersIndexRouteImport } from './routes/_dashboard/volunteers/index'
 import { Route as DashboardTalksIndexRouteImport } from './routes/_dashboard/talks/index'
+import { Route as DashboardSummariesIndexRouteImport } from './routes/_dashboard/summaries/index'
 import { Route as DashboardSkillGroupsIndexRouteImport } from './routes/_dashboard/skill-groups/index'
 import { Route as DashboardSettingsIndexRouteImport } from './routes/_dashboard/settings/index'
 import { Route as DashboardSavedProjectsIndexRouteImport } from './routes/_dashboard/saved-projects/index'
@@ -31,6 +32,7 @@ import { Route as DashboardResumesIndexRouteImport } from './routes/_dashboard/r
 import { Route as DashboardResumeProjectsIndexRouteImport } from './routes/_dashboard/resume-projects/index'
 import { Route as DashboardReposIndexRouteImport } from './routes/_dashboard/repos/index'
 import { Route as DashboardProjectsIndexRouteImport } from './routes/_dashboard/projects/index'
+import { Route as DashboardLinksIndexRouteImport } from './routes/_dashboard/links/index'
 import { Route as DashboardLanguagesIndexRouteImport } from './routes/_dashboard/languages/index'
 import { Route as DashboardExperiencesIndexRouteImport } from './routes/_dashboard/experiences/index'
 import { Route as DashboardEducationIndexRouteImport } from './routes/_dashboard/education/index'
@@ -116,6 +118,11 @@ const DashboardTalksIndexRoute = DashboardTalksIndexRouteImport.update({
   path: '/talks/',
   getParentRoute: () => DashboardLayoutRoute,
 } as any)
+const DashboardSummariesIndexRoute = DashboardSummariesIndexRouteImport.update({
+  id: '/summaries/',
+  path: '/summaries/',
+  getParentRoute: () => DashboardLayoutRoute,
+} as any)
 const DashboardSkillGroupsIndexRoute =
   DashboardSkillGroupsIndexRouteImport.update({
     id: '/skill-groups/',
@@ -152,6 +159,11 @@ const DashboardReposIndexRoute = DashboardReposIndexRouteImport.update({
 const DashboardProjectsIndexRoute = DashboardProjectsIndexRouteImport.update({
   id: '/projects/',
   path: '/projects/',
+  getParentRoute: () => DashboardLayoutRoute,
+} as any)
+const DashboardLinksIndexRoute = DashboardLinksIndexRouteImport.update({
+  id: '/links/',
+  path: '/links/',
   getParentRoute: () => DashboardLayoutRoute,
 } as any)
 const DashboardLanguagesIndexRoute = DashboardLanguagesIndexRouteImport.update({
@@ -217,6 +229,7 @@ export interface FileRoutesByFullPath {
   '/education/': typeof DashboardEducationIndexRoute
   '/experiences/': typeof DashboardExperiencesIndexRoute
   '/languages/': typeof DashboardLanguagesIndexRoute
+  '/links/': typeof DashboardLinksIndexRoute
   '/projects/': typeof DashboardProjectsIndexRoute
   '/repos/': typeof DashboardReposIndexRoute
   '/resume-projects/': typeof DashboardResumeProjectsIndexRoute
@@ -224,6 +237,7 @@ export interface FileRoutesByFullPath {
   '/saved-projects/': typeof DashboardSavedProjectsIndexRoute
   '/settings/': typeof DashboardSettingsIndexRoute
   '/skill-groups/': typeof DashboardSkillGroupsIndexRoute
+  '/summaries/': typeof DashboardSummariesIndexRoute
   '/talks/': typeof DashboardTalksIndexRoute
   '/volunteers/': typeof DashboardVolunteersIndexRoute
   '/resumes/$resumeId/': typeof DashboardResumesResumeIdIndexRoute
@@ -246,6 +260,7 @@ export interface FileRoutesByTo {
   '/education': typeof DashboardEducationIndexRoute
   '/experiences': typeof DashboardExperiencesIndexRoute
   '/languages': typeof DashboardLanguagesIndexRoute
+  '/links': typeof DashboardLinksIndexRoute
   '/projects': typeof DashboardProjectsIndexRoute
   '/repos': typeof DashboardReposIndexRoute
   '/resume-projects': typeof DashboardResumeProjectsIndexRoute
@@ -253,6 +268,7 @@ export interface FileRoutesByTo {
   '/saved-projects': typeof DashboardSavedProjectsIndexRoute
   '/settings': typeof DashboardSettingsIndexRoute
   '/skill-groups': typeof DashboardSkillGroupsIndexRoute
+  '/summaries': typeof DashboardSummariesIndexRoute
   '/talks': typeof DashboardTalksIndexRoute
   '/volunteers': typeof DashboardVolunteersIndexRoute
   '/resumes/$resumeId': typeof DashboardResumesResumeIdIndexRoute
@@ -279,6 +295,7 @@ export interface FileRoutesById {
   '/_dashboard/education/': typeof DashboardEducationIndexRoute
   '/_dashboard/experiences/': typeof DashboardExperiencesIndexRoute
   '/_dashboard/languages/': typeof DashboardLanguagesIndexRoute
+  '/_dashboard/links/': typeof DashboardLinksIndexRoute
   '/_dashboard/projects/': typeof DashboardProjectsIndexRoute
   '/_dashboard/repos/': typeof DashboardReposIndexRoute
   '/_dashboard/resume-projects/': typeof DashboardResumeProjectsIndexRoute
@@ -286,6 +303,7 @@ export interface FileRoutesById {
   '/_dashboard/saved-projects/': typeof DashboardSavedProjectsIndexRoute
   '/_dashboard/settings/': typeof DashboardSettingsIndexRoute
   '/_dashboard/skill-groups/': typeof DashboardSkillGroupsIndexRoute
+  '/_dashboard/summaries/': typeof DashboardSummariesIndexRoute
   '/_dashboard/talks/': typeof DashboardTalksIndexRoute
   '/_dashboard/volunteers/': typeof DashboardVolunteersIndexRoute
   '/_dashboard/resumes/$resumeId/': typeof DashboardResumesResumeIdIndexRoute
@@ -311,6 +329,7 @@ export interface FileRouteTypes {
     | '/education/'
     | '/experiences/'
     | '/languages/'
+    | '/links/'
     | '/projects/'
     | '/repos/'
     | '/resume-projects/'
@@ -318,6 +337,7 @@ export interface FileRouteTypes {
     | '/saved-projects/'
     | '/settings/'
     | '/skill-groups/'
+    | '/summaries/'
     | '/talks/'
     | '/volunteers/'
     | '/resumes/$resumeId/'
@@ -340,6 +360,7 @@ export interface FileRouteTypes {
     | '/education'
     | '/experiences'
     | '/languages'
+    | '/links'
     | '/projects'
     | '/repos'
     | '/resume-projects'
@@ -347,6 +368,7 @@ export interface FileRouteTypes {
     | '/saved-projects'
     | '/settings'
     | '/skill-groups'
+    | '/summaries'
     | '/talks'
     | '/volunteers'
     | '/resumes/$resumeId'
@@ -372,6 +394,7 @@ export interface FileRouteTypes {
     | '/_dashboard/education/'
     | '/_dashboard/experiences/'
     | '/_dashboard/languages/'
+    | '/_dashboard/links/'
     | '/_dashboard/projects/'
     | '/_dashboard/repos/'
     | '/_dashboard/resume-projects/'
@@ -379,6 +402,7 @@ export interface FileRouteTypes {
     | '/_dashboard/saved-projects/'
     | '/_dashboard/settings/'
     | '/_dashboard/skill-groups/'
+    | '/_dashboard/summaries/'
     | '/_dashboard/talks/'
     | '/_dashboard/volunteers/'
     | '/_dashboard/resumes/$resumeId/'
@@ -502,6 +526,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardTalksIndexRouteImport
       parentRoute: typeof DashboardLayoutRoute
     }
+    '/_dashboard/summaries/': {
+      id: '/_dashboard/summaries/'
+      path: '/summaries'
+      fullPath: '/summaries/'
+      preLoaderRoute: typeof DashboardSummariesIndexRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
     '/_dashboard/skill-groups/': {
       id: '/_dashboard/skill-groups/'
       path: '/skill-groups'
@@ -549,6 +580,13 @@ declare module '@tanstack/react-router' {
       path: '/projects'
       fullPath: '/projects/'
       preLoaderRoute: typeof DashboardProjectsIndexRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
+    '/_dashboard/links/': {
+      id: '/_dashboard/links/'
+      path: '/links'
+      fullPath: '/links/'
+      preLoaderRoute: typeof DashboardLinksIndexRouteImport
       parentRoute: typeof DashboardLayoutRoute
     }
     '/_dashboard/languages/': {
@@ -619,6 +657,7 @@ interface DashboardLayoutRouteChildren {
   DashboardEducationIndexRoute: typeof DashboardEducationIndexRoute
   DashboardExperiencesIndexRoute: typeof DashboardExperiencesIndexRoute
   DashboardLanguagesIndexRoute: typeof DashboardLanguagesIndexRoute
+  DashboardLinksIndexRoute: typeof DashboardLinksIndexRoute
   DashboardProjectsIndexRoute: typeof DashboardProjectsIndexRoute
   DashboardReposIndexRoute: typeof DashboardReposIndexRoute
   DashboardResumeProjectsIndexRoute: typeof DashboardResumeProjectsIndexRoute
@@ -626,6 +665,7 @@ interface DashboardLayoutRouteChildren {
   DashboardSavedProjectsIndexRoute: typeof DashboardSavedProjectsIndexRoute
   DashboardSettingsIndexRoute: typeof DashboardSettingsIndexRoute
   DashboardSkillGroupsIndexRoute: typeof DashboardSkillGroupsIndexRoute
+  DashboardSummariesIndexRoute: typeof DashboardSummariesIndexRoute
   DashboardTalksIndexRoute: typeof DashboardTalksIndexRoute
   DashboardVolunteersIndexRoute: typeof DashboardVolunteersIndexRoute
   DashboardResumesResumeIdIndexRoute: typeof DashboardResumesResumeIdIndexRoute
@@ -640,6 +680,7 @@ const DashboardLayoutRouteChildren: DashboardLayoutRouteChildren = {
   DashboardEducationIndexRoute: DashboardEducationIndexRoute,
   DashboardExperiencesIndexRoute: DashboardExperiencesIndexRoute,
   DashboardLanguagesIndexRoute: DashboardLanguagesIndexRoute,
+  DashboardLinksIndexRoute: DashboardLinksIndexRoute,
   DashboardProjectsIndexRoute: DashboardProjectsIndexRoute,
   DashboardReposIndexRoute: DashboardReposIndexRoute,
   DashboardResumeProjectsIndexRoute: DashboardResumeProjectsIndexRoute,
@@ -647,6 +688,7 @@ const DashboardLayoutRouteChildren: DashboardLayoutRouteChildren = {
   DashboardSavedProjectsIndexRoute: DashboardSavedProjectsIndexRoute,
   DashboardSettingsIndexRoute: DashboardSettingsIndexRoute,
   DashboardSkillGroupsIndexRoute: DashboardSkillGroupsIndexRoute,
+  DashboardSummariesIndexRoute: DashboardSummariesIndexRoute,
   DashboardTalksIndexRoute: DashboardTalksIndexRoute,
   DashboardVolunteersIndexRoute: DashboardVolunteersIndexRoute,
   DashboardResumesResumeIdIndexRoute: DashboardResumesResumeIdIndexRoute,

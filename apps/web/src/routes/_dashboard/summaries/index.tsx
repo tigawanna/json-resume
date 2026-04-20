@@ -4,18 +4,18 @@ import { useDebouncer } from "@tanstack/react-pacer";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Suspense, useState } from "react";
 import { z } from "zod";
-import { CertificationList } from "./-components/CertificationList";
-import { CertificationCreateForm } from "./-components/CertificationCreateForm";
+import { SummaryList } from "./-components/SummaryList";
+import { SummaryCreateForm } from "./-components/SummaryCreateForm";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Plus } from "lucide-react";
 
 const searchSchema = z.object({ sq: z.string().optional().default("") });
 
-export const Route = createFileRoute("/_dashboard/certifications/")({
+export const Route = createFileRoute("/_dashboard/summaries/")({
   component: RouteComponent,
   head: () => ({
-    meta: [{ title: "Certifications", description: "Manage your certifications" }],
+    meta: [{ title: "Summaries", description: "Manage your summaries" }],
   }),
   ssr: false,
   validateSearch: (search) => searchSchema.parse(search),
@@ -48,16 +48,14 @@ function RouteComponent() {
     <div className="flex w-full min-h-screen flex-col gap-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Certifications</h1>
-          <p className="text-muted-foreground mt-1 text-sm">
-            Certifications across all your resumes.
-          </p>
+          <h1 className="text-2xl font-bold">Summaries</h1>
+          <p className="text-muted-foreground mt-1 text-sm">Summaries across all your resumes.</p>
         </div>
         <Button
           variant="outline"
           size="sm"
           onClick={() => setCreateOpen(true)}
-          data-test="add-certification-btn"
+          data-test="add-summary-btn"
         >
           <Plus className="mr-1 size-4" /> Add
         </Button>
@@ -65,9 +63,9 @@ function RouteComponent() {
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>New Certification</DialogTitle>
+            <DialogTitle>New Summary</DialogTitle>
           </DialogHeader>
-          <CertificationCreateForm onSuccess={() => setCreateOpen(false)} />
+          <SummaryCreateForm onSuccess={() => setCreateOpen(false)} />
         </DialogContent>
       </Dialog>
       <SearchBox
@@ -75,10 +73,10 @@ function RouteComponent() {
         setKeyword={handleKeywordChange}
         debouncedValue={sq}
         isDebouncing={debouncer.state.isPending ?? false}
-        inputProps={{ placeholder: "Search certifications..." }}
+        inputProps={{ placeholder: "Search summaries..." }}
       />
       <Suspense fallback={<RouterPendingComponent />}>
-        <CertificationList />
+        <SummaryList />
       </Suspense>
     </div>
   );

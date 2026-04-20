@@ -5,6 +5,10 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Suspense, useState } from "react";
 import { z } from "zod";
 import { LanguageList } from "./-components/LanguageList";
+import { LanguageCreateForm } from "./-components/LanguageCreateForm";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Plus } from "lucide-react";
 
 const searchSchema = z.object({ sq: z.string().optional().default("") });
 
@@ -21,6 +25,7 @@ function RouteComponent() {
   const { sq } = Route.useSearch();
   const navigate = useNavigate();
   const [keyword, setKeyword] = useState(sq);
+  const [createOpen, setCreateOpen] = useState(false);
   const debouncer = useDebouncer(
     (value: string) => {
       void navigate({
@@ -46,7 +51,23 @@ function RouteComponent() {
           <h1 className="text-2xl font-bold">Languages</h1>
           <p className="text-muted-foreground mt-1 text-sm">Languages across all your resumes.</p>
         </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setCreateOpen(true)}
+          data-test="add-language-btn"
+        >
+          <Plus className="mr-1 size-4" /> Add
+        </Button>
       </div>
+      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>New Language</DialogTitle>
+          </DialogHeader>
+          <LanguageCreateForm onSuccess={() => setCreateOpen(false)} />
+        </DialogContent>
+      </Dialog>
       <SearchBox
         keyword={keyword}
         setKeyword={handleKeywordChange}

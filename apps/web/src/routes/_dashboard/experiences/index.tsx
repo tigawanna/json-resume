@@ -5,6 +5,10 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Suspense, useState } from "react";
 import { z } from "zod";
 import { ExperienceList } from "./-components/ExperienceList";
+import { ExperienceCreateForm } from "./-components/ExperienceCreateForm";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Plus } from "lucide-react";
 
 const searchSchema = z.object({
   sq: z.string().optional().default(""),
@@ -23,6 +27,7 @@ function RouteComponent() {
   const { sq } = Route.useSearch();
   const navigate = useNavigate();
   const [keyword, setKeyword] = useState(sq);
+  const [createOpen, setCreateOpen] = useState(false);
 
   const debouncer = useDebouncer(
     (value: string) => {
@@ -56,7 +61,23 @@ function RouteComponent() {
             Work experiences across all your resumes.
           </p>
         </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setCreateOpen(true)}
+          data-test="add-experience-btn"
+        >
+          <Plus className="mr-1 size-4" /> Add
+        </Button>
       </div>
+      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>New Experience</DialogTitle>
+          </DialogHeader>
+          <ExperienceCreateForm onSuccess={() => setCreateOpen(false)} />
+        </DialogContent>
+      </Dialog>
       <SearchBox
         keyword={keyword}
         setKeyword={handleKeywordChange}

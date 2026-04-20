@@ -5,6 +5,10 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Suspense, useState } from "react";
 import { z } from "zod";
 import { ContactList } from "./-components/ContactList";
+import { ContactCreateForm } from "./-components/ContactCreateForm";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Plus } from "lucide-react";
 
 const searchSchema = z.object({ sq: z.string().optional().default("") });
 
@@ -21,6 +25,7 @@ function RouteComponent() {
   const { sq } = Route.useSearch();
   const navigate = useNavigate();
   const [keyword, setKeyword] = useState(sq);
+  const [createOpen, setCreateOpen] = useState(false);
   const debouncer = useDebouncer(
     (value: string) => {
       void navigate({
@@ -48,7 +53,23 @@ function RouteComponent() {
             Contact information across all your resumes.
           </p>
         </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setCreateOpen(true)}
+          data-test="add-contact-btn"
+        >
+          <Plus className="mr-1 size-4" /> Add
+        </Button>
       </div>
+      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>New Contact</DialogTitle>
+          </DialogHeader>
+          <ContactCreateForm onSuccess={() => setCreateOpen(false)} />
+        </DialogContent>
+      </Dialog>
       <SearchBox
         keyword={keyword}
         setKeyword={handleKeywordChange}

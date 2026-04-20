@@ -321,6 +321,41 @@ export async function setResumeLinks(
   }
 }
 
+export async function addLink(
+  resumeId: string,
+  input: { label: string; url: string; icon?: string; sortOrder: number },
+): Promise<string> {
+  const id = crypto.randomUUID();
+  await db.insert(resumeLink).values({
+    id,
+    resumeId,
+    label: input.label,
+    url: input.url,
+    icon: input.icon ?? null,
+    sortOrder: input.sortOrder,
+  });
+  return id;
+}
+
+export async function updateLink(
+  linkId: string,
+  input: { label?: string; url?: string; icon?: string; sortOrder?: number },
+): Promise<void> {
+  const updates: Record<string, unknown> = {};
+  if (input.label !== undefined) updates.label = input.label;
+  if (input.url !== undefined) updates.url = input.url;
+  if (input.icon !== undefined) updates.icon = input.icon;
+  if (input.sortOrder !== undefined) updates.sortOrder = input.sortOrder;
+
+  if (Object.keys(updates).length > 0) {
+    await db.update(resumeLink).set(updates).where(eq(resumeLink.id, linkId));
+  }
+}
+
+export async function deleteLinkById(linkId: string): Promise<void> {
+  await db.delete(resumeLink).where(eq(resumeLink.id, linkId));
+}
+
 // ─── Summary CRUD ──────────────────────────────────────────
 
 export async function setResumeSummary(resumeId: string, text: string): Promise<void> {
@@ -328,6 +363,37 @@ export async function setResumeSummary(resumeId: string, text: string): Promise<
   if (text.trim()) {
     await db.insert(resumeSummary).values({ resumeId, text, sortOrder: 0 });
   }
+}
+
+export async function addSummaryItem(
+  resumeId: string,
+  input: { text: string; sortOrder: number },
+): Promise<string> {
+  const id = crypto.randomUUID();
+  await db.insert(resumeSummary).values({
+    id,
+    resumeId,
+    text: input.text,
+    sortOrder: input.sortOrder,
+  });
+  return id;
+}
+
+export async function updateSummaryItem(
+  summaryId: string,
+  input: { text?: string; sortOrder?: number },
+): Promise<void> {
+  const updates: Record<string, unknown> = {};
+  if (input.text !== undefined) updates.text = input.text;
+  if (input.sortOrder !== undefined) updates.sortOrder = input.sortOrder;
+
+  if (Object.keys(updates).length > 0) {
+    await db.update(resumeSummary).set(updates).where(eq(resumeSummary.id, summaryId));
+  }
+}
+
+export async function deleteSummaryById(summaryId: string): Promise<void> {
+  await db.delete(resumeSummary).where(eq(resumeSummary.id, summaryId));
 }
 
 // ─── Experience CRUD ───────────────────────────────────────
@@ -564,6 +630,25 @@ export async function setSkillGroups(
   }
 }
 
+export async function addSkillGroup(
+  resumeId: string,
+  input: { name: string; skills: string[]; sortOrder: number },
+): Promise<string> {
+  const groupId = crypto.randomUUID();
+  await db.insert(resumeSkillGroup).values({
+    id: groupId,
+    resumeId,
+    name: input.name,
+    sortOrder: input.sortOrder,
+  });
+  if (input.skills.length > 0) {
+    await db
+      .insert(resumeSkill)
+      .values(input.skills.map((name, si) => ({ groupId, name, level: null, sortOrder: si })));
+  }
+  return groupId;
+}
+
 export async function updateSkillGroup(
   groupId: string,
   input: { name?: string; skills?: string[]; sortOrder?: number },
@@ -719,6 +804,22 @@ export async function deleteLanguageById(languageId: string): Promise<void> {
 }
 
 // ─── Contact CRUD ──────────────────────────────────────────
+
+export async function addContact(
+  resumeId: string,
+  input: { type: string; value: string; label?: string; sortOrder: number },
+): Promise<string> {
+  const id = crypto.randomUUID();
+  await db.insert(resumeContact).values({
+    id,
+    resumeId,
+    type: input.type,
+    value: input.value,
+    label: input.label ?? "",
+    sortOrder: input.sortOrder,
+  });
+  return id;
+}
 
 export async function updateContact(
   contactId: string,

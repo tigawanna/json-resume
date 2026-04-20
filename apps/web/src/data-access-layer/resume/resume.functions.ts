@@ -2,10 +2,17 @@ import { viewerMiddleware } from "@/data-access-layer/auth/viewer";
 import type { ResumeDocumentV1 } from "@/features/resume/resume-schema";
 import { createServerFn } from "@tanstack/react-start";
 import {
+  addCertification,
+  addContact,
   addEducation,
   addExperience,
+  addLanguage,
+  addLink,
   addProject,
+  addSkillGroup,
+  addSummaryItem,
   addTalk,
+  addVolunteer,
   batchUpdateSectionOrder,
   createResumeForUser,
   deleteCertification,
@@ -13,9 +20,11 @@ import {
   deleteEducation,
   deleteExperience,
   deleteLanguageById,
+  deleteLinkById,
   deleteProject,
   deleteResumeForUser,
   deleteSkillGroupById,
+  deleteSummaryById,
   deleteTalk,
   deleteVolunteerById,
   getResumeDetail,
@@ -37,9 +46,11 @@ import {
   updateEducation,
   updateExperience,
   updateLanguage,
+  updateLink,
   updateProject,
   updateResumeMetadata,
   updateSkillGroup,
+  updateSummaryItem,
   updateTalk,
   updateVolunteer,
 } from "./resume.server";
@@ -158,6 +169,38 @@ export const updateLinks = createServerFn({ method: "POST" })
     return { success: true };
   });
 
+export const createLink = createServerFn({ method: "POST" })
+  .middleware([viewerMiddleware])
+  .inputValidator(
+    (input: { resumeId: string; label: string; url: string; icon?: string; sortOrder: number }) =>
+      input,
+  )
+  .handler(async ({ data }) => {
+    const { resumeId, ...rest } = data;
+    const id = await addLink(resumeId, rest);
+    return { id };
+  });
+
+export const editLink = createServerFn({ method: "POST" })
+  .middleware([viewerMiddleware])
+  .inputValidator(
+    (input: { id: string; label?: string; url?: string; icon?: string; sortOrder?: number }) =>
+      input,
+  )
+  .handler(async ({ data }) => {
+    const { id, ...rest } = data;
+    await updateLink(id, rest);
+    return { success: true };
+  });
+
+export const removeLink = createServerFn({ method: "POST" })
+  .middleware([viewerMiddleware])
+  .inputValidator((input: { id: string }) => input)
+  .handler(async ({ data }) => {
+    await deleteLinkById(data.id);
+    return { success: true };
+  });
+
 // ─── Summary ───────────────────────────────────────────────
 
 export const updateSummary = createServerFn({ method: "POST" })
@@ -165,6 +208,32 @@ export const updateSummary = createServerFn({ method: "POST" })
   .inputValidator((input: { resumeId: string; text: string }) => input)
   .handler(async ({ data }) => {
     await setResumeSummary(data.resumeId, data.text);
+    return { success: true };
+  });
+
+export const createSummaryItem = createServerFn({ method: "POST" })
+  .middleware([viewerMiddleware])
+  .inputValidator((input: { resumeId: string; text: string; sortOrder: number }) => input)
+  .handler(async ({ data }) => {
+    const { resumeId, ...rest } = data;
+    const id = await addSummaryItem(resumeId, rest);
+    return { id };
+  });
+
+export const editSummaryItem = createServerFn({ method: "POST" })
+  .middleware([viewerMiddleware])
+  .inputValidator((input: { id: string; text?: string; sortOrder?: number }) => input)
+  .handler(async ({ data }) => {
+    const { id, ...rest } = data;
+    await updateSummaryItem(id, rest);
+    return { success: true };
+  });
+
+export const removeSummaryItem = createServerFn({ method: "POST" })
+  .middleware([viewerMiddleware])
+  .inputValidator((input: { id: string }) => input)
+  .handler(async ({ data }) => {
+    await deleteSummaryById(data.id);
     return { success: true };
   });
 
@@ -355,6 +424,17 @@ export const removeSkillGroup = createServerFn({ method: "POST" })
     return { success: true };
   });
 
+export const createSkillGroup = createServerFn({ method: "POST" })
+  .middleware([viewerMiddleware])
+  .inputValidator(
+    (input: { resumeId: string; name: string; skills: string[]; sortOrder: number }) => input,
+  )
+  .handler(async ({ data }) => {
+    const { resumeId, ...rest } = data;
+    const id = await addSkillGroup(resumeId, rest);
+    return { id };
+  });
+
 // ─── Certifications ────────────────────────────────────────
 
 export const editCertification = createServerFn({ method: "POST" })
@@ -381,6 +461,24 @@ export const removeCertification = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     await deleteCertification(data.id);
     return { success: true };
+  });
+
+export const createCertification = createServerFn({ method: "POST" })
+  .middleware([viewerMiddleware])
+  .inputValidator(
+    (input: {
+      resumeId: string;
+      name: string;
+      issuer?: string;
+      date?: string;
+      url?: string;
+      sortOrder: number;
+    }) => input,
+  )
+  .handler(async ({ data }) => {
+    const { resumeId, ...rest } = data;
+    const id = await addCertification(resumeId, rest);
+    return { id };
   });
 
 // ─── Volunteers ────────────────────────────────────────────
@@ -412,6 +510,25 @@ export const removeVolunteer = createServerFn({ method: "POST" })
     return { success: true };
   });
 
+export const createVolunteer = createServerFn({ method: "POST" })
+  .middleware([viewerMiddleware])
+  .inputValidator(
+    (input: {
+      resumeId: string;
+      organization: string;
+      role?: string;
+      startDate?: string;
+      endDate?: string;
+      description?: string;
+      sortOrder: number;
+    }) => input,
+  )
+  .handler(async ({ data }) => {
+    const { resumeId, ...rest } = data;
+    const id = await addVolunteer(resumeId, rest);
+    return { id };
+  });
+
 // ─── Languages ─────────────────────────────────────────────
 
 export const editLanguage = createServerFn({ method: "POST" })
@@ -431,6 +548,17 @@ export const removeLanguage = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     await deleteLanguageById(data.id);
     return { success: true };
+  });
+
+export const createLanguage = createServerFn({ method: "POST" })
+  .middleware([viewerMiddleware])
+  .inputValidator(
+    (input: { resumeId: string; name: string; proficiency?: string; sortOrder: number }) => input,
+  )
+  .handler(async ({ data }) => {
+    const { resumeId, ...rest } = data;
+    const id = await addLanguage(resumeId, rest);
+    return { id };
   });
 
 // ─── Contacts (individual) ─────────────────────────────────
@@ -453,6 +581,18 @@ export const removeContact = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     await deleteContactById(data.id);
     return { success: true };
+  });
+
+export const createContact = createServerFn({ method: "POST" })
+  .middleware([viewerMiddleware])
+  .inputValidator(
+    (input: { resumeId: string; type: string; value: string; label?: string; sortOrder: number }) =>
+      input,
+  )
+  .handler(async ({ data }) => {
+    const { resumeId, ...rest } = data;
+    const id = await addContact(resumeId, rest);
+    return { id };
   });
 
 // ─── Talks ─────────────────────────────────────────────────

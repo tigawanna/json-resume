@@ -1,3 +1,4 @@
+import { BackgroundRippleEffect } from "@/components/ui/background-ripple-effect";
 import { Link } from "@tanstack/react-router";
 
 const RESUME_JSON = `{
@@ -21,8 +22,12 @@ const RESUME_JSON = `{
 
 export function LandingHero() {
   return (
-    <section data-test="landing-hero" className="mx-auto max-w-360 border-x border-border/50">
+    <section
+      data-test="landing-hero"
+      className="relative mx-auto min-h-dvh max-w-360 border-x border-border/50"
+    >
       {/* Hero copy */}
+      <BackgroundRippleEffect />
       <div className="border-b border-border/50 px-8 py-16 md:px-16 md:py-24 lg:px-24 lg:py-32">
         <div className="flex max-w-4xl flex-col gap-8">
           <div className="flex items-center gap-3 font-mono animate-fade-in">
@@ -47,12 +52,14 @@ export function LandingHero() {
             <Link
               to="/auth"
               search={{ returnTo: "/dashboard" }}
-              className="bg-primary px-6 py-3 font-mono font-medium text-primary-content transition-opacity hover:opacity-90">
+              className="bg-primary px-6 py-3 font-mono font-medium text-primary-content transition-opacity hover:opacity-90"
+            >
               Get Started →
             </Link>
             <Link
               to="/workbench"
-              className="border border-border px-6 py-3 font-mono text-base-content transition-colors hover:bg-neutral">
+              className="border border-border px-6 py-3 font-mono text-base-content transition-colors hover:bg-neutral"
+            >
               Try the Editor
             </Link>
           </div>
