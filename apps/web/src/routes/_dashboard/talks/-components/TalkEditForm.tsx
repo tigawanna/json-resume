@@ -4,9 +4,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
+import { editTalk } from "@/data-access-layer/resume/resume.functions";
 import { talksCollection } from "@/data-access-layer/resume/talks/talk.collection";
 import type { TalkListItemDTO } from "@/data-access-layer/resume/talks/talk.types";
-import { editTalk } from "@/data-access-layer/resume/resume.functions";
 import { useAppForm } from "@/lib/tanstack/form";
 import { unwrapUnknownError } from "@/utils/errors";
 import { formOptions } from "@tanstack/react-form";
@@ -59,14 +59,12 @@ export function TalkEditForm({ talk, onSuccess }: TalkEditFormProps) {
         e.stopPropagation();
         form.handleSubmit();
       }}
-      className="flex flex-col gap-3"
-    >
+      className="flex flex-col gap-3">
       <form.AppField
         name="title"
         validators={{
           onChange: ({ value }) => (!value?.trim() ? "Title is required" : undefined),
-        }}
-      >
+        }}>
         {(field) => (
           <div>
             <Label className="text-xs">Title</Label>
@@ -122,8 +120,7 @@ export function TalkEditForm({ talk, onSuccess }: TalkEditFormProps) {
           type="button"
           variant="outline"
           onClick={() => form.reset()}
-          disabled={mutation.isPending}
-        >
+          disabled={mutation.isPending}>
           Cancel
         </Button>
         <Button type="submit" disabled={mutation.isPending || !form.state.isFormValid}>

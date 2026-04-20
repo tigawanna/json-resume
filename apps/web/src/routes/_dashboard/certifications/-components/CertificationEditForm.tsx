@@ -58,14 +58,12 @@ export function CertificationEditForm({ certification, onSuccess }: Certificatio
         e.stopPropagation();
         form.handleSubmit();
       }}
-      className="flex flex-col gap-3"
-    >
+      className="flex flex-col gap-3">
       <form.AppField
         name="name"
         validators={{
           onChange: ({ value }) => (!value?.trim() ? "Name is required" : undefined),
-        }}
-      >
+        }}>
         {(field) => (
           <div>
             <Label className="text-xs">Certification Name</Label>
@@ -120,8 +118,7 @@ export function CertificationEditForm({ certification, onSuccess }: Certificatio
           type="button"
           variant="outline"
           onClick={() => form.reset()}
-          disabled={mutation.isPending}
-        >
+          disabled={mutation.isPending}>
           Cancel
         </Button>
         <Button type="submit" disabled={mutation.isPending || !form.state.isFormValid}>

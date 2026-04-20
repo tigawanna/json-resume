@@ -25,9 +25,7 @@ export function TalkListCard({ talk, onDelete }: TalkListCardProps) {
               {talk.event && (
                 <CardDescription className="mt-1 text-xs">{talk.event}</CardDescription>
               )}
-              {talk.date && (
-                <p className="text-muted-foreground mt-1 text-xs">{talk.date}</p>
-              )}
+              {talk.date && <p className="text-muted-foreground mt-1 text-xs">{talk.date}</p>}
               {talk.description && (
                 <p className="text-muted-foreground mt-1 line-clamp-2 text-xs">
                   {talk.description}
@@ -45,8 +43,7 @@ export function TalkListCard({ talk, onDelete }: TalkListCardProps) {
             size="icon"
             className="size-7"
             onClick={() => setOpen(true)}
-            data-test="talk-edit-btn"
-          >
+            data-test="talk-edit-btn">
             <Pencil className="size-3.5" />
           </Button>
           <Button
@@ -54,8 +51,7 @@ export function TalkListCard({ talk, onDelete }: TalkListCardProps) {
             size="icon"
             className="size-7"
             onClick={() => onDelete?.(talk.id)}
-            data-test="talk-delete-btn"
-          >
+            data-test="talk-delete-btn">
             <Trash2 className="size-3.5" />
           </Button>
         </div>

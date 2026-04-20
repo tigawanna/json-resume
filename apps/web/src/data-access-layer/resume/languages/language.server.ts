@@ -13,10 +13,7 @@ export async function listLanguagesForUser(
   if (keyword) {
     const pattern = `%${keyword}%`;
     conditions.push(
-      or(
-        like(resumeLanguage.name, pattern),
-        like(resumeLanguage.proficiency, pattern),
-      )!,
+      or(like(resumeLanguage.name, pattern), like(resumeLanguage.proficiency, pattern))!,
     );
   }
 
@@ -43,10 +40,7 @@ export async function listLanguagesForUser(
   }));
 }
 
-export async function deleteLanguageForUser(
-  languageId: string,
-  userId: string,
-): Promise<void> {
+export async function deleteLanguageForUser(languageId: string, userId: string): Promise<void> {
   const row = await db
     .select({ id: resumeLanguage.id })
     .from(resumeLanguage)

@@ -4,9 +4,9 @@ import { DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
+import { editSkillGroup } from "@/data-access-layer/resume/resume.functions";
 import { skillGroupsCollection } from "@/data-access-layer/resume/skill-groups/skill-group.collection";
 import type { SkillGroupListItemDTO } from "@/data-access-layer/resume/skill-groups/skill-group.types";
-import { editSkillGroup } from "@/data-access-layer/resume/resume.functions";
 import { useAppForm } from "@/lib/tanstack/form";
 import { unwrapUnknownError } from "@/utils/errors";
 import { formOptions } from "@tanstack/react-form";
@@ -18,9 +18,7 @@ import { toast } from "sonner";
 function parseSkills(skills: string): string[] {
   try {
     const parsed: unknown = JSON.parse(skills);
-    return Array.isArray(parsed)
-      ? parsed.filter((x): x is string => typeof x === "string")
-      : [];
+    return Array.isArray(parsed) ? parsed.filter((x): x is string => typeof x === "string") : [];
   } catch {
     return [];
   }
@@ -84,14 +82,12 @@ export function SkillGroupEditForm({ skillGroup, onSuccess }: SkillGroupEditForm
         e.stopPropagation();
         form.handleSubmit();
       }}
-      className="flex flex-col gap-3"
-    >
+      className="flex flex-col gap-3">
       <form.AppField
         name="name"
         validators={{
           onChange: ({ value }) => (!value?.trim() ? "Group name is required" : undefined),
-        }}
-      >
+        }}>
         {(field) => (
           <div>
             <Label className="text-xs">Group Name</Label>
@@ -120,8 +116,7 @@ export function SkillGroupEditForm({ skillGroup, onSuccess }: SkillGroupEditForm
                   type="button"
                   className="ml-1"
                   onClick={() => setSkills((prev) => prev.filter((x) => x !== s))}
-                  disabled={mutation.isPending}
-                >
+                  disabled={mutation.isPending}>
                   <X className="size-3" />
                 </button>
               </Badge>
@@ -137,8 +132,7 @@ export function SkillGroupEditForm({ skillGroup, onSuccess }: SkillGroupEditForm
             form.reset();
             setSkills(parseSkills(skillGroup.skills));
           }}
-          disabled={mutation.isPending}
-        >
+          disabled={mutation.isPending}>
           Cancel
         </Button>
         <Button type="submit" disabled={mutation.isPending || !form.state.isFormValid}>

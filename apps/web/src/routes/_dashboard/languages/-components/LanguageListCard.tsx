@@ -23,9 +23,7 @@ export function LanguageListCard({ language, onDelete }: LanguageListCardProps) 
             <div className="min-w-0 flex-1">
               <CardTitle className="truncate text-base">{language.name}</CardTitle>
               {language.proficiency && (
-                <CardDescription className="mt-1 text-xs">
-                  {language.proficiency}
-                </CardDescription>
+                <CardDescription className="mt-1 text-xs">{language.proficiency}</CardDescription>
               )}
               <Badge variant="outline" className="mt-2 text-xs">
                 {language.resumeName}
@@ -39,8 +37,7 @@ export function LanguageListCard({ language, onDelete }: LanguageListCardProps) 
             size="icon"
             className="size-7"
             onClick={() => setOpen(true)}
-            data-test="language-edit-btn"
-          >
+            data-test="language-edit-btn">
             <Pencil className="size-3.5" />
           </Button>
           <Button
@@ -48,8 +45,7 @@ export function LanguageListCard({ language, onDelete }: LanguageListCardProps) 
             size="icon"
             className="size-7"
             onClick={() => onDelete?.(language.id)}
-            data-test="language-delete-btn"
-          >
+            data-test="language-delete-btn">
             <Trash2 className="size-3.5" />
           </Button>
         </div>

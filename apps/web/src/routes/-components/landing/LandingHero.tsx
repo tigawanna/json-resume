@@ -39,22 +39,20 @@ export function LandingHero() {
           </h1>
 
           <p className="animate-fade-in max-w-[50ch] text-pretty text-xl font-light leading-relaxed text-muted-foreground md:text-2xl">
-            Define your career in pure JSON. Tailor it with any LLM using a job
-            description. Export a print-ready PDF — without reformatting a doc.
+            Define your career in pure JSON. Tailor it with any LLM using a job description. Export
+            a print-ready PDF — without reformatting a doc.
           </p>
 
           <div className="mt-4 flex flex-wrap gap-4 animate-fade-in">
             <Link
               to="/auth"
               search={{ returnTo: "/dashboard" }}
-              className="bg-primary px-6 py-3 font-mono font-medium text-primary-content transition-opacity hover:opacity-90"
-            >
+              className="bg-primary px-6 py-3 font-mono font-medium text-primary-content transition-opacity hover:opacity-90">
               Get Started →
             </Link>
             <Link
               to="/workbench"
-              className="border border-border px-6 py-3 font-mono text-base-content transition-colors hover:bg-neutral"
-            >
+              className="border border-border px-6 py-3 font-mono text-base-content transition-colors hover:bg-neutral">
               Try the Editor
             </Link>
           </div>

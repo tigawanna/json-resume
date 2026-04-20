@@ -32,8 +32,7 @@ export function LandingNavbar() {
   return (
     <header
       data-test="landing-navbar"
-      className="sticky top-0 z-50 border-b border-border/50 bg-base-100/80 backdrop-blur-md transition-all duration-300"
-    >
+      className="sticky top-0 z-50 border-b border-border/50 bg-base-100/80 backdrop-blur-md transition-all duration-300">
       <div className="mx-auto flex h-12 max-w-360 items-center justify-between border-x border-border/50">
         {/* Logo */}
         <Link to="/" className="flex h-full items-center border-r border-border/50 px-6">
@@ -56,8 +55,7 @@ export function LandingNavbar() {
           <button
             onClick={toggleTheme}
             className="hidden h-full border-l border-border/50 px-4 font-mono text-xs text-muted-foreground transition-colors hover:text-base-content sm:block"
-            aria-label="Toggle theme"
-          >
+            aria-label="Toggle theme">
             {theme === "light" ? "[ Dark ]" : "[ Light ]"}
           </button>
 
@@ -65,8 +63,7 @@ export function LandingNavbar() {
             <a
               key={item.label}
               href={item.href}
-              className="hidden h-full items-center border-l border-border/50 px-4 font-mono text-xs text-muted-foreground transition-colors hover:text-base-content md:flex"
-            >
+              className="hidden h-full items-center border-l border-border/50 px-4 font-mono text-xs text-muted-foreground transition-colors hover:text-base-content md:flex">
               [ {item.label} ]
             </a>
           ))}
@@ -76,12 +73,10 @@ export function LandingNavbar() {
               <Link
                 to="/auth"
                 search={{ returnTo: pathname }}
-                className="flex h-full items-center bg-primary px-6 font-mono text-xs uppercase tracking-widest text-primary-content transition-opacity hover:opacity-90"
-              >
+                className="flex h-full items-center bg-primary px-6 font-mono text-xs uppercase tracking-widest text-primary-content transition-opacity hover:opacity-90">
                 Get Started →
               </Link>
-            }
-          >
+            }>
             <DashboardLink />
           </Suspense>
 
@@ -89,8 +84,7 @@ export function LandingNavbar() {
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
             className="flex h-full items-center border-l border-border/50 px-4 text-base-content md:hidden"
-            aria-label={mobileOpen ? "Close menu" : "Open menu"}
-          >
+            aria-label={mobileOpen ? "Close menu" : "Open menu"}>
             {mobileOpen ? <X className="size-4" /> : <Menu className="size-4" />}
           </button>
         </div>
@@ -104,8 +98,7 @@ export function LandingNavbar() {
               toggleTheme();
               setMobileOpen(false);
             }}
-            className="block text-muted-foreground transition-colors hover:text-base-content"
-          >
+            className="block text-muted-foreground transition-colors hover:text-base-content">
             {theme === "light" ? "[ Dark mode ]" : "[ Light mode ]"}
           </button>
           {NAV_LINKS.map((item) => (
@@ -113,8 +106,7 @@ export function LandingNavbar() {
               key={item.label}
               href={item.href}
               onClick={() => setMobileOpen(false)}
-              className="block text-muted-foreground transition-colors hover:text-base-content"
-            >
+              className="block text-muted-foreground transition-colors hover:text-base-content">
               [ {item.label} ]
             </a>
           ))}
@@ -122,16 +114,14 @@ export function LandingNavbar() {
             to="/auth/signup"
             search={{ returnTo: "/dashboard" }}
             onClick={() => setMobileOpen(false)}
-            className="block text-muted-foreground transition-colors hover:text-base-content"
-          >
+            className="block text-muted-foreground transition-colors hover:text-base-content">
             [ Sign up ]
           </Link>
           <Link
             to="/auth"
             search={{ returnTo: pathname }}
             onClick={() => setMobileOpen(false)}
-            className="mt-3 block bg-primary px-4 py-2 text-center uppercase tracking-widest text-primary-content"
-          >
+            className="mt-3 block bg-primary px-4 py-2 text-center uppercase tracking-widest text-primary-content">
             Get Started →
           </Link>
         </div>

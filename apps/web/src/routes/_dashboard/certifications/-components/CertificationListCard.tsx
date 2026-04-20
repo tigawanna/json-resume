@@ -40,8 +40,7 @@ export function CertificationListCard({ certification, onDelete }: Certification
             size="icon"
             className="size-7"
             onClick={() => setOpen(true)}
-            data-test="certification-edit-btn"
-          >
+            data-test="certification-edit-btn">
             <Pencil className="size-3.5" />
           </Button>
           <Button
@@ -49,8 +48,7 @@ export function CertificationListCard({ certification, onDelete }: Certification
             size="icon"
             className="size-7"
             onClick={() => onDelete?.(certification.id)}
-            data-test="certification-delete-btn"
-          >
+            data-test="certification-delete-btn">
             <Trash2 className="size-3.5" />
           </Button>
         </div>

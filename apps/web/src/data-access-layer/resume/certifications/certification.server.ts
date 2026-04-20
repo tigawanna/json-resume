@@ -13,10 +13,7 @@ export async function listCertificationsForUser(
   if (keyword) {
     const pattern = `%${keyword}%`;
     conditions.push(
-      or(
-        like(resumeCertification.name, pattern),
-        like(resumeCertification.issuer, pattern),
-      )!,
+      or(like(resumeCertification.name, pattern), like(resumeCertification.issuer, pattern))!,
     );
   }
 
@@ -45,10 +42,7 @@ export async function listCertificationsForUser(
   }));
 }
 
-export async function deleteCertificationForUser(
-  certId: string,
-  userId: string,
-): Promise<void> {
+export async function deleteCertificationForUser(certId: string, userId: string): Promise<void> {
   const row = await db
     .select({ id: resumeCertification.id })
     .from(resumeCertification)

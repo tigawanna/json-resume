@@ -1,5 +1,11 @@
 import { Button } from "@/components/ui/button";
-import { Combobox, ComboboxContent, ComboboxInput, ComboboxItem, ComboboxList } from "@/components/ui/combobox";
+import {
+  Combobox,
+  ComboboxContent,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+} from "@/components/ui/combobox";
 import { DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -59,14 +65,12 @@ export function LanguageEditForm({ language, onSuccess }: LanguageEditFormProps)
         e.stopPropagation();
         form.handleSubmit();
       }}
-      className="flex flex-col gap-3"
-    >
+      className="flex flex-col gap-3">
       <form.AppField
         name="name"
         validators={{
           onChange: ({ value }) => (!value?.trim() ? "Language name is required" : undefined),
-        }}
-      >
+        }}>
         {(field) => (
           <div>
             <Label className="text-xs">Language</Label>
@@ -84,9 +88,13 @@ export function LanguageEditForm({ language, onSuccess }: LanguageEditFormProps)
             <Label className="text-xs">Proficiency</Label>
             <Combobox
               value={field.state.value}
-              onValueChange={(value) => field.handleChange(value ?? "")}
-            >
-              <ComboboxInput placeholder="Select or type..." showTrigger showClear disabled={false} />
+              onValueChange={(value) => field.handleChange(value ?? "")}>
+              <ComboboxInput
+                placeholder="Select or type..."
+                showTrigger
+                showClear
+                disabled={false}
+              />
               <ComboboxContent>
                 <ComboboxList>
                   {PROFICIENCY_OPTIONS.map((option) => (
@@ -105,8 +113,7 @@ export function LanguageEditForm({ language, onSuccess }: LanguageEditFormProps)
           type="button"
           variant="outline"
           onClick={() => form.reset()}
-          disabled={mutation.isPending}
-        >
+          disabled={mutation.isPending}>
           Cancel
         </Button>
         <Button type="submit" disabled={mutation.isPending || !form.state.isFormValid}>

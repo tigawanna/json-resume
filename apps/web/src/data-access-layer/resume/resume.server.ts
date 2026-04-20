@@ -578,9 +578,9 @@ export async function updateSkillGroup(
   if (input.skills !== undefined) {
     await db.delete(resumeSkill).where(eq(resumeSkill.groupId, groupId));
     if (input.skills.length > 0) {
-      await db.insert(resumeSkill).values(
-        input.skills.map((name, si) => ({ groupId, name, level: null, sortOrder: si })),
-      );
+      await db
+        .insert(resumeSkill)
+        .values(input.skills.map((name, si) => ({ groupId, name, level: null, sortOrder: si })));
     }
   }
 }

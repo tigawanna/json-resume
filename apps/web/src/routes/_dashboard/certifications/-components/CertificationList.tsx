@@ -14,10 +14,7 @@ export function CertificationList() {
       if (sq) {
         const pattern = `%${sq}%`;
         query = query.where(({ certification }) =>
-          or(
-            ilike(certification.name, pattern),
-            ilike(certification.issuer, pattern),
-          ),
+          or(ilike(certification.name, pattern), ilike(certification.issuer, pattern)),
         );
       }
       return query;

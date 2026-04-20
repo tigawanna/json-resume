@@ -47,10 +47,7 @@ export async function listVolunteersForUser(
   }));
 }
 
-export async function deleteVolunteerForUser(
-  volunteerId: string,
-  userId: string,
-): Promise<void> {
+export async function deleteVolunteerForUser(volunteerId: string, userId: string): Promise<void> {
   const row = await db
     .select({ id: resumeVolunteer.id })
     .from(resumeVolunteer)

@@ -44,9 +44,7 @@ function RouteComponent() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Languages</h1>
-          <p className="text-muted-foreground mt-1 text-sm">
-            Languages across all your resumes.
-          </p>
+          <p className="text-muted-foreground mt-1 text-sm">Languages across all your resumes.</p>
         </div>
       </div>
       <SearchBox

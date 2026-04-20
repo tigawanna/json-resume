@@ -10,9 +10,7 @@ import { SkillGroupEditForm } from "./SkillGroupEditForm";
 function parseSkills(skills: string): string[] {
   try {
     const parsed: unknown = JSON.parse(skills);
-    return Array.isArray(parsed)
-      ? parsed.filter((x): x is string => typeof x === "string")
-      : [];
+    return Array.isArray(parsed) ? parsed.filter((x): x is string => typeof x === "string") : [];
   } catch {
     return [];
   }
@@ -60,8 +58,7 @@ export function SkillGroupListCard({ skillGroup, onDelete }: SkillGroupListCardP
             size="icon"
             className="size-7"
             onClick={() => setOpen(true)}
-            data-test="skill-group-edit-btn"
-          >
+            data-test="skill-group-edit-btn">
             <Pencil className="size-3.5" />
           </Button>
           <Button
@@ -69,8 +66,7 @@ export function SkillGroupListCard({ skillGroup, onDelete }: SkillGroupListCardP
             size="icon"
             className="size-7"
             onClick={() => onDelete?.(skillGroup.id)}
-            data-test="skill-group-delete-btn"
-          >
+            data-test="skill-group-delete-btn">
             <Trash2 className="size-3.5" />
           </Button>
         </div>

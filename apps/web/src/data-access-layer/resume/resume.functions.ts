@@ -360,7 +360,14 @@ export const removeSkillGroup = createServerFn({ method: "POST" })
 export const editCertification = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
   .inputValidator(
-    (input: { id: string; name?: string; issuer?: string; date?: string; url?: string; sortOrder?: number }) => input,
+    (input: {
+      id: string;
+      name?: string;
+      issuer?: string;
+      date?: string;
+      url?: string;
+      sortOrder?: number;
+    }) => input,
   )
   .handler(async ({ data }) => {
     const { id, ...rest } = data;
@@ -431,7 +438,8 @@ export const removeLanguage = createServerFn({ method: "POST" })
 export const editContact = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
   .inputValidator(
-    (input: { id: string; type?: string; value?: string; label?: string; sortOrder?: number }) => input,
+    (input: { id: string; type?: string; value?: string; label?: string; sortOrder?: number }) =>
+      input,
   )
   .handler(async ({ data }) => {
     const { id, ...rest } = data;

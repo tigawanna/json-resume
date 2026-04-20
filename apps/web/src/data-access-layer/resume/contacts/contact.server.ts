@@ -45,10 +45,7 @@ export async function listContactsForUser(
   }));
 }
 
-export async function deleteContactForUser(
-  contactId: string,
-  userId: string,
-): Promise<void> {
+export async function deleteContactForUser(contactId: string, userId: string): Promise<void> {
   const row = await db
     .select({ id: resumeContact.id })
     .from(resumeContact)

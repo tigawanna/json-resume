@@ -26,9 +26,7 @@ export function VolunteerListCard({ volunteer, onDelete }: VolunteerListCardProp
               {volunteer.role && (
                 <CardDescription className="mt-1 text-xs">{volunteer.role}</CardDescription>
               )}
-              {dateRange && (
-                <p className="text-muted-foreground mt-1 text-xs">{dateRange}</p>
-              )}
+              {dateRange && <p className="text-muted-foreground mt-1 text-xs">{dateRange}</p>}
               {volunteer.description && (
                 <p className="text-muted-foreground mt-1 line-clamp-2 text-xs">
                   {volunteer.description}
@@ -46,8 +44,7 @@ export function VolunteerListCard({ volunteer, onDelete }: VolunteerListCardProp
             size="icon"
             className="size-7"
             onClick={() => setOpen(true)}
-            data-test="volunteer-edit-btn"
-          >
+            data-test="volunteer-edit-btn">
             <Pencil className="size-3.5" />
           </Button>
           <Button
@@ -55,8 +52,7 @@ export function VolunteerListCard({ volunteer, onDelete }: VolunteerListCardProp
             size="icon"
             className="size-7"
             onClick={() => onDelete?.(volunteer.id)}
-            data-test="volunteer-delete-btn"
-          >
+            data-test="volunteer-delete-btn">
             <Trash2 className="size-3.5" />
           </Button>
         </div>

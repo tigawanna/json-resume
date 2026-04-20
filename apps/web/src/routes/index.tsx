@@ -1,11 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import {
-  LandingNavbar,
-  LandingHero,
-  LandingFeatures,
-  LandingShowcase,
   LandingCTA,
+  LandingFeatures,
   LandingFooter,
+  LandingHero,
+  LandingNavbar,
+  LandingShowcase,
 } from "./-components/landing";
 
 export const Route = createFileRoute("/")({ component: LandingPage });

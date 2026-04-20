@@ -1,5 +1,11 @@
 import { Button } from "@/components/ui/button";
-import { Combobox, ComboboxContent, ComboboxInput, ComboboxItem, ComboboxList } from "@/components/ui/combobox";
+import {
+  Combobox,
+  ComboboxContent,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+} from "@/components/ui/combobox";
 import { DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -60,22 +66,24 @@ export function ContactEditForm({ contact, onSuccess }: ContactEditFormProps) {
         e.stopPropagation();
         form.handleSubmit();
       }}
-      className="flex flex-col gap-3"
-    >
+      className="flex flex-col gap-3">
       <form.AppField
         name="type"
         validators={{
           onChange: ({ value }) => (!value?.trim() ? "Type is required" : undefined),
-        }}
-      >
+        }}>
         {(field) => (
           <div>
             <Label className="text-xs">Type</Label>
             <Combobox
               value={field.state.value}
-              onValueChange={(value) => field.handleChange(value ?? "")}
-            >
-              <ComboboxInput placeholder="Select or type..." showTrigger showClear disabled={false} />
+              onValueChange={(value) => field.handleChange(value ?? "")}>
+              <ComboboxInput
+                placeholder="Select or type..."
+                showTrigger
+                showClear
+                disabled={false}
+              />
               <ComboboxContent>
                 <ComboboxList>
                   {CONTACT_TYPE_OPTIONS.map((option) => (
@@ -93,8 +101,7 @@ export function ContactEditForm({ contact, onSuccess }: ContactEditFormProps) {
         name="value"
         validators={{
           onChange: ({ value }) => (!value?.trim() ? "Value is required" : undefined),
-        }}
-      >
+        }}>
         {(field) => (
           <div>
             <Label className="text-xs">Value</Label>
@@ -124,8 +131,7 @@ export function ContactEditForm({ contact, onSuccess }: ContactEditFormProps) {
           type="button"
           variant="outline"
           onClick={() => form.reset()}
-          disabled={mutation.isPending}
-        >
+          disabled={mutation.isPending}>
           Cancel
         </Button>
         <Button type="submit" disabled={mutation.isPending || !form.state.isFormValid}>
