@@ -10,23 +10,23 @@ import {
 } from "@/components/ui/empty";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { resumeDetailToDocument } from "@/data-access-layer/resume/resume-converters";
-import { resumeDetailQueryOptions } from "@/data-access-layer/resume/resume-query-options";
+import { resumeDetailQueryOptions, resumeListQueryOptions } from "@/data-access-layer/resume/resume-query-options";
 import { updateResumeMeta } from "@/data-access-layer/resume/resume.functions";
 import { resumeCollection } from "@/data-access-layer/resume/resumes-query-collection";
 import { TemplateId } from "@/features/resume/resume-schema";
 import { unwrapUnknownError } from "@/utils/errors";
-import { eq, useLiveQuery } from "@tanstack/react-db";
+import { eq, useLiveSuspenseQuery } from "@tanstack/react-db";
 import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { File, Save } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
+import { NewResumeButton } from "../-components/NewResumeButton";
 import { PromptTab } from "./-components/PromptTab";
 import { ResumeEditTab } from "./-components/ResumeEditTab";
 import { ResumePreviewTab } from "./-components/ResumePreviewTab";
 import { TemplatePicker } from "./-components/TemplatePicker";
-
 
 const tabsList = ["edit", "preview", "json", "prompt"] as const;
 const tabSchema = z.enum(tabsList).default("edit").catch("edit");
@@ -48,7 +48,7 @@ function RouteComponent() {
   const { resumeId } = Route.useParams();
   const { data: serverResume } = useSuspenseQuery(resumeDetailQueryOptions(resumeId));
 
-  const { data: resume } = useLiveQuery((q) =>
+  const { data: resume } = useLiveSuspenseQuery((q) =>
     q
       .from({ resume: resumeCollection })
       .where(({ resume }) => eq(resume.id, resumeId))
@@ -77,11 +77,12 @@ function RouteComponent() {
     mutationFn: async () => {
       await updateResumeMeta({ data: { id: resumeId, templateId: selectedTemplate } });
     },
-    onSuccess() {
+   async onSuccess(_,__,___,ctx) {
       resumeCollection.utils.writeUpdate({
         id: resumeId,
         templateId: selectedTemplate,
       });
+     await ctx.client.invalidateQueries(resumeListQueryOptions)
       toast.success("Template saved");
     },
     onError(err: unknown) {
@@ -115,8 +116,7 @@ function RouteComponent() {
             </EmptyDescription>
           </EmptyHeader>
           <EmptyContent className="flex-row justify-center gap-2">
-            <Button>Create Resume</Button>
-            <Button variant="outline">Import Resume</Button>
+            <NewResumeButton />
           </EmptyContent>
         </Empty>
       </div>
