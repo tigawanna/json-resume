@@ -1,6 +1,7 @@
 import { cloneResumeMuationOptions } from "@/data-access-layer/resume/resume-mutatin-options";
-import { resumeListQueryOptions } from "@/data-access-layer/resume/resume-query-options";
-import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
+import { resumesCollection } from "@/data-access-layer/resume/resumes-query-collection";
+import { useLiveSuspenseQuery } from "@tanstack/react-db";
+import { useMutation } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { FileText } from "lucide-react";
 import { NewResumeButton } from "./-components/NewResumeButton";
@@ -8,7 +9,6 @@ import { ResumeListCard } from "./-components/ResumeListCard";
 
 export const Route = createFileRoute("/_dashboard/resumes/")({
   component: ResumeListPage,
-  loader: ({ context }) => context.queryClient.ensureQueryData(resumeListQueryOptions),
   head: () => ({
     meta: [{ title: "Resumes", description: "Manage your resumes" }],
   }),
@@ -16,7 +16,7 @@ export const Route = createFileRoute("/_dashboard/resumes/")({
 });
 
 function ResumeListPage() {
-  const { data: resumes } = useSuspenseQuery(resumeListQueryOptions);
+  const { data: resumes } = useLiveSuspenseQuery((q) => q.from({ resume: resumesCollection }));
   const cloneMutation = useMutation(cloneResumeMuationOptions);
 
   return (

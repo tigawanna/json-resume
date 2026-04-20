@@ -10,9 +10,9 @@ import {
 } from "@/components/ui/empty";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { resumeDetailToDocument } from "@/data-access-layer/resume/resume-converters";
-import { resumeDetailQueryOptions, resumeListQueryOptions } from "@/data-access-layer/resume/resume-query-options";
+import { resumeDetailQueryOptions } from "@/data-access-layer/resume/resume-query-options";
 import { updateResumeMeta } from "@/data-access-layer/resume/resume.functions";
-import { resumeCollection } from "@/data-access-layer/resume/resumes-query-collection";
+import { resumeCollection, resumesCollection } from "@/data-access-layer/resume/resumes-query-collection";
 import { TemplateId } from "@/features/resume/resume-schema";
 import { unwrapUnknownError } from "@/utils/errors";
 import { eq, useLiveSuspenseQuery } from "@tanstack/react-db";
@@ -77,12 +77,16 @@ function RouteComponent() {
     mutationFn: async () => {
       await updateResumeMeta({ data: { id: resumeId, templateId: selectedTemplate } });
     },
-   async onSuccess(_,__,___,ctx) {
+    async onSuccess() {
       resumeCollection.utils.writeUpdate({
         id: resumeId,
         templateId: selectedTemplate,
       });
-     await ctx.client.invalidateQueries(resumeListQueryOptions)
+      resumesCollection.utils.writeUpdate({
+        id: resumeId,
+        templateId: selectedTemplate,
+        updatedAt: new Date().toISOString(),
+      });
       toast.success("Template saved");
     },
     onError(err: unknown) {

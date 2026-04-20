@@ -7,7 +7,7 @@ import type { ResumeDocumentV1, TemplateId } from "@/features/resume/resume-sche
 import { resumeDocumentToSpec } from "@/features/resume/resume-to-spec";
 import { JSONUIProvider, Renderer } from "@json-render/react";
 import { pdf } from "@react-pdf/renderer";
-import { eq, useLiveQuery } from "@tanstack/react-db";
+import { eq, useLiveSuspenseQuery } from "@tanstack/react-db";
 import { Download, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -19,7 +19,7 @@ interface ResumePreviewTabProps {
 }
 
 export function ResumePreviewTab({ resumeId, selectedTemplate, doc }: ResumePreviewTabProps) {
-  const { data: resume } = useLiveQuery((q) =>
+  const { data: resume } = useLiveSuspenseQuery((q) =>
     q
       .from({ resume: resumeCollection })
       .where(({ resume }) => eq(resume.id, resumeId))

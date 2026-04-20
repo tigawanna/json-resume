@@ -2,7 +2,7 @@ import { updateSummary } from "@/data-access-layer/resume/resume.functions";
 import { resumeCollection } from "@/data-access-layer/resume/resumes-query-collection";
 import { useAppForm } from "@/lib/tanstack/form";
 import { unwrapUnknownError } from "@/utils/errors";
-import { eq, useLiveQuery } from "@tanstack/react-db";
+import { eq, useLiveSuspenseQuery } from "@tanstack/react-db";
 import { formOptions } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -16,7 +16,7 @@ const formOpts = formOptions({
 });
 
 export function SummaryForm({ resumeId }: SummaryFormProps) {
-  const { data: resume } = useLiveQuery((q) =>
+  const { data: resume } = useLiveSuspenseQuery((q) =>
     q
       .from({ resume: resumeCollection })
       .where(({ resume }) => eq(resume.id, resumeId))

@@ -1,12 +1,12 @@
 import { createDefaultResume } from "@/features/resume/resume-schema";
+import { isErrorThrownByRedirect } from "@/lib/tanstack/router/utils";
 import { unwrapUnknownError } from "@/utils/errors";
 import { mutationOptions } from "@tanstack/react-query";
 import { redirect } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { createResume, deleteResume, getResume } from "./resume.functions";
 import { resumeDetailToDocument } from "./resume-converters";
-import { isErrorThrownByRedirect } from "@/lib/tanstack/router/utils";
-import { resumeListQueryOptions } from "./resume-query-options";
+import { createResume, deleteResume, getResume } from "./resume.functions";
+import { resumesCollection } from "./resumes-query-collection";
 
 export const createResumeMuationOptions = mutationOptions({
   mutationFn: async () => {
@@ -20,8 +20,18 @@ export const createResumeMuationOptions = mutationOptions({
       },
     });
   },
-  onSuccess(result,__,___,ctx) {
-    ctx.client.invalidateQueries(resumeListQueryOptions);
+  onSuccess(result) {
+    const now = new Date().toISOString();
+    resumesCollection.utils.writeInsert({
+      id: result.id,
+      name: "Untitled Resume",
+      fullName: "",
+      headline: "",
+      description: "",
+      templateId: "classic",
+      createdAt: now,
+      updatedAt: now,
+    });
     toast.success("Resume created");
     throw redirect({
       to: "/resumes/$resumeId",
@@ -45,17 +55,29 @@ export const cloneResumeMuationOptions = mutationOptions({
     const source = await getResume({ data: { id: sourceId } });
     if (!source) throw new Error("Source resume not found");
     const doc = resumeDetailToDocument(source);
-    return createResume({
+    const clonedName = `${source.name} (copy)`;
+    const result = await createResume({
       data: {
-        name: `${source.name} (copy)`,
+        name: clonedName,
         description: source.description,
         jobDescription: source.jobDescription,
         doc,
       },
     });
+    return { id: result.id, name: clonedName, source };
   },
-  onSuccess(result,__,___,ctx) {
-    ctx.client.invalidateQueries(resumeListQueryOptions);
+  onSuccess(result) {
+    const now = new Date().toISOString();
+    resumesCollection.utils.writeInsert({
+      id: result.id,
+      name: result.name,
+      fullName: result.source.fullName,
+      headline: result.source.headline,
+      description: result.source.description,
+      templateId: result.source.templateId,
+      createdAt: now,
+      updatedAt: now,
+    });
     toast.success("Resume cloned");
     throw redirect({
       to: "/resumes/$resumeId",
@@ -71,13 +93,12 @@ export const cloneResumeMuationOptions = mutationOptions({
     toast.error("Failed to clone resume", {
       description: unwrapUnknownError(err).message,
     });
-  }
+  },
 });
 
 export const deleteResumeMutationOptions = mutationOptions({
   mutationFn: async (resumeId: string) => deleteResume({ data: { id: resumeId } }),
-  onSuccess(_, __, ___, ctx) {
-    ctx.client.invalidateQueries(resumeListQueryOptions);
+  onSuccess() {
     toast.success("Resume deleted");
   },
   onError(err: unknown) {

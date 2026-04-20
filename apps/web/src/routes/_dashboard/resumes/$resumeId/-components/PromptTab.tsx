@@ -1,16 +1,16 @@
-import { useRouter } from "@tanstack/react-router";
-import { PromptCopySection } from "./PromptCopySection";
-import { eq, useLiveQuery } from "@tanstack/react-db";
-import { resumeCollection } from "@/data-access-layer/resume/resumes-query-collection";
-import { useMutation } from "@tanstack/react-query";
 import { replaceResumeDoc } from "@/data-access-layer/resume/resume.functions";
-import { toast } from "sonner";
-import { unwrapUnknownError } from "@/utils/errors";
+import { resumeCollection } from "@/data-access-layer/resume/resumes-query-collection";
 import { ResumeDocumentV1 } from "@/features/resume/resume-schema";
+import { unwrapUnknownError } from "@/utils/errors";
+import { eq, useLiveSuspenseQuery } from "@tanstack/react-db";
+import { useMutation } from "@tanstack/react-query";
+import { useRouter } from "@tanstack/react-router";
+import { toast } from "sonner";
+import { PromptCopySection } from "./PromptCopySection";
 
 export function PromptTab({ resumeId, doc }: { resumeId: string; doc: ResumeDocumentV1 }) {
   const router = useRouter();
-  const { data: resume } = useLiveQuery((q) =>
+  const { data: resume } = useLiveSuspenseQuery((q) =>
     q
       .from({ resume: resumeCollection })
       .where(({ resume }) => eq(resume.id, resumeId))

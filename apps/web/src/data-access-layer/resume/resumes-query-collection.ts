@@ -1,7 +1,7 @@
 import { queryClient } from "@/lib/tanstack/query/queryclient";
 import { createCollection, parseLoadSubsetOptions } from "@tanstack/db";
 import { queryCollectionOptions } from "@tanstack/query-db-collection";
-import { getResume } from "./resume.functions";
+import { getResume, listResumes } from "./resume.functions";
 
 export const resumeCollection = createCollection(
   queryCollectionOptions({
@@ -22,6 +22,16 @@ export const resumeCollection = createCollection(
       }
       return [resume];
     },
+    getKey: (resume) => resume.id,
+    queryClient,
+  }),
+);
+
+export const resumesCollection = createCollection(
+  queryCollectionOptions({
+    id: "resumes-list",
+    queryKey: ["resumes"],
+    queryFn: async () => listResumes(),
     getKey: (resume) => resume.id,
     queryClient,
   }),

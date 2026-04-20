@@ -4,7 +4,7 @@ import { Label } from "@/components/ui/label";
 import { updateContacts } from "@/data-access-layer/resume/resume.functions";
 import { resumeCollection } from "@/data-access-layer/resume/resumes-query-collection";
 import { unwrapUnknownError } from "@/utils/errors";
-import { eq, useLiveQuery } from "@tanstack/react-db";
+import { eq, useLiveSuspenseQuery } from "@tanstack/react-db";
 import { useMutation } from "@tanstack/react-query";
 import { Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
@@ -21,7 +21,7 @@ interface ContactRow {
 }
 
 export function ContactsForm({ resumeId }: ContactsFormProps) {
-  const { data: resume } = useLiveQuery((q) =>
+  const { data: resume } = useLiveSuspenseQuery((q) =>
     q
       .from({ resume: resumeCollection })
       .where(({ resume }) => eq(resume.id, resumeId))

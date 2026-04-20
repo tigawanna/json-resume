@@ -1,6 +1,6 @@
 import { resumeDetailToDocument } from "@/data-access-layer/resume/resume-converters";
 import { replaceResumeDoc, updateResumeMeta } from "@/data-access-layer/resume/resume.functions";
-import { resumeCollection } from "@/data-access-layer/resume/resumes-query-collection";
+import { resumeCollection, resumesCollection } from "@/data-access-layer/resume/resumes-query-collection";
 import {
   resumeDocumentV1Schema,
   safeParseResumeJson,
@@ -8,7 +8,7 @@ import {
 } from "@/features/resume/resume-schema";
 import { useDebouncedValue } from "@/hooks/use-debouncer";
 import { unwrapUnknownError } from "@/utils/errors";
-import { eq, useLiveQuery } from "@tanstack/react-db";
+import { eq, useLiveSuspenseQuery } from "@tanstack/react-db";
 import { useMutation } from "@tanstack/react-query";
 import type { JsonValue } from "@visual-json/core";
 import { DiffView, JsonEditor } from "@visual-json/react";
@@ -25,7 +25,7 @@ interface ResumeJsonTabProps {
 }
 
 export function ResumeJsonTab({ resumeId }: ResumeJsonTabProps) {
-  const { data: resume } = useLiveQuery((q) =>
+  const { data: resume } = useLiveSuspenseQuery((q) =>
     q
       .from({ resume: resumeCollection })
       .where(({ resume }) => eq(resume.id, resumeId))
@@ -110,6 +110,7 @@ export function ResumeJsonTab({ resumeId }: ResumeJsonTabProps) {
       setPendingDoc(null);
       // Refetch the full resume into the collection so all panels reflect JSON changes
       resumeCollection.utils.refetch();
+      resumesCollection.utils.refetch();
       toast.success("JSON saved");
     },
     onError(err: unknown) {

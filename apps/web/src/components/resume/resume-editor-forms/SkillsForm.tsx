@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { searchSkills, updateSkillGroups } from "@/data-access-layer/resume/resume.functions";
 import { resumeCollection } from "@/data-access-layer/resume/resumes-query-collection";
 import { unwrapUnknownError } from "@/utils/errors";
-import { eq, useLiveQuery } from "@tanstack/react-db";
+import { eq, useLiveSuspenseQuery } from "@tanstack/react-db";
 import { useMutation } from "@tanstack/react-query";
 import { Library, Plus, Trash2, X } from "lucide-react";
 import { useState } from "react";
@@ -21,7 +21,7 @@ interface SkillGroupDraft {
 }
 
 export function SkillsForm({ resumeId }: SkillsFormProps) {
-  const { data: resume } = useLiveQuery((q) =>
+  const { data: resume } = useLiveSuspenseQuery((q) =>
     q
       .from({ resume: resumeCollection })
       .where(({ resume }) => eq(resume.id, resumeId))

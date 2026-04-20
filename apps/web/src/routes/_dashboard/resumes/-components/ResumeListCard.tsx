@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/context-menu";
 import { deleteResumeMutationOptions } from "@/data-access-layer/resume/resume-mutatin-options";
 import type { ResumeListItemDTO } from "@/data-access-layer/resume/resume.types";
+import { resumesCollection } from "@/data-access-layer/resume/resumes-query-collection";
 import { useMutation } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { Copy, FileText, Trash2 } from "lucide-react";
@@ -19,6 +20,11 @@ interface ResumeListCardProps {
 
 export function ResumeListCard({ resume, onClone }: ResumeListCardProps) {
   const deleteMutation = useMutation(deleteResumeMutationOptions);
+
+  const handleDelete = (resumeId: string) => {
+    resumesCollection.utils.writeDelete(resumeId);
+    deleteMutation.mutate(resumeId);
+  };
 
   return (
     <ContextMenu>
@@ -53,7 +59,7 @@ export function ResumeListCard({ resume, onClone }: ResumeListCardProps) {
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              deleteMutation.mutate(resume.id);
+              handleDelete(resume.id);
             }}
             disabled={deleteMutation.isPending}
             data-test="resume-delete-btn">
@@ -70,7 +76,7 @@ export function ResumeListCard({ resume, onClone }: ResumeListCardProps) {
           Clone Resume
         </ContextMenuItem>
         <ContextMenuItem
-          onClick={() => deleteMutation.mutate(resume.id)}
+          onClick={() => handleDelete(resume.id)}
           disabled={deleteMutation.isPending}
           className="text-destructive gap-2"
           data-test="resume-context-delete-btn">
