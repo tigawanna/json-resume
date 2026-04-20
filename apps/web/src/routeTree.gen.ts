@@ -24,7 +24,10 @@ import { Route as DotwellKnownOauthProtectedResourceRouteImport } from './routes
 import { Route as DotwellKnownOauthAuthorizationServerRouteImport } from './routes/[.]well-known/oauth-authorization-server'
 import { Route as DashboardSettingsIndexRouteImport } from './routes/_dashboard/settings/index'
 import { Route as DashboardResumesIndexRouteImport } from './routes/_dashboard/resumes/index'
+import { Route as DashboardResumeProjectsIndexRouteImport } from './routes/_dashboard/resume-projects/index'
 import { Route as DashboardProjectsIndexRouteImport } from './routes/_dashboard/projects/index'
+import { Route as DashboardExperiencesIndexRouteImport } from './routes/_dashboard/experiences/index'
+import { Route as DashboardEducationIndexRouteImport } from './routes/_dashboard/education/index'
 import { Route as DashboardAdminIndexRouteImport } from './routes/_dashboard/admin/index'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as DashboardResumesResumeIdIndexRouteImport } from './routes/_dashboard/resumes/$resumeId/index'
@@ -104,9 +107,26 @@ const DashboardResumesIndexRoute = DashboardResumesIndexRouteImport.update({
   path: '/resumes/',
   getParentRoute: () => DashboardLayoutRoute,
 } as any)
+const DashboardResumeProjectsIndexRoute =
+  DashboardResumeProjectsIndexRouteImport.update({
+    id: '/resume-projects/',
+    path: '/resume-projects/',
+    getParentRoute: () => DashboardLayoutRoute,
+  } as any)
 const DashboardProjectsIndexRoute = DashboardProjectsIndexRouteImport.update({
   id: '/projects/',
   path: '/projects/',
+  getParentRoute: () => DashboardLayoutRoute,
+} as any)
+const DashboardExperiencesIndexRoute =
+  DashboardExperiencesIndexRouteImport.update({
+    id: '/experiences/',
+    path: '/experiences/',
+    getParentRoute: () => DashboardLayoutRoute,
+  } as any)
+const DashboardEducationIndexRoute = DashboardEducationIndexRouteImport.update({
+  id: '/education/',
+  path: '/education/',
   getParentRoute: () => DashboardLayoutRoute,
 } as any)
 const DashboardAdminIndexRoute = DashboardAdminIndexRouteImport.update({
@@ -140,7 +160,10 @@ export interface FileRoutesByFullPath {
   '/auth/': typeof AuthIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/admin/': typeof DashboardAdminIndexRoute
+  '/education/': typeof DashboardEducationIndexRoute
+  '/experiences/': typeof DashboardExperiencesIndexRoute
   '/projects/': typeof DashboardProjectsIndexRoute
+  '/resume-projects/': typeof DashboardResumeProjectsIndexRoute
   '/resumes/': typeof DashboardResumesIndexRoute
   '/settings/': typeof DashboardSettingsIndexRoute
   '/resumes/$resumeId/': typeof DashboardResumesResumeIdIndexRoute
@@ -158,7 +181,10 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/admin': typeof DashboardAdminIndexRoute
+  '/education': typeof DashboardEducationIndexRoute
+  '/experiences': typeof DashboardExperiencesIndexRoute
   '/projects': typeof DashboardProjectsIndexRoute
+  '/resume-projects': typeof DashboardResumeProjectsIndexRoute
   '/resumes': typeof DashboardResumesIndexRoute
   '/settings': typeof DashboardSettingsIndexRoute
   '/resumes/$resumeId': typeof DashboardResumesResumeIdIndexRoute
@@ -180,7 +206,10 @@ export interface FileRoutesById {
   '/auth/': typeof AuthIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/_dashboard/admin/': typeof DashboardAdminIndexRoute
+  '/_dashboard/education/': typeof DashboardEducationIndexRoute
+  '/_dashboard/experiences/': typeof DashboardExperiencesIndexRoute
   '/_dashboard/projects/': typeof DashboardProjectsIndexRoute
+  '/_dashboard/resume-projects/': typeof DashboardResumeProjectsIndexRoute
   '/_dashboard/resumes/': typeof DashboardResumesIndexRoute
   '/_dashboard/settings/': typeof DashboardSettingsIndexRoute
   '/_dashboard/resumes/$resumeId/': typeof DashboardResumesResumeIdIndexRoute
@@ -201,7 +230,10 @@ export interface FileRouteTypes {
     | '/auth/'
     | '/api/auth/$'
     | '/admin/'
+    | '/education/'
+    | '/experiences/'
     | '/projects/'
+    | '/resume-projects/'
     | '/resumes/'
     | '/settings/'
     | '/resumes/$resumeId/'
@@ -219,7 +251,10 @@ export interface FileRouteTypes {
     | '/auth'
     | '/api/auth/$'
     | '/admin'
+    | '/education'
+    | '/experiences'
     | '/projects'
+    | '/resume-projects'
     | '/resumes'
     | '/settings'
     | '/resumes/$resumeId'
@@ -240,7 +275,10 @@ export interface FileRouteTypes {
     | '/auth/'
     | '/api/auth/$'
     | '/_dashboard/admin/'
+    | '/_dashboard/education/'
+    | '/_dashboard/experiences/'
     | '/_dashboard/projects/'
+    | '/_dashboard/resume-projects/'
     | '/_dashboard/resumes/'
     | '/_dashboard/settings/'
     | '/_dashboard/resumes/$resumeId/'
@@ -364,11 +402,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardResumesIndexRouteImport
       parentRoute: typeof DashboardLayoutRoute
     }
+    '/_dashboard/resume-projects/': {
+      id: '/_dashboard/resume-projects/'
+      path: '/resume-projects'
+      fullPath: '/resume-projects/'
+      preLoaderRoute: typeof DashboardResumeProjectsIndexRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
     '/_dashboard/projects/': {
       id: '/_dashboard/projects/'
       path: '/projects'
       fullPath: '/projects/'
       preLoaderRoute: typeof DashboardProjectsIndexRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
+    '/_dashboard/experiences/': {
+      id: '/_dashboard/experiences/'
+      path: '/experiences'
+      fullPath: '/experiences/'
+      preLoaderRoute: typeof DashboardExperiencesIndexRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
+    '/_dashboard/education/': {
+      id: '/_dashboard/education/'
+      path: '/education'
+      fullPath: '/education/'
+      preLoaderRoute: typeof DashboardEducationIndexRouteImport
       parentRoute: typeof DashboardLayoutRoute
     }
     '/_dashboard/admin/': {
@@ -399,7 +458,10 @@ interface DashboardLayoutRouteChildren {
   DashboardDashboardRoute: typeof DashboardDashboardRoute
   DashboardProfileRoute: typeof DashboardProfileRoute
   DashboardAdminIndexRoute: typeof DashboardAdminIndexRoute
+  DashboardEducationIndexRoute: typeof DashboardEducationIndexRoute
+  DashboardExperiencesIndexRoute: typeof DashboardExperiencesIndexRoute
   DashboardProjectsIndexRoute: typeof DashboardProjectsIndexRoute
+  DashboardResumeProjectsIndexRoute: typeof DashboardResumeProjectsIndexRoute
   DashboardResumesIndexRoute: typeof DashboardResumesIndexRoute
   DashboardSettingsIndexRoute: typeof DashboardSettingsIndexRoute
   DashboardResumesResumeIdIndexRoute: typeof DashboardResumesResumeIdIndexRoute
@@ -409,7 +471,10 @@ const DashboardLayoutRouteChildren: DashboardLayoutRouteChildren = {
   DashboardDashboardRoute: DashboardDashboardRoute,
   DashboardProfileRoute: DashboardProfileRoute,
   DashboardAdminIndexRoute: DashboardAdminIndexRoute,
+  DashboardEducationIndexRoute: DashboardEducationIndexRoute,
+  DashboardExperiencesIndexRoute: DashboardExperiencesIndexRoute,
   DashboardProjectsIndexRoute: DashboardProjectsIndexRoute,
+  DashboardResumeProjectsIndexRoute: DashboardResumeProjectsIndexRoute,
   DashboardResumesIndexRoute: DashboardResumesIndexRoute,
   DashboardSettingsIndexRoute: DashboardSettingsIndexRoute,
   DashboardResumesResumeIdIndexRoute: DashboardResumesResumeIdIndexRoute,
