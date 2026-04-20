@@ -6,13 +6,11 @@ import {
   ContextMenuItem,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
-import { deleteResume } from "@/data-access-layer/resume/resume.functions";
+import { deleteResumeMutationOptions } from "@/data-access-layer/resume/resume-mutatin-options";
 import type { ResumeListItemDTO } from "@/data-access-layer/resume/resume.types";
-import { unwrapUnknownError } from "@/utils/errors";
 import { useMutation } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { Copy, FileText, Trash2 } from "lucide-react";
-import { toast } from "sonner";
 
 interface ResumeListCardProps {
   resume: ResumeListItemDTO;
@@ -20,24 +18,17 @@ interface ResumeListCardProps {
 }
 
 export function ResumeListCard({ resume, onClone }: ResumeListCardProps) {
-  const deleteMutation = useMutation({
-    mutationFn: async () => deleteResume({ data: { id: resume.id } }),
-    onSuccess() {
-      toast.success("Resume deleted");
-    },
-    onError(err: unknown) {
-      toast.error("Failed to delete resume", {
-        description: unwrapUnknownError(err).message,
-      });
-    },
-    meta: { invalidates: [["resumes"]] },
-  });
+  const deleteMutation = useMutation(deleteResumeMutationOptions);
 
   return (
     <ContextMenu>
       <ContextMenuTrigger asChild>
         <Card className="group relative" data-test={`resume-card-${resume.id}`}>
-          <Link to="/resumes/$resumeId" params={{ resumeId: resume.id }} search={(prev)=>({ ...prev,tab: "edit" })} className="block">
+          <Link
+            to="/resumes/$resumeId"
+            params={{ resumeId: resume.id }}
+            search={(prev) => ({ ...prev, tab: "edit" })}
+            className="block">
             <CardHeader>
               <div className="flex items-start gap-3">
                 <FileText className="text-primary mt-0.5 size-5 shrink-0" />
@@ -62,11 +53,10 @@ export function ResumeListCard({ resume, onClone }: ResumeListCardProps) {
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              deleteMutation.mutate();
+              deleteMutation.mutate(resume.id);
             }}
             disabled={deleteMutation.isPending}
-            data-test="resume-delete-btn"
-          >
+            data-test="resume-delete-btn">
             <Trash2 className="size-3.5" />
           </Button>
         </Card>
@@ -75,17 +65,15 @@ export function ResumeListCard({ resume, onClone }: ResumeListCardProps) {
         <ContextMenuItem
           onClick={() => onClone?.(resume.id)}
           className="gap-2"
-          data-test="resume-clone-btn"
-        >
+          data-test="resume-clone-btn">
           <Copy className="size-4" />
           Clone Resume
         </ContextMenuItem>
         <ContextMenuItem
-          onClick={() => deleteMutation.mutate()}
+          onClick={() => deleteMutation.mutate(resume.id)}
           disabled={deleteMutation.isPending}
           className="text-destructive gap-2"
-          data-test="resume-context-delete-btn"
-        >
+          data-test="resume-context-delete-btn">
           <Trash2 className="size-4" />
           Delete
         </ContextMenuItem>
