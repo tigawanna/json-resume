@@ -115,7 +115,7 @@ function EducationCard({
         description: unwrapUnknownError(err).message,
       });
     },
-    meta: { invalidates: [["resumes"]] },
+    meta: { invalidates: [["resumes"], ["education"]] },
   });
 
   const saveMutation = useMutation({
@@ -140,7 +140,7 @@ function EducationCard({
         description: unwrapUnknownError(err).message,
       });
     },
-    meta: { invalidates: [["resumes"]] },
+    meta: { invalidates: [["resumes"], ["education"]] },
   });
 
   if (!editing) {
@@ -292,7 +292,7 @@ function AddEducationForm({
         description: unwrapUnknownError(err).message,
       });
     },
-    meta: { invalidates: [["resumes"]] },
+    meta: { invalidates: [["resumes"], ["education"]] },
   });
 
   const form = useAppForm({

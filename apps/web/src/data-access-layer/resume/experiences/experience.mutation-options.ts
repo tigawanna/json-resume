@@ -14,5 +14,7 @@ export const deleteExperienceMutationOptions = mutationOptions({
       description: unwrapUnknownError(err).message,
     });
   },
-  meta: { invalidates: [[queryKeyPrefixes.experiences]] },
+  meta: {
+    invalidates: [[queryKeyPrefixes.experiences], [queryKeyPrefixes.resumes]],
+  },
 });

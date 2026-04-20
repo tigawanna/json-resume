@@ -14,5 +14,7 @@ export const deleteEducationMutationOptions = mutationOptions({
       description: unwrapUnknownError(err).message,
     });
   },
-  meta: { invalidates: [[queryKeyPrefixes.education]] },
+  meta: {
+    invalidates: [[queryKeyPrefixes.education], [queryKeyPrefixes.resumes]],
+  },
 });

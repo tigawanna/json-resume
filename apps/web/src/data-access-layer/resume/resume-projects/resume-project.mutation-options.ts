@@ -14,5 +14,7 @@ export const deleteResumeProjectMutationOptions = mutationOptions({
       description: unwrapUnknownError(err).message,
     });
   },
-  meta: { invalidates: [[queryKeyPrefixes.resumeProjects]] },
+  meta: {
+    invalidates: [[queryKeyPrefixes.resumeProjects], [queryKeyPrefixes.resumes]],
+  },
 });

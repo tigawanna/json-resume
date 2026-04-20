@@ -123,7 +123,7 @@ function ExperienceCard({ resumeId, experience, allExperiences }: ExperienceCard
         description: unwrapUnknownError(err).message,
       });
     },
-    meta: { invalidates: [["resumes"]] },
+    meta: { invalidates: [["resumes"], ["experiences"]] },
   });
 
   const saveMutation = useMutation({
@@ -146,7 +146,7 @@ function ExperienceCard({ resumeId, experience, allExperiences }: ExperienceCard
         description: unwrapUnknownError(err).message,
       });
     },
-    meta: { invalidates: [["resumes"]] },
+    meta: { invalidates: [["resumes"], ["experiences"]] },
   });
 
   const bulletMutation = useMutation({
@@ -176,7 +176,7 @@ function ExperienceCard({ resumeId, experience, allExperiences }: ExperienceCard
         description: unwrapUnknownError(err).message,
       });
     },
-    meta: { invalidates: [["resumes"]] },
+    meta: { invalidates: [["resumes"], ["experiences"]] },
   });
 
   function addBullet() {
@@ -444,7 +444,7 @@ function AddExperienceForm({
         description: unwrapUnknownError(err).message,
       });
     },
-    meta: { invalidates: [["resumes"]] },
+    meta: { invalidates: [["resumes"], ["experiences"]] },
   });
 
   const form = useAppForm({

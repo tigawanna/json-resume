@@ -122,7 +122,7 @@ function ProjectCard({
         description: unwrapUnknownError(err).message,
       });
     },
-    meta: { invalidates: [["resumes"]] },
+    meta: { invalidates: [["resumes"], ["resume-projects"]] },
   });
 
   const saveMutation = useMutation({
@@ -154,7 +154,7 @@ function ProjectCard({
         description: unwrapUnknownError(err).message,
       });
     },
-    meta: { invalidates: [["resumes"]] },
+    meta: { invalidates: [["resumes"], ["resume-projects"]] },
   });
 
   function handleTechKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
@@ -332,7 +332,7 @@ function AddProjectForm({
         description: unwrapUnknownError(err).message,
       });
     },
-    meta: { invalidates: [["resumes"]] },
+    meta: { invalidates: [["resumes"], ["resume-projects"]] },
   });
 
   const form = useAppForm({
