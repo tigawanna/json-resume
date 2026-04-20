@@ -5,8 +5,8 @@ import { getResume } from "./resume.functions";
 
 export const resumeCollection = createCollection(
   queryCollectionOptions({
-    id: "resumes",
-    queryKey: ["resumes"],
+    id: "one-resume",
+    queryKey: ["one-resume"],
     syncMode: "on-demand",
     queryFn: async (ctx) => {
       const parsed = parseLoadSubsetOptions(ctx.meta?.loadSubsetOptions);
