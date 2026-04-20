@@ -1,5 +1,8 @@
 import { updateResumeMeta } from "@/data-access-layer/resume/resume.functions";
-import { resumeCollection, resumesCollection } from "@/data-access-layer/resume/resumes-query-collection";
+import {
+  resumeCollection,
+  resumesCollection,
+} from "@/data-access-layer/resume/resumes-query-collection";
 import { useAppForm } from "@/lib/tanstack/form";
 import { unwrapUnknownError } from "@/utils/errors";
 import { eq, useLiveSuspenseQuery } from "@tanstack/react-db";

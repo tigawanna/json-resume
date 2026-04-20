@@ -1,6 +1,9 @@
 import { resumeDetailToDocument } from "@/data-access-layer/resume/resume-converters";
 import { replaceResumeDoc, updateResumeMeta } from "@/data-access-layer/resume/resume.functions";
-import { resumeCollection, resumesCollection } from "@/data-access-layer/resume/resumes-query-collection";
+import {
+  resumeCollection,
+  resumesCollection,
+} from "@/data-access-layer/resume/resumes-query-collection";
 import {
   resumeDocumentV1Schema,
   safeParseResumeJson,

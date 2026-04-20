@@ -12,7 +12,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { resumeDetailToDocument } from "@/data-access-layer/resume/resume-converters";
 import { resumeDetailQueryOptions } from "@/data-access-layer/resume/resume-query-options";
 import { updateResumeMeta } from "@/data-access-layer/resume/resume.functions";
-import { resumeCollection, resumesCollection } from "@/data-access-layer/resume/resumes-query-collection";
+import {
+  resumeCollection,
+  resumesCollection,
+} from "@/data-access-layer/resume/resumes-query-collection";
 import { TemplateId } from "@/features/resume/resume-schema";
 import { unwrapUnknownError } from "@/utils/errors";
 import { eq, useLiveSuspenseQuery } from "@tanstack/react-db";
