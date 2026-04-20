@@ -8,680 +8,687 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from "./routes/__root";
-import { Route as SearchRouteImport } from "./routes/search";
-import { Route as AuthLayoutRouteImport } from "./routes/auth/layout";
-import { Route as PublicLayoutRouteImport } from "./routes/_public/layout";
-import { Route as DashboardLayoutRouteImport } from "./routes/_dashboard/layout";
-import { Route as IndexRouteImport } from "./routes/index";
-import { Route as TestIndexRouteImport } from "./routes/test/index";
-import { Route as AuthIndexRouteImport } from "./routes/auth/index";
-import { Route as AuthSignupRouteImport } from "./routes/auth/signup";
-import { Route as AuthGithubRouteImport } from "./routes/auth/github";
-import { Route as PublicWorkbenchRouteImport } from "./routes/_public/workbench";
-import { Route as DashboardProfileRouteImport } from "./routes/_dashboard/profile";
-import { Route as DashboardDashboardRouteImport } from "./routes/_dashboard/dashboard";
-import { Route as DotwellKnownOauthProtectedResourceRouteImport } from "./routes/[.]well-known/oauth-protected-resource";
-import { Route as DotwellKnownOauthAuthorizationServerRouteImport } from "./routes/[.]well-known/oauth-authorization-server";
-import { Route as DashboardVolunteersIndexRouteImport } from "./routes/_dashboard/volunteers/index";
-import { Route as DashboardTalksIndexRouteImport } from "./routes/_dashboard/talks/index";
-import { Route as DashboardSummariesIndexRouteImport } from "./routes/_dashboard/summaries/index";
-import { Route as DashboardSkillGroupsIndexRouteImport } from "./routes/_dashboard/skill-groups/index";
-import { Route as DashboardSettingsIndexRouteImport } from "./routes/_dashboard/settings/index";
-import { Route as DashboardSavedProjectsIndexRouteImport } from "./routes/_dashboard/saved-projects/index";
-import { Route as DashboardResumesIndexRouteImport } from "./routes/_dashboard/resumes/index";
-import { Route as DashboardResumeProjectsIndexRouteImport } from "./routes/_dashboard/resume-projects/index";
-import { Route as DashboardReposIndexRouteImport } from "./routes/_dashboard/repos/index";
-import { Route as DashboardProjectsIndexRouteImport } from "./routes/_dashboard/projects/index";
-import { Route as DashboardLinksIndexRouteImport } from "./routes/_dashboard/links/index";
-import { Route as DashboardLanguagesIndexRouteImport } from "./routes/_dashboard/languages/index";
-import { Route as DashboardExperiencesIndexRouteImport } from "./routes/_dashboard/experiences/index";
-import { Route as DashboardEducationIndexRouteImport } from "./routes/_dashboard/education/index";
-import { Route as DashboardContactsIndexRouteImport } from "./routes/_dashboard/contacts/index";
-import { Route as DashboardCertificationsIndexRouteImport } from "./routes/_dashboard/certifications/index";
-import { Route as DashboardAdminIndexRouteImport } from "./routes/_dashboard/admin/index";
-import { Route as ApiAuthSplatRouteImport } from "./routes/api/auth/$";
-import { Route as DashboardResumesResumeIdIndexRouteImport } from "./routes/_dashboard/resumes/$resumeId/index";
+import { Route as rootRouteImport } from './routes/__root'
+import { Route as SearchRouteImport } from './routes/search'
+import { Route as AuthLayoutRouteImport } from './routes/auth/layout'
+import { Route as PublicLayoutRouteImport } from './routes/_public/layout'
+import { Route as DashboardLayoutRouteImport } from './routes/_dashboard/layout'
+import { Route as IndexRouteImport } from './routes/index'
+import { Route as TestIndexRouteImport } from './routes/test/index'
+import { Route as AuthIndexRouteImport } from './routes/auth/index'
+import { Route as AuthSignupRouteImport } from './routes/auth/signup'
+import { Route as AuthGithubRouteImport } from './routes/auth/github'
+import { Route as PublicWorkbenchRouteImport } from './routes/_public/workbench'
+import { Route as DashboardProfileRouteImport } from './routes/_dashboard/profile'
+import { Route as DashboardDashboardRouteImport } from './routes/_dashboard/dashboard'
+import { Route as DotwellKnownOauthProtectedResourceRouteImport } from './routes/[.]well-known/oauth-protected-resource'
+import { Route as DotwellKnownOauthAuthorizationServerRouteImport } from './routes/[.]well-known/oauth-authorization-server'
+import { Route as DashboardVolunteersIndexRouteImport } from './routes/_dashboard/volunteers/index'
+import { Route as DashboardTalksIndexRouteImport } from './routes/_dashboard/talks/index'
+import { Route as DashboardSummariesIndexRouteImport } from './routes/_dashboard/summaries/index'
+import { Route as DashboardSkillGroupsIndexRouteImport } from './routes/_dashboard/skill-groups/index'
+import { Route as DashboardSettingsIndexRouteImport } from './routes/_dashboard/settings/index'
+import { Route as DashboardSavedProjectsIndexRouteImport } from './routes/_dashboard/saved-projects/index'
+import { Route as DashboardResumesIndexRouteImport } from './routes/_dashboard/resumes/index'
+import { Route as DashboardResumeProjectsIndexRouteImport } from './routes/_dashboard/resume-projects/index'
+import { Route as DashboardReposIndexRouteImport } from './routes/_dashboard/repos/index'
+import { Route as DashboardProjectsIndexRouteImport } from './routes/_dashboard/projects/index'
+import { Route as DashboardLinksIndexRouteImport } from './routes/_dashboard/links/index'
+import { Route as DashboardLanguagesIndexRouteImport } from './routes/_dashboard/languages/index'
+import { Route as DashboardExperiencesIndexRouteImport } from './routes/_dashboard/experiences/index'
+import { Route as DashboardEducationIndexRouteImport } from './routes/_dashboard/education/index'
+import { Route as DashboardContactsIndexRouteImport } from './routes/_dashboard/contacts/index'
+import { Route as DashboardCertificationsIndexRouteImport } from './routes/_dashboard/certifications/index'
+import { Route as DashboardAdminIndexRouteImport } from './routes/_dashboard/admin/index'
+import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as DashboardResumesResumeIdIndexRouteImport } from './routes/_dashboard/resumes/$resumeId/index'
 
 const SearchRoute = SearchRouteImport.update({
-  id: "/search",
-  path: "/search",
+  id: '/search',
+  path: '/search',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const AuthLayoutRoute = AuthLayoutRouteImport.update({
-  id: "/auth",
-  path: "/auth",
+  id: '/auth',
+  path: '/auth',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const PublicLayoutRoute = PublicLayoutRouteImport.update({
-  id: "/_public",
+  id: '/_public',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const DashboardLayoutRoute = DashboardLayoutRouteImport.update({
-  id: "/_dashboard",
+  id: '/_dashboard',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const IndexRoute = IndexRouteImport.update({
-  id: "/",
-  path: "/",
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const TestIndexRoute = TestIndexRouteImport.update({
-  id: "/test/",
-  path: "/test/",
+  id: '/test/',
+  path: '/test/',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const AuthIndexRoute = AuthIndexRouteImport.update({
-  id: "/",
-  path: "/",
+  id: '/',
+  path: '/',
   getParentRoute: () => AuthLayoutRoute,
-} as any);
+} as any)
 const AuthSignupRoute = AuthSignupRouteImport.update({
-  id: "/signup",
-  path: "/signup",
+  id: '/signup',
+  path: '/signup',
   getParentRoute: () => AuthLayoutRoute,
-} as any);
+} as any)
 const AuthGithubRoute = AuthGithubRouteImport.update({
-  id: "/github",
-  path: "/github",
+  id: '/github',
+  path: '/github',
   getParentRoute: () => AuthLayoutRoute,
-} as any);
+} as any)
 const PublicWorkbenchRoute = PublicWorkbenchRouteImport.update({
-  id: "/workbench",
-  path: "/workbench",
+  id: '/workbench',
+  path: '/workbench',
   getParentRoute: () => PublicLayoutRoute,
-} as any);
+} as any)
 const DashboardProfileRoute = DashboardProfileRouteImport.update({
-  id: "/profile",
-  path: "/profile",
+  id: '/profile',
+  path: '/profile',
   getParentRoute: () => DashboardLayoutRoute,
-} as any);
+} as any)
 const DashboardDashboardRoute = DashboardDashboardRouteImport.update({
-  id: "/dashboard",
-  path: "/dashboard",
+  id: '/dashboard',
+  path: '/dashboard',
   getParentRoute: () => DashboardLayoutRoute,
-} as any);
+} as any)
 const DotwellKnownOauthProtectedResourceRoute =
   DotwellKnownOauthProtectedResourceRouteImport.update({
-    id: "/.well-known/oauth-protected-resource",
-    path: "/.well-known/oauth-protected-resource",
+    id: '/.well-known/oauth-protected-resource',
+    path: '/.well-known/oauth-protected-resource',
     getParentRoute: () => rootRouteImport,
-  } as any);
+  } as any)
 const DotwellKnownOauthAuthorizationServerRoute =
   DotwellKnownOauthAuthorizationServerRouteImport.update({
-    id: "/.well-known/oauth-authorization-server",
-    path: "/.well-known/oauth-authorization-server",
+    id: '/.well-known/oauth-authorization-server',
+    path: '/.well-known/oauth-authorization-server',
     getParentRoute: () => rootRouteImport,
-  } as any);
-const DashboardVolunteersIndexRoute = DashboardVolunteersIndexRouteImport.update({
-  id: "/volunteers/",
-  path: "/volunteers/",
-  getParentRoute: () => DashboardLayoutRoute,
-} as any);
+  } as any)
+const DashboardVolunteersIndexRoute =
+  DashboardVolunteersIndexRouteImport.update({
+    id: '/volunteers/',
+    path: '/volunteers/',
+    getParentRoute: () => DashboardLayoutRoute,
+  } as any)
 const DashboardTalksIndexRoute = DashboardTalksIndexRouteImport.update({
-  id: "/talks/",
-  path: "/talks/",
+  id: '/talks/',
+  path: '/talks/',
   getParentRoute: () => DashboardLayoutRoute,
-} as any);
+} as any)
 const DashboardSummariesIndexRoute = DashboardSummariesIndexRouteImport.update({
-  id: "/summaries/",
-  path: "/summaries/",
+  id: '/summaries/',
+  path: '/summaries/',
   getParentRoute: () => DashboardLayoutRoute,
-} as any);
-const DashboardSkillGroupsIndexRoute = DashboardSkillGroupsIndexRouteImport.update({
-  id: "/skill-groups/",
-  path: "/skill-groups/",
-  getParentRoute: () => DashboardLayoutRoute,
-} as any);
+} as any)
+const DashboardSkillGroupsIndexRoute =
+  DashboardSkillGroupsIndexRouteImport.update({
+    id: '/skill-groups/',
+    path: '/skill-groups/',
+    getParentRoute: () => DashboardLayoutRoute,
+  } as any)
 const DashboardSettingsIndexRoute = DashboardSettingsIndexRouteImport.update({
-  id: "/settings/",
-  path: "/settings/",
+  id: '/settings/',
+  path: '/settings/',
   getParentRoute: () => DashboardLayoutRoute,
-} as any);
-const DashboardSavedProjectsIndexRoute = DashboardSavedProjectsIndexRouteImport.update({
-  id: "/saved-projects/",
-  path: "/saved-projects/",
-  getParentRoute: () => DashboardLayoutRoute,
-} as any);
+} as any)
+const DashboardSavedProjectsIndexRoute =
+  DashboardSavedProjectsIndexRouteImport.update({
+    id: '/saved-projects/',
+    path: '/saved-projects/',
+    getParentRoute: () => DashboardLayoutRoute,
+  } as any)
 const DashboardResumesIndexRoute = DashboardResumesIndexRouteImport.update({
-  id: "/resumes/",
-  path: "/resumes/",
+  id: '/resumes/',
+  path: '/resumes/',
   getParentRoute: () => DashboardLayoutRoute,
-} as any);
-const DashboardResumeProjectsIndexRoute = DashboardResumeProjectsIndexRouteImport.update({
-  id: "/resume-projects/",
-  path: "/resume-projects/",
-  getParentRoute: () => DashboardLayoutRoute,
-} as any);
+} as any)
+const DashboardResumeProjectsIndexRoute =
+  DashboardResumeProjectsIndexRouteImport.update({
+    id: '/resume-projects/',
+    path: '/resume-projects/',
+    getParentRoute: () => DashboardLayoutRoute,
+  } as any)
 const DashboardReposIndexRoute = DashboardReposIndexRouteImport.update({
-  id: "/repos/",
-  path: "/repos/",
+  id: '/repos/',
+  path: '/repos/',
   getParentRoute: () => DashboardLayoutRoute,
-} as any);
+} as any)
 const DashboardProjectsIndexRoute = DashboardProjectsIndexRouteImport.update({
-  id: "/projects/",
-  path: "/projects/",
+  id: '/projects/',
+  path: '/projects/',
   getParentRoute: () => DashboardLayoutRoute,
-} as any);
+} as any)
 const DashboardLinksIndexRoute = DashboardLinksIndexRouteImport.update({
-  id: "/links/",
-  path: "/links/",
+  id: '/links/',
+  path: '/links/',
   getParentRoute: () => DashboardLayoutRoute,
-} as any);
+} as any)
 const DashboardLanguagesIndexRoute = DashboardLanguagesIndexRouteImport.update({
-  id: "/languages/",
-  path: "/languages/",
+  id: '/languages/',
+  path: '/languages/',
   getParentRoute: () => DashboardLayoutRoute,
-} as any);
-const DashboardExperiencesIndexRoute = DashboardExperiencesIndexRouteImport.update({
-  id: "/experiences/",
-  path: "/experiences/",
-  getParentRoute: () => DashboardLayoutRoute,
-} as any);
+} as any)
+const DashboardExperiencesIndexRoute =
+  DashboardExperiencesIndexRouteImport.update({
+    id: '/experiences/',
+    path: '/experiences/',
+    getParentRoute: () => DashboardLayoutRoute,
+  } as any)
 const DashboardEducationIndexRoute = DashboardEducationIndexRouteImport.update({
-  id: "/education/",
-  path: "/education/",
+  id: '/education/',
+  path: '/education/',
   getParentRoute: () => DashboardLayoutRoute,
-} as any);
+} as any)
 const DashboardContactsIndexRoute = DashboardContactsIndexRouteImport.update({
-  id: "/contacts/",
-  path: "/contacts/",
+  id: '/contacts/',
+  path: '/contacts/',
   getParentRoute: () => DashboardLayoutRoute,
-} as any);
-const DashboardCertificationsIndexRoute = DashboardCertificationsIndexRouteImport.update({
-  id: "/certifications/",
-  path: "/certifications/",
-  getParentRoute: () => DashboardLayoutRoute,
-} as any);
+} as any)
+const DashboardCertificationsIndexRoute =
+  DashboardCertificationsIndexRouteImport.update({
+    id: '/certifications/',
+    path: '/certifications/',
+    getParentRoute: () => DashboardLayoutRoute,
+  } as any)
 const DashboardAdminIndexRoute = DashboardAdminIndexRouteImport.update({
-  id: "/admin/",
-  path: "/admin/",
+  id: '/admin/',
+  path: '/admin/',
   getParentRoute: () => DashboardLayoutRoute,
-} as any);
+} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
-  id: "/api/auth/$",
-  path: "/api/auth/$",
+  id: '/api/auth/$',
+  path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
-} as any);
-const DashboardResumesResumeIdIndexRoute = DashboardResumesResumeIdIndexRouteImport.update({
-  id: "/resumes/$resumeId/",
-  path: "/resumes/$resumeId/",
-  getParentRoute: () => DashboardLayoutRoute,
-} as any);
+} as any)
+const DashboardResumesResumeIdIndexRoute =
+  DashboardResumesResumeIdIndexRouteImport.update({
+    id: '/resumes/$resumeId/',
+    path: '/resumes/$resumeId/',
+    getParentRoute: () => DashboardLayoutRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
-  "/": typeof IndexRoute;
-  "/auth": typeof AuthLayoutRouteWithChildren;
-  "/search": typeof SearchRoute;
-  "/.well-known/oauth-authorization-server": typeof DotwellKnownOauthAuthorizationServerRoute;
-  "/.well-known/oauth-protected-resource": typeof DotwellKnownOauthProtectedResourceRoute;
-  "/dashboard": typeof DashboardDashboardRoute;
-  "/profile": typeof DashboardProfileRoute;
-  "/workbench": typeof PublicWorkbenchRoute;
-  "/auth/github": typeof AuthGithubRoute;
-  "/auth/signup": typeof AuthSignupRoute;
-  "/auth/": typeof AuthIndexRoute;
-  "/test/": typeof TestIndexRoute;
-  "/api/auth/$": typeof ApiAuthSplatRoute;
-  "/admin/": typeof DashboardAdminIndexRoute;
-  "/certifications/": typeof DashboardCertificationsIndexRoute;
-  "/contacts/": typeof DashboardContactsIndexRoute;
-  "/education/": typeof DashboardEducationIndexRoute;
-  "/experiences/": typeof DashboardExperiencesIndexRoute;
-  "/languages/": typeof DashboardLanguagesIndexRoute;
-  "/links/": typeof DashboardLinksIndexRoute;
-  "/projects/": typeof DashboardProjectsIndexRoute;
-  "/repos/": typeof DashboardReposIndexRoute;
-  "/resume-projects/": typeof DashboardResumeProjectsIndexRoute;
-  "/resumes/": typeof DashboardResumesIndexRoute;
-  "/saved-projects/": typeof DashboardSavedProjectsIndexRoute;
-  "/settings/": typeof DashboardSettingsIndexRoute;
-  "/skill-groups/": typeof DashboardSkillGroupsIndexRoute;
-  "/summaries/": typeof DashboardSummariesIndexRoute;
-  "/talks/": typeof DashboardTalksIndexRoute;
-  "/volunteers/": typeof DashboardVolunteersIndexRoute;
-  "/resumes/$resumeId/": typeof DashboardResumesResumeIdIndexRoute;
+  '/': typeof IndexRoute
+  '/auth': typeof AuthLayoutRouteWithChildren
+  '/search': typeof SearchRoute
+  '/.well-known/oauth-authorization-server': typeof DotwellKnownOauthAuthorizationServerRoute
+  '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRoute
+  '/dashboard': typeof DashboardDashboardRoute
+  '/profile': typeof DashboardProfileRoute
+  '/workbench': typeof PublicWorkbenchRoute
+  '/auth/github': typeof AuthGithubRoute
+  '/auth/signup': typeof AuthSignupRoute
+  '/auth/': typeof AuthIndexRoute
+  '/test/': typeof TestIndexRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
+  '/admin/': typeof DashboardAdminIndexRoute
+  '/certifications/': typeof DashboardCertificationsIndexRoute
+  '/contacts/': typeof DashboardContactsIndexRoute
+  '/education/': typeof DashboardEducationIndexRoute
+  '/experiences/': typeof DashboardExperiencesIndexRoute
+  '/languages/': typeof DashboardLanguagesIndexRoute
+  '/links/': typeof DashboardLinksIndexRoute
+  '/projects/': typeof DashboardProjectsIndexRoute
+  '/repos/': typeof DashboardReposIndexRoute
+  '/resume-projects/': typeof DashboardResumeProjectsIndexRoute
+  '/resumes/': typeof DashboardResumesIndexRoute
+  '/saved-projects/': typeof DashboardSavedProjectsIndexRoute
+  '/settings/': typeof DashboardSettingsIndexRoute
+  '/skill-groups/': typeof DashboardSkillGroupsIndexRoute
+  '/summaries/': typeof DashboardSummariesIndexRoute
+  '/talks/': typeof DashboardTalksIndexRoute
+  '/volunteers/': typeof DashboardVolunteersIndexRoute
+  '/resumes/$resumeId/': typeof DashboardResumesResumeIdIndexRoute
 }
 export interface FileRoutesByTo {
-  "/": typeof IndexRoute;
-  "/search": typeof SearchRoute;
-  "/.well-known/oauth-authorization-server": typeof DotwellKnownOauthAuthorizationServerRoute;
-  "/.well-known/oauth-protected-resource": typeof DotwellKnownOauthProtectedResourceRoute;
-  "/dashboard": typeof DashboardDashboardRoute;
-  "/profile": typeof DashboardProfileRoute;
-  "/workbench": typeof PublicWorkbenchRoute;
-  "/auth/github": typeof AuthGithubRoute;
-  "/auth/signup": typeof AuthSignupRoute;
-  "/auth": typeof AuthIndexRoute;
-  "/test": typeof TestIndexRoute;
-  "/api/auth/$": typeof ApiAuthSplatRoute;
-  "/admin": typeof DashboardAdminIndexRoute;
-  "/certifications": typeof DashboardCertificationsIndexRoute;
-  "/contacts": typeof DashboardContactsIndexRoute;
-  "/education": typeof DashboardEducationIndexRoute;
-  "/experiences": typeof DashboardExperiencesIndexRoute;
-  "/languages": typeof DashboardLanguagesIndexRoute;
-  "/links": typeof DashboardLinksIndexRoute;
-  "/projects": typeof DashboardProjectsIndexRoute;
-  "/repos": typeof DashboardReposIndexRoute;
-  "/resume-projects": typeof DashboardResumeProjectsIndexRoute;
-  "/resumes": typeof DashboardResumesIndexRoute;
-  "/saved-projects": typeof DashboardSavedProjectsIndexRoute;
-  "/settings": typeof DashboardSettingsIndexRoute;
-  "/skill-groups": typeof DashboardSkillGroupsIndexRoute;
-  "/summaries": typeof DashboardSummariesIndexRoute;
-  "/talks": typeof DashboardTalksIndexRoute;
-  "/volunteers": typeof DashboardVolunteersIndexRoute;
-  "/resumes/$resumeId": typeof DashboardResumesResumeIdIndexRoute;
+  '/': typeof IndexRoute
+  '/search': typeof SearchRoute
+  '/.well-known/oauth-authorization-server': typeof DotwellKnownOauthAuthorizationServerRoute
+  '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRoute
+  '/dashboard': typeof DashboardDashboardRoute
+  '/profile': typeof DashboardProfileRoute
+  '/workbench': typeof PublicWorkbenchRoute
+  '/auth/github': typeof AuthGithubRoute
+  '/auth/signup': typeof AuthSignupRoute
+  '/auth': typeof AuthIndexRoute
+  '/test': typeof TestIndexRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
+  '/admin': typeof DashboardAdminIndexRoute
+  '/certifications': typeof DashboardCertificationsIndexRoute
+  '/contacts': typeof DashboardContactsIndexRoute
+  '/education': typeof DashboardEducationIndexRoute
+  '/experiences': typeof DashboardExperiencesIndexRoute
+  '/languages': typeof DashboardLanguagesIndexRoute
+  '/links': typeof DashboardLinksIndexRoute
+  '/projects': typeof DashboardProjectsIndexRoute
+  '/repos': typeof DashboardReposIndexRoute
+  '/resume-projects': typeof DashboardResumeProjectsIndexRoute
+  '/resumes': typeof DashboardResumesIndexRoute
+  '/saved-projects': typeof DashboardSavedProjectsIndexRoute
+  '/settings': typeof DashboardSettingsIndexRoute
+  '/skill-groups': typeof DashboardSkillGroupsIndexRoute
+  '/summaries': typeof DashboardSummariesIndexRoute
+  '/talks': typeof DashboardTalksIndexRoute
+  '/volunteers': typeof DashboardVolunteersIndexRoute
+  '/resumes/$resumeId': typeof DashboardResumesResumeIdIndexRoute
 }
 export interface FileRoutesById {
-  __root__: typeof rootRouteImport;
-  "/": typeof IndexRoute;
-  "/_dashboard": typeof DashboardLayoutRouteWithChildren;
-  "/_public": typeof PublicLayoutRouteWithChildren;
-  "/auth": typeof AuthLayoutRouteWithChildren;
-  "/search": typeof SearchRoute;
-  "/.well-known/oauth-authorization-server": typeof DotwellKnownOauthAuthorizationServerRoute;
-  "/.well-known/oauth-protected-resource": typeof DotwellKnownOauthProtectedResourceRoute;
-  "/_dashboard/dashboard": typeof DashboardDashboardRoute;
-  "/_dashboard/profile": typeof DashboardProfileRoute;
-  "/_public/workbench": typeof PublicWorkbenchRoute;
-  "/auth/github": typeof AuthGithubRoute;
-  "/auth/signup": typeof AuthSignupRoute;
-  "/auth/": typeof AuthIndexRoute;
-  "/test/": typeof TestIndexRoute;
-  "/api/auth/$": typeof ApiAuthSplatRoute;
-  "/_dashboard/admin/": typeof DashboardAdminIndexRoute;
-  "/_dashboard/certifications/": typeof DashboardCertificationsIndexRoute;
-  "/_dashboard/contacts/": typeof DashboardContactsIndexRoute;
-  "/_dashboard/education/": typeof DashboardEducationIndexRoute;
-  "/_dashboard/experiences/": typeof DashboardExperiencesIndexRoute;
-  "/_dashboard/languages/": typeof DashboardLanguagesIndexRoute;
-  "/_dashboard/links/": typeof DashboardLinksIndexRoute;
-  "/_dashboard/projects/": typeof DashboardProjectsIndexRoute;
-  "/_dashboard/repos/": typeof DashboardReposIndexRoute;
-  "/_dashboard/resume-projects/": typeof DashboardResumeProjectsIndexRoute;
-  "/_dashboard/resumes/": typeof DashboardResumesIndexRoute;
-  "/_dashboard/saved-projects/": typeof DashboardSavedProjectsIndexRoute;
-  "/_dashboard/settings/": typeof DashboardSettingsIndexRoute;
-  "/_dashboard/skill-groups/": typeof DashboardSkillGroupsIndexRoute;
-  "/_dashboard/summaries/": typeof DashboardSummariesIndexRoute;
-  "/_dashboard/talks/": typeof DashboardTalksIndexRoute;
-  "/_dashboard/volunteers/": typeof DashboardVolunteersIndexRoute;
-  "/_dashboard/resumes/$resumeId/": typeof DashboardResumesResumeIdIndexRoute;
+  __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
+  '/_dashboard': typeof DashboardLayoutRouteWithChildren
+  '/_public': typeof PublicLayoutRouteWithChildren
+  '/auth': typeof AuthLayoutRouteWithChildren
+  '/search': typeof SearchRoute
+  '/.well-known/oauth-authorization-server': typeof DotwellKnownOauthAuthorizationServerRoute
+  '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRoute
+  '/_dashboard/dashboard': typeof DashboardDashboardRoute
+  '/_dashboard/profile': typeof DashboardProfileRoute
+  '/_public/workbench': typeof PublicWorkbenchRoute
+  '/auth/github': typeof AuthGithubRoute
+  '/auth/signup': typeof AuthSignupRoute
+  '/auth/': typeof AuthIndexRoute
+  '/test/': typeof TestIndexRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
+  '/_dashboard/admin/': typeof DashboardAdminIndexRoute
+  '/_dashboard/certifications/': typeof DashboardCertificationsIndexRoute
+  '/_dashboard/contacts/': typeof DashboardContactsIndexRoute
+  '/_dashboard/education/': typeof DashboardEducationIndexRoute
+  '/_dashboard/experiences/': typeof DashboardExperiencesIndexRoute
+  '/_dashboard/languages/': typeof DashboardLanguagesIndexRoute
+  '/_dashboard/links/': typeof DashboardLinksIndexRoute
+  '/_dashboard/projects/': typeof DashboardProjectsIndexRoute
+  '/_dashboard/repos/': typeof DashboardReposIndexRoute
+  '/_dashboard/resume-projects/': typeof DashboardResumeProjectsIndexRoute
+  '/_dashboard/resumes/': typeof DashboardResumesIndexRoute
+  '/_dashboard/saved-projects/': typeof DashboardSavedProjectsIndexRoute
+  '/_dashboard/settings/': typeof DashboardSettingsIndexRoute
+  '/_dashboard/skill-groups/': typeof DashboardSkillGroupsIndexRoute
+  '/_dashboard/summaries/': typeof DashboardSummariesIndexRoute
+  '/_dashboard/talks/': typeof DashboardTalksIndexRoute
+  '/_dashboard/volunteers/': typeof DashboardVolunteersIndexRoute
+  '/_dashboard/resumes/$resumeId/': typeof DashboardResumesResumeIdIndexRoute
 }
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath;
+  fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | "/"
-    | "/auth"
-    | "/search"
-    | "/.well-known/oauth-authorization-server"
-    | "/.well-known/oauth-protected-resource"
-    | "/dashboard"
-    | "/profile"
-    | "/workbench"
-    | "/auth/github"
-    | "/auth/signup"
-    | "/auth/"
-    | "/test/"
-    | "/api/auth/$"
-    | "/admin/"
-    | "/certifications/"
-    | "/contacts/"
-    | "/education/"
-    | "/experiences/"
-    | "/languages/"
-    | "/links/"
-    | "/projects/"
-    | "/repos/"
-    | "/resume-projects/"
-    | "/resumes/"
-    | "/saved-projects/"
-    | "/settings/"
-    | "/skill-groups/"
-    | "/summaries/"
-    | "/talks/"
-    | "/volunteers/"
-    | "/resumes/$resumeId/";
-  fileRoutesByTo: FileRoutesByTo;
+    | '/'
+    | '/auth'
+    | '/search'
+    | '/.well-known/oauth-authorization-server'
+    | '/.well-known/oauth-protected-resource'
+    | '/dashboard'
+    | '/profile'
+    | '/workbench'
+    | '/auth/github'
+    | '/auth/signup'
+    | '/auth/'
+    | '/test/'
+    | '/api/auth/$'
+    | '/admin/'
+    | '/certifications/'
+    | '/contacts/'
+    | '/education/'
+    | '/experiences/'
+    | '/languages/'
+    | '/links/'
+    | '/projects/'
+    | '/repos/'
+    | '/resume-projects/'
+    | '/resumes/'
+    | '/saved-projects/'
+    | '/settings/'
+    | '/skill-groups/'
+    | '/summaries/'
+    | '/talks/'
+    | '/volunteers/'
+    | '/resumes/$resumeId/'
+  fileRoutesByTo: FileRoutesByTo
   to:
-    | "/"
-    | "/search"
-    | "/.well-known/oauth-authorization-server"
-    | "/.well-known/oauth-protected-resource"
-    | "/dashboard"
-    | "/profile"
-    | "/workbench"
-    | "/auth/github"
-    | "/auth/signup"
-    | "/auth"
-    | "/test"
-    | "/api/auth/$"
-    | "/admin"
-    | "/certifications"
-    | "/contacts"
-    | "/education"
-    | "/experiences"
-    | "/languages"
-    | "/links"
-    | "/projects"
-    | "/repos"
-    | "/resume-projects"
-    | "/resumes"
-    | "/saved-projects"
-    | "/settings"
-    | "/skill-groups"
-    | "/summaries"
-    | "/talks"
-    | "/volunteers"
-    | "/resumes/$resumeId";
+    | '/'
+    | '/search'
+    | '/.well-known/oauth-authorization-server'
+    | '/.well-known/oauth-protected-resource'
+    | '/dashboard'
+    | '/profile'
+    | '/workbench'
+    | '/auth/github'
+    | '/auth/signup'
+    | '/auth'
+    | '/test'
+    | '/api/auth/$'
+    | '/admin'
+    | '/certifications'
+    | '/contacts'
+    | '/education'
+    | '/experiences'
+    | '/languages'
+    | '/links'
+    | '/projects'
+    | '/repos'
+    | '/resume-projects'
+    | '/resumes'
+    | '/saved-projects'
+    | '/settings'
+    | '/skill-groups'
+    | '/summaries'
+    | '/talks'
+    | '/volunteers'
+    | '/resumes/$resumeId'
   id:
-    | "__root__"
-    | "/"
-    | "/_dashboard"
-    | "/_public"
-    | "/auth"
-    | "/search"
-    | "/.well-known/oauth-authorization-server"
-    | "/.well-known/oauth-protected-resource"
-    | "/_dashboard/dashboard"
-    | "/_dashboard/profile"
-    | "/_public/workbench"
-    | "/auth/github"
-    | "/auth/signup"
-    | "/auth/"
-    | "/test/"
-    | "/api/auth/$"
-    | "/_dashboard/admin/"
-    | "/_dashboard/certifications/"
-    | "/_dashboard/contacts/"
-    | "/_dashboard/education/"
-    | "/_dashboard/experiences/"
-    | "/_dashboard/languages/"
-    | "/_dashboard/links/"
-    | "/_dashboard/projects/"
-    | "/_dashboard/repos/"
-    | "/_dashboard/resume-projects/"
-    | "/_dashboard/resumes/"
-    | "/_dashboard/saved-projects/"
-    | "/_dashboard/settings/"
-    | "/_dashboard/skill-groups/"
-    | "/_dashboard/summaries/"
-    | "/_dashboard/talks/"
-    | "/_dashboard/volunteers/"
-    | "/_dashboard/resumes/$resumeId/";
-  fileRoutesById: FileRoutesById;
+    | '__root__'
+    | '/'
+    | '/_dashboard'
+    | '/_public'
+    | '/auth'
+    | '/search'
+    | '/.well-known/oauth-authorization-server'
+    | '/.well-known/oauth-protected-resource'
+    | '/_dashboard/dashboard'
+    | '/_dashboard/profile'
+    | '/_public/workbench'
+    | '/auth/github'
+    | '/auth/signup'
+    | '/auth/'
+    | '/test/'
+    | '/api/auth/$'
+    | '/_dashboard/admin/'
+    | '/_dashboard/certifications/'
+    | '/_dashboard/contacts/'
+    | '/_dashboard/education/'
+    | '/_dashboard/experiences/'
+    | '/_dashboard/languages/'
+    | '/_dashboard/links/'
+    | '/_dashboard/projects/'
+    | '/_dashboard/repos/'
+    | '/_dashboard/resume-projects/'
+    | '/_dashboard/resumes/'
+    | '/_dashboard/saved-projects/'
+    | '/_dashboard/settings/'
+    | '/_dashboard/skill-groups/'
+    | '/_dashboard/summaries/'
+    | '/_dashboard/talks/'
+    | '/_dashboard/volunteers/'
+    | '/_dashboard/resumes/$resumeId/'
+  fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute;
-  DashboardLayoutRoute: typeof DashboardLayoutRouteWithChildren;
-  PublicLayoutRoute: typeof PublicLayoutRouteWithChildren;
-  AuthLayoutRoute: typeof AuthLayoutRouteWithChildren;
-  SearchRoute: typeof SearchRoute;
-  DotwellKnownOauthAuthorizationServerRoute: typeof DotwellKnownOauthAuthorizationServerRoute;
-  DotwellKnownOauthProtectedResourceRoute: typeof DotwellKnownOauthProtectedResourceRoute;
-  TestIndexRoute: typeof TestIndexRoute;
-  ApiAuthSplatRoute: typeof ApiAuthSplatRoute;
+  IndexRoute: typeof IndexRoute
+  DashboardLayoutRoute: typeof DashboardLayoutRouteWithChildren
+  PublicLayoutRoute: typeof PublicLayoutRouteWithChildren
+  AuthLayoutRoute: typeof AuthLayoutRouteWithChildren
+  SearchRoute: typeof SearchRoute
+  DotwellKnownOauthAuthorizationServerRoute: typeof DotwellKnownOauthAuthorizationServerRoute
+  DotwellKnownOauthProtectedResourceRoute: typeof DotwellKnownOauthProtectedResourceRoute
+  TestIndexRoute: typeof TestIndexRoute
+  ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
 
-declare module "@tanstack/react-router" {
+declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    "/search": {
-      id: "/search";
-      path: "/search";
-      fullPath: "/search";
-      preLoaderRoute: typeof SearchRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/auth": {
-      id: "/auth";
-      path: "/auth";
-      fullPath: "/auth";
-      preLoaderRoute: typeof AuthLayoutRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/_public": {
-      id: "/_public";
-      path: "";
-      fullPath: "/";
-      preLoaderRoute: typeof PublicLayoutRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/_dashboard": {
-      id: "/_dashboard";
-      path: "";
-      fullPath: "/";
-      preLoaderRoute: typeof DashboardLayoutRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/": {
-      id: "/";
-      path: "/";
-      fullPath: "/";
-      preLoaderRoute: typeof IndexRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/test/": {
-      id: "/test/";
-      path: "/test";
-      fullPath: "/test/";
-      preLoaderRoute: typeof TestIndexRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/auth/": {
-      id: "/auth/";
-      path: "/";
-      fullPath: "/auth/";
-      preLoaderRoute: typeof AuthIndexRouteImport;
-      parentRoute: typeof AuthLayoutRoute;
-    };
-    "/auth/signup": {
-      id: "/auth/signup";
-      path: "/signup";
-      fullPath: "/auth/signup";
-      preLoaderRoute: typeof AuthSignupRouteImport;
-      parentRoute: typeof AuthLayoutRoute;
-    };
-    "/auth/github": {
-      id: "/auth/github";
-      path: "/github";
-      fullPath: "/auth/github";
-      preLoaderRoute: typeof AuthGithubRouteImport;
-      parentRoute: typeof AuthLayoutRoute;
-    };
-    "/_public/workbench": {
-      id: "/_public/workbench";
-      path: "/workbench";
-      fullPath: "/workbench";
-      preLoaderRoute: typeof PublicWorkbenchRouteImport;
-      parentRoute: typeof PublicLayoutRoute;
-    };
-    "/_dashboard/profile": {
-      id: "/_dashboard/profile";
-      path: "/profile";
-      fullPath: "/profile";
-      preLoaderRoute: typeof DashboardProfileRouteImport;
-      parentRoute: typeof DashboardLayoutRoute;
-    };
-    "/_dashboard/dashboard": {
-      id: "/_dashboard/dashboard";
-      path: "/dashboard";
-      fullPath: "/dashboard";
-      preLoaderRoute: typeof DashboardDashboardRouteImport;
-      parentRoute: typeof DashboardLayoutRoute;
-    };
-    "/.well-known/oauth-protected-resource": {
-      id: "/.well-known/oauth-protected-resource";
-      path: "/.well-known/oauth-protected-resource";
-      fullPath: "/.well-known/oauth-protected-resource";
-      preLoaderRoute: typeof DotwellKnownOauthProtectedResourceRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/.well-known/oauth-authorization-server": {
-      id: "/.well-known/oauth-authorization-server";
-      path: "/.well-known/oauth-authorization-server";
-      fullPath: "/.well-known/oauth-authorization-server";
-      preLoaderRoute: typeof DotwellKnownOauthAuthorizationServerRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/_dashboard/volunteers/": {
-      id: "/_dashboard/volunteers/";
-      path: "/volunteers";
-      fullPath: "/volunteers/";
-      preLoaderRoute: typeof DashboardVolunteersIndexRouteImport;
-      parentRoute: typeof DashboardLayoutRoute;
-    };
-    "/_dashboard/talks/": {
-      id: "/_dashboard/talks/";
-      path: "/talks";
-      fullPath: "/talks/";
-      preLoaderRoute: typeof DashboardTalksIndexRouteImport;
-      parentRoute: typeof DashboardLayoutRoute;
-    };
-    "/_dashboard/summaries/": {
-      id: "/_dashboard/summaries/";
-      path: "/summaries";
-      fullPath: "/summaries/";
-      preLoaderRoute: typeof DashboardSummariesIndexRouteImport;
-      parentRoute: typeof DashboardLayoutRoute;
-    };
-    "/_dashboard/skill-groups/": {
-      id: "/_dashboard/skill-groups/";
-      path: "/skill-groups";
-      fullPath: "/skill-groups/";
-      preLoaderRoute: typeof DashboardSkillGroupsIndexRouteImport;
-      parentRoute: typeof DashboardLayoutRoute;
-    };
-    "/_dashboard/settings/": {
-      id: "/_dashboard/settings/";
-      path: "/settings";
-      fullPath: "/settings/";
-      preLoaderRoute: typeof DashboardSettingsIndexRouteImport;
-      parentRoute: typeof DashboardLayoutRoute;
-    };
-    "/_dashboard/saved-projects/": {
-      id: "/_dashboard/saved-projects/";
-      path: "/saved-projects";
-      fullPath: "/saved-projects/";
-      preLoaderRoute: typeof DashboardSavedProjectsIndexRouteImport;
-      parentRoute: typeof DashboardLayoutRoute;
-    };
-    "/_dashboard/resumes/": {
-      id: "/_dashboard/resumes/";
-      path: "/resumes";
-      fullPath: "/resumes/";
-      preLoaderRoute: typeof DashboardResumesIndexRouteImport;
-      parentRoute: typeof DashboardLayoutRoute;
-    };
-    "/_dashboard/resume-projects/": {
-      id: "/_dashboard/resume-projects/";
-      path: "/resume-projects";
-      fullPath: "/resume-projects/";
-      preLoaderRoute: typeof DashboardResumeProjectsIndexRouteImport;
-      parentRoute: typeof DashboardLayoutRoute;
-    };
-    "/_dashboard/repos/": {
-      id: "/_dashboard/repos/";
-      path: "/repos";
-      fullPath: "/repos/";
-      preLoaderRoute: typeof DashboardReposIndexRouteImport;
-      parentRoute: typeof DashboardLayoutRoute;
-    };
-    "/_dashboard/projects/": {
-      id: "/_dashboard/projects/";
-      path: "/projects";
-      fullPath: "/projects/";
-      preLoaderRoute: typeof DashboardProjectsIndexRouteImport;
-      parentRoute: typeof DashboardLayoutRoute;
-    };
-    "/_dashboard/links/": {
-      id: "/_dashboard/links/";
-      path: "/links";
-      fullPath: "/links/";
-      preLoaderRoute: typeof DashboardLinksIndexRouteImport;
-      parentRoute: typeof DashboardLayoutRoute;
-    };
-    "/_dashboard/languages/": {
-      id: "/_dashboard/languages/";
-      path: "/languages";
-      fullPath: "/languages/";
-      preLoaderRoute: typeof DashboardLanguagesIndexRouteImport;
-      parentRoute: typeof DashboardLayoutRoute;
-    };
-    "/_dashboard/experiences/": {
-      id: "/_dashboard/experiences/";
-      path: "/experiences";
-      fullPath: "/experiences/";
-      preLoaderRoute: typeof DashboardExperiencesIndexRouteImport;
-      parentRoute: typeof DashboardLayoutRoute;
-    };
-    "/_dashboard/education/": {
-      id: "/_dashboard/education/";
-      path: "/education";
-      fullPath: "/education/";
-      preLoaderRoute: typeof DashboardEducationIndexRouteImport;
-      parentRoute: typeof DashboardLayoutRoute;
-    };
-    "/_dashboard/contacts/": {
-      id: "/_dashboard/contacts/";
-      path: "/contacts";
-      fullPath: "/contacts/";
-      preLoaderRoute: typeof DashboardContactsIndexRouteImport;
-      parentRoute: typeof DashboardLayoutRoute;
-    };
-    "/_dashboard/certifications/": {
-      id: "/_dashboard/certifications/";
-      path: "/certifications";
-      fullPath: "/certifications/";
-      preLoaderRoute: typeof DashboardCertificationsIndexRouteImport;
-      parentRoute: typeof DashboardLayoutRoute;
-    };
-    "/_dashboard/admin/": {
-      id: "/_dashboard/admin/";
-      path: "/admin";
-      fullPath: "/admin/";
-      preLoaderRoute: typeof DashboardAdminIndexRouteImport;
-      parentRoute: typeof DashboardLayoutRoute;
-    };
-    "/api/auth/$": {
-      id: "/api/auth/$";
-      path: "/api/auth/$";
-      fullPath: "/api/auth/$";
-      preLoaderRoute: typeof ApiAuthSplatRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/_dashboard/resumes/$resumeId/": {
-      id: "/_dashboard/resumes/$resumeId/";
-      path: "/resumes/$resumeId";
-      fullPath: "/resumes/$resumeId/";
-      preLoaderRoute: typeof DashboardResumesResumeIdIndexRouteImport;
-      parentRoute: typeof DashboardLayoutRoute;
-    };
+    '/search': {
+      id: '/search'
+      path: '/search'
+      fullPath: '/search'
+      preLoaderRoute: typeof SearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthLayoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_public': {
+      id: '/_public'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof PublicLayoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_dashboard': {
+      id: '/_dashboard'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof DashboardLayoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/test/': {
+      id: '/test/'
+      path: '/test'
+      fullPath: '/test/'
+      preLoaderRoute: typeof TestIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/': {
+      id: '/auth/'
+      path: '/'
+      fullPath: '/auth/'
+      preLoaderRoute: typeof AuthIndexRouteImport
+      parentRoute: typeof AuthLayoutRoute
+    }
+    '/auth/signup': {
+      id: '/auth/signup'
+      path: '/signup'
+      fullPath: '/auth/signup'
+      preLoaderRoute: typeof AuthSignupRouteImport
+      parentRoute: typeof AuthLayoutRoute
+    }
+    '/auth/github': {
+      id: '/auth/github'
+      path: '/github'
+      fullPath: '/auth/github'
+      preLoaderRoute: typeof AuthGithubRouteImport
+      parentRoute: typeof AuthLayoutRoute
+    }
+    '/_public/workbench': {
+      id: '/_public/workbench'
+      path: '/workbench'
+      fullPath: '/workbench'
+      preLoaderRoute: typeof PublicWorkbenchRouteImport
+      parentRoute: typeof PublicLayoutRoute
+    }
+    '/_dashboard/profile': {
+      id: '/_dashboard/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof DashboardProfileRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
+    '/_dashboard/dashboard': {
+      id: '/_dashboard/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardDashboardRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
+    '/.well-known/oauth-protected-resource': {
+      id: '/.well-known/oauth-protected-resource'
+      path: '/.well-known/oauth-protected-resource'
+      fullPath: '/.well-known/oauth-protected-resource'
+      preLoaderRoute: typeof DotwellKnownOauthProtectedResourceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.well-known/oauth-authorization-server': {
+      id: '/.well-known/oauth-authorization-server'
+      path: '/.well-known/oauth-authorization-server'
+      fullPath: '/.well-known/oauth-authorization-server'
+      preLoaderRoute: typeof DotwellKnownOauthAuthorizationServerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_dashboard/volunteers/': {
+      id: '/_dashboard/volunteers/'
+      path: '/volunteers'
+      fullPath: '/volunteers/'
+      preLoaderRoute: typeof DashboardVolunteersIndexRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
+    '/_dashboard/talks/': {
+      id: '/_dashboard/talks/'
+      path: '/talks'
+      fullPath: '/talks/'
+      preLoaderRoute: typeof DashboardTalksIndexRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
+    '/_dashboard/summaries/': {
+      id: '/_dashboard/summaries/'
+      path: '/summaries'
+      fullPath: '/summaries/'
+      preLoaderRoute: typeof DashboardSummariesIndexRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
+    '/_dashboard/skill-groups/': {
+      id: '/_dashboard/skill-groups/'
+      path: '/skill-groups'
+      fullPath: '/skill-groups/'
+      preLoaderRoute: typeof DashboardSkillGroupsIndexRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
+    '/_dashboard/settings/': {
+      id: '/_dashboard/settings/'
+      path: '/settings'
+      fullPath: '/settings/'
+      preLoaderRoute: typeof DashboardSettingsIndexRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
+    '/_dashboard/saved-projects/': {
+      id: '/_dashboard/saved-projects/'
+      path: '/saved-projects'
+      fullPath: '/saved-projects/'
+      preLoaderRoute: typeof DashboardSavedProjectsIndexRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
+    '/_dashboard/resumes/': {
+      id: '/_dashboard/resumes/'
+      path: '/resumes'
+      fullPath: '/resumes/'
+      preLoaderRoute: typeof DashboardResumesIndexRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
+    '/_dashboard/resume-projects/': {
+      id: '/_dashboard/resume-projects/'
+      path: '/resume-projects'
+      fullPath: '/resume-projects/'
+      preLoaderRoute: typeof DashboardResumeProjectsIndexRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
+    '/_dashboard/repos/': {
+      id: '/_dashboard/repos/'
+      path: '/repos'
+      fullPath: '/repos/'
+      preLoaderRoute: typeof DashboardReposIndexRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
+    '/_dashboard/projects/': {
+      id: '/_dashboard/projects/'
+      path: '/projects'
+      fullPath: '/projects/'
+      preLoaderRoute: typeof DashboardProjectsIndexRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
+    '/_dashboard/links/': {
+      id: '/_dashboard/links/'
+      path: '/links'
+      fullPath: '/links/'
+      preLoaderRoute: typeof DashboardLinksIndexRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
+    '/_dashboard/languages/': {
+      id: '/_dashboard/languages/'
+      path: '/languages'
+      fullPath: '/languages/'
+      preLoaderRoute: typeof DashboardLanguagesIndexRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
+    '/_dashboard/experiences/': {
+      id: '/_dashboard/experiences/'
+      path: '/experiences'
+      fullPath: '/experiences/'
+      preLoaderRoute: typeof DashboardExperiencesIndexRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
+    '/_dashboard/education/': {
+      id: '/_dashboard/education/'
+      path: '/education'
+      fullPath: '/education/'
+      preLoaderRoute: typeof DashboardEducationIndexRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
+    '/_dashboard/contacts/': {
+      id: '/_dashboard/contacts/'
+      path: '/contacts'
+      fullPath: '/contacts/'
+      preLoaderRoute: typeof DashboardContactsIndexRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
+    '/_dashboard/certifications/': {
+      id: '/_dashboard/certifications/'
+      path: '/certifications'
+      fullPath: '/certifications/'
+      preLoaderRoute: typeof DashboardCertificationsIndexRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
+    '/_dashboard/admin/': {
+      id: '/_dashboard/admin/'
+      path: '/admin'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof DashboardAdminIndexRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
+    '/api/auth/$': {
+      id: '/api/auth/$'
+      path: '/api/auth/$'
+      fullPath: '/api/auth/$'
+      preLoaderRoute: typeof ApiAuthSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_dashboard/resumes/$resumeId/': {
+      id: '/_dashboard/resumes/$resumeId/'
+      path: '/resumes/$resumeId'
+      fullPath: '/resumes/$resumeId/'
+      preLoaderRoute: typeof DashboardResumesResumeIdIndexRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
   }
 }
 
 interface DashboardLayoutRouteChildren {
-  DashboardDashboardRoute: typeof DashboardDashboardRoute;
-  DashboardProfileRoute: typeof DashboardProfileRoute;
-  DashboardAdminIndexRoute: typeof DashboardAdminIndexRoute;
-  DashboardCertificationsIndexRoute: typeof DashboardCertificationsIndexRoute;
-  DashboardContactsIndexRoute: typeof DashboardContactsIndexRoute;
-  DashboardEducationIndexRoute: typeof DashboardEducationIndexRoute;
-  DashboardExperiencesIndexRoute: typeof DashboardExperiencesIndexRoute;
-  DashboardLanguagesIndexRoute: typeof DashboardLanguagesIndexRoute;
-  DashboardLinksIndexRoute: typeof DashboardLinksIndexRoute;
-  DashboardProjectsIndexRoute: typeof DashboardProjectsIndexRoute;
-  DashboardReposIndexRoute: typeof DashboardReposIndexRoute;
-  DashboardResumeProjectsIndexRoute: typeof DashboardResumeProjectsIndexRoute;
-  DashboardResumesIndexRoute: typeof DashboardResumesIndexRoute;
-  DashboardSavedProjectsIndexRoute: typeof DashboardSavedProjectsIndexRoute;
-  DashboardSettingsIndexRoute: typeof DashboardSettingsIndexRoute;
-  DashboardSkillGroupsIndexRoute: typeof DashboardSkillGroupsIndexRoute;
-  DashboardSummariesIndexRoute: typeof DashboardSummariesIndexRoute;
-  DashboardTalksIndexRoute: typeof DashboardTalksIndexRoute;
-  DashboardVolunteersIndexRoute: typeof DashboardVolunteersIndexRoute;
-  DashboardResumesResumeIdIndexRoute: typeof DashboardResumesResumeIdIndexRoute;
+  DashboardDashboardRoute: typeof DashboardDashboardRoute
+  DashboardProfileRoute: typeof DashboardProfileRoute
+  DashboardAdminIndexRoute: typeof DashboardAdminIndexRoute
+  DashboardCertificationsIndexRoute: typeof DashboardCertificationsIndexRoute
+  DashboardContactsIndexRoute: typeof DashboardContactsIndexRoute
+  DashboardEducationIndexRoute: typeof DashboardEducationIndexRoute
+  DashboardExperiencesIndexRoute: typeof DashboardExperiencesIndexRoute
+  DashboardLanguagesIndexRoute: typeof DashboardLanguagesIndexRoute
+  DashboardLinksIndexRoute: typeof DashboardLinksIndexRoute
+  DashboardProjectsIndexRoute: typeof DashboardProjectsIndexRoute
+  DashboardReposIndexRoute: typeof DashboardReposIndexRoute
+  DashboardResumeProjectsIndexRoute: typeof DashboardResumeProjectsIndexRoute
+  DashboardResumesIndexRoute: typeof DashboardResumesIndexRoute
+  DashboardSavedProjectsIndexRoute: typeof DashboardSavedProjectsIndexRoute
+  DashboardSettingsIndexRoute: typeof DashboardSettingsIndexRoute
+  DashboardSkillGroupsIndexRoute: typeof DashboardSkillGroupsIndexRoute
+  DashboardSummariesIndexRoute: typeof DashboardSummariesIndexRoute
+  DashboardTalksIndexRoute: typeof DashboardTalksIndexRoute
+  DashboardVolunteersIndexRoute: typeof DashboardVolunteersIndexRoute
+  DashboardResumesResumeIdIndexRoute: typeof DashboardResumesResumeIdIndexRoute
 }
 
 const DashboardLayoutRouteChildren: DashboardLayoutRouteChildren = {
@@ -705,35 +712,39 @@ const DashboardLayoutRouteChildren: DashboardLayoutRouteChildren = {
   DashboardTalksIndexRoute: DashboardTalksIndexRoute,
   DashboardVolunteersIndexRoute: DashboardVolunteersIndexRoute,
   DashboardResumesResumeIdIndexRoute: DashboardResumesResumeIdIndexRoute,
-};
+}
 
 const DashboardLayoutRouteWithChildren = DashboardLayoutRoute._addFileChildren(
   DashboardLayoutRouteChildren,
-);
+)
 
 interface PublicLayoutRouteChildren {
-  PublicWorkbenchRoute: typeof PublicWorkbenchRoute;
+  PublicWorkbenchRoute: typeof PublicWorkbenchRoute
 }
 
 const PublicLayoutRouteChildren: PublicLayoutRouteChildren = {
   PublicWorkbenchRoute: PublicWorkbenchRoute,
-};
+}
 
-const PublicLayoutRouteWithChildren = PublicLayoutRoute._addFileChildren(PublicLayoutRouteChildren);
+const PublicLayoutRouteWithChildren = PublicLayoutRoute._addFileChildren(
+  PublicLayoutRouteChildren,
+)
 
 interface AuthLayoutRouteChildren {
-  AuthGithubRoute: typeof AuthGithubRoute;
-  AuthSignupRoute: typeof AuthSignupRoute;
-  AuthIndexRoute: typeof AuthIndexRoute;
+  AuthGithubRoute: typeof AuthGithubRoute
+  AuthSignupRoute: typeof AuthSignupRoute
+  AuthIndexRoute: typeof AuthIndexRoute
 }
 
 const AuthLayoutRouteChildren: AuthLayoutRouteChildren = {
   AuthGithubRoute: AuthGithubRoute,
   AuthSignupRoute: AuthSignupRoute,
   AuthIndexRoute: AuthIndexRoute,
-};
+}
 
-const AuthLayoutRouteWithChildren = AuthLayoutRoute._addFileChildren(AuthLayoutRouteChildren);
+const AuthLayoutRouteWithChildren = AuthLayoutRoute._addFileChildren(
+  AuthLayoutRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -741,20 +752,22 @@ const rootRouteChildren: RootRouteChildren = {
   PublicLayoutRoute: PublicLayoutRouteWithChildren,
   AuthLayoutRoute: AuthLayoutRouteWithChildren,
   SearchRoute: SearchRoute,
-  DotwellKnownOauthAuthorizationServerRoute: DotwellKnownOauthAuthorizationServerRoute,
-  DotwellKnownOauthProtectedResourceRoute: DotwellKnownOauthProtectedResourceRoute,
+  DotwellKnownOauthAuthorizationServerRoute:
+    DotwellKnownOauthAuthorizationServerRoute,
+  DotwellKnownOauthProtectedResourceRoute:
+    DotwellKnownOauthProtectedResourceRoute,
   TestIndexRoute: TestIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
-};
+}
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>();
+  ._addFileTypes<FileRouteTypes>()
 
-import type { getRouter } from "./router.tsx";
-import type { createStart } from "@tanstack/react-start";
-declare module "@tanstack/react-start" {
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
   interface Register {
-    ssr: true;
-    router: Awaited<ReturnType<typeof getRouter>>;
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
   }
 }
