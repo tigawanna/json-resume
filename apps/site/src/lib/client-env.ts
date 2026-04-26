@@ -4,6 +4,7 @@ const envSchema = z.object({
   VITE_API_URL: z.url(),
 });
 
+console.log("import.meta.env", import.meta.env);
 const { success, error, data } = envSchema.safeParse(import.meta.env);
 
 if (!success) {
