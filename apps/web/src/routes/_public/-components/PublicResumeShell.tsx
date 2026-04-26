@@ -46,7 +46,7 @@ export function PublicResumeShell() {
             {NAV.map((item) => (
               <SidebarMenuItem key={item.href}>
                 <SidebarMenuButton asChild>
-                  <Link to={item.href} className="gap-2">
+                  <Link to={item.href} search={{ dir: "after" as const }} className="gap-2">
                     <item.icon className="size-4" />
                     <span>{item.title}</span>
                   </Link>
@@ -61,7 +61,7 @@ export function PublicResumeShell() {
               <SidebarMenuButton asChild>
                 <Link
                   to="/resumes"
-                  search={{ sq: "" }}
+                  search={{ sq: "", dir: "after" as const }}
                   className="gap-2 text-muted-foreground text-xs"
                 >
                   <FileJson className="size-4" />

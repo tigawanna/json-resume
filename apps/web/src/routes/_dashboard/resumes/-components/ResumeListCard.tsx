@@ -8,7 +8,6 @@ import {
 } from "@/components/ui/context-menu";
 import { deleteResumeMutationOptions } from "@/data-access-layer/resume/resume-mutatin-options";
 import type { ResumeListItemDTO } from "@/data-access-layer/resume/resume.types";
-import { resumesCollection } from "@/data-access-layer/resume/resumes-query-collection";
 import { useMutation } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { Copy, FileText, Trash2 } from "lucide-react";
@@ -22,7 +21,6 @@ export function ResumeListCard({ resume, onClone }: ResumeListCardProps) {
   const deleteMutation = useMutation(deleteResumeMutationOptions);
 
   const handleDelete = (resumeId: string) => {
-    resumesCollection.utils.writeDelete(resumeId);
     deleteMutation.mutate(resumeId);
   };
 

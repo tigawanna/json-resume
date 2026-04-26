@@ -1,12 +1,18 @@
 import { viewerMiddleware } from "@/data-access-layer/auth/viewer";
 import { createServerFn } from "@tanstack/react-start";
-import { deleteLinkForUser, listLinksForUser } from "./link.server";
+import { deleteLinkForUser, listLinksForUserPaginated } from "./link.server";
 
 export const listLinks = createServerFn({ method: "GET" })
   .middleware([viewerMiddleware])
-  .inputValidator((input?: { keyword?: string }) => input)
+  .inputValidator(
+    (input?: { keyword?: string; cursor?: string; direction?: "after" | "before" }) => input,
+  )
   .handler(async ({ context, data }) => {
-    return listLinksForUser(context.viewer.user.id, data?.keyword);
+    return listLinksForUserPaginated(context.viewer.user.id, {
+      keyword: data?.keyword,
+      cursor: data?.cursor,
+      direction: data?.direction,
+    });
   });
 
 export const deleteLinkFn = createServerFn({ method: "POST" })

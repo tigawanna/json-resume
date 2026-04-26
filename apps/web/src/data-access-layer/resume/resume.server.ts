@@ -20,7 +20,9 @@ import {
   resumeTalk,
   resumeVolunteer,
 } from "@/lib/drizzle/scheam";
-import { and, asc, desc, eq, like, or } from "drizzle-orm";
+import { and, asc, desc, eq, gt, like, lt, or } from "drizzle-orm";
+import { DEFAULT_PAGE_SIZE } from "../pagination.types";
+import type { PaginatedResult } from "../pagination.types";
 import { documentToInsertData } from "./resume-converters";
 import type { ResumeDetailDTO, ResumeListItemDTO } from "./resume.types";
 
@@ -71,6 +73,60 @@ export async function listResumesForUser({
     .where(and(...conditions))
     .orderBy(desc(resume.updatedAt));
   return rows.map(toListItem);
+}
+
+export async function listResumesForUserPaginated(
+  userId: string,
+  opts?: { keyword?: string; cursor?: string; direction?: "after" | "before" },
+): Promise<PaginatedResult<ResumeListItemDTO>> {
+  const direction = opts?.direction ?? "after";
+  const conditions = [eq(resume.userId, userId)];
+
+  if (opts?.keyword) {
+    const pattern = `%${opts.keyword}%`;
+    conditions.push(
+      or(
+        like(resume.name, pattern),
+        like(resume.fullName, pattern),
+        like(resume.headline, pattern),
+        like(resume.description, pattern),
+      )!,
+    );
+  }
+
+  if (opts?.cursor) {
+    conditions.push(
+      direction === "before" ? lt(resume.id, opts.cursor) : gt(resume.id, opts.cursor),
+    );
+  }
+
+  const rows = await db
+    .select()
+    .from(resume)
+    .where(and(...conditions))
+    .orderBy(direction === "before" ? desc(resume.id) : asc(resume.id))
+    .limit(DEFAULT_PAGE_SIZE + 1);
+
+  const hasMore = rows.length > DEFAULT_PAGE_SIZE;
+  const orderedRows =
+    direction === "before"
+      ? rows.slice(0, DEFAULT_PAGE_SIZE).reverse()
+      : rows.slice(0, DEFAULT_PAGE_SIZE);
+
+  const items = orderedRows.map(toListItem);
+
+  let nextCursor: string | undefined;
+  let previousCursor: string | undefined;
+
+  if (direction === "after") {
+    nextCursor = hasMore ? items[items.length - 1].id : undefined;
+    previousCursor = opts?.cursor !== undefined ? items[0]?.id : undefined;
+  } else {
+    previousCursor = hasMore ? items[0]?.id : undefined;
+    nextCursor = items.length > 0 ? items[items.length - 1].id : undefined;
+  }
+
+  return { items, nextCursor, previousCursor };
 }
 
 // ─── Get full resume with all relations ─────────────────────

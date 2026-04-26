@@ -24,7 +24,8 @@ export const talksCollection = createCollection(
           },
         });
       }
-      return listTalks({ data: keyword ? { keyword } : undefined }) ?? [];
+      const result = await listTalks({ data: keyword ? { keyword } : undefined });
+      return result?.items ?? [];
     },
     getKey: (item) => item.id,
     queryClient,

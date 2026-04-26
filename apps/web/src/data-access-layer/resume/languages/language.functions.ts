@@ -1,12 +1,18 @@
 import { viewerMiddleware } from "@/data-access-layer/auth/viewer";
 import { createServerFn } from "@tanstack/react-start";
-import { deleteLanguageForUser, listLanguagesForUser } from "./language.server";
+import { deleteLanguageForUser, listLanguagesForUserPaginated } from "./language.server";
 
 export const listLanguages = createServerFn({ method: "GET" })
   .middleware([viewerMiddleware])
-  .inputValidator((input?: { keyword?: string }) => input)
+  .inputValidator(
+    (input?: { keyword?: string; cursor?: string; direction?: "after" | "before" }) => input,
+  )
   .handler(async ({ context, data }) => {
-    return listLanguagesForUser(context.viewer.user.id, data?.keyword);
+    return listLanguagesForUserPaginated(context.viewer.user.id, {
+      keyword: data?.keyword,
+      cursor: data?.cursor,
+      direction: data?.direction,
+    });
   });
 
 export const deleteLanguageFn = createServerFn({ method: "POST" })

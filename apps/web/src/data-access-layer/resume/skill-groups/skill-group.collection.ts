@@ -24,7 +24,8 @@ export const skillGroupsCollection = createCollection(
           },
         });
       }
-      return listSkillGroups({ data: keyword ? { keyword } : undefined }) ?? [];
+      const result = await listSkillGroups({ data: keyword ? { keyword } : undefined });
+      return result?.items ?? [];
     },
     getKey: (item) => item.id,
     queryClient,

@@ -24,7 +24,8 @@ export const linksCollection = createCollection(
           },
         });
       }
-      return listLinks({ data: keyword ? { keyword } : undefined }) ?? [];
+      const result = await listLinks({ data: keyword ? { keyword } : undefined });
+      return result?.items ?? [];
     },
     getKey: (item) => item.id,
     queryClient,

@@ -24,7 +24,8 @@ export const certificationsCollection = createCollection(
           },
         });
       }
-      return listCertifications({ data: keyword ? { keyword } : undefined }) ?? [];
+      const result = await listCertifications({ data: keyword ? { keyword } : undefined });
+      return result?.items ?? [];
     },
     getKey: (item) => item.id,
     queryClient,

@@ -29,6 +29,7 @@ import {
   deleteVolunteerById,
   getResumeDetail,
   listResumesForUser,
+  listResumesForUserPaginated,
   replaceResumeContent,
   searchUserEducation,
   searchUserExperienceBullets,
@@ -65,6 +66,19 @@ export const listResumes = createServerFn({ method: "GET" })
       userId: context.viewer.user.id,
       id: data?.id,
       keyword: data?.keyword,
+    });
+  });
+
+export const listResumesPaginated = createServerFn({ method: "GET" })
+  .middleware([viewerMiddleware])
+  .inputValidator(
+    (input?: { keyword?: string; cursor?: string; direction?: "after" | "before" }) => input,
+  )
+  .handler(async ({ context, data }) => {
+    return listResumesForUserPaginated(context.viewer.user.id, {
+      keyword: data?.keyword,
+      cursor: data?.cursor,
+      direction: data?.direction,
     });
   });
 

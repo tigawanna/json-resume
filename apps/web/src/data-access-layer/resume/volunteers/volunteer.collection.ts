@@ -24,7 +24,8 @@ export const volunteersCollection = createCollection(
           },
         });
       }
-      return listVolunteers({ data: keyword ? { keyword } : undefined }) ?? [];
+      const result = await listVolunteers({ data: keyword ? { keyword } : undefined });
+      return result?.items ?? [];
     },
     getKey: (item) => item.id,
     queryClient,

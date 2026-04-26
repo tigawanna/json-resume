@@ -86,14 +86,14 @@ export const cloneResumeMuationOptions = mutationOptions({
     });
   },
   onError(err: unknown) {
-    // Don't toast redirects — let the router handle them
-    if (err && typeof err === "object" && "statusCode" in err && (err as any).statusCode === 307) {
-      throw err;
+    if (isErrorThrownByRedirect(err)) {
+      return;
     }
     toast.error("Failed to clone resume", {
       description: unwrapUnknownError(err).message,
     });
   },
+  meta: { invalidates: [["resumes"]] },
 });
 
 export const deleteResumeMutationOptions = mutationOptions({
@@ -106,4 +106,5 @@ export const deleteResumeMutationOptions = mutationOptions({
       description: unwrapUnknownError(err).message,
     });
   },
+  meta: { invalidates: [["resumes"]] },
 });

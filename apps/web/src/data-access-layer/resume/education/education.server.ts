@@ -3,9 +3,8 @@ import "@tanstack/react-start/server-only";
 import { db } from "@/lib/drizzle/client";
 import { resume, resumeEducation } from "@/lib/drizzle/scheam";
 import { and, asc, desc, eq, gt, like, lt, or } from "drizzle-orm";
+import { DEFAULT_PAGE_SIZE } from "../../pagination.types";
 import type { EducationListItemDTO, PaginatedResult } from "./education.types";
-
-const PAGE_SIZE = 1;
 
 export async function listEducationForUserPaginated(
   userId: string,
@@ -53,12 +52,13 @@ export async function listEducationForUserPaginated(
     .innerJoin(resume, eq(resumeEducation.resumeId, resume.id))
     .where(and(...conditions))
     .orderBy(direction === "before" ? desc(resumeEducation.id) : asc(resumeEducation.id))
-    .limit(PAGE_SIZE + 1);
+    .limit(DEFAULT_PAGE_SIZE + 1);
 
-  const hasMore = rows.length > PAGE_SIZE;
-  // Reverse 'before' results so items are always in ascending id order for display
+  const hasMore = rows.length > DEFAULT_PAGE_SIZE;
   const orderedRows =
-    direction === "before" ? rows.slice(0, PAGE_SIZE).reverse() : rows.slice(0, PAGE_SIZE);
+    direction === "before"
+      ? rows.slice(0, DEFAULT_PAGE_SIZE).reverse()
+      : rows.slice(0, DEFAULT_PAGE_SIZE);
 
   const items = orderedRows.map((r) => ({
     ...r,

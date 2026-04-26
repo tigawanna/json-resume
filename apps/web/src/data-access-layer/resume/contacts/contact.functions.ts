@@ -1,12 +1,18 @@
 import { viewerMiddleware } from "@/data-access-layer/auth/viewer";
 import { createServerFn } from "@tanstack/react-start";
-import { deleteContactForUser, listContactsForUser } from "./contact.server";
+import { deleteContactForUser, listContactsForUserPaginated } from "./contact.server";
 
 export const listContacts = createServerFn({ method: "GET" })
   .middleware([viewerMiddleware])
-  .inputValidator((input?: { keyword?: string }) => input)
+  .inputValidator(
+    (input?: { keyword?: string; cursor?: string; direction?: "after" | "before" }) => input,
+  )
   .handler(async ({ context, data }) => {
-    return listContactsForUser(context.viewer.user.id, data?.keyword);
+    return listContactsForUserPaginated(context.viewer.user.id, {
+      keyword: data?.keyword,
+      cursor: data?.cursor,
+      direction: data?.direction,
+    });
   });
 
 export const deleteContactFn = createServerFn({ method: "POST" })

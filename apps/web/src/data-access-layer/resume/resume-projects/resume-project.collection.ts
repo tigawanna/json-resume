@@ -26,7 +26,8 @@ export const resumeProjectsCollection = createCollection(
         });
       }
 
-      return listResumeProjects({ data: keyword ? { keyword } : undefined }) ?? [];
+      const result = await listResumeProjects({ data: keyword ? { keyword } : undefined });
+      return result?.items ?? [];
     },
     getKey: (item) => item.id,
     queryClient,

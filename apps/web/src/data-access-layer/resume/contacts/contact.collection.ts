@@ -24,7 +24,8 @@ export const contactsCollection = createCollection(
           },
         });
       }
-      return listContacts({ data: keyword ? { keyword } : undefined }) ?? [];
+      const result = await listContacts({ data: keyword ? { keyword } : undefined });
+      return result?.items ?? [];
     },
     getKey: (item) => item.id,
     queryClient,

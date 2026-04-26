@@ -1,12 +1,18 @@
 import { viewerMiddleware } from "@/data-access-layer/auth/viewer";
 import { createServerFn } from "@tanstack/react-start";
-import { deleteTalkForUser, listTalksForUser } from "./talk.server";
+import { deleteTalkForUser, listTalksForUserPaginated } from "./talk.server";
 
 export const listTalks = createServerFn({ method: "GET" })
   .middleware([viewerMiddleware])
-  .inputValidator((input?: { keyword?: string }) => input)
+  .inputValidator(
+    (input?: { keyword?: string; cursor?: string; direction?: "after" | "before" }) => input,
+  )
   .handler(async ({ context, data }) => {
-    return listTalksForUser(context.viewer.user.id, data?.keyword);
+    return listTalksForUserPaginated(context.viewer.user.id, {
+      keyword: data?.keyword,
+      cursor: data?.cursor,
+      direction: data?.direction,
+    });
   });
 
 export const deleteTalkFn = createServerFn({ method: "POST" })

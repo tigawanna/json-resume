@@ -1,12 +1,21 @@
 import { viewerMiddleware } from "@/data-access-layer/auth/viewer";
 import { createServerFn } from "@tanstack/react-start";
-import { deleteResumeProjectForUser, listResumeProjectsForUser } from "./resume-project.server";
+import {
+  deleteResumeProjectForUser,
+  listResumeProjectsForUserPaginated,
+} from "./resume-project.server";
 
 export const listResumeProjects = createServerFn({ method: "GET" })
   .middleware([viewerMiddleware])
-  .inputValidator((input?: { keyword?: string }) => input)
+  .inputValidator(
+    (input?: { keyword?: string; cursor?: string; direction?: "after" | "before" }) => input,
+  )
   .handler(async ({ context, data }) => {
-    return listResumeProjectsForUser(context.viewer.user.id, data?.keyword);
+    return listResumeProjectsForUserPaginated(context.viewer.user.id, {
+      keyword: data?.keyword,
+      cursor: data?.cursor,
+      direction: data?.direction,
+    });
   });
 
 export const deleteResumeProjectFn = createServerFn({ method: "POST" })

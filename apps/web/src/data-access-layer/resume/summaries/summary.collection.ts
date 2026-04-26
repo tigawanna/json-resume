@@ -24,7 +24,8 @@ export const summariesCollection = createCollection(
           },
         });
       }
-      return listSummaries({ data: keyword ? { keyword } : undefined }) ?? [];
+      const result = await listSummaries({ data: keyword ? { keyword } : undefined });
+      return result?.items ?? [];
     },
     getKey: (item) => item.id,
     queryClient,

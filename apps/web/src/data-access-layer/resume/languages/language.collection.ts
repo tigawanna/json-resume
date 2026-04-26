@@ -24,7 +24,8 @@ export const languagesCollection = createCollection(
           },
         });
       }
-      return listLanguages({ data: keyword ? { keyword } : undefined }) ?? [];
+      const result = await listLanguages({ data: keyword ? { keyword } : undefined });
+      return result?.items ?? [];
     },
     getKey: (item) => item.id,
     queryClient,

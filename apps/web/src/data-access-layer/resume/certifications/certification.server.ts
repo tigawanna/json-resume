@@ -2,18 +2,30 @@ import "@tanstack/react-start/server-only";
 
 import { db } from "@/lib/drizzle/client";
 import { resume, resumeCertification } from "@/lib/drizzle/scheam";
-import { and, desc, eq, like, or } from "drizzle-orm";
+import { and, asc, desc, eq, gt, like, lt, or } from "drizzle-orm";
+import { DEFAULT_PAGE_SIZE } from "../../pagination.types";
+import type { PaginatedResult } from "../../pagination.types";
 import type { CertificationListItemDTO } from "./certification.types";
 
-export async function listCertificationsForUser(
+export async function listCertificationsForUserPaginated(
   userId: string,
-  keyword?: string,
-): Promise<CertificationListItemDTO[]> {
+  opts?: { keyword?: string; cursor?: string; direction?: "after" | "before" },
+): Promise<PaginatedResult<CertificationListItemDTO>> {
+  const direction = opts?.direction ?? "after";
   const conditions = [eq(resume.userId, userId)];
-  if (keyword) {
-    const pattern = `%${keyword}%`;
+
+  if (opts?.keyword) {
+    const pattern = `%${opts.keyword}%`;
     conditions.push(
       or(like(resumeCertification.name, pattern), like(resumeCertification.issuer, pattern))!,
+    );
+  }
+
+  if (opts?.cursor) {
+    conditions.push(
+      direction === "before"
+        ? lt(resumeCertification.id, opts.cursor)
+        : gt(resumeCertification.id, opts.cursor),
     );
   }
 
@@ -33,13 +45,33 @@ export async function listCertificationsForUser(
     .from(resumeCertification)
     .innerJoin(resume, eq(resumeCertification.resumeId, resume.id))
     .where(and(...conditions))
-    .orderBy(desc(resumeCertification.updatedAt));
+    .orderBy(direction === "before" ? desc(resumeCertification.id) : asc(resumeCertification.id))
+    .limit(DEFAULT_PAGE_SIZE + 1);
 
-  return rows.map((r) => ({
+  const hasMore = rows.length > DEFAULT_PAGE_SIZE;
+  const orderedRows =
+    direction === "before"
+      ? rows.slice(0, DEFAULT_PAGE_SIZE).reverse()
+      : rows.slice(0, DEFAULT_PAGE_SIZE);
+
+  const items = orderedRows.map((r) => ({
     ...r,
     createdAt: r.createdAt.toISOString(),
     updatedAt: r.updatedAt.toISOString(),
   }));
+
+  let nextCursor: string | undefined;
+  let previousCursor: string | undefined;
+
+  if (direction === "after") {
+    nextCursor = hasMore ? items[items.length - 1].id : undefined;
+    previousCursor = opts?.cursor !== undefined ? items[0]?.id : undefined;
+  } else {
+    previousCursor = hasMore ? items[0]?.id : undefined;
+    nextCursor = items.length > 0 ? items[items.length - 1].id : undefined;
+  }
+
+  return { items, nextCursor, previousCursor };
 }
 
 export async function deleteCertificationForUser(certId: string, userId: string): Promise<void> {

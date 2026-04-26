@@ -1,3 +1,5 @@
+export type { PaginatedResult } from "../../pagination.types";
+
 export interface EducationListItemDTO {
   id: string;
   resumeId: string;
@@ -11,10 +13,4 @@ export interface EducationListItemDTO {
   sortOrder: number;
   createdAt: string;
   updatedAt: string;
-}
-
-export interface PaginatedResult<T> {
-  items: T[];
-  nextCursor: string | undefined;
-  previousCursor: string | undefined;
 }
