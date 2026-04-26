@@ -2,8 +2,9 @@ import Nprogress from "@/components/navigation/nprogress/Nprogress";
 import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
 import { listExperiences } from "@/data-access-layer/resume/experiences/experience.functions";
 import { deleteExperienceMutationOptions } from "@/data-access-layer/resume/experiences/experience.mutation-options";
+import { RouterPendingComponent } from "@/lib/tanstack/router/RouterPendingComponent";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Briefcase, Loader } from "lucide-react";
+import { Briefcase } from "lucide-react";
 import { Route } from "..";
 import { ExperienceListCard } from "./ExperienceListCard";
 
@@ -19,7 +20,7 @@ export function ExperienceList() {
   if (isLoading) {
     return (
       <div className="flex w-full h-full flex-col gap-6" data-test="experience-list-page">
-        <Loader className="animate-spin" />
+        <RouterPendingComponent />
       </div>
     );
   }

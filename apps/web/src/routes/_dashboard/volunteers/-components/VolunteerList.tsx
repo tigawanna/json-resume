@@ -2,8 +2,9 @@ import Nprogress from "@/components/navigation/nprogress/Nprogress";
 import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
 import { listVolunteers } from "@/data-access-layer/resume/volunteers/volunteer.functions";
 import { deleteVolunteerMutationOptions } from "@/data-access-layer/resume/volunteers/volunteer.mutation-options";
+import { RouterPendingComponent } from "@/lib/tanstack/router/RouterPendingComponent";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Heart, Loader } from "lucide-react";
+import { Heart } from "lucide-react";
 import { Route } from "..";
 import { VolunteerListCard } from "./VolunteerListCard";
 
@@ -19,7 +20,7 @@ export function VolunteerList() {
   if (isLoading) {
     return (
       <div className="flex w-full h-full flex-col gap-6" data-test="volunteer-list-page">
-        <Loader className="animate-spin" />
+        <RouterPendingComponent />
       </div>
     );
   }

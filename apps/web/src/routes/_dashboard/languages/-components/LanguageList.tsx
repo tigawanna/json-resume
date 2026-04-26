@@ -2,8 +2,9 @@ import Nprogress from "@/components/navigation/nprogress/Nprogress";
 import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
 import { listLanguages } from "@/data-access-layer/resume/languages/language.functions";
 import { deleteLanguageMutationOptions } from "@/data-access-layer/resume/languages/language.mutation-options";
+import { RouterPendingComponent } from "@/lib/tanstack/router/RouterPendingComponent";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Globe, Loader } from "lucide-react";
+import { Globe } from "lucide-react";
 import { Route } from "..";
 import { LanguageListCard } from "./LanguageListCard";
 
@@ -19,7 +20,7 @@ export function LanguageList() {
   if (isLoading) {
     return (
       <div className="flex w-full h-full flex-col gap-6" data-test="language-list-page">
-        <Loader className="animate-spin" />
+        <RouterPendingComponent />
       </div>
     );
   }

@@ -2,8 +2,9 @@ import Nprogress from "@/components/navigation/nprogress/Nprogress";
 import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
 import { listCertifications } from "@/data-access-layer/resume/certifications/certification.functions";
 import { deleteCertificationMutationOptions } from "@/data-access-layer/resume/certifications/certification.mutation-options";
+import { RouterPendingComponent } from "@/lib/tanstack/router/RouterPendingComponent";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Award, Loader } from "lucide-react";
+import { Award } from "lucide-react";
 import { Route } from "..";
 import { CertificationListCard } from "./CertificationListCard";
 
@@ -19,7 +20,7 @@ export function CertificationList() {
   if (isLoading) {
     return (
       <div className="flex w-full h-full flex-col gap-6" data-test="certification-list-page">
-        <Loader className="animate-spin" />
+        <RouterPendingComponent />
       </div>
     );
   }

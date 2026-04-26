@@ -2,8 +2,9 @@ import Nprogress from "@/components/navigation/nprogress/Nprogress";
 import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
 import { listLinks } from "@/data-access-layer/resume/links/link.functions";
 import { deleteLinkMutationOptions } from "@/data-access-layer/resume/links/link.mutation-options";
+import { RouterPendingComponent } from "@/lib/tanstack/router/RouterPendingComponent";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { LinkIcon, Loader } from "lucide-react";
+import { LinkIcon } from "lucide-react";
 import { Route } from "..";
 import { LinkListCard } from "./LinkListCard";
 
@@ -19,7 +20,7 @@ export function LinkList() {
   if (isLoading) {
     return (
       <div className="flex w-full h-full flex-col gap-6" data-test="link-list-page">
-        <Loader className="animate-spin" />
+        <RouterPendingComponent />
       </div>
     );
   }

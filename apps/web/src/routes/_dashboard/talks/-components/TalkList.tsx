@@ -2,8 +2,9 @@ import Nprogress from "@/components/navigation/nprogress/Nprogress";
 import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
 import { listTalks } from "@/data-access-layer/resume/talks/talk.functions";
 import { deleteTalkMutationOptions } from "@/data-access-layer/resume/talks/talk.mutation-options";
+import { RouterPendingComponent } from "@/lib/tanstack/router/RouterPendingComponent";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Loader, Mic } from "lucide-react";
+import { Mic } from "lucide-react";
 import { Route } from "..";
 import { TalkListCard } from "./TalkListCard";
 
@@ -19,7 +20,7 @@ export function TalkList() {
   if (isLoading) {
     return (
       <div className="flex w-full h-full flex-col gap-6" data-test="talk-list-page">
-        <Loader className="animate-spin" />
+        <RouterPendingComponent />
       </div>
     );
   }

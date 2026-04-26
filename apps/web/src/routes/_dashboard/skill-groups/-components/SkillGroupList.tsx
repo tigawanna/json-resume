@@ -2,8 +2,9 @@ import Nprogress from "@/components/navigation/nprogress/Nprogress";
 import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
 import { listSkillGroups } from "@/data-access-layer/resume/skill-groups/skill-group.functions";
 import { deleteSkillGroupMutationOptions } from "@/data-access-layer/resume/skill-groups/skill-group.mutation-options";
+import { RouterPendingComponent } from "@/lib/tanstack/router/RouterPendingComponent";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Layers, Loader } from "lucide-react";
+import { Layers } from "lucide-react";
 import { Route } from "..";
 import { SkillGroupListCard } from "./SkillGroupListCard";
 
@@ -19,7 +20,7 @@ export function SkillGroupList() {
   if (isLoading) {
     return (
       <div className="flex w-full h-full flex-col gap-6" data-test="skill-group-list-page">
-        <Loader className="animate-spin" />
+        <RouterPendingComponent />
       </div>
     );
   }

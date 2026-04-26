@@ -2,8 +2,9 @@ import Nprogress from "@/components/navigation/nprogress/Nprogress";
 import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
 import { cloneResumeMuationOptions } from "@/data-access-layer/resume/resume-mutatin-options";
 import { listResumesPaginated } from "@/data-access-layer/resume/resume.functions";
+import { RouterPendingComponent } from "@/lib/tanstack/router/RouterPendingComponent";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { FileText, Loader } from "lucide-react";
+import { FileText } from "lucide-react";
 import { Route } from "..";
 import { ResumeListCard } from "./ResumeListCard";
 
@@ -19,7 +20,7 @@ export function ResumeListPage() {
   if (isLoading) {
     return (
       <div className="flex w-full h-full flex-col gap-6" data-test="resume-list-page">
-        <Loader className="animate-spin" />
+        <RouterPendingComponent />
       </div>
     );
   }

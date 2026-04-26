@@ -1,10 +1,10 @@
 import { Empty, EmptyDescription, EmptyTitle } from "@/components/ui/empty";
-import { Spinner } from "@/components/ui/spinner";
 import { githubReposCollection } from "@/data-access-layer/github/repos-collections";
 import type { RepositoryResponse } from "@/data-access-layer/github/repos.octo";
 import { savedProjectsCollection } from "@/data-access-layer/saved-project/saved-project.collection";
 import type { SavedProjectRow } from "@/data-access-layer/saved-project/saved-project.server";
 import { useDebouncedValue } from "@/hooks/use-debouncer";
+import { RouterPendingComponent } from "@/lib/tanstack/router/RouterPendingComponent";
 import { eq, useLiveQuery } from "@tanstack/react-db";
 import { useRouter, useSearch } from "@tanstack/react-router";
 import RepoCard from "./RepoCard";
@@ -91,8 +91,8 @@ export default function ProjectsAndRepositries() {
 
   if (isLoading) {
     return (
-      <div className="flex h-96 items-center justify-center">
-        <Spinner className="size-8" />
+      <div className="flex h-full w-full items-center justify-center">
+        <RouterPendingComponent />
       </div>
     );
   }

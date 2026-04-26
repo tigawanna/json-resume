@@ -2,8 +2,9 @@ import Nprogress from "@/components/navigation/nprogress/Nprogress";
 import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
 import { listSummaries } from "@/data-access-layer/resume/summaries/summary.functions";
 import { deleteSummaryMutationOptions } from "@/data-access-layer/resume/summaries/summary.mutation-options";
+import { RouterPendingComponent } from "@/lib/tanstack/router/RouterPendingComponent";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { FileText, Loader } from "lucide-react";
+import { FileText } from "lucide-react";
 import { Route } from "..";
 import { SummaryListCard } from "./SummaryListCard";
 
@@ -19,7 +20,7 @@ export function SummaryList() {
   if (isLoading) {
     return (
       <div className="flex w-full h-full flex-col gap-6" data-test="summary-list-page">
-        <Loader className="animate-spin" />
+        <RouterPendingComponent />
       </div>
     );
   }
