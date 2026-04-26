@@ -150,9 +150,9 @@ export function SigninComponent({ onBackToSessions }: SigninComponentProps) {
         </form.AppForm>
 
         <div className="flex w-full items-center gap-3">
-          <div className="h-px flex-1 bg-gradient-to-r from-transparent via-gray-400 to-transparent" />
+          <div className="h-px flex-1 bg-linear-to-r from-transparent via-gray-400 to-transparent" />
           <span className="text-xs font-medium text-gray-500">OR</span>
-          <div className="h-px flex-1 bg-gradient-to-r from-transparent via-gray-400 to-transparent" />
+          <div className="h-px flex-1 bg-linear-to-r from-transparent via-gray-400 to-transparent" />
         </div>
 
         <button
