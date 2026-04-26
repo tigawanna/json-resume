@@ -5,7 +5,7 @@
 // });
 
 const raw = {
-  VITE_API_URL: import.meta.env.VITE_API_URL ?? process.env.VITE_API_URL,
+  VITE_API_URL: import.meta?.env?.VITE_API_URL ?? process.env?.VITE_API_URL,
 };
 
 console.log("raw === ", raw);
@@ -17,4 +17,4 @@ console.log("raw === ", raw);
 // }
 
 export const clientEnv =
-  import.meta.env.VITE_API_URL ?? "https://agentic-json-resume-web.vercel.app/";
+  import.meta?.env?.VITE_API_URL ?? "https://agentic-json-resume-web.vercel.app/";
