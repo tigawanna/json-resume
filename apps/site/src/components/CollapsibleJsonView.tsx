@@ -16,7 +16,12 @@ function getPreview(value: unknown): string {
     if (value.length <= PREVIEW_STRING) return JSON.stringify(value);
     return `${JSON.stringify(value.slice(0, PREVIEW_STRING))}…`;
   }
-  return String(value);
+  if (typeof value === "bigint") return value.toString();
+  if (typeof value === "symbol") return value.toString();
+  if (typeof value === "function") {
+    return `[function ${value.name || "anonymous"}]`;
+  }
+  return JSON.stringify(value);
 }
 
 function JsonPrimitive({ value }: { value: unknown }) {
@@ -32,7 +37,9 @@ function JsonPrimitive({ value }: { value: unknown }) {
   if (typeof value === "string") {
     if (value.length <= LONG_STRING) {
       return (
-        <span className="text-foreground wrap-break-word whitespace-pre-wrap">{JSON.stringify(value)}</span>
+        <span className="text-foreground wrap-break-word whitespace-pre-wrap">
+          {JSON.stringify(value)}
+        </span>
       );
     }
     return (
@@ -52,7 +59,22 @@ function JsonPrimitive({ value }: { value: unknown }) {
       </Collapsible>
     );
   }
-  return <span className="text-foreground">{String(value)}</span>;
+  if (typeof value === "bigint") {
+    return <span className="text-foreground">{value.toString()}</span>;
+  }
+  if (typeof value === "symbol") {
+    return <span className="text-foreground">{value.toString()}</span>;
+  }
+  if (typeof value === "function") {
+    return <span className="text-foreground">{`[function ${value.name || "anonymous"}]`}</span>;
+  }
+  if (typeof value === "object") {
+    return <span className="text-foreground">{JSON.stringify(value)}</span>;
+  }
+  if (value === undefined) {
+    return <span className="text-muted-foreground">undefined</span>;
+  }
+  return <span className="text-foreground">{JSON.stringify(value)}</span>;
 }
 
 function JsonInner({ value, depth }: { value: unknown; depth: number }) {

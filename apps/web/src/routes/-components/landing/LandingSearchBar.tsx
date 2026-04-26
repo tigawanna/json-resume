@@ -10,7 +10,7 @@ export function LandingSearchBar() {
   function handleSearch() {
     const trimmed = query.trim();
     if (!trimmed) return;
-    navigate({
+    void navigate({
       to: "/search",
       search: { q: trimmed },
     });

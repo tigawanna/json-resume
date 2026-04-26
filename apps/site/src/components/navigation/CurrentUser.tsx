@@ -16,7 +16,7 @@ import { CreditCard, Keyboard, Mail, Settings, User, UserCircle } from "lucide-r
 
 interface CurrentUserProps {}
 
-export function CurrentUser({}: CurrentUserProps) {
+export function CurrentUser(_props: CurrentUserProps) {
   const location = useLocation();
   const { viewer, logoutMutation } = useViewer();
 

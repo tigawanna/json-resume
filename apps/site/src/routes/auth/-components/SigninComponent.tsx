@@ -49,14 +49,14 @@ export function SigninComponent({ onBackToSessions }: SigninComponentProps) {
       });
       await router.invalidate();
       await qc.fetchQuery(viewerqueryOptions);
-      navigate({ to: returnTo || "/", search: { returnTo: returnTo || "/" } });
+      void navigate({ to: returnTo || "/", search: { returnTo: returnTo || "/" } });
     },
   });
 
   const form = useAppForm({
     ...formOpts,
     onSubmit: async ({ value }) => {
-      await mutation.mutate(value as TViewerLoginPayload);
+      mutation.mutate(value as TViewerLoginPayload);
     },
   });
 
@@ -68,7 +68,8 @@ export function SigninComponent({ onBackToSessions }: SigninComponentProps) {
         onSubmit={(e) => {
           e.preventDefault();
           e.stopPropagation();
-          form.handleSubmit();
+
+          void form.handleSubmit();
         }}
         className="flex h-full w-[90%] flex-col items-center justify-center gap-6 rounded-lg p-[2%] md:w-[70%] lg:w-[40%]"
       >

@@ -16,8 +16,8 @@ const envSchema = z.object({
   ),
   DATABASE_AUTH_TOKEN: z.string(),
   BETTER_AUTH_SECRET: z.string(),
-  GITHUB_CLIENT_ID:z.string(),
-  GITHUB_CLIENT_SECRET:z.string(),
+  GITHUB_CLIENT_ID: z.string(),
+  GITHUB_CLIENT_SECRET: z.string(),
   FRONTEND_URL: z.url(),
 });
 

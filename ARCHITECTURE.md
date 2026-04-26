@@ -12,11 +12,11 @@ Branding and copy live in `apps/site/src/utils/system.tsx` (`AppConfig`).
 
 ## Repository layout
 
-| Path | Role |
-| --- | --- |
-| `apps/site` | TanStack Start app: UI, routes, auth, future JSON editor + PDF |
-| `packages/*` | Shared libraries (types, configs) |
-| Root | `package.json` scripts, Turbo pipeline, Vite+ CLI (`vp`) |
+| Path         | Role                                                           |
+| ------------ | -------------------------------------------------------------- |
+| `apps/site`  | TanStack Start app: UI, routes, auth, future JSON editor + PDF |
+| `packages/*` | Shared libraries (types, configs)                              |
+| Root         | `package.json` scripts, Turbo pipeline, Vite+ CLI (`vp`)       |
 
 ---
 

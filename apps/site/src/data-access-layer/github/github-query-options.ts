@@ -1,9 +1,5 @@
 import { queryOptions } from "@tanstack/react-query";
-import {
-  checkGithubConnection,
-  listGithubRepos,
-  listPinnedProjects,
-} from "./github.functions";
+import { checkGithubConnection, listGithubRepos, listPinnedProjects } from "./github.functions";
 
 export const githubConnectionQueryOptions = queryOptions({
   queryKey: ["github", "connection"],

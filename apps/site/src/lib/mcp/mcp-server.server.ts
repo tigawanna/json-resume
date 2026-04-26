@@ -47,9 +47,7 @@ export function createMcpServerForUser(userId: string): McpServer {
         };
       }
       return {
-        content: [
-          { type: "text" as const, text: JSON.stringify(result, null, 2) },
-        ],
+        content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }],
       };
     },
   );
@@ -59,19 +57,13 @@ export function createMcpServerForUser(userId: string): McpServer {
     "Create a new resume from a ResumeDocumentV1 JSON payload. Returns the new resume ID.",
     {
       name: z.string().describe("Name for the resume"),
-      description: z
-        .string()
-        .optional()
-        .default("")
-        .describe("Short description of the resume"),
+      description: z.string().optional().default("").describe("Short description of the resume"),
       jobDescription: z
         .string()
         .optional()
         .default("")
         .describe("The job description this resume targets"),
-      data: resumeDocumentV1Schema.describe(
-        "The full ResumeDocumentV1 JSON object",
-      ),
+      data: resumeDocumentV1Schema.describe("The full ResumeDocumentV1 JSON object"),
     },
     async ({ name, description, jobDescription, data }) => {
       const result = await mcpCreateResume(userId, {
@@ -81,9 +73,7 @@ export function createMcpServerForUser(userId: string): McpServer {
         data,
       });
       return {
-        content: [
-          { type: "text" as const, text: JSON.stringify(result, null, 2) },
-        ],
+        content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }],
       };
     },
   );
@@ -95,9 +85,7 @@ export function createMcpServerForUser(userId: string): McpServer {
     async () => {
       const projects = await mcpListPinnedProjects(userId);
       return {
-        content: [
-          { type: "text" as const, text: JSON.stringify(projects, null, 2) },
-        ],
+        content: [{ type: "text" as const, text: JSON.stringify(projects, null, 2) }],
       };
     },
   );
@@ -106,9 +94,7 @@ export function createMcpServerForUser(userId: string): McpServer {
     "get_prompt",
     "Get a ready-to-use LLM prompt that tailors a resume to a job description. Includes the resume JSON, the job description, pinned projects context, and tailoring instructions. Feed this to your LLM and pass the output to create_resume.",
     {
-      resumeId: z
-        .string()
-        .describe("The ID of the base resume to tailor"),
+      resumeId: z.string().describe("The ID of the base resume to tailor"),
       jobDescription: z
         .string()
         .optional()

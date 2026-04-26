@@ -1,4 +1,5 @@
 import { PickFromExistingDialog } from "@/components/PickFromExistingDialog";
+import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -66,7 +67,7 @@ export function ExperienceSection({ resumeId }: ExperienceSectionProps) {
         onOpenChange={setPickOpen}
         title="Pick from Existing Experiences"
         description="Search across all your resumes to copy an experience entry."
-        getSearchQueryKey={(q) => ["resumes", "search", "experiences", q]}
+        getSearchQueryKey={(q) => [queryKeyPrefixes.resumes, "search", "experiences", q]}
         getSearchQueryFn={(q) => () => searchExperiences({ data: { query: q } })}
         mapToItems={(data) =>
           data.map(
@@ -207,7 +208,8 @@ function ExperienceCard({ resumeId, experience, allExperiences }: ExperienceCard
               size="icon"
               className="size-7"
               onClick={() => deleteMutation.mutate()}
-              disabled={deleteMutation.isPending}>
+              disabled={deleteMutation.isPending}
+            >
               <Trash2 className="size-3.5" />
             </Button>
           </div>
@@ -232,7 +234,8 @@ function ExperienceCard({ resumeId, experience, allExperiences }: ExperienceCard
                   variant="ghost"
                   size="icon"
                   className="size-6 shrink-0"
-                  onClick={() => removeBullet(index)}>
+                  onClick={() => removeBullet(index)}
+                >
                   <X className="size-3" />
                 </Button>
               </div>
@@ -245,13 +248,15 @@ function ExperienceCard({ resumeId, experience, allExperiences }: ExperienceCard
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => setBulletPickOpen(true)}>
+                onClick={() => setBulletPickOpen(true)}
+              >
                 <Library className="mr-1 size-3" /> Pick Bullets
               </Button>
               <Button
                 size="sm"
                 onClick={() => bulletMutation.mutate()}
-                disabled={bulletMutation.isPending}>
+                disabled={bulletMutation.isPending}
+              >
                 Save Bullets
               </Button>
             </div>
@@ -263,7 +268,7 @@ function ExperienceCard({ resumeId, experience, allExperiences }: ExperienceCard
             title="Pick Experience Bullets"
             description="Search bullet points across all your experiences."
             multi
-            getSearchQueryKey={(q) => ["resumes", "search", "experience-bullets", q]}
+            getSearchQueryKey={(q) => [queryKeyPrefixes.resumes, "search", "experience-bullets", q]}
             getSearchQueryFn={(q) => () => searchExperienceBullets({ data: { query: q } })}
             mapToItems={(data) =>
               data.map((b: { id: string; text: string }) => ({
@@ -329,7 +334,8 @@ function ExperienceCard({ resumeId, experience, allExperiences }: ExperienceCard
                 variant="ghost"
                 size="icon"
                 className="size-6 shrink-0"
-                onClick={() => removeBullet(index)}>
+                onClick={() => removeBullet(index)}
+              >
                 <X className="size-3" />
               </Button>
             </div>
@@ -342,7 +348,8 @@ function ExperienceCard({ resumeId, experience, allExperiences }: ExperienceCard
               type="button"
               variant="outline"
               size="sm"
-              onClick={() => setBulletPickOpen(true)}>
+              onClick={() => setBulletPickOpen(true)}
+            >
               <Library className="mr-1 size-3" /> Pick Bullets
             </Button>
           </div>
@@ -352,13 +359,15 @@ function ExperienceCard({ resumeId, experience, allExperiences }: ExperienceCard
           <Button
             size="sm"
             onClick={() => saveMutation.mutate()}
-            disabled={saveMutation.isPending || !role.trim() || !company.trim()}>
+            disabled={saveMutation.isPending || !role.trim() || !company.trim()}
+          >
             Save
           </Button>
           <Button
             size="sm"
             onClick={() => bulletMutation.mutate()}
-            disabled={bulletMutation.isPending}>
+            disabled={bulletMutation.isPending}
+          >
             Save Bullets
           </Button>
           <Button variant="ghost" size="sm" onClick={() => setEditing(false)}>
@@ -372,7 +381,7 @@ function ExperienceCard({ resumeId, experience, allExperiences }: ExperienceCard
           title="Pick Experience Bullets"
           description="Search bullet points across all your experiences."
           multi
-          getSearchQueryKey={(q) => ["resumes", "search", "experience-bullets", q]}
+          getSearchQueryKey={(q) => [queryKeyPrefixes.resumes, "search", "experience-bullets", q]}
           getSearchQueryFn={(q) => () => searchExperienceBullets({ data: { query: q } })}
           mapToItems={(data) =>
             data.map((b: { id: string; text: string }) => ({
@@ -469,10 +478,12 @@ function AddExperienceForm({
           onSubmit={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            form.handleSubmit();
+
+            void form.handleSubmit();
           }}
           className="flex flex-col gap-3"
-          data-test="add-experience-form">
+          data-test="add-experience-form"
+        >
           <div className="grid gap-3 sm:grid-cols-2">
             <form.AppField name="company" validators={{ onChange: z.string().min(1, "Required") }}>
               {(field) => <field.TextField label="Company" />}

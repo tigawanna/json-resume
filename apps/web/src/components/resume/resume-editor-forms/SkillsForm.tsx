@@ -1,4 +1,5 @@
 import { PickFromExistingDialog } from "@/components/PickFromExistingDialog";
+import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -110,7 +111,8 @@ export function SkillsForm({ resumeId }: SkillsFormProps) {
               variant="ghost"
               size="icon"
               className="size-7 shrink-0"
-              onClick={() => removeGroup(groupIndex)}>
+              onClick={() => removeGroup(groupIndex)}
+            >
               <Trash2 className="size-3.5" />
             </Button>
           </div>
@@ -121,7 +123,8 @@ export function SkillsForm({ resumeId }: SkillsFormProps) {
                 <button
                   type="button"
                   className="ml-1"
-                  onClick={() => removeSkillFromGroup(groupIndex, skillIndex)}>
+                  onClick={() => removeSkillFromGroup(groupIndex, skillIndex)}
+                >
                   <X className="size-3" />
                 </button>
               </Badge>
@@ -162,7 +165,7 @@ export function SkillsForm({ resumeId }: SkillsFormProps) {
         title="Pick from Existing Skills"
         description="Search skills from your other resumes."
         multi
-        getSearchQueryKey={(q) => ["resumes", "search", "skills", q]}
+        getSearchQueryKey={(q) => [queryKeyPrefixes.resumes, "search", "skills", q]}
         getSearchQueryFn={(q) => () => searchSkills({ data: { query: q } })}
         mapToItems={(data) =>
           data.map((s: { id: string; name: string; groupName?: string }) => ({

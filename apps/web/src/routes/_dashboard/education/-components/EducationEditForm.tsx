@@ -77,7 +77,8 @@ export function EducationEditForm({ education, onSuccess }: EducationEditFormPro
       onSubmit={(e) => {
         e.preventDefault();
         e.stopPropagation();
-        form.handleSubmit();
+
+        void form.handleSubmit();
       }}
       className="flex flex-col gap-3"
     >

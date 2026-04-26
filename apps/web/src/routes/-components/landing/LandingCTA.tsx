@@ -18,13 +18,15 @@ export function LandingCTA() {
             <Link
               to="/auth"
               search={{ returnTo: pathname }}
-              className="bg-primary px-8 py-3 font-mono text-sm font-medium text-primary-content transition-opacity hover:opacity-90">
+              className="bg-primary px-8 py-3 font-mono text-sm font-medium text-primary-content transition-opacity hover:opacity-90"
+            >
               Sign in →
             </Link>
             <Link
               to="/auth/signup"
               search={{ returnTo: "/dashboard" }}
-              className="border border-border px-8 py-3 font-mono text-sm text-base-content transition-colors hover:bg-neutral">
+              className="border border-border px-8 py-3 font-mono text-sm text-base-content transition-colors hover:bg-neutral"
+            >
               Create an account
             </Link>
           </div>

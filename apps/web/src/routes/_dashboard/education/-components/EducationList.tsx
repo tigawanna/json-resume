@@ -12,9 +12,8 @@ import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
 import { listEducation } from "@/data-access-layer/resume/education/education.functions";
 import { deleteEducationMutationOptions } from "@/data-access-layer/resume/education/education.mutation-options";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Navigate } from "@tanstack/react-router";
-import { GraduationCap, Loader, Plus } from "lucide-react";
-import { useState } from "react";
+import { GraduationCap, Loader, Loader2, Plus } from "lucide-react";
+import { useState, useTransition } from "react";
 import { Route } from "..";
 import { EducationCreateFormDilaog } from "./EducationCreateForm";
 import { EducationListCard } from "./EducationListCard";
@@ -22,6 +21,7 @@ import { EducationListCard } from "./EducationListCard";
 export function EducationList() {
   const { sq, cursor, dir } = Route.useSearch();
   const [createOpen, setCreateOpen] = useState(false);
+  const [isCreateOpenPending, startCreateOpenTransition] = useTransition();
   const { data, isLoading, isRefetching } = useQuery({
     queryKey: [queryKeyPrefixes.education, "page", cursor, dir ?? "after", sq],
     queryFn: () => listEducation({ data: { cursor, direction: dir, keyword: sq } }),
@@ -29,6 +29,13 @@ export function EducationList() {
   });
   const deleteMutation = useMutation(deleteEducationMutationOptions);
   const navigate = Route.useNavigate();
+
+  function openCreateDialog() {
+    startCreateOpenTransition(() => {
+      setCreateOpen(true);
+    });
+  }
+
   if (isLoading) {
     return (
       <div className="flex w-full h-full flex-col gap-6" data-test="education-list-page">
@@ -51,13 +58,23 @@ export function EducationList() {
             </EmptyDescription>
           </EmptyHeader>
           <EmptyContent className="flex-row justify-center gap-2">
-            <Button size="sm" onClick={() => setCreateOpen(true)} data-test="add-education-btn">
-              Create Education Entry
+            <Button
+              size="sm"
+              onClick={openCreateDialog}
+              disabled={isCreateOpenPending}
+              data-test="add-education-btn"
+            >
+              {isCreateOpenPending ? (
+                <Loader2 className="mr-1 size-4 animate-spin" />
+              ) : (
+                <Plus className="mr-1 size-4" />
+              )}
+              {isCreateOpenPending ? "Opening..." : "Create Education Entry"}
             </Button>
             <Button
               variant="outline"
               onClick={() => {
-                navigate({
+                void navigate({
                   to: ".",
                   search: (prev) => {
                     return {

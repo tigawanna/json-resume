@@ -89,10 +89,12 @@ export function MetadataForm({ resumeId }: MetadataFormProps) {
       onSubmit={(e) => {
         e.preventDefault();
         e.stopPropagation();
-        form.handleSubmit();
+
+        void form.handleSubmit();
       }}
       className="flex flex-col gap-4"
-      data-test="metadata-form">
+      data-test="metadata-form"
+    >
       <form.AppField name="name" validators={{ onChange: z.string().min(1, "Name is required") }}>
         {(field) => <field.TextField label="Resume Name" />}
       </form.AppField>

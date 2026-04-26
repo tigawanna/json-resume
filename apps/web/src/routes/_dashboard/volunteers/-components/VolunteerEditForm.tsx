@@ -58,14 +58,17 @@ export function VolunteerEditForm({ volunteer, onSuccess }: VolunteerEditFormPro
       onSubmit={(e) => {
         e.preventDefault();
         e.stopPropagation();
-        form.handleSubmit();
+
+        void form.handleSubmit();
       }}
-      className="flex flex-col gap-3">
+      className="flex flex-col gap-3"
+    >
       <form.AppField
         name="organization"
         validators={{
           onChange: ({ value }) => (!value?.trim() ? "Organization is required" : undefined),
-        }}>
+        }}
+      >
         {(field) => (
           <div>
             <Label className="text-xs">Organization</Label>
@@ -133,7 +136,8 @@ export function VolunteerEditForm({ volunteer, onSuccess }: VolunteerEditFormPro
           type="button"
           variant="outline"
           onClick={() => form.reset()}
-          disabled={mutation.isPending}>
+          disabled={mutation.isPending}
+        >
           Cancel
         </Button>
         <Button type="submit" disabled={mutation.isPending || !form.state.isFormValid}>

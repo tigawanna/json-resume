@@ -50,7 +50,7 @@ export function SignupComponent() {
       });
       await router.invalidate();
       await qc.fetchQuery(viewerqueryOptions);
-      navigate({ to: returnTo ?? "/profile" });
+      void navigate({ to: returnTo ?? "/profile" });
     },
     onError(error) {
       toast.error("Something went wrong", {
@@ -84,7 +84,8 @@ export function SignupComponent() {
         onSubmit={(e) => {
           e.preventDefault();
           e.stopPropagation();
-          form.handleSubmit();
+
+          void form.handleSubmit();
         }}
         className="bg-base-300/20 flex h-full w-[90%] flex-col items-center justify-center gap-6 rounded-lg p-[2%] md:w-[70%] lg:w-[40%]"
       >
@@ -108,9 +109,7 @@ export function SignupComponent() {
               onChange: z.email("Invalid email address"),
             }}
           >
-            {(field) => (
-              <field.EmailField autoComplete="section-signup email" inputMode="email" />
-            )}
+            {(field) => <field.EmailField autoComplete="section-signup email" inputMode="email" />}
           </form.AppField>
 
           <form.AppField

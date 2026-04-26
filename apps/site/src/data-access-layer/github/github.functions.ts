@@ -15,11 +15,9 @@ export const checkGithubConnection = createServerFn({ method: "GET" }).handler(
 
 export const listGithubRepos = createServerFn({ method: "GET" })
   .inputValidator((input: { page: number; perPage: number }) => input)
-  .handler(
-    async ({ data }): Promise<{ repos: GithubRepoDTO[]; hasMore: boolean }> => {
-      return listGithubReposForCurrentUser(data);
-    },
-  );
+  .handler(async ({ data }): Promise<{ repos: GithubRepoDTO[]; hasMore: boolean }> => {
+    return listGithubReposForCurrentUser(data);
+  });
 
 export const listPinnedProjects = createServerFn({ method: "GET" }).handler(
   async (): Promise<PinnedProjectDTO[]> => {
@@ -52,9 +50,7 @@ export const unpinProject = createServerFn({ method: "POST" })
   });
 
 export const updatePinnedProject = createServerFn({ method: "POST" })
-  .inputValidator(
-    (input: { id: string; description?: string; topics?: string[] }) => input,
-  )
+  .inputValidator((input: { id: string; description?: string; topics?: string[] }) => input)
   .handler(async ({ data }): Promise<PinnedProjectDTO> => {
     return updatePinnedProjectForCurrentUser(data);
   });

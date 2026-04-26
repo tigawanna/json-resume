@@ -3,13 +3,8 @@ export type Prettify<T> = T extends infer o
       [K in keyof o]: o[K];
     }
   : never;
-type MaybeArray<T> = T | T[];
 type MaybeMakeArray<T, Out> = T extends any[] ? Out[] : Out;
 type ArrayInnerType<T> = T extends Array<infer V> ? V : T;
-type Values<T> = T[keyof T];
-type UnionToIntersection<T> = (T extends any ? (x: T) => any : never) extends (x: infer R) => any
-  ? R
-  : never;
 type BaseRecord = Record<string, any>;
 
 type GenericCollection = {
@@ -24,13 +19,6 @@ type GenericCollection = {
 
 type Select<Collection extends GenericCollection> = {
   [K in keyof Collection["response"]]?: boolean;
-};
-type SelectWithExpand<Collection extends GenericCollection> = Select<Collection> & {
-  expand?: {
-    [K in keyof Collection["relations"]]?:
-      | SelectWithExpand<ArrayInnerType<Collection["relations"][K]>>
-      | boolean;
-  };
 };
 type ResolveSelect<
   TCollection extends GenericCollection,
@@ -72,28 +60,3 @@ export type ResolveSelectWithExpand<
         }
       : {})
 >;
-
-type ExpandType = {
-  shop: {
-    collectionId: string;
-    collectionName: string;
-    created: string;
-    id: string;
-    is_vacant: boolean;
-    monthly_rent: number;
-    order: number;
-    shop_number: string;
-    tenant: string;
-    updated: string;
-    utils: string;
-  };
-  staff: {
-    account: string;
-    collectionId: string;
-    collectionName: string;
-    created: string;
-    id: string;
-    name: string;
-    updated: string;
-  };
-};

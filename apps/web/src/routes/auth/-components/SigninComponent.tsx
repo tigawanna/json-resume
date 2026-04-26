@@ -49,7 +49,7 @@ export function SigninComponent({ onBackToSessions }: SigninComponentProps) {
       });
       await router.invalidate();
       await qc.fetchQuery(viewerqueryOptions);
-      navigate({ to: returnTo || "/", search: { returnTo: returnTo || "/" } });
+      void navigate({ to: returnTo || "/", search: { returnTo: returnTo || "/" } });
     },
   });
 
@@ -71,7 +71,7 @@ export function SigninComponent({ onBackToSessions }: SigninComponentProps) {
   const form = useAppForm({
     ...formOpts,
     onSubmit: async ({ value }) => {
-      await mutation.mutate(value as TViewerLoginPayload);
+      mutation.mutate(value as TViewerLoginPayload);
     },
   });
 
@@ -83,15 +83,18 @@ export function SigninComponent({ onBackToSessions }: SigninComponentProps) {
         onSubmit={(e) => {
           e.preventDefault();
           e.stopPropagation();
-          form.handleSubmit();
+
+          void form.handleSubmit();
         }}
-        className="flex h-full w-[90%] flex-col items-center justify-center gap-6 rounded-lg p-[2%] md:w-[70%] lg:w-[40%]">
+        className="flex h-full w-[90%] flex-col items-center justify-center gap-6 rounded-lg p-[2%] md:w-[70%] lg:w-[40%]"
+      >
         <div className="flex w-full flex-col items-center justify-center gap-4">
           {onBackToSessions && (
             <button
               type="button"
               onClick={onBackToSessions}
-              className="text-muted-foreground hover:text-foreground flex items-center gap-1 self-start text-sm transition-colors">
+              className="text-muted-foreground hover:text-foreground flex items-center gap-1 self-start text-sm transition-colors"
+            >
               <ArrowLeft className="size-4" />
               Back to accounts
             </button>
@@ -102,7 +105,8 @@ export function SigninComponent({ onBackToSessions }: SigninComponentProps) {
             name="email"
             validators={{
               onChange: z.string().min(1, "Email is required"),
-            }}>
+            }}
+          >
             {(field) => (
               <field.TextField label="Email or username" name="username" autoComplete="username" />
             )}
@@ -112,7 +116,8 @@ export function SigninComponent({ onBackToSessions }: SigninComponentProps) {
             name="password"
             validators={{
               onChange: z.string().min(8, "Password must be at least 8 characters"),
-            }}>
+            }}
+          >
             {(field) => (
               <field.PasswordField
                 label="Password"
@@ -154,7 +159,8 @@ export function SigninComponent({ onBackToSessions }: SigninComponentProps) {
           type="button"
           disabled={githubMutation.isPending || mutation.isPending}
           onClick={() => githubMutation.mutate()}
-          className="btn btn-ghost border border-gray-600 w-full gap-2 hover:border-gray-400 hover:bg-gray-900">
+          className="btn btn-ghost border border-gray-600 w-full gap-2 hover:border-gray-400 hover:bg-gray-900"
+        >
           <Github className="size-5" />
           <span className="font-semibold">Continue with GitHub</span>
         </button>
@@ -165,7 +171,8 @@ export function SigninComponent({ onBackToSessions }: SigninComponentProps) {
             <Link
               to="/auth/signup"
               search={{ returnTo }}
-              className="link link-primary font-semibold">
+              className="link link-primary font-semibold"
+            >
               Sign up
             </Link>
           </div>

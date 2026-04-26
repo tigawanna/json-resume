@@ -45,7 +45,8 @@ export function JsonToolbar({
         size="icon"
         className="hidden h-7 w-7 md:inline-flex"
         onClick={() => setSidebarOpen(!sidebarOpen)}
-        title={sidebarOpen ? "Hide sidebar" : "Show sidebar"}>
+        title={sidebarOpen ? "Hide sidebar" : "Show sidebar"}
+      >
         {sidebarOpen ? (
           <PanelLeftClose className="h-3.5 w-3.5" />
         ) : (
@@ -60,7 +61,8 @@ export function JsonToolbar({
           size="icon"
           className="h-7 w-7"
           onClick={onPaste}
-          title="Paste JSON (validates as resume)">
+          title="Paste JSON (validates as resume)"
+        >
           <ClipboardPaste className="h-3.5 w-3.5" />
         </Button>
         <Button
@@ -68,7 +70,8 @@ export function JsonToolbar({
           size="icon"
           className="h-7 w-7"
           onClick={onDownload}
-          title="Download">
+          title="Download"
+        >
           <Download className="h-3.5 w-3.5" />
         </Button>
         <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onCopy} title="Copy JSON">
@@ -84,7 +87,8 @@ export function JsonToolbar({
         }}
         variant="outline"
         size="sm"
-        className="ml-auto">
+        className="ml-auto"
+      >
         {VIEW_MODES.map((m) => (
           <ToggleGroupItem key={m.id} value={m.id} className="px-3 text-xs">
             {m.label}
@@ -97,7 +101,8 @@ export function JsonToolbar({
         size="icon"
         className="h-7 w-7"
         onClick={onOpenSettings}
-        title="Settings">
+        title="Settings"
+      >
         <Settings className="h-3.5 w-3.5" />
       </Button>
 
@@ -108,7 +113,8 @@ export function JsonToolbar({
         className="gap-1.5"
         onClick={onSave}
         disabled={isSaving || !hasChanges}
-        data-test="json-save-button">
+        data-test="json-save-button"
+      >
         <Save className="size-3.5" />
         {isSaving ? "Saving…" : "Save"}
       </Button>

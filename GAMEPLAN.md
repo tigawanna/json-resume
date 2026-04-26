@@ -8,35 +8,39 @@ A developer-first resume tool. You keep your resume as a structured JSON documen
 
 ## Current State (as of Phase 0)
 
-| Area | Status |
-|---|---|
-| TanStack Start app with file-based routing | Done |
-| Better Auth — email/password + GitHub OAuth | Done |
-| Resume CRUD (create, edit, delete, list) | Done |
-| Resume schema (`ResumeDocumentV1`) — header, summary, experience, education, projects, skills | Done |
-| Public resume builder (unauthenticated) | Done |
-| PDF export via `@react-pdf/renderer` | Done |
-| GitHub OAuth token retrieval (`/repos` experiment) | Partial — no UI, just a console.log |
-| Dashboard navigation — settings/profile/admin routes | Broken / placeholder |
-| AI tailoring | Not started |
-| GitHub repo browser | Not started |
-| Project shortlist | Not started |
-| MCP server | Not started |
+| Area                                                                                          | Status                              |
+| --------------------------------------------------------------------------------------------- | ----------------------------------- |
+| TanStack Start app with file-based routing                                                    | Done                                |
+| Better Auth — email/password + GitHub OAuth                                                   | Done                                |
+| Resume CRUD (create, edit, delete, list)                                                      | Done                                |
+| Resume schema (`ResumeDocumentV1`) — header, summary, experience, education, projects, skills | Done                                |
+| Public resume builder (unauthenticated)                                                       | Done                                |
+| PDF export via `@react-pdf/renderer`                                                          | Done                                |
+| GitHub OAuth token retrieval (`/repos` experiment)                                            | Partial — no UI, just a console.log |
+| Dashboard navigation — settings/profile/admin routes                                          | Broken / placeholder                |
+| AI tailoring                                                                                  | Not started                         |
+| GitHub repo browser                                                                           | Not started                         |
+| Project shortlist                                                                             | Not started                         |
+| MCP server                                                                                    | Not started                         |
 
 ---
 
 ## Feature Overview
 
 ### 1. GitHub Repositories Browser
+
 Use the GitHub OAuth access token (already populated by Better Auth after login) to fetch the authenticated user's repositories via the GitHub API. Display them in the dashboard. The user can shortlist repos they want the AI to know about when building their resume.
 
 ### 2. Project Shortlist
+
 A saved list of GitHub repos the user has pinned for resume use. Stores: repo name, description, topics/tags, repo URL, homepage URL (if any). This shortlist feeds the AI context when generating or tailoring a resume and can also be used to auto-populate the projects section.
 
 ### 3. Resume AI Tailoring
+
 Given a job description (already stored on the resume record) and the user's shortlisted projects + experience, call an LLM to tailor the resume JSON. Diff-based so the user can see exactly what changed before accepting.
 
 ### 4. Remote MCP Server
+
 Expose a `/api/mcp` endpoint using the MCP Streamable HTTP transport spec. Tools available via MCP: list resumes, get resume, create resume from a prompt, tailor resume to a job description. Authenticated with a user-scoped API key. This lets developers plug the tool into Claude Desktop, Cursor, or any MCP-compatible client and do resume work without opening the browser.
 
 ---
@@ -60,6 +64,7 @@ These are not in scope for the immediate phases but fit naturally:
 **Goal:** Authenticated users can browse their GitHub repos and shortlist projects for use in their resume.
 
 #### 1a — Infrastructure
+
 - Install `@octokit/rest` for typed GitHub API calls. Drop the raw `fetch` approach.
 - Add a `pinned_project` table to Drizzle schema:
   ```
@@ -69,17 +74,20 @@ These are not in scope for the immediate phases but fit naturally:
 - Extend `projectItem` in `resume-schema.ts` to include `homepageUrl?: string`.
 
 #### 1b — Move `/repos` into the Dashboard
+
 - Delete `src/routes/_public/repos.tsx`.
 - Create `src/routes/_dashboard/repos/index.tsx`.
 - Add `beforeLoad` guard: check if the viewer has a GitHub access token via `authClient.getAccessToken({ providerId: "github" })`. If no token → show a full-page "Connect GitHub" prompt (just the login-with-GitHub button, no other nav options). If token exists → render the repo browser.
 - Add "Repositories" link to `dashboard_routes.tsx` sidebar.
 
 #### 1c — Repo Browser UI
+
 - Server function `listGithubRepos` (in `data-access-layer/github/repos.server.ts`): fetch repos from Octokit using the stored access token (sorted by `pushed_at` desc, paginated).
 - Client: infinite scroll or standard pagination. Each repo card shows: name, description, language, topics as badges, star count, repo URL, homepage URL (if any).
 - "Pin" button on each card calls `pinProject` server function → inserts into `pinned_project` table. Pinned repos show a filled bookmark icon. Second click unpins.
 
 #### 1d — Pinned Projects Page
+
 - Route: `/_dashboard/repos/pinned` (or a tab on the repos page).
 - List of shortlisted projects. Each one is editable (override description, edit topics) before it gets used in the resume.
 - "Use in resume" action: pre-populates the projects section of a new or existing resume with selected pinned items.
@@ -93,26 +101,30 @@ These are not in scope for the immediate phases but fit naturally:
 > **Why this replaces in-app AI:** The app's job is to manage structured resume data and supply great context. The LLM lives in the user's environment (Claude Desktop, Cursor, OpenAI API — their keys, their cost, their choice). The copy-prompt flow already handles the manual path; MCP handles the automated path. No in-app AI provider, no billing complexity, no key management UI.
 
 #### 2a — Transport
+
 - TanStack Start on Vercel supports standard HTTP routes. Use the **MCP Streamable HTTP transport** (the current spec, replaces SSE). One endpoint: `POST /api/mcp`.
 - Add `src/routes/api/mcp.ts` — a TanStack Start API route that handles the MCP protocol.
 - Use the official `@modelcontextprotocol/sdk` server package to wire up tools.
 
 #### 2b — Authentication
+
 - Add an `api_key` table: `id`, `user_id`, `key_hash` (bcrypt), `name`, `created_at`, `last_used_at`.
 - Dashboard UI to generate/revoke API keys (`/_dashboard/settings/api-keys`).
 - MCP endpoint reads `Authorization: Bearer <key>` header, validates against `api_key` table, resolves the `user_id`.
 
 #### 2c — MCP Tools (v1 scope)
-| Tool | Description |
-|---|---|
-| `list_resumes` | Returns all resume records for the authenticated user (id, name, updatedAt) |
-| `get_resume` | Returns the full `ResumeDocumentV1` JSON for a given resume ID |
-| `create_resume` | Creates a resume from a raw JSON payload or a plain-text prompt |
-| `tailor_resume` | Given a resume ID and job description, returns a tailored resume JSON (same AI call as Phase 2a) |
-| `list_pinned_projects` | Returns the user's shortlisted GitHub projects |
-| `get_prompt` | Returns the system prompt template so the caller can run the LLM themselves |
+
+| Tool                   | Description                                                                                      |
+| ---------------------- | ------------------------------------------------------------------------------------------------ |
+| `list_resumes`         | Returns all resume records for the authenticated user (id, name, updatedAt)                      |
+| `get_resume`           | Returns the full `ResumeDocumentV1` JSON for a given resume ID                                   |
+| `create_resume`        | Creates a resume from a raw JSON payload or a plain-text prompt                                  |
+| `tailor_resume`        | Given a resume ID and job description, returns a tailored resume JSON (same AI call as Phase 2a) |
+| `list_pinned_projects` | Returns the user's shortlisted GitHub projects                                                   |
+| `get_prompt`           | Returns the system prompt template so the caller can run the LLM themselves                      |
 
 #### 2d — MCP Client Config Snippet
+
 - Add a docs page or README section with the config snippet users paste into Claude Desktop / Cursor `mcp.json`:
   ```json
   {

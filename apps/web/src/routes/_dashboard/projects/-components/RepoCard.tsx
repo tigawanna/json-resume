@@ -93,7 +93,8 @@ export default function RepoCard({ repo, savedProject }: RepoCardProps) {
   return (
     <div
       data-test="repo-card"
-      className="group relative flex flex-col gap-3 rounded-xl border border-border/60 bg-base-300 p-4 shadow-sm transition-all hover:border-border hover:shadow-md">
+      className="group relative flex flex-col gap-3 rounded-xl border border-border/60 bg-base-300 p-4 shadow-sm transition-all hover:border-border hover:shadow-md"
+    >
       {/* Header */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex min-w-0 flex-1 flex-col gap-1">
@@ -103,7 +104,8 @@ export default function RepoCard({ repo, savedProject }: RepoCardProps) {
               target="_blank"
               rel="noopener noreferrer"
               className="truncate text-sm font-semibold text-primary hover:underline"
-              data-test="repo-link">
+              data-test="repo-link"
+            >
               {repo.name}
             </a>
             {repo.fork && (
@@ -135,7 +137,8 @@ export default function RepoCard({ repo, savedProject }: RepoCardProps) {
                   isSaved
                     ? "text-primary bg-primary/10 hover:bg-primary/20"
                     : "text-muted-foreground hover:text-primary hover:bg-primary/10"
-                } disabled:opacity-50`}>
+                } disabled:opacity-50`}
+              >
                 {isSaved ? <BookmarkCheck className="size-4" /> : <Bookmark className="size-4" />}
               </button>
             </TooltipTrigger>
@@ -176,7 +179,8 @@ export default function RepoCard({ repo, savedProject }: RepoCardProps) {
             href={repo.homepage}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1 hover:text-primary">
+            className="flex items-center gap-1 hover:text-primary"
+          >
             <Globe className="size-3" />
             Site
           </a>
@@ -185,7 +189,8 @@ export default function RepoCard({ repo, savedProject }: RepoCardProps) {
           href={repo.html_url}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-1 hover:text-primary">
+          className="flex items-center gap-1 hover:text-primary"
+        >
           <ExternalLink className="size-3" />
           GitHub
         </a>

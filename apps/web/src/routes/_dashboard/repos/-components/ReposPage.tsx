@@ -2,6 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
 import { getGithubRepos, type GithubRepo } from "@/data-access-layer/github/repos.functions";
 import {
   getSavedProjects,
@@ -16,27 +17,19 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 const reposQueryOptions = queryOptions({
-  queryKey: ["github-repos"],
+  queryKey: [queryKeyPrefixes.githubRepos],
   queryFn: () => getGithubRepos(),
 });
 
 const savedProjectsQueryOptions = queryOptions({
-  queryKey: ["saved-projects"],
+  queryKey: [queryKeyPrefixes.savedProjects],
   queryFn: () => getSavedProjects(),
 });
 
 export function ReposPage() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [hasGitHubToken, setHasGitHubToken] = useState(true);
 
-  // Fetch repos
-  let reposQuery;
-  try {
-    reposQuery = useSuspenseQuery(reposQueryOptions);
-  } catch (error) {
-    console.error("Failed to fetch repos:", error);
-    reposQuery = { data: { repos: [], hasToken: false }, isLoading: false };
-  }
+  const reposQuery = useSuspenseQuery(reposQueryOptions);
 
   // Fetch saved projects
   const savedQuery = useSuspenseQuery(savedProjectsQueryOptions);
@@ -149,7 +142,8 @@ function RepoCard({ repo, isSaved }: { repo: GithubRepo; isSaved: boolean }) {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-lg font-semibold hover:text-primary hover:underline truncate"
-                title={repo.full_name}>
+                title={repo.full_name}
+              >
                 {repo.name}
               </a>
               {repo.private && (
@@ -167,7 +161,8 @@ function RepoCard({ repo, isSaved }: { repo: GithubRepo; isSaved: boolean }) {
             size="sm"
             onClick={() => saveMutation.mutate()}
             disabled={saveMutation.isPending}
-            className="shrink-0">
+            className="shrink-0"
+          >
             {saveMutation.isPending ? (
               <Loader className="w-4 h-4 animate-spin" />
             ) : isSaved ? (
@@ -220,7 +215,8 @@ function RepoCard({ repo, isSaved }: { repo: GithubRepo; isSaved: boolean }) {
               href={repo.html_url || ""}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm text-primary hover:underline">
+              className="text-sm text-primary hover:underline"
+            >
               View on GitHub
             </a>
             {repo.homepage && (
@@ -230,7 +226,8 @@ function RepoCard({ repo, isSaved }: { repo: GithubRepo; isSaved: boolean }) {
                   href={repo.homepage}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm text-primary hover:underline">
+                  className="text-sm text-primary hover:underline"
+                >
                   Visit Website
                 </a>
               </>

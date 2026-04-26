@@ -1,3 +1,4 @@
+import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -12,6 +13,8 @@ import { useDebouncedValue } from "@/hooks/use-debouncer";
 import { useQuery } from "@tanstack/react-query";
 import { Check, Loader2, Search } from "lucide-react";
 import { useState } from "react";
+
+type AppQueryKeyPrefix = (typeof queryKeyPrefixes)[keyof typeof queryKeyPrefixes];
 
 export interface PickFromExistingItem {
   id: string;
@@ -28,8 +31,7 @@ interface PickFromExistingDialogProps<T> {
   onOpenChange: (open: boolean) => void;
   title: string;
   description?: string;
-  /** Return query options for the given search string */
-  getSearchQueryKey: (query: string) => readonly string[];
+  getSearchQueryKey: (query: string) => [AppQueryKeyPrefix, ...unknown[]];
   getSearchQueryFn: (query: string) => () => Promise<T[]>;
   /** Map raw data into display items */
   mapToItems: (data: T[]) => PickFromExistingItem[];
@@ -54,7 +56,7 @@ export function PickFromExistingDialog<T>({
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const { debouncedValue: debouncedSearch } = useDebouncedValue(search, 300);
 
-  const query = useQuery({
+  const query = useQuery<T[]>({
     queryKey: getSearchQueryKey(debouncedSearch),
     queryFn: getSearchQueryFn(debouncedSearch),
     enabled: open,

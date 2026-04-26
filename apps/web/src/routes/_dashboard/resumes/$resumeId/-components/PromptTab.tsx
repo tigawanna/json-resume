@@ -22,7 +22,7 @@ export function PromptTab({ resumeId, doc }: { resumeId: string; doc: ResumeDocu
       await replaceResumeDoc({ data: { id: resumeId, doc: newDoc } });
     },
     onSuccess() {
-      resumeCollection.utils.refetch();
+      void resumeCollection.utils.refetch();
       toast.success("Resume updated — switching to editor");
       void router.navigate({
         to: ".",

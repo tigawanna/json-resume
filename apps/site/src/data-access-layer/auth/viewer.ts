@@ -36,7 +36,7 @@ export function useViewer() {
   const logoutMutation = useMutation({
     mutationFn: async () => {
       await authClient.signOut();
-      qc.invalidateQueries(viewerqueryOptions);
+      void qc.invalidateQueries(viewerqueryOptions);
       throw redirect({ to: "/auth", search: { returnTo: "/" } });
     },
   });

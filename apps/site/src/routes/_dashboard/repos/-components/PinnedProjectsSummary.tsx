@@ -1,25 +1,12 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { pinnedProjectsQueryOptions } from "@/data-access-layer/github/github-query-options";
 import { unpinProject } from "@/data-access-layer/github/github.functions";
 import type { PinnedProjectDTO } from "@/data-access-layer/github/github.types";
 import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import {
-  BookmarkCheck,
-  ExternalLink,
-  Globe,
-  Loader,
-  Star,
-  X,
-} from "lucide-react";
+import { BookmarkCheck, ExternalLink, Globe, Loader, Star, X } from "lucide-react";
 import { toast } from "sonner";
 
 export function PinnedProjectsSummary() {
@@ -32,9 +19,7 @@ export function PinnedProjectsSummary() {
       <div className="flex items-center justify-between px-1">
         <div className="flex items-center gap-2">
           <BookmarkCheck className="size-4 text-primary" />
-          <h2 className="text-sm font-semibold">
-            Pinned Projects ({pinned.length})
-          </h2>
+          <h2 className="text-sm font-semibold">Pinned Projects ({pinned.length})</h2>
         </div>
         <Button asChild variant="link" size="sm" className="text-xs">
           <Link to="/repos/pinned">Manage all</Link>
@@ -51,8 +36,7 @@ export function PinnedProjectsSummary() {
 
 function PinnedProjectCard({ project }: { project: PinnedProjectDTO }) {
   const unpinMutation = useMutation({
-    mutationFn: () =>
-      unpinProject({ data: { githubRepoId: project.githubRepoId } }),
+    mutationFn: () => unpinProject({ data: { githubRepoId: project.githubRepoId } }),
     onSuccess() {
       toast.success(`Unpinned ${project.name}`);
     },

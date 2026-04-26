@@ -1,12 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -47,8 +41,8 @@ export function ApiKeysSection({ apiKeys }: ApiKeysSectionProps) {
               API Keys
             </CardTitle>
             <CardDescription className="mt-1">
-              Create API keys to access your data programmatically. Use them
-              with the MCP server or any HTTP client.
+              Create API keys to access your data programmatically. Use them with the MCP server or
+              any HTTP client.
             </CardDescription>
           </div>
           <CreateApiKeyDialog />
@@ -138,11 +132,7 @@ function CreateApiKeyDialog() {
                 {createdKey}
               </code>
               <Button variant="outline" size="icon" onClick={handleCopy}>
-                {copied ? (
-                  <Check className="size-4 text-green-500" />
-                ) : (
-                  <Copy className="size-4" />
-                )}
+                {copied ? <Check className="size-4 text-green-500" /> : <Copy className="size-4" />}
               </Button>
             </div>
             <DialogFooter>
@@ -165,9 +155,7 @@ function CreateApiKeyDialog() {
                 disabled={!name.trim() || mutation.isPending}
                 onClick={() => mutation.mutate(name.trim())}
               >
-                {mutation.isPending && (
-                  <Loader className="mr-2 size-4 animate-spin" />
-                )}
+                {mutation.isPending && <Loader className="mr-2 size-4 animate-spin" />}
                 Create
               </Button>
             </DialogFooter>
@@ -212,8 +200,7 @@ function ApiKeyRow({ apiKey }: { apiKey: ApiKeyRecord }) {
         </div>
         <div className="flex items-center gap-3 text-xs text-base-content/50">
           <span>
-            Created{" "}
-            {formatDistanceToNow(new Date(apiKey.createdAt), { addSuffix: true })}
+            Created {formatDistanceToNow(new Date(apiKey.createdAt), { addSuffix: true })}
           </span>
           {apiKey.lastUsedAt && (
             <span>
@@ -274,13 +261,11 @@ function McpConfigSnippet() {
         </Button>
       </div>
       <p className="text-xs text-base-content/60">
-        Paste this into your Claude Desktop or Cursor MCP config. The MCP
-        client will handle OAuth authentication automatically — you'll be
-        prompted to log in via your browser when you first connect.
+        Paste this into your Claude Desktop or Cursor MCP config. The MCP client will handle OAuth
+        authentication automatically — you'll be prompted to log in via your browser when you first
+        connect.
       </p>
-      <pre className="rounded-md bg-base-200 p-3 text-xs font-mono overflow-x-auto">
-        {snippet}
-      </pre>
+      <pre className="rounded-md bg-base-200 p-3 text-xs font-mono overflow-x-auto">{snippet}</pre>
     </div>
   );
 }

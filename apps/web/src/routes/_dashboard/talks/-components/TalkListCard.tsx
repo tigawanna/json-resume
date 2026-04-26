@@ -43,7 +43,8 @@ export function TalkListCard({ talk, onDelete }: TalkListCardProps) {
             size="icon"
             className="size-7"
             onClick={() => setOpen(true)}
-            data-test="talk-edit-btn">
+            data-test="talk-edit-btn"
+          >
             <Pencil className="size-3.5" />
           </Button>
           <Button
@@ -51,7 +52,8 @@ export function TalkListCard({ talk, onDelete }: TalkListCardProps) {
             size="icon"
             className="size-7"
             onClick={() => onDelete?.(talk.id)}
-            data-test="talk-delete-btn">
+            data-test="talk-delete-btn"
+          >
             <Trash2 className="size-3.5" />
           </Button>
         </div>

@@ -18,9 +18,8 @@ export function PinnedEmptyState() {
         </EmptyMedia>
         <EmptyTitle>No pinned projects</EmptyTitle>
         <EmptyDescription>
-          Browse your repositories and pin the ones you want highlighted on your
-          resume. Pinned projects feed into the AI context when tailoring your
-          resume.
+          Browse your repositories and pin the ones you want highlighted on your resume. Pinned
+          projects feed into the AI context when tailoring your resume.
         </EmptyDescription>
       </EmptyHeader>
       <Button asChild>

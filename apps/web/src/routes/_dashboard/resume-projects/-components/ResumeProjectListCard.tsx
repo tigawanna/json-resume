@@ -59,7 +59,8 @@ export function ResumeProjectListCard({ project, onDelete }: ResumeProjectListCa
             size="icon"
             className="size-7"
             onClick={() => setOpen(true)}
-            data-test="project-edit-btn">
+            data-test="project-edit-btn"
+          >
             <Pencil className="size-3.5" />
           </Button>
           <Button
@@ -67,7 +68,8 @@ export function ResumeProjectListCard({ project, onDelete }: ResumeProjectListCa
             size="icon"
             className="size-7"
             onClick={() => onDelete?.(project.id)}
-            data-test="project-delete-btn">
+            data-test="project-delete-btn"
+          >
             <Trash2 className="size-3.5" />
           </Button>
         </div>

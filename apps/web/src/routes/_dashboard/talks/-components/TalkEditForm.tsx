@@ -57,14 +57,17 @@ export function TalkEditForm({ talk, onSuccess }: TalkEditFormProps) {
       onSubmit={(e) => {
         e.preventDefault();
         e.stopPropagation();
-        form.handleSubmit();
+
+        void form.handleSubmit();
       }}
-      className="flex flex-col gap-3">
+      className="flex flex-col gap-3"
+    >
       <form.AppField
         name="title"
         validators={{
           onChange: ({ value }) => (!value?.trim() ? "Title is required" : undefined),
-        }}>
+        }}
+      >
         {(field) => (
           <div>
             <Label className="text-xs">Title</Label>
@@ -120,7 +123,8 @@ export function TalkEditForm({ talk, onSuccess }: TalkEditFormProps) {
           type="button"
           variant="outline"
           onClick={() => form.reset()}
-          disabled={mutation.isPending}>
+          disabled={mutation.isPending}
+        >
           Cancel
         </Button>
         <Button type="submit" disabled={mutation.isPending || !form.state.isFormValid}>

@@ -39,7 +39,8 @@ export function LandingFeatures() {
     <section
       id="pipeline"
       data-test="landing-pipeline"
-      className="mx-auto max-w-360 border-x border-border/50 scroll-mt-14 pb-24">
+      className="mx-auto max-w-360 border-x border-border/50 scroll-mt-14 pb-24"
+    >
       <div className="px-8 pt-24 pb-12 md:px-16">
         <h2 className="text-3xl font-medium tracking-tight text-base-content md:text-4xl">
           Deployment Pipeline
@@ -56,12 +57,14 @@ export function LandingFeatures() {
           {steps.map((step) => (
             <div
               key={step.id}
-              className="group relative p-8 transition-colors hover:bg-neutral/50 lg:p-12">
+              className="group relative p-8 transition-colors hover:bg-neutral/50 lg:p-12"
+            >
               <div className="absolute top-4 right-4 font-mono text-xs text-base-content/20 transition-colors group-hover:text-base-content/40">
                 +
               </div>
               <div
-                className={`mb-10 font-mono text-4xl font-light tabular-nums text-base-content/30 transition-colors ${step.hoverClass}`}>
+                className={`mb-10 font-mono text-4xl font-light tabular-nums text-base-content/30 transition-colors ${step.hoverClass}`}
+              >
                 {step.id}.
               </div>
               <h3 className="mb-4 text-balance text-xl font-medium tracking-tight text-base-content md:text-2xl">

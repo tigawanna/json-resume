@@ -16,7 +16,12 @@ interface PromptCopySectionProps {
   isApplying?: boolean;
 }
 
-export function PromptCopySection({ doc, jobDescription, onApplyResult, isApplying }: PromptCopySectionProps) {
+export function PromptCopySection({
+  doc,
+  jobDescription,
+  onApplyResult,
+  isApplying,
+}: PromptCopySectionProps) {
   const [copied, setCopied] = useState(false);
   const [editedPrompt, setEditedPrompt] = useState<string | null>(null);
   const [directives, setDirectives] = useState<string[]>([]);
@@ -94,13 +99,15 @@ export function PromptCopySection({ doc, jobDescription, onApplyResult, isApplyi
               {directives.map((directive, index) => (
                 <div
                   key={index}
-                  className="flex items-start gap-2 rounded bg-secondary p-2 text-sm">
+                  className="flex items-start gap-2 rounded bg-secondary p-2 text-sm"
+                >
                   <span className="flex-1">{directive}</span>
                   <Button
                     variant="ghost"
                     size="icon"
                     className="size-5 shrink-0"
-                    onClick={() => removeDirective(index)}>
+                    onClick={() => removeDirective(index)}
+                  >
                     <Trash2 className="size-3" />
                   </Button>
                 </div>
@@ -125,7 +132,8 @@ export function PromptCopySection({ doc, jobDescription, onApplyResult, isApplyi
               variant="outline"
               size="sm"
               onClick={addDirective}
-              className="gap-1">
+              className="gap-1"
+            >
               <Plus className="size-3" /> Add
             </Button>
           </div>
@@ -169,7 +177,8 @@ export function PromptCopySection({ doc, jobDescription, onApplyResult, isApplyi
                 setPasteText("");
                 setPasteError(null);
               }}
-              className="self-start gap-2">
+              className="self-start gap-2"
+            >
               {isApplying ? "Applying..." : "Apply & edit"}
             </Button>
           </div>

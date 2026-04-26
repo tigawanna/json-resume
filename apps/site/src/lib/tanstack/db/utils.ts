@@ -1,5 +1,4 @@
-import { ParsedOrderBy, parseWhereExpression } from "@tanstack/db";
-import { BasicExpression } from "node_modules/@tanstack/db/dist/esm/query/ir";
+import { IR, ParsedOrderBy, parseWhereExpression } from "@tanstack/db";
 
 type SortDirection = { asc?: string[]; desc?: string[] };
 
@@ -22,7 +21,7 @@ export type WhereClause = {
 };
 
 export function parseWhereWithHandlers<T extends WhereClause>(
-  whereExression?: BasicExpression<boolean> | undefined,
+  whereExression?: IR.BasicExpression<boolean>,
 ) {
   const where = parseWhereExpression<T>(whereExression, {
     handlers: {

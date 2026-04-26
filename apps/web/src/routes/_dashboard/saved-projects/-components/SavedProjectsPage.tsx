@@ -1,4 +1,7 @@
-import { getSavedProjects, unsaveGithubProject } from "@/data-access-layer/saved-project/saved-project.functions";
+import {
+  getSavedProjects,
+  unsaveGithubProject,
+} from "@/data-access-layer/saved-project/saved-project.functions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -131,11 +134,7 @@ function SavedProjectCard({ project }: { project: SavedProject }) {
               )}
             </div>
             <div className="flex gap-2 shrink-0">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setEditDialogOpen(true)}
-              >
+              <Button variant="outline" size="sm" onClick={() => setEditDialogOpen(true)}>
                 <Edit className="w-4 h-4 mr-2" />
                 Edit
               </Button>
@@ -196,42 +195,11 @@ function SavedProjectCard({ project }: { project: SavedProject }) {
               <CardTitle>Edit Project</CardTitle>
             </CardHeader>
             <CardContent>
-              <SavedProjectEditForm
-                project={project}
-                onSuccess={() => setEditDialogOpen(false)}
-              />
+              <SavedProjectEditForm project={project} onSuccess={() => setEditDialogOpen(false)} />
             </CardContent>
           </Card>
         </div>
       )}
     </>
-  );
-}
-
-function SavedProjectEditDialog({
-  open,
-  onOpenChange,
-  project,
-}: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  project: SavedProject;
-}) {
-  if (!open) return null;
-
-  return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>Edit Project</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <SavedProjectEditForm
-            project={project}
-            onSuccess={() => onOpenChange(false)}
-          />
-        </CardContent>
-      </Card>
-    </div>
   );
 }

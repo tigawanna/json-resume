@@ -129,9 +129,7 @@ export function SavedResumeWorkbench({ savedResume }: SavedResumeWorkbenchProps)
 
   return (
     <>
-      <div
-        className="flex w-full flex-col gap-6 pb-24 md:pb-28"
-        data-test="saved-resume-workbench">
+      <div className="flex w-full flex-col gap-6 pb-24 md:pb-28" data-test="saved-resume-workbench">
         <div className="flex flex-wrap items-start gap-4">
           <div className="flex min-w-0 flex-1 flex-col gap-3">
             <div className="flex flex-col gap-1.5">
@@ -160,164 +158,169 @@ export function SavedResumeWorkbench({ savedResume }: SavedResumeWorkbenchProps)
           </div>
         </div>
 
-      <TemplatePicker selected={templateId} onSelect={setTemplate} />
+        <TemplatePicker selected={templateId} onSelect={setTemplate} />
 
-      <Tabs defaultValue="edit" className="w-full">
-        <TabsList className="flex flex-wrap gap-1">
-          <TabsTrigger value="edit">Edit</TabsTrigger>
-          <TabsTrigger value="preview">Preview</TabsTrigger>
-          <TabsTrigger value="pdf">PDF</TabsTrigger>
-          <TabsTrigger value="diff">Diff</TabsTrigger>
-          <TabsTrigger value="json">JSON</TabsTrigger>
-          <TabsTrigger value="jd">Job description</TabsTrigger>
-        </TabsList>
+        <Tabs defaultValue="edit" className="w-full">
+          <TabsList className="flex flex-wrap gap-1">
+            <TabsTrigger value="edit">Edit</TabsTrigger>
+            <TabsTrigger value="preview">Preview</TabsTrigger>
+            <TabsTrigger value="pdf">PDF</TabsTrigger>
+            <TabsTrigger value="diff">Diff</TabsTrigger>
+            <TabsTrigger value="json">JSON</TabsTrigger>
+            <TabsTrigger value="jd">Job description</TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="edit" className="mt-4 flex flex-col gap-4">
-          <div className="flex flex-wrap items-center gap-2">
-            <Button
-              type="button"
-              variant="secondary"
-              className="gap-2"
-              onClick={() => setProjectLibraryOpen(true)}
-              data-test="open-project-library"
-            >
-              <Library className="size-4" />
-              Attach from library
-            </Button>
-          </div>
-          <ResumeEditForm
-            doc={doc}
-            onChange={setDoc}
-            onSaveProjectToLibrary={(item) => saveProjectToLibraryMutation.mutate(item)}
-          />
-          <ProjectLibraryDialog
-            open={projectLibraryOpen}
-            onOpenChange={setProjectLibraryOpen}
-            onAttach={(items) => {
-              setDoc((prev) => ({
-                ...prev,
-                projects: {
-                  ...prev.projects,
-                  items: [...prev.projects.items, ...items],
-                },
-              }));
-              toast.success(
-                items.length === 1 ? "Project attached" : `${items.length} projects attached`,
-              );
-            }}
-          />
-        </TabsContent>
-
-        <TabsContent value="preview" className="mt-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>json-render preview</CardTitle>
-              <CardDescription>
-                Read-only UI from your data. Tailor the underlying JSON in an LLM, then paste it on
-                the JSON tab.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="bg-base-200 rounded-lg border p-4">
-              <JSONUIProvider registry={resumeRegistry}>
-                <Renderer spec={previewSpec} registry={resumeRegistry} />
-              </JSONUIProvider>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="pdf" className="mt-4">
-          <ResumePdfPreviewCard doc={doc} templateId={templateId} resumeName={name} />
-        </TabsContent>
-
-        <TabsContent value="diff" className="mt-4 flex flex-col gap-4">
-          <div className="flex flex-wrap gap-2">
-            <Button type="button" variant="secondary" onClick={() => setBaselineJson(currentJson)}>
-              Set baseline from current
-            </Button>
-            <Button type="button" variant="outline" onClick={() => setBaselineJson(null)}>
-              Clear baseline
-            </Button>
-          </div>
-          {!baselineJson ? (
-            <p className="text-base-content/60 text-sm">
-              Set a baseline to compare future edits (e.g. before pasting LLM output).
-            </p>
-          ) : (
-            <div className="bg-base-200 min-h-[320px] w-full overflow-auto rounded-lg border p-2">
-              <PatchDiff patch={diffPatch} className="w-full" disableWorkerPool />
-            </div>
-          )}
-        </TabsContent>
-
-        <TabsContent value="json" className="mt-4 flex flex-col gap-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Export / import</CardTitle>
-              <CardDescription>
-                Copy this JSON into your assistant with a job description, then paste the result
-                below.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-3">
-              <CardDescription className="pb-1">
-                Expand keys to inspect nested data. Long strings stay collapsed until opened.
-              </CardDescription>
-              {exportJsonTree !== null ? (
-                <div data-test="resume-json-export">
-                  <CollapsibleJsonView data={exportJsonTree} />
-                </div>
-              ) : (
-                <Textarea readOnly className="font-mono text-xs" rows={12} value={currentJson} />
-              )}
+          <TabsContent value="edit" className="mt-4 flex flex-col gap-4">
+            <div className="flex flex-wrap items-center gap-2">
               <Button
                 type="button"
                 variant="secondary"
-                onClick={async () => {
-                  await navigator.clipboard.writeText(currentJson);
-                  toast.success("Copied to clipboard");
-                }}>
-                Copy JSON
+                className="gap-2"
+                onClick={() => setProjectLibraryOpen(true)}
+                data-test="open-project-library"
+              >
+                <Library className="size-4" />
+                Attach from library
               </Button>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Paste JSON</CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-3">
-              <Textarea
-                className="font-mono text-xs"
-                rows={10}
-                placeholder="{ ... }"
-                value={importText}
-                onChange={(e) => setImportText(e.target.value)}
-              />
-              <Button type="button" onClick={applyImport}>
-                Apply JSON
-              </Button>
-            </CardContent>
-          </Card>
-        </TabsContent>
+            </div>
+            <ResumeEditForm
+              doc={doc}
+              onChange={setDoc}
+              onSaveProjectToLibrary={(item) => saveProjectToLibraryMutation.mutate(item)}
+            />
+            <ProjectLibraryDialog
+              open={projectLibraryOpen}
+              onOpenChange={setProjectLibraryOpen}
+              onAttach={(items) => {
+                setDoc((prev) => ({
+                  ...prev,
+                  projects: {
+                    ...prev.projects,
+                    items: [...prev.projects.items, ...items],
+                  },
+                }));
+                toast.success(
+                  items.length === 1 ? "Project attached" : `${items.length} projects attached`,
+                );
+              }}
+            />
+          </TabsContent>
 
-        <TabsContent value="jd" className="mt-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Job description</CardTitle>
-              <CardDescription>
-                The job posting this resume was tailored for. Update it anytime.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Textarea
-                rows={12}
-                placeholder="Paste the job posting here..."
-                value={jobDescription}
-                onChange={(e) => setJobDescription(e.target.value)}
-              />
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+          <TabsContent value="preview" className="mt-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>json-render preview</CardTitle>
+                <CardDescription>
+                  Read-only UI from your data. Tailor the underlying JSON in an LLM, then paste it
+                  on the JSON tab.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="bg-base-200 rounded-lg border p-4">
+                <JSONUIProvider registry={resumeRegistry}>
+                  <Renderer spec={previewSpec} registry={resumeRegistry} />
+                </JSONUIProvider>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="pdf" className="mt-4">
+            <ResumePdfPreviewCard doc={doc} templateId={templateId} resumeName={name} />
+          </TabsContent>
+
+          <TabsContent value="diff" className="mt-4 flex flex-col gap-4">
+            <div className="flex flex-wrap gap-2">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => setBaselineJson(currentJson)}
+              >
+                Set baseline from current
+              </Button>
+              <Button type="button" variant="outline" onClick={() => setBaselineJson(null)}>
+                Clear baseline
+              </Button>
+            </div>
+            {!baselineJson ? (
+              <p className="text-base-content/60 text-sm">
+                Set a baseline to compare future edits (e.g. before pasting LLM output).
+              </p>
+            ) : (
+              <div className="bg-base-200 min-h-[320px] w-full overflow-auto rounded-lg border p-2">
+                <PatchDiff patch={diffPatch} className="w-full" disableWorkerPool />
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="json" className="mt-4 flex flex-col gap-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Export / import</CardTitle>
+                <CardDescription>
+                  Copy this JSON into your assistant with a job description, then paste the result
+                  below.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="flex flex-col gap-3">
+                <CardDescription className="pb-1">
+                  Expand keys to inspect nested data. Long strings stay collapsed until opened.
+                </CardDescription>
+                {exportJsonTree !== null ? (
+                  <div data-test="resume-json-export">
+                    <CollapsibleJsonView data={exportJsonTree} />
+                  </div>
+                ) : (
+                  <Textarea readOnly className="font-mono text-xs" rows={12} value={currentJson} />
+                )}
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={async () => {
+                    await navigator.clipboard.writeText(currentJson);
+                    toast.success("Copied to clipboard");
+                  }}
+                >
+                  Copy JSON
+                </Button>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle>Paste JSON</CardTitle>
+              </CardHeader>
+              <CardContent className="flex flex-col gap-3">
+                <Textarea
+                  className="font-mono text-xs"
+                  rows={10}
+                  placeholder="{ ... }"
+                  value={importText}
+                  onChange={(e) => setImportText(e.target.value)}
+                />
+                <Button type="button" onClick={applyImport}>
+                  Apply JSON
+                </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="jd" className="mt-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Job description</CardTitle>
+                <CardDescription>
+                  The job posting this resume was tailored for. Update it anytime.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Textarea
+                  rows={12}
+                  placeholder="Paste the job posting here..."
+                  value={jobDescription}
+                  onChange={(e) => setJobDescription(e.target.value)}
+                />
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
 
       <div
@@ -370,7 +373,8 @@ function TemplatePicker({
                 ? "border-primary bg-primary/5"
                 : "border-base-300 hover:border-base-content/30",
             )}
-            data-test={`template-${tid}`}>
+            data-test={`template-${tid}`}
+          >
             <span className="text-base-content text-sm font-semibold">{TEMPLATE_LABELS[tid]}</span>
             <span className="text-base-content/60 text-xs">{TEMPLATE_DESCRIPTIONS[tid]}</span>
           </button>

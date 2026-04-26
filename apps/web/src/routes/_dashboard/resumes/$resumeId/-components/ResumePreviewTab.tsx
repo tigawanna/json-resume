@@ -65,7 +65,8 @@ export function ResumePreviewTab({ resumeId, selectedTemplate, doc }: ResumePrev
           className="gap-2"
           disabled={downloading}
           onClick={handleDownload}
-          data-test="resume-download-pdf-btn">
+          data-test="resume-download-pdf-btn"
+        >
           {downloading ? (
             <Loader2 className="size-4 animate-spin" />
           ) : (
@@ -76,7 +77,8 @@ export function ResumePreviewTab({ resumeId, selectedTemplate, doc }: ResumePrev
       </div>
       <div
         className="resume-preview-paper rounded-lg border bg-white p-8 shadow-sm"
-        data-test="resume-preview-paper">
+        data-test="resume-preview-paper"
+      >
         <JSONUIProvider registry={resumeRegistry}>
           <Renderer spec={spec} registry={resumeRegistry} />
         </JSONUIProvider>

@@ -95,14 +95,17 @@ export function ProjectEditForm({ project, onSuccess }: ProjectEditFormProps) {
       onSubmit={(e) => {
         e.preventDefault();
         e.stopPropagation();
-        form.handleSubmit();
+
+        void form.handleSubmit();
       }}
-      className="flex flex-col gap-3">
+      className="flex flex-col gap-3"
+    >
       <form.AppField
         name="name"
         validators={{
           onChange: ({ value }) => (!value?.trim() ? "Project name is required" : undefined),
-        }}>
+        }}
+      >
         {(field) => (
           <div>
             <Label className="text-xs">Project Name</Label>
@@ -174,7 +177,8 @@ export function ProjectEditForm({ project, onSuccess }: ProjectEditFormProps) {
                   type="button"
                   className="ml-1"
                   onClick={() => setTechTags((prev) => prev.filter((x) => x !== t))}
-                  disabled={mutation.isPending}>
+                  disabled={mutation.isPending}
+                >
                   <X className="size-3" />
                 </button>
               </Badge>
@@ -191,7 +195,8 @@ export function ProjectEditForm({ project, onSuccess }: ProjectEditFormProps) {
             form.reset();
             setTechTags(parseTechTags(project.tech));
           }}
-          disabled={mutation.isPending}>
+          disabled={mutation.isPending}
+        >
           Cancel
         </Button>
         <Button type="submit" disabled={mutation.isPending || !form.state.isFormValid}>

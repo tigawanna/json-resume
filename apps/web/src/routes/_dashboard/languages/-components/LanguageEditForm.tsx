@@ -63,14 +63,17 @@ export function LanguageEditForm({ language, onSuccess }: LanguageEditFormProps)
       onSubmit={(e) => {
         e.preventDefault();
         e.stopPropagation();
-        form.handleSubmit();
+
+        void form.handleSubmit();
       }}
-      className="flex flex-col gap-3">
+      className="flex flex-col gap-3"
+    >
       <form.AppField
         name="name"
         validators={{
           onChange: ({ value }) => (!value?.trim() ? "Language name is required" : undefined),
-        }}>
+        }}
+      >
         {(field) => (
           <div>
             <Label className="text-xs">Language</Label>
@@ -88,7 +91,8 @@ export function LanguageEditForm({ language, onSuccess }: LanguageEditFormProps)
             <Label className="text-xs">Proficiency</Label>
             <Combobox
               value={field.state.value}
-              onValueChange={(value) => field.handleChange(value ?? "")}>
+              onValueChange={(value) => field.handleChange(value ?? "")}
+            >
               <ComboboxInput
                 placeholder="Select or type..."
                 showTrigger
@@ -113,7 +117,8 @@ export function LanguageEditForm({ language, onSuccess }: LanguageEditFormProps)
           type="button"
           variant="outline"
           onClick={() => form.reset()}
-          disabled={mutation.isPending}>
+          disabled={mutation.isPending}
+        >
           Cancel
         </Button>
         <Button type="submit" disabled={mutation.isPending || !form.state.isFormValid}>

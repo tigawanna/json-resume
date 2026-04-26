@@ -75,7 +75,11 @@ function CreateResumePage() {
     if (!raw) return { ok: true as const, plain: "", error: "" as string };
     const parsed = safeParseResumeJson(raw);
     if (parsed.ok) {
-      return { ok: true as const, plain: resumeDocumentToPlainText(parsed.data), error: "" as string };
+      return {
+        ok: true as const,
+        plain: resumeDocumentToPlainText(parsed.data),
+        error: "" as string,
+      };
     }
     return { ok: false as const, plain: "" as string, error: parsed.error };
   }, [resumePasteMode, pastedJsonResumeSnippet]);
@@ -100,7 +104,7 @@ function CreateResumePage() {
     },
     onSuccess(saved) {
       toast.success("Resume created");
-      navigate({ to: "/resumes/$resumeId", params: { resumeId: saved.id } });
+      void navigate({ to: "/resumes/$resumeId", params: { resumeId: saved.id } });
     },
     onError(err: unknown) {
       toast.error("Failed to create resume", {

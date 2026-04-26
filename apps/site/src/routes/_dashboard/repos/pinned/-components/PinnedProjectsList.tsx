@@ -1,28 +1,10 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  unpinProject,
-  updatePinnedProject,
-} from "@/data-access-layer/github/github.functions";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { unpinProject, updatePinnedProject } from "@/data-access-layer/github/github.functions";
 import type { PinnedProjectDTO } from "@/data-access-layer/github/github.types";
 import { useMutation } from "@tanstack/react-query";
-import {
-  ExternalLink,
-  Globe,
-  Loader,
-  Pencil,
-  Star,
-  Trash2,
-  Check,
-  X,
-} from "lucide-react";
+import { ExternalLink, Globe, Loader, Pencil, Star, Trash2, Check, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -32,10 +14,7 @@ interface PinnedProjectsListProps {
 
 export function PinnedProjectsList({ projects }: PinnedProjectsListProps) {
   return (
-    <div
-      className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
-      data-test="pinned-projects-list"
-    >
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" data-test="pinned-projects-list">
       {projects.map((project) => (
         <PinnedProjectCard key={project.id} project={project} />
       ))}
@@ -48,8 +27,7 @@ function PinnedProjectCard({ project }: { project: PinnedProjectDTO }) {
   const [editDescription, setEditDescription] = useState(project.description);
 
   const unpinMutation = useMutation({
-    mutationFn: () =>
-      unpinProject({ data: { githubRepoId: project.githubRepoId } }),
+    mutationFn: () => unpinProject({ data: { githubRepoId: project.githubRepoId } }),
     onSuccess() {
       toast.success(`Unpinned ${project.name}`);
     },

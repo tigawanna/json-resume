@@ -38,7 +38,8 @@ export function ContactListCard({ contact, onDelete }: ContactListCardProps) {
             size="icon"
             className="size-7"
             onClick={() => setOpen(true)}
-            data-test="contact-edit-btn">
+            data-test="contact-edit-btn"
+          >
             <Pencil className="size-3.5" />
           </Button>
           <Button
@@ -46,7 +47,8 @@ export function ContactListCard({ contact, onDelete }: ContactListCardProps) {
             size="icon"
             className="size-7"
             onClick={() => onDelete?.(contact.id)}
-            data-test="contact-delete-btn">
+            data-test="contact-delete-btn"
+          >
             <Trash2 className="size-3.5" />
           </Button>
         </div>

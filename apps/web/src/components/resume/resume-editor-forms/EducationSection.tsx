@@ -1,4 +1,5 @@
 import { PickFromExistingDialog } from "@/components/PickFromExistingDialog";
+import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -65,7 +66,7 @@ export function EducationSection({ resumeId }: EducationSectionProps) {
         onOpenChange={setPickOpen}
         title="Pick from Existing Education"
         description="Search across all your resumes to copy an education entry."
-        getSearchQueryKey={(q) => ["resumes", "search", "education", q]}
+        getSearchQueryKey={(q) => [queryKeyPrefixes.resumes, "search", "education", q]}
         getSearchQueryFn={(q) => () => searchEducation({ data: { query: q } })}
         mapToItems={(data) =>
           data.map((edu: { id: string; school: string; degree: string; field: string }) => ({
@@ -160,7 +161,8 @@ function EducationCard({
               size="icon"
               className="size-7"
               onClick={() => deleteMutation.mutate()}
-              disabled={deleteMutation.isPending}>
+              disabled={deleteMutation.isPending}
+            >
               <Trash2 className="size-3.5" />
             </Button>
           </div>
@@ -224,7 +226,8 @@ function EducationCard({
           <Button
             size="sm"
             onClick={() => saveMutation.mutate()}
-            disabled={saveMutation.isPending || !school.trim() || !degree.trim()}>
+            disabled={saveMutation.isPending || !school.trim() || !degree.trim()}
+          >
             Save
           </Button>
           <Button variant="ghost" size="sm" onClick={() => setEditing(false)}>
@@ -317,10 +320,12 @@ function AddEducationForm({
           onSubmit={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            form.handleSubmit();
+
+            void form.handleSubmit();
           }}
           className="flex flex-col gap-3"
-          data-test="add-education-form">
+          data-test="add-education-form"
+        >
           <div className="grid gap-3 sm:grid-cols-2">
             <form.AppField name="school" validators={{ onChange: z.string().min(1, "Required") }}>
               {(field) => <field.TextField label="School" />}

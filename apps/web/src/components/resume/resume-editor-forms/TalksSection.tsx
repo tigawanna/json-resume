@@ -1,4 +1,5 @@
 import { PickFromExistingDialog } from "@/components/PickFromExistingDialog";
+import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -76,7 +77,7 @@ export function TalksSection({ resumeId }: TalksSectionProps) {
         onOpenChange={setPickOpen}
         title="Pick from Existing Talks"
         description="Search across all your resumes to copy a talk entry."
-        getSearchQueryKey={(q) => ["resumes", "search", "talks", q]}
+        getSearchQueryKey={(q) => [queryKeyPrefixes.resumes, "search", "talks", q]}
         getSearchQueryFn={(q) => () => searchTalks({ data: { query: q } })}
         mapToItems={(data) =>
           data.map((talk: { id: string; title: string; event: string; date: string }) => ({
@@ -181,7 +182,8 @@ function TalkCard({ talk, resumeId, allTalks }: TalkCardProps) {
               size="icon"
               className="size-7"
               onClick={() => deleteMutation.mutate()}
-              disabled={deleteMutation.isPending}>
+              disabled={deleteMutation.isPending}
+            >
               <Trash2 className="size-3.5" />
             </Button>
           </div>
@@ -200,7 +202,8 @@ function TalkCard({ talk, resumeId, allTalks }: TalkCardProps) {
                   href={link.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-primary inline-flex items-center gap-1 text-xs hover:underline">
+                  className="text-primary inline-flex items-center gap-1 text-xs hover:underline"
+                >
                   <ExternalLink className="size-3" />
                   {link.label || link.url}
                 </a>
@@ -260,7 +263,8 @@ function TalkCard({ talk, resumeId, allTalks }: TalkCardProps) {
                 variant="ghost"
                 size="icon"
                 className="size-6 shrink-0"
-                onClick={() => removeLink(index)}>
+                onClick={() => removeLink(index)}
+              >
                 <X className="size-3" />
               </Button>
             </div>
@@ -274,7 +278,8 @@ function TalkCard({ talk, resumeId, allTalks }: TalkCardProps) {
           <Button
             size="sm"
             onClick={() => saveMutation.mutate()}
-            disabled={saveMutation.isPending || !title.trim()}>
+            disabled={saveMutation.isPending || !title.trim()}
+          >
             Save
           </Button>
           <Button variant="ghost" size="sm" onClick={() => setEditing(false)}>
@@ -370,12 +375,15 @@ function AddTalkForm({
           onSubmit={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            form.handleSubmit();
+
+            void form.handleSubmit();
           }}
-          className="flex flex-col gap-3">
+          className="flex flex-col gap-3"
+        >
           <form.AppField
             name="title"
-            validators={{ onChange: z.string().min(1, "Title is required") }}>
+            validators={{ onChange: z.string().min(1, "Title is required") }}
+          >
             {(field) => <field.TextField label="Title" />}
           </form.AppField>
 

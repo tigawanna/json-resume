@@ -96,14 +96,17 @@ export function SavedProjectEditForm({ project, onSuccess }: SavedProjectEditFor
       onSubmit={(e) => {
         e.preventDefault();
         e.stopPropagation();
-        form.handleSubmit();
+
+        void form.handleSubmit();
       }}
-      className="flex flex-col gap-3">
+      className="flex flex-col gap-3"
+    >
       <form.AppField
         name="name"
         validators={{
           onChange: ({ value }) => (!value?.trim() ? "Project name is required" : undefined),
-        }}>
+        }}
+      >
         {(field) => (
           <div>
             <Label className="text-xs">Project Name</Label>
@@ -175,7 +178,8 @@ export function SavedProjectEditForm({ project, onSuccess }: SavedProjectEditFor
                   <button
                     type="button"
                     onClick={() => setTechTags((prev) => prev.filter((t) => t !== tag))}
-                    className="ml-1 hover:opacity-70">
+                    className="ml-1 hover:opacity-70"
+                  >
                     <X className="w-3 h-3" />
                   </button>
                 </Badge>

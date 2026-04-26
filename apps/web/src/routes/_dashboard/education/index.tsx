@@ -6,8 +6,8 @@ import { RouterPendingComponent } from "@/lib/tanstack/router/RouterPendingCompo
 import { useDebouncer } from "@tanstack/react-pacer";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
-import { Suspense, useState } from "react";
+import { ChevronLeft, ChevronRight, Loader2, Plus } from "lucide-react";
+import { Suspense, useState, useTransition } from "react";
 import { z } from "zod";
 import { EducationCreateFormDilaog } from "./-components/EducationCreateForm";
 import { EducationList } from "./-components/EducationList";
@@ -32,6 +32,7 @@ function RouteComponent() {
   const navigate = useNavigate();
   const [keyword, setKeyword] = useState(sq);
   const [createOpen, setCreateOpen] = useState(false);
+  const [isCreateOpenPending, startCreateOpenTransition] = useTransition();
 
   // Read cursor data from cache (populated by EducationList's useSuspenseQuery)
   // to drive button disabled states — same queryKey, no duplicate fetch
@@ -81,6 +82,12 @@ function RouteComponent() {
     });
   }
 
+  function openCreateDialog() {
+    startCreateOpenTransition(() => {
+      setCreateOpen(true);
+    });
+  }
+
   return (
     <div className="flex w-full min-h-screen flex-col gap-6">
       <div className="flex items-center justify-between">
@@ -93,10 +100,16 @@ function RouteComponent() {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => setCreateOpen(true)}
+          onClick={openCreateDialog}
+          disabled={isCreateOpenPending}
           data-test="add-education-btn"
         >
-          <Plus className="mr-1 size-4" /> Add
+          {isCreateOpenPending ? (
+            <Loader2 className="mr-1 size-4 animate-spin" />
+          ) : (
+            <Plus className="mr-1 size-4" />
+          )}
+          {isCreateOpenPending ? "Opening..." : "Add"}
         </Button>
       </div>
       <EducationCreateFormDilaog open={createOpen} setOpen={setCreateOpen} />

@@ -158,7 +158,7 @@ export function AsyncSelect<T>({
     : queryOptions.queryKey;
 
   const {
-    data: options = [] as T[],
+    data: options,
     isLoading,
     error,
   } = useQuery({

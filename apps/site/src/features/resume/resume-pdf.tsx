@@ -464,7 +464,11 @@ function ModernPdf({ doc }: { doc: ResumeDocumentV1 }) {
                   <View style={base.linkRow}>
                     {t.links.map((l, li) =>
                       l.url.trim() ? (
-                        <Link key={`${l.label}-${li}`} src={l.url} style={{ ...base.link, color: MODERN_COLOR }}>
+                        <Link
+                          key={`${l.label}-${li}`}
+                          src={l.url}
+                          style={{ ...base.link, color: MODERN_COLOR }}
+                        >
                           {l.label}
                         </Link>
                       ) : (
@@ -551,8 +555,7 @@ export function ResumePdfDocument({
 }) {
   const tid = templateId ?? doc.meta.templateId;
   const Template = pdfTemplates[tid];
-  const title =
-    pdfTitle?.trim() || doc.header.fullName.trim() || "Resume";
+  const title = pdfTitle?.trim() || doc.header.fullName.trim() || "Resume";
   return (
     <Document title={title}>
       <Template doc={doc} />

@@ -1,19 +1,11 @@
 import { relations, sql } from "drizzle-orm";
-import {
-  sqliteTable,
-  text,
-  integer,
-  index,
-  uniqueIndex,
-} from "drizzle-orm/sqlite-core";
+import { sqliteTable, text, integer, index, uniqueIndex } from "drizzle-orm/sqlite-core";
 
 export const user = sqliteTable("user", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
-  emailVerified: integer("email_verified", { mode: "boolean" })
-    .default(false)
-    .notNull(),
+  emailVerified: integer("email_verified", { mode: "boolean" }).default(false).notNull(),
   image: text("image"),
   createdAt: integer("created_at", { mode: "timestamp_ms" })
     .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
@@ -307,31 +299,25 @@ export const invitationRelations = relations(invitation, ({ one }) => ({
   }),
 }));
 
-export const oauthApplicationRelations = relations(
-  oauthApplication,
-  ({ one, many }) => ({
-    user: one(user, {
-      fields: [oauthApplication.userId],
-      references: [user.id],
-    }),
-    oauthAccessTokens: many(oauthAccessToken),
-    oauthConsents: many(oauthConsent),
+export const oauthApplicationRelations = relations(oauthApplication, ({ one, many }) => ({
+  user: one(user, {
+    fields: [oauthApplication.userId],
+    references: [user.id],
   }),
-);
+  oauthAccessTokens: many(oauthAccessToken),
+  oauthConsents: many(oauthConsent),
+}));
 
-export const oauthAccessTokenRelations = relations(
-  oauthAccessToken,
-  ({ one }) => ({
-    oauthApplication: one(oauthApplication, {
-      fields: [oauthAccessToken.clientId],
-      references: [oauthApplication.clientId],
-    }),
-    user: one(user, {
-      fields: [oauthAccessToken.userId],
-      references: [user.id],
-    }),
+export const oauthAccessTokenRelations = relations(oauthAccessToken, ({ one }) => ({
+  oauthApplication: one(oauthApplication, {
+    fields: [oauthAccessToken.clientId],
+    references: [oauthApplication.clientId],
   }),
-);
+  user: one(user, {
+    fields: [oauthAccessToken.userId],
+    references: [user.id],
+  }),
+}));
 
 export const oauthConsentRelations = relations(oauthConsent, ({ one }) => ({
   oauthApplication: one(oauthApplication, {

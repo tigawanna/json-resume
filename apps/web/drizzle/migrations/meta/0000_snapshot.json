@@ -103,9 +103,7 @@
       "indexes": {
         "account_userId_idx": {
           "name": "account_userId_idx",
-          "columns": [
-            "user_id"
-          ],
+          "columns": ["user_id"],
           "isUnique": false
         }
       },
@@ -114,12 +112,8 @@
           "name": "account_user_id_user_id_fk",
           "tableFrom": "account",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -295,23 +289,17 @@
       "indexes": {
         "apikey_configId_idx": {
           "name": "apikey_configId_idx",
-          "columns": [
-            "config_id"
-          ],
+          "columns": ["config_id"],
           "isUnique": false
         },
         "apikey_referenceId_idx": {
           "name": "apikey_referenceId_idx",
-          "columns": [
-            "reference_id"
-          ],
+          "columns": ["reference_id"],
           "isUnique": false
         },
         "apikey_key_idx": {
           "name": "apikey_key_idx",
-          "columns": [
-            "key"
-          ],
+          "columns": ["key"],
           "isUnique": false
         }
       },
@@ -385,16 +373,12 @@
       "indexes": {
         "invitation_organizationId_idx": {
           "name": "invitation_organizationId_idx",
-          "columns": [
-            "organization_id"
-          ],
+          "columns": ["organization_id"],
           "isUnique": false
         },
         "invitation_email_idx": {
           "name": "invitation_email_idx",
-          "columns": [
-            "email"
-          ],
+          "columns": ["email"],
           "isUnique": false
         }
       },
@@ -403,12 +387,8 @@
           "name": "invitation_organization_id_organization_id_fk",
           "tableFrom": "invitation",
           "tableTo": "organization",
-          "columnsFrom": [
-            "organization_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["organization_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -416,12 +396,8 @@
           "name": "invitation_inviter_id_user_id_fk",
           "tableFrom": "invitation",
           "tableTo": "user",
-          "columnsFrom": [
-            "inviter_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["inviter_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -473,16 +449,12 @@
       "indexes": {
         "member_organizationId_idx": {
           "name": "member_organizationId_idx",
-          "columns": [
-            "organization_id"
-          ],
+          "columns": ["organization_id"],
           "isUnique": false
         },
         "member_userId_idx": {
           "name": "member_userId_idx",
-          "columns": [
-            "user_id"
-          ],
+          "columns": ["user_id"],
           "isUnique": false
         }
       },
@@ -491,12 +463,8 @@
           "name": "member_organization_id_organization_id_fk",
           "tableFrom": "member",
           "tableTo": "organization",
-          "columnsFrom": [
-            "organization_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["organization_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -504,12 +472,8 @@
           "name": "member_user_id_user_id_fk",
           "tableFrom": "member",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -595,30 +559,22 @@
       "indexes": {
         "oauth_access_token_access_token_unique": {
           "name": "oauth_access_token_access_token_unique",
-          "columns": [
-            "access_token"
-          ],
+          "columns": ["access_token"],
           "isUnique": true
         },
         "oauth_access_token_refresh_token_unique": {
           "name": "oauth_access_token_refresh_token_unique",
-          "columns": [
-            "refresh_token"
-          ],
+          "columns": ["refresh_token"],
           "isUnique": true
         },
         "oauthAccessToken_clientId_idx": {
           "name": "oauthAccessToken_clientId_idx",
-          "columns": [
-            "client_id"
-          ],
+          "columns": ["client_id"],
           "isUnique": false
         },
         "oauthAccessToken_userId_idx": {
           "name": "oauthAccessToken_userId_idx",
-          "columns": [
-            "user_id"
-          ],
+          "columns": ["user_id"],
           "isUnique": false
         }
       },
@@ -627,12 +583,8 @@
           "name": "oauth_access_token_client_id_oauth_application_client_id_fk",
           "tableFrom": "oauth_access_token",
           "tableTo": "oauth_application",
-          "columnsFrom": [
-            "client_id"
-          ],
-          "columnsTo": [
-            "client_id"
-          ],
+          "columnsFrom": ["client_id"],
+          "columnsTo": ["client_id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -640,12 +592,8 @@
           "name": "oauth_access_token_user_id_user_id_fk",
           "tableFrom": "oauth_access_token",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -746,16 +694,12 @@
       "indexes": {
         "oauth_application_client_id_unique": {
           "name": "oauth_application_client_id_unique",
-          "columns": [
-            "client_id"
-          ],
+          "columns": ["client_id"],
           "isUnique": true
         },
         "oauthApplication_userId_idx": {
           "name": "oauthApplication_userId_idx",
-          "columns": [
-            "user_id"
-          ],
+          "columns": ["user_id"],
           "isUnique": false
         }
       },
@@ -764,12 +708,8 @@
           "name": "oauth_application_user_id_user_id_fk",
           "tableFrom": "oauth_application",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -834,16 +774,12 @@
       "indexes": {
         "oauthConsent_clientId_idx": {
           "name": "oauthConsent_clientId_idx",
-          "columns": [
-            "client_id"
-          ],
+          "columns": ["client_id"],
           "isUnique": false
         },
         "oauthConsent_userId_idx": {
           "name": "oauthConsent_userId_idx",
-          "columns": [
-            "user_id"
-          ],
+          "columns": ["user_id"],
           "isUnique": false
         }
       },
@@ -852,12 +788,8 @@
           "name": "oauth_consent_client_id_oauth_application_client_id_fk",
           "tableFrom": "oauth_consent",
           "tableTo": "oauth_application",
-          "columnsFrom": [
-            "client_id"
-          ],
-          "columnsTo": [
-            "client_id"
-          ],
+          "columnsFrom": ["client_id"],
+          "columnsTo": ["client_id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -865,12 +797,8 @@
           "name": "oauth_consent_user_id_user_id_fk",
           "tableFrom": "oauth_consent",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -928,16 +856,12 @@
       "indexes": {
         "organization_slug_unique": {
           "name": "organization_slug_unique",
-          "columns": [
-            "slug"
-          ],
+          "columns": ["slug"],
           "isUnique": true
         },
         "organization_slug_uidx": {
           "name": "organization_slug_uidx",
-          "columns": [
-            "slug"
-          ],
+          "columns": ["slug"],
           "isUnique": true
         }
       },
@@ -1024,16 +948,12 @@
       "indexes": {
         "session_token_unique": {
           "name": "session_token_unique",
-          "columns": [
-            "token"
-          ],
+          "columns": ["token"],
           "isUnique": true
         },
         "session_userId_idx": {
           "name": "session_userId_idx",
-          "columns": [
-            "user_id"
-          ],
+          "columns": ["user_id"],
           "isUnique": false
         }
       },
@@ -1042,12 +962,8 @@
           "name": "session_user_id_user_id_fk",
           "tableFrom": "session",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1144,9 +1060,7 @@
       "indexes": {
         "user_email_unique": {
           "name": "user_email_unique",
-          "columns": [
-            "email"
-          ],
+          "columns": ["email"],
           "isUnique": true
         }
       },
@@ -1206,9 +1120,7 @@
       "indexes": {
         "verification_identifier_idx": {
           "name": "verification_identifier_idx",
-          "columns": [
-            "identifier"
-          ],
+          "columns": ["identifier"],
           "isUnique": false
         }
       },
@@ -1323,16 +1235,12 @@
       "indexes": {
         "resume_userId_idx": {
           "name": "resume_userId_idx",
-          "columns": [
-            "user_id"
-          ],
+          "columns": ["user_id"],
           "isUnique": false
         },
         "resume_updatedAt_idx": {
           "name": "resume_updatedAt_idx",
-          "columns": [
-            "updated_at"
-          ],
+          "columns": ["updated_at"],
           "isUnique": false
         }
       },
@@ -1341,12 +1249,8 @@
           "name": "resume_user_id_user_id_fk",
           "tableFrom": "resume",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1422,17 +1326,12 @@
       "indexes": {
         "resume_section_resumeId_idx": {
           "name": "resume_section_resumeId_idx",
-          "columns": [
-            "resume_id"
-          ],
+          "columns": ["resume_id"],
           "isUnique": false
         },
         "resume_section_resumeId_key_idx": {
           "name": "resume_section_resumeId_key_idx",
-          "columns": [
-            "resume_id",
-            "key"
-          ],
+          "columns": ["resume_id", "key"],
           "isUnique": false
         }
       },
@@ -1441,12 +1340,8 @@
           "name": "resume_section_resume_id_resume_id_fk",
           "tableFrom": "resume_section",
           "tableTo": "resume",
-          "columnsFrom": [
-            "resume_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["resume_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1553,9 +1448,7 @@
       "indexes": {
         "resume_certification_resumeId_idx": {
           "name": "resume_certification_resumeId_idx",
-          "columns": [
-            "resume_id"
-          ],
+          "columns": ["resume_id"],
           "isUnique": false
         }
       },
@@ -1564,12 +1457,8 @@
           "name": "resume_certification_resume_id_resume_id_fk",
           "tableFrom": "resume_certification",
           "tableTo": "resume",
-          "columnsFrom": [
-            "resume_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["resume_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1667,9 +1556,7 @@
       "indexes": {
         "resume_contact_resumeId_idx": {
           "name": "resume_contact_resumeId_idx",
-          "columns": [
-            "resume_id"
-          ],
+          "columns": ["resume_id"],
           "isUnique": false
         }
       },
@@ -1678,12 +1565,8 @@
           "name": "resume_contact_resume_id_resume_id_fk",
           "tableFrom": "resume_contact",
           "tableTo": "resume",
-          "columnsFrom": [
-            "resume_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["resume_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1806,9 +1689,7 @@
       "indexes": {
         "resume_education_resumeId_idx": {
           "name": "resume_education_resumeId_idx",
-          "columns": [
-            "resume_id"
-          ],
+          "columns": ["resume_id"],
           "isUnique": false
         }
       },
@@ -1817,12 +1698,8 @@
           "name": "resume_education_resume_id_resume_id_fk",
           "tableFrom": "resume_education",
           "tableTo": "resume",
-          "columnsFrom": [
-            "resume_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["resume_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1905,9 +1782,7 @@
       "indexes": {
         "resume_education_bullet_educationId_idx": {
           "name": "resume_education_bullet_educationId_idx",
-          "columns": [
-            "education_id"
-          ],
+          "columns": ["education_id"],
           "isUnique": false
         }
       },
@@ -1916,12 +1791,8 @@
           "name": "resume_education_bullet_education_id_resume_education_id_fk",
           "tableFrom": "resume_education_bullet",
           "tableTo": "resume_education",
-          "columnsFrom": [
-            "education_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["education_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2035,9 +1906,7 @@
       "indexes": {
         "resume_experience_resumeId_idx": {
           "name": "resume_experience_resumeId_idx",
-          "columns": [
-            "resume_id"
-          ],
+          "columns": ["resume_id"],
           "isUnique": false
         }
       },
@@ -2046,12 +1915,8 @@
           "name": "resume_experience_resume_id_resume_id_fk",
           "tableFrom": "resume_experience",
           "tableTo": "resume",
-          "columnsFrom": [
-            "resume_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["resume_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2134,9 +1999,7 @@
       "indexes": {
         "resume_exp_bullet_experienceId_idx": {
           "name": "resume_exp_bullet_experienceId_idx",
-          "columns": [
-            "experience_id"
-          ],
+          "columns": ["experience_id"],
           "isUnique": false
         }
       },
@@ -2145,12 +2008,8 @@
           "name": "resume_experience_bullet_experience_id_resume_experience_id_fk",
           "tableFrom": "resume_experience_bullet",
           "tableTo": "resume_experience",
-          "columnsFrom": [
-            "experience_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["experience_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2241,9 +2100,7 @@
       "indexes": {
         "resume_language_resumeId_idx": {
           "name": "resume_language_resumeId_idx",
-          "columns": [
-            "resume_id"
-          ],
+          "columns": ["resume_id"],
           "isUnique": false
         }
       },
@@ -2252,12 +2109,8 @@
           "name": "resume_language_resume_id_resume_id_fk",
           "tableFrom": "resume_language",
           "tableTo": "resume",
-          "columnsFrom": [
-            "resume_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["resume_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2354,9 +2207,7 @@
       "indexes": {
         "resume_link_resumeId_idx": {
           "name": "resume_link_resumeId_idx",
-          "columns": [
-            "resume_id"
-          ],
+          "columns": ["resume_id"],
           "isUnique": false
         }
       },
@@ -2365,12 +2216,8 @@
           "name": "resume_link_resume_id_resume_id_fk",
           "tableFrom": "resume_link",
           "tableTo": "resume",
-          "columnsFrom": [
-            "resume_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["resume_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2485,9 +2332,7 @@
       "indexes": {
         "resume_project_resumeId_idx": {
           "name": "resume_project_resumeId_idx",
-          "columns": [
-            "resume_id"
-          ],
+          "columns": ["resume_id"],
           "isUnique": false
         }
       },
@@ -2496,12 +2341,8 @@
           "name": "resume_project_resume_id_resume_id_fk",
           "tableFrom": "resume_project",
           "tableTo": "resume",
-          "columnsFrom": [
-            "resume_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["resume_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2591,9 +2432,7 @@
       "indexes": {
         "resume_skill_groupId_idx": {
           "name": "resume_skill_groupId_idx",
-          "columns": [
-            "group_id"
-          ],
+          "columns": ["group_id"],
           "isUnique": false
         }
       },
@@ -2602,12 +2441,8 @@
           "name": "resume_skill_group_id_resume_skill_group_id_fk",
           "tableFrom": "resume_skill",
           "tableTo": "resume_skill_group",
-          "columnsFrom": [
-            "group_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["group_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2690,9 +2525,7 @@
       "indexes": {
         "resume_skill_group_resumeId_idx": {
           "name": "resume_skill_group_resumeId_idx",
-          "columns": [
-            "resume_id"
-          ],
+          "columns": ["resume_id"],
           "isUnique": false
         }
       },
@@ -2701,12 +2534,8 @@
           "name": "resume_skill_group_resume_id_resume_id_fk",
           "tableFrom": "resume_skill_group",
           "tableTo": "resume",
-          "columnsFrom": [
-            "resume_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["resume_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2790,9 +2619,7 @@
       "indexes": {
         "resume_summary_resumeId_idx": {
           "name": "resume_summary_resumeId_idx",
-          "columns": [
-            "resume_id"
-          ],
+          "columns": ["resume_id"],
           "isUnique": false
         }
       },
@@ -2801,12 +2628,8 @@
           "name": "resume_summary_resume_id_resume_id_fk",
           "tableFrom": "resume_summary",
           "tableTo": "resume",
-          "columnsFrom": [
-            "resume_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["resume_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2921,9 +2744,7 @@
       "indexes": {
         "resume_talk_resumeId_idx": {
           "name": "resume_talk_resumeId_idx",
-          "columns": [
-            "resume_id"
-          ],
+          "columns": ["resume_id"],
           "isUnique": false
         }
       },
@@ -2932,12 +2753,8 @@
           "name": "resume_talk_resume_id_resume_id_fk",
           "tableFrom": "resume_talk",
           "tableTo": "resume",
-          "columnsFrom": [
-            "resume_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["resume_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -3052,9 +2869,7 @@
       "indexes": {
         "resume_volunteer_resumeId_idx": {
           "name": "resume_volunteer_resumeId_idx",
-          "columns": [
-            "resume_id"
-          ],
+          "columns": ["resume_id"],
           "isUnique": false
         }
       },
@@ -3063,12 +2878,8 @@
           "name": "resume_volunteer_resume_id_resume_id_fk",
           "tableFrom": "resume_volunteer",
           "tableTo": "resume",
-          "columnsFrom": [
-            "resume_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["resume_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -3173,17 +2984,12 @@
       "indexes": {
         "saved_project_userId_idx": {
           "name": "saved_project_userId_idx",
-          "columns": [
-            "user_id"
-          ],
+          "columns": ["user_id"],
           "isUnique": false
         },
         "saved_project_userId_updatedAt_idx": {
           "name": "saved_project_userId_updatedAt_idx",
-          "columns": [
-            "user_id",
-            "updated_at"
-          ],
+          "columns": ["user_id", "updated_at"],
           "isUnique": false
         }
       },
@@ -3192,12 +2998,8 @@
           "name": "saved_project_user_id_user_id_fk",
           "tableFrom": "saved_project",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }

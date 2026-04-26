@@ -84,10 +84,7 @@ function toPinnedDTO(row: typeof pinnedProject.$inferSelect): PinnedProjectDTO {
 
 export async function listPinnedProjectsForCurrentUser(): Promise<PinnedProjectDTO[]> {
   const user = await requireUser();
-  const rows = await db
-    .select()
-    .from(pinnedProject)
-    .where(eq(pinnedProject.userId, user.id));
+  const rows = await db.select().from(pinnedProject).where(eq(pinnedProject.userId, user.id));
   return rows.map(toPinnedDTO);
 }
 
@@ -108,10 +105,7 @@ export async function pinProjectForCurrentUser(input: {
     .select()
     .from(pinnedProject)
     .where(
-      and(
-        eq(pinnedProject.userId, user.id),
-        eq(pinnedProject.githubRepoId, input.githubRepoId),
-      ),
+      and(eq(pinnedProject.userId, user.id), eq(pinnedProject.githubRepoId, input.githubRepoId)),
     )
     .limit(1);
 
@@ -135,11 +129,7 @@ export async function pinProjectForCurrentUser(input: {
     updatedAt: now,
   });
 
-  const rows = await db
-    .select()
-    .from(pinnedProject)
-    .where(eq(pinnedProject.id, id))
-    .limit(1);
+  const rows = await db.select().from(pinnedProject).where(eq(pinnedProject.id, id)).limit(1);
   return toPinnedDTO(rows[0]!);
 }
 
@@ -147,12 +137,7 @@ export async function unpinProjectForCurrentUser(githubRepoId: number): Promise<
   const user = await requireUser();
   await db
     .delete(pinnedProject)
-    .where(
-      and(
-        eq(pinnedProject.userId, user.id),
-        eq(pinnedProject.githubRepoId, githubRepoId),
-      ),
-    );
+    .where(and(eq(pinnedProject.userId, user.id), eq(pinnedProject.githubRepoId, githubRepoId)));
   return { success: true };
 }
 
@@ -181,11 +166,7 @@ export async function updatePinnedProjectForCurrentUser(input: {
       .where(and(eq(pinnedProject.id, input.id), eq(pinnedProject.userId, user.id)));
   }
 
-  const rows = await db
-    .select()
-    .from(pinnedProject)
-    .where(eq(pinnedProject.id, input.id))
-    .limit(1);
+  const rows = await db.select().from(pinnedProject).where(eq(pinnedProject.id, input.id)).limit(1);
   return toPinnedDTO(rows[0]!);
 }
 

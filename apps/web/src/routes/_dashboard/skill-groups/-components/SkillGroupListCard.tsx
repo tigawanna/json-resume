@@ -58,7 +58,8 @@ export function SkillGroupListCard({ skillGroup, onDelete }: SkillGroupListCardP
             size="icon"
             className="size-7"
             onClick={() => setOpen(true)}
-            data-test="skill-group-edit-btn">
+            data-test="skill-group-edit-btn"
+          >
             <Pencil className="size-3.5" />
           </Button>
           <Button
@@ -66,7 +67,8 @@ export function SkillGroupListCard({ skillGroup, onDelete }: SkillGroupListCardP
             size="icon"
             className="size-7"
             onClick={() => onDelete?.(skillGroup.id)}
-            data-test="skill-group-delete-btn">
+            data-test="skill-group-delete-btn"
+          >
             <Trash2 className="size-3.5" />
           </Button>
         </div>

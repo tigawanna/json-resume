@@ -95,7 +95,8 @@ export function LinksForm({ resumeId }: LinksFormProps) {
             variant="ghost"
             size="icon"
             className="shrink-0"
-            onClick={() => removeLink(index)}>
+            onClick={() => removeLink(index)}
+          >
             <Trash2 className="size-4" />
           </Button>
         </div>

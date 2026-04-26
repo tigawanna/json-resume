@@ -40,7 +40,8 @@ export function EducationListCard({ education, onDelete }: EducationListCardProp
             size="icon"
             className="size-7"
             onClick={() => setOpen(true)}
-            data-test="education-edit-btn">
+            data-test="education-edit-btn"
+          >
             <Pencil className="size-3.5" />
           </Button>
           <Button
@@ -48,7 +49,8 @@ export function EducationListCard({ education, onDelete }: EducationListCardProp
             size="icon"
             className="size-7"
             onClick={() => onDelete?.(education.id)}
-            data-test="education-delete-btn">
+            data-test="education-delete-btn"
+          >
             <Trash2 className="size-3.5" />
           </Button>
         </div>

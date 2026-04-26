@@ -2,7 +2,6 @@ import { getTanstackQueryContext } from "@/lib/tanstack/query/query-provider";
 import { BasicIndex, createCollection, parseWhereExpression } from "@tanstack/db";
 import { queryCollectionOptions } from "@tanstack/query-db-collection";
 import { queryKeyPrefixes } from "../query-keys";
-import { queryClient } from "@/lib/tanstack/query/queryclient";
 import { queryOptions } from "@tanstack/react-query";
 
 function makeSampleData(from: number = 1, to: number = 100) {
@@ -14,7 +13,6 @@ function makeSampleData(from: number = 1, to: number = 100) {
 }
 
 function generateLstFromCursor({ cursor, pageSize }: { cursor?: string; pageSize: number }) {
-  console.log("Generating list with cursor:", cursor, "and pageSize:", pageSize);
   const allItems = makeSampleData();
 
   let startIndex = 0;
@@ -76,14 +74,12 @@ export const experimentsCollection = createCollection(
       const where = ctx.meta?.loadSubsetOptions?.where;
 
       let keyword: string | undefined;
-      let gtField: string | undefined;
       let gtValue: unknown;
 
       if (where) {
         parseWhereExpression(where, {
           handlers: {
-            gt: (field, value) => {
-              gtField = field[0];
+            gt: (_field, value) => {
               gtValue = value;
             },
             ilike: (_field, value: unknown) => {
@@ -97,7 +93,7 @@ export const experimentsCollection = createCollection(
       }
       let items = generateLstFromCursor({ cursor: gtValue as string | undefined, pageSize: 12 });
 
-      await ctx.client.setQueryData(experimentsCollectionMetaQueryOptions.queryKey, {
+      ctx.client.setQueryData(experimentsCollectionMetaQueryOptions.queryKey, {
         nextCursor: items.nextCursor,
       });
 

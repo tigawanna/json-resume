@@ -26,7 +26,8 @@ export function LandingShowcase() {
     <section
       id="features"
       data-test="landing-showcase"
-      className="mx-auto max-w-360 scroll-mt-14 border-x border-border/50 py-24">
+      className="mx-auto max-w-360 scroll-mt-14 border-x border-border/50 py-24"
+    >
       <div className="px-8 md:px-16">
         <div className="mb-16">
           <h2 className="text-3xl font-medium tracking-tight text-base-content md:text-4xl">
@@ -44,7 +45,8 @@ export function LandingShowcase() {
             return (
               <div
                 key={reason.title}
-                className="group flex flex-col gap-4 bg-base-100 p-8 transition-colors hover:bg-neutral/50 lg:p-12">
+                className="group flex flex-col gap-4 bg-base-100 p-8 transition-colors hover:bg-neutral/50 lg:p-12"
+              >
                 <Icon className="size-6 text-primary transition-transform group-hover:scale-110" />
                 <h3 className="text-lg font-medium tracking-tight text-base-content">
                   {reason.title}

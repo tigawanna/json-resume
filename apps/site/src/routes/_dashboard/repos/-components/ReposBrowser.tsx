@@ -1,20 +1,11 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   githubReposQueryOptions,
   pinnedProjectsQueryOptions,
 } from "@/data-access-layer/github/github-query-options";
-import {
-  pinProject,
-  unpinProject,
-} from "@/data-access-layer/github/github.functions";
+import { pinProject, unpinProject } from "@/data-access-layer/github/github.functions";
 import type { GithubRepoDTO } from "@/data-access-layer/github/github.types";
 import { useMutation, useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import {
@@ -61,18 +52,12 @@ export function ReposBrowser() {
     <div className="flex flex-col gap-4" data-test="repos-browser">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {data.repos.map((repo) => (
-          <RepoCard
-            key={repo.id}
-            repo={repo}
-            isPinned={pinnedRepoIds.has(repo.id)}
-          />
+          <RepoCard key={repo.id} repo={repo} isPinned={pinnedRepoIds.has(repo.id)} />
         ))}
       </div>
 
       {data.repos.length === 0 && (
-        <div className="text-center py-12 text-base-content/60">
-          No repositories found.
-        </div>
+        <div className="text-center py-12 text-base-content/60">No repositories found.</div>
       )}
 
       <div className="flex items-center justify-center gap-2 py-4">
@@ -143,10 +128,7 @@ function RepoCard({ repo, isPinned }: { repo: GithubRepoDTO; isPinned: boolean }
   const isToggling = pinMutation.isPending || unpinMutation.isPending;
 
   return (
-    <Card
-      className="group relative transition-shadow hover:shadow-md"
-      data-test="repo-card"
-    >
+    <Card className="group relative transition-shadow hover:shadow-md" data-test="repo-card">
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 flex-1">
@@ -166,9 +148,7 @@ function RepoCard({ repo, isPinned }: { repo: GithubRepoDTO; isPinned: boolean }
             size="icon"
             className="size-8 shrink-0"
             disabled={isToggling}
-            onClick={() =>
-              isPinned ? unpinMutation.mutate() : pinMutation.mutate()
-            }
+            onClick={() => (isPinned ? unpinMutation.mutate() : pinMutation.mutate())}
             data-test="pin-toggle-btn"
           >
             {isToggling ? (
@@ -191,9 +171,7 @@ function RepoCard({ repo, isPinned }: { repo: GithubRepoDTO; isPinned: boolean }
               </Badge>
             ))}
             {repo.topics.length > 5 && (
-              <span className="text-[10px] text-base-content/50">
-                +{repo.topics.length - 5}
-              </span>
+              <span className="text-[10px] text-base-content/50">+{repo.topics.length - 5}</span>
             )}
           </div>
         )}

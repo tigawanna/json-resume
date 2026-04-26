@@ -24,7 +24,10 @@ export function buildSavedProjectSearchableText(item: {
 }
 
 function normalizeLikeQuery(q: string): string {
-  return q.replace(/[%_\\]/g, " ").replace(/\s+/g, " ").trim();
+  return q
+    .replace(/[%_\\]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function toDTO(row: typeof savedProject.$inferSelect): SavedProjectDTO {
@@ -50,9 +53,7 @@ export async function listSavedProjectsForCurrentUser(q?: string): Promise<Saved
     const rows = await db
       .select()
       .from(savedProject)
-      .where(
-        and(eq(savedProject.userId, user.id), like(savedProject.searchableText, `%${term}%`)),
-      )
+      .where(and(eq(savedProject.userId, user.id), like(savedProject.searchableText, `%${term}%`)))
       .orderBy(desc(savedProject.updatedAt));
     return rows.map(toDTO);
   }

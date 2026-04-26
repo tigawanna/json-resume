@@ -70,7 +70,7 @@ export function DashboardSidebarUser() {
         });
         await router.invalidate();
         await qc.fetchQuery(viewerqueryOptions);
-        tsrNavigate({ to: location.pathname });
+        void tsrNavigate({ to: location.pathname });
       },
       onError: (error: unknown) => {
         toast.error("Failed to switch account", {
@@ -163,7 +163,7 @@ export function DashboardSidebarUser() {
               ))}
               <DropdownMenuItem
                 onClick={() =>
-                  tsrNavigate({
+                  void tsrNavigate({
                     to: "/auth",
                     search: {
                       returnTo: location.pathname || "/dashboard",
@@ -204,7 +204,7 @@ export function DashboardSidebarUser() {
             <DropdownMenuItem
               onClick={() => {
                 logoutMutation.mutate();
-                tsrNavigate({ to: "/auth", search: { returnTo: "/" } });
+                void tsrNavigate({ to: "/auth", search: { returnTo: "/" } });
               }}
             >
               <LogOut />

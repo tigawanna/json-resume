@@ -21,7 +21,7 @@ export function ListPagination({ total_pages }: ListingsPaginationProps) {
         current={globalPage ?? 1}
         total={total_pages}
         onPageChange={(e) => {
-          navigate({
+          void navigate({
             search: {
               // @ts-expect-error
               globalPage: e,

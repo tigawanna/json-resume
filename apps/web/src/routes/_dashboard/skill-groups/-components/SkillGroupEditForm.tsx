@@ -80,14 +80,17 @@ export function SkillGroupEditForm({ skillGroup, onSuccess }: SkillGroupEditForm
       onSubmit={(e) => {
         e.preventDefault();
         e.stopPropagation();
-        form.handleSubmit();
+
+        void form.handleSubmit();
       }}
-      className="flex flex-col gap-3">
+      className="flex flex-col gap-3"
+    >
       <form.AppField
         name="name"
         validators={{
           onChange: ({ value }) => (!value?.trim() ? "Group name is required" : undefined),
-        }}>
+        }}
+      >
         {(field) => (
           <div>
             <Label className="text-xs">Group Name</Label>
@@ -116,7 +119,8 @@ export function SkillGroupEditForm({ skillGroup, onSuccess }: SkillGroupEditForm
                   type="button"
                   className="ml-1"
                   onClick={() => setSkills((prev) => prev.filter((x) => x !== s))}
-                  disabled={mutation.isPending}>
+                  disabled={mutation.isPending}
+                >
                   <X className="size-3" />
                 </button>
               </Badge>
@@ -132,7 +136,8 @@ export function SkillGroupEditForm({ skillGroup, onSuccess }: SkillGroupEditForm
             form.reset();
             setSkills(parseSkills(skillGroup.skills));
           }}
-          disabled={mutation.isPending}>
+          disabled={mutation.isPending}
+        >
           Cancel
         </Button>
         <Button type="submit" disabled={mutation.isPending || !form.state.isFormValid}>

@@ -37,7 +37,8 @@ export function LanguageListCard({ language, onDelete }: LanguageListCardProps) 
             size="icon"
             className="size-7"
             onClick={() => setOpen(true)}
-            data-test="language-edit-btn">
+            data-test="language-edit-btn"
+          >
             <Pencil className="size-3.5" />
           </Button>
           <Button
@@ -45,7 +46,8 @@ export function LanguageListCard({ language, onDelete }: LanguageListCardProps) 
             size="icon"
             className="size-7"
             onClick={() => onDelete?.(language.id)}
-            data-test="language-delete-btn">
+            data-test="language-delete-btn"
+          >
             <Trash2 className="size-3.5" />
           </Button>
         </div>

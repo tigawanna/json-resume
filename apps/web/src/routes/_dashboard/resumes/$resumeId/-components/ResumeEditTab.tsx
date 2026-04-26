@@ -26,7 +26,8 @@ export function ResumeEditTab({ resumeId }: ResumeEditTabProps) {
       <Accordion
         type="multiple"
         defaultValue={["contacts", "summary", "experience"]}
-        className="w-full">
+        className="w-full"
+      >
         <AccordionItem value="contacts">
           <AccordionTrigger>Contacts</AccordionTrigger>
           <AccordionContent>

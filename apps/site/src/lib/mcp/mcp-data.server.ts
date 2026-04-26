@@ -77,10 +77,7 @@ export async function mcpCreateResume(
 }
 
 export async function mcpListPinnedProjects(userId: string) {
-  const rows = await db
-    .select()
-    .from(pinnedProject)
-    .where(eq(pinnedProject.userId, userId));
+  const rows = await db.select().from(pinnedProject).where(eq(pinnedProject.userId, userId));
 
   return rows.map((r) => ({
     name: r.name,
@@ -94,11 +91,7 @@ export async function mcpListPinnedProjects(userId: string) {
   }));
 }
 
-export async function mcpGetPrompt(
-  userId: string,
-  resumeId: string,
-  jobDescription: string,
-) {
+export async function mcpGetPrompt(userId: string, resumeId: string, jobDescription: string) {
   const resumeRow = await mcpGetResume(userId, resumeId);
   if (!resumeRow) throw new Error("Resume not found");
 

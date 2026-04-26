@@ -1,12 +1,14 @@
 import { queryClient } from "@/lib/tanstack/query/queryclient";
 import { createCollection, parseLoadSubsetOptions, parseWhereExpression } from "@tanstack/db";
 import { queryCollectionOptions } from "@tanstack/query-db-collection";
+import { queryKeyPrefixes } from "../query-keys";
 import { getResume, listResumes } from "./resume.functions";
+import type { ResumeDetailDTO, ResumeListItemDTO } from "./resume.types";
 
 export const resumeCollection = createCollection(
-  queryCollectionOptions({
+  queryCollectionOptions<ResumeDetailDTO>({
     id: "one-resume",
-    queryKey: ["one-resume"],
+    queryKey: [queryKeyPrefixes.oneResume],
     syncMode: "on-demand",
     queryFn: async (ctx) => {
       const { filters } = parseLoadSubsetOptions(ctx.meta?.loadSubsetOptions);
@@ -23,9 +25,9 @@ export const resumeCollection = createCollection(
 );
 
 export const resumesCollection = createCollection(
-  queryCollectionOptions({
+  queryCollectionOptions<ResumeListItemDTO>({
     id: "resumes-list",
-    queryKey: ["resumes"],
+    queryKey: [queryKeyPrefixes.resumes],
     syncMode: "on-demand",
     staleTime: 1000 * 60 * 60, // 1 hour
     queryFn: async (ctx) => {

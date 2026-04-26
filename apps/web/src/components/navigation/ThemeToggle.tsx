@@ -3,7 +3,7 @@ import { Moon, Sun } from "lucide-react";
 
 interface ThemeToggleProps {}
 
-export function ThemeToggle({}: ThemeToggleProps) {
+export function ThemeToggle(_props: ThemeToggleProps) {
   const { theme, updateTheme } = useTheme();
 
   function toggleTheme() {

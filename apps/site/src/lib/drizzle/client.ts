@@ -7,5 +7,5 @@ export const db = drizzle({
     url: serverEnv.DATABASE_URL,
     authToken: serverEnv.DATABASE_AUTH_TOKEN,
   },
-  schema:tablesSchema,
+  schema: tablesSchema,
 });

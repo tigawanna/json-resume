@@ -21,9 +21,8 @@ export function ConnectGithubPrompt() {
         </EmptyMedia>
         <EmptyTitle>Connect your GitHub account</EmptyTitle>
         <EmptyDescription>
-          Sign in with GitHub to browse your repositories and pin projects for
-          your resume. Your access token lets us read your public and private
-          repo metadata.
+          Sign in with GitHub to browse your repositories and pin projects for your resume. Your
+          access token lets us read your public and private repo metadata.
         </EmptyDescription>
       </EmptyHeader>
       <Button

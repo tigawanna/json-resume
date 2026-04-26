@@ -68,7 +68,8 @@ function RouteComponent() {
               data-test="github-signin-btn"
               disabled={mutation.isPending}
               className="btn btn-primary mt-7 w-full"
-              onClick={handleGitHubSignin}>
+              onClick={handleGitHubSignin}
+            >
               <GithubIcon className="size-4" />
               {mutation.isPending ? "Redirecting to GitHub..." : "Continue with GitHub"}
             </button>

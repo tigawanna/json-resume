@@ -84,7 +84,8 @@ export function VerificationFailedScreen() {
           <Button
             variant="ghost"
             className="text-[#0B1F3B] h-12 w-full rounded-[10px] text-base font-semibold hover:bg-[#0B1F3B]/5"
-            asChild data-test="verification-go-dashboard"
+            asChild
+            data-test="verification-go-dashboard"
           >
             <Link to="/dashboard">Go to Dashboard</Link>
           </Button>

@@ -111,9 +111,8 @@ export function ResumeJsonTab({ resumeId }: ResumeJsonTabProps) {
     },
     onSuccess() {
       setPendingDoc(null);
-      // Refetch the full resume into the collection so all panels reflect JSON changes
-      resumeCollection.utils.refetch();
-      resumesCollection.utils.refetch();
+      void resumeCollection.utils.refetch();
+      void resumesCollection.utils.refetch();
       toast.success("JSON saved");
     },
     onError(err: unknown) {

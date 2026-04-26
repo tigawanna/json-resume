@@ -11,6 +11,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { resumeDetailToDocument } from "@/data-access-layer/resume/resume-converters";
 import { resumeDetailQueryOptions } from "@/data-access-layer/resume/resume-query-options";
+import type { ResumeDetailDTO } from "@/data-access-layer/resume/resume.types";
 import { updateResumeMeta } from "@/data-access-layer/resume/resume.functions";
 import {
   resumeCollection,
@@ -106,7 +107,7 @@ function RouteComponent() {
     return <p className="text-muted-foreground py-8 text-center">Resume not found.</p>;
   }
 
-  const doc = resumeDetailToDocument(displayResume);
+  const doc = resumeDetailToDocument(displayResume as ResumeDetailDTO);
   const hasTemplateChange = selectedTemplate !== initialTemplateId;
 
   if (!resume) {
@@ -161,7 +162,8 @@ function RouteComponent() {
             disabled={saveMutation.isPending || !hasTemplateChange}
             className="gap-2"
             size="sm"
-            data-test="resume-save-button">
+            data-test="resume-save-button"
+          >
             <Save className="size-4" />
             {saveMutation.isPending ? "Saving..." : hasTemplateChange ? "Save template" : "Saved"}
           </Button>

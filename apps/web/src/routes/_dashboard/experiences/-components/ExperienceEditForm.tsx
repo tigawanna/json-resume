@@ -70,15 +70,18 @@ export function ExperienceEditForm({ experience, onSuccess }: ExperienceEditForm
       onSubmit={(e) => {
         e.preventDefault();
         e.stopPropagation();
-        form.handleSubmit();
+
+        void form.handleSubmit();
       }}
-      className="flex flex-col gap-3">
+      className="flex flex-col gap-3"
+    >
       <div className="grid gap-3 sm:grid-cols-2">
         <form.AppField
           name="role"
           validators={{
             onChange: ({ value }) => (!value?.trim() ? "Job title is required" : undefined),
-          }}>
+          }}
+        >
           {(field) => (
             <div>
               <Label className="text-xs">Job Title</Label>
@@ -95,7 +98,8 @@ export function ExperienceEditForm({ experience, onSuccess }: ExperienceEditForm
           name="company"
           validators={{
             onChange: ({ value }) => (!value?.trim() ? "Company is required" : undefined),
-          }}>
+          }}
+        >
           {(field) => (
             <div>
               <Label className="text-xs">Company</Label>
@@ -155,7 +159,8 @@ export function ExperienceEditForm({ experience, onSuccess }: ExperienceEditForm
           type="button"
           variant="outline"
           onClick={() => form.reset()}
-          disabled={mutation.isPending}>
+          disabled={mutation.isPending}
+        >
           Cancel
         </Button>
         <Button type="submit" disabled={mutation.isPending || !form.state.isFormValid}>

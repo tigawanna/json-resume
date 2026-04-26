@@ -3,7 +3,7 @@ import {
   adminAc,
   defaultStatements,
   memberAc,
-  ownerAc
+  ownerAc,
 } from "better-auth/plugins/organization/access";
 
 const statement = {
@@ -46,11 +46,16 @@ const organizationRoles = {
     favorite: ["list", "create", "delete"],
     location: ["list", "create", "update", "delete"],
   }),
-
 };
 
-type BetterAuthUserRoles = "user"|"admin"
-type BetterAuthOrgRole = "owner" | "staff" | "member" 
-type BetterAuthOrgRoles = BetterAuthOrgRole| BetterAuthOrgRole[];
+type BetterAuthUserRoles = "user" | "admin";
+type BetterAuthOrgRole = "owner" | "staff" | "member";
+type BetterAuthOrgRoles = BetterAuthOrgRole | BetterAuthOrgRole[];
 
-export { organizationAc, organizationRoles, type BetterAuthOrgRole, type BetterAuthOrgRoles, type BetterAuthUserRoles };
+export {
+  organizationAc,
+  organizationRoles,
+  type BetterAuthOrgRole,
+  type BetterAuthOrgRoles,
+  type BetterAuthUserRoles,
+};

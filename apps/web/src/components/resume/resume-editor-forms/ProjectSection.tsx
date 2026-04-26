@@ -1,4 +1,5 @@
 import { PickFromExistingDialog } from "@/components/PickFromExistingDialog";
+import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -66,7 +67,7 @@ export function ProjectSection({ resumeId }: ProjectSectionProps) {
         onOpenChange={setPickOpen}
         title="Pick from Existing Projects"
         description="Search across all your resumes to copy a project."
-        getSearchQueryKey={(q) => ["resumes", "search", "projects", q]}
+        getSearchQueryKey={(q) => [queryKeyPrefixes.resumes, "search", "projects", q]}
         getSearchQueryFn={(q) => () => searchProjects({ data: { query: q } })}
         mapToItems={(data) =>
           data.map((p: { id: string; name: string; description: string }) => ({
@@ -182,7 +183,8 @@ function ProjectCard({
               size="icon"
               className="size-7"
               onClick={() => deleteMutation.mutate()}
-              disabled={deleteMutation.isPending}>
+              disabled={deleteMutation.isPending}
+            >
               <Trash2 className="size-3.5" />
             </Button>
           </div>
@@ -245,7 +247,8 @@ function ProjectCard({
                   <button
                     type="button"
                     className="ml-1"
-                    onClick={() => setTechTags((prev) => prev.filter((x) => x !== t))}>
+                    onClick={() => setTechTags((prev) => prev.filter((x) => x !== t))}
+                  >
                     <X className="size-3" />
                   </button>
                 </Badge>
@@ -257,7 +260,8 @@ function ProjectCard({
           <Button
             size="sm"
             onClick={() => saveMutation.mutate()}
-            disabled={saveMutation.isPending || !name.trim()}>
+            disabled={saveMutation.isPending || !name.trim()}
+          >
             Save
           </Button>
           <Button variant="ghost" size="sm" onClick={() => setEditing(false)}>
@@ -368,10 +372,12 @@ function AddProjectForm({
           onSubmit={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            form.handleSubmit();
+
+            void form.handleSubmit();
           }}
           className="flex flex-col gap-3"
-          data-test="add-project-form">
+          data-test="add-project-form"
+        >
           <form.AppField name="name" validators={{ onChange: z.string().min(1, "Required") }}>
             {(field) => <field.TextField label="Project Name" />}
           </form.AppField>
@@ -385,7 +391,8 @@ function AddProjectForm({
           </div>
           <form.AppField
             name="description"
-            validators={{ onChange: z.string().min(1, "Required") }}>
+            validators={{ onChange: z.string().min(1, "Required") }}
+          >
             {(field) => <field.TextAreaField label="Description" />}
           </form.AppField>
 
@@ -400,7 +407,8 @@ function AddProjectForm({
                     <button
                       type="button"
                       className="ml-1"
-                      onClick={() => setTechTags((prev) => prev.filter((x) => x !== t))}>
+                      onClick={() => setTechTags((prev) => prev.filter((x) => x !== t))}
+                    >
                       <X className="size-3" />
                     </button>
                   </Badge>
@@ -420,7 +428,8 @@ function AddProjectForm({
               onClick={() => {
                 setOpen(false);
                 setTechTags([]);
-              }}>
+              }}
+            >
               Cancel
             </Button>
           </div>

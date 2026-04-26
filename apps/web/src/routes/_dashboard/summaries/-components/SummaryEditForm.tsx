@@ -51,7 +51,8 @@ export function SummaryEditForm({ summary, onSuccess }: SummaryEditFormProps) {
       onSubmit={(e) => {
         e.preventDefault();
         e.stopPropagation();
-        form.handleSubmit();
+
+        void form.handleSubmit();
       }}
       className="flex flex-col gap-3"
     >

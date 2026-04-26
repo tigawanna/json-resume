@@ -42,7 +42,8 @@ export function ExperienceListCard({ experience, onDelete }: ExperienceListCardP
             size="icon"
             className="size-7"
             onClick={() => setOpen(true)}
-            data-test="experience-edit-btn">
+            data-test="experience-edit-btn"
+          >
             <Pencil className="size-3.5" />
           </Button>
           <Button
@@ -50,7 +51,8 @@ export function ExperienceListCard({ experience, onDelete }: ExperienceListCardP
             size="icon"
             className="size-7"
             onClick={() => onDelete?.(experience.id)}
-            data-test="experience-delete-btn">
+            data-test="experience-delete-btn"
+          >
             <Trash2 className="size-3.5" />
           </Button>
         </div>

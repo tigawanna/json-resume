@@ -7,9 +7,7 @@ import { ApiKeysSection } from "./-components/ApiKeysSection";
 export const Route = createFileRoute("/_dashboard/settings/")({
   component: SettingsPage,
   head: () => ({
-    meta: [
-      { title: "Settings", description: "Manage your account and API keys" },
-    ],
+    meta: [{ title: "Settings", description: "Manage your account and API keys" }],
   }),
 });
 

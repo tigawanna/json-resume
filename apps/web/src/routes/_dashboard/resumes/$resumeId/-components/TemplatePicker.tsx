@@ -29,7 +29,8 @@ export function TemplatePicker({ selected, onSelect }: TemplatePickerProps) {
                 ? "border-primary bg-primary/5"
                 : "border-border hover:border-muted-foreground/30",
             )}
-            data-test={`template-${tid}`}>
+            data-test={`template-${tid}`}
+          >
             <span className="text-sm font-semibold">{TEMPLATE_LABELS[tid]}</span>
             <span className="text-muted-foreground text-xs">{TEMPLATE_DESCRIPTIONS[tid]}</span>
           </button>

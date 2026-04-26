@@ -106,14 +106,16 @@ function SettingsPage() {
                   variant="destructive"
                   size="sm"
                   onClick={() => deleteAccountMutation.mutate()}
-                  disabled={deleteAccountMutation.isPending}>
+                  disabled={deleteAccountMutation.isPending}
+                >
                   {deleteAccountMutation.isPending ? "Deleting..." : "Yes, delete my account"}
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setShowDeleteConfirm(false)}
-                  disabled={deleteAccountMutation.isPending}>
+                  disabled={deleteAccountMutation.isPending}
+                >
                   Cancel
                 </Button>
               </div>

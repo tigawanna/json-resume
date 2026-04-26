@@ -367,8 +367,7 @@ export function ResumeEditForm({
                                   const items = [...doc.experience.items];
                                   const cur = items[i];
                                   if (!cur) return;
-                                  const padded =
-                                    cur.bullets.length > 0 ? [...cur.bullets] : [""];
+                                  const padded = cur.bullets.length > 0 ? [...cur.bullets] : [""];
                                   while (padded.length <= bi) padded.push("");
                                   padded[bi] = e.target.value;
                                   items[i] = { ...cur, bullets: padded };
@@ -659,10 +658,7 @@ export function ResumeEditForm({
                     onClick={() =>
                       set("talks", {
                         ...doc.talks,
-                        items: [
-                          ...doc.talks.items,
-                          { title: "", event: "", date: "", links: [] },
-                        ],
+                        items: [...doc.talks.items, { title: "", event: "", date: "", links: [] }],
                       })
                     }
                   >

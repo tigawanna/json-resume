@@ -21,7 +21,8 @@ export function LandingFooter() {
             href={AppConfig.links.github}
             target="_blank"
             rel="noopener noreferrer"
-            className="transition-colors hover:text-base-content">
+            className="transition-colors hover:text-base-content"
+          >
             GitHub
           </a>
         </div>

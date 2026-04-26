@@ -40,7 +40,7 @@ export function SessionPicker({ onUseAnotherAccount }: SessionPickerProps) {
         toast.success("Welcome back");
         await router.invalidate();
         await qc.fetchQuery(viewerqueryOptions);
-        navigate({ to: returnTo || "/dashboard" });
+        void navigate({ to: returnTo || "/dashboard" });
       },
       onError: (error) => {
         toast.error("Failed to switch session", {

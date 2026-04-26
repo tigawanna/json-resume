@@ -58,10 +58,12 @@ export function SummaryForm({ resumeId }: SummaryFormProps) {
       onSubmit={(e) => {
         e.preventDefault();
         e.stopPropagation();
-        form.handleSubmit();
+
+        void form.handleSubmit();
       }}
       className="flex flex-col gap-4"
-      data-test="summary-form">
+      data-test="summary-form"
+    >
       <form.AppField name="text">
         {(field) => <field.TextAreaField label="Professional Summary" />}
       </form.AppField>

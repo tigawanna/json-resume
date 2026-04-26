@@ -34,7 +34,8 @@ export function ResumeListCard({ resume, onClone }: ResumeListCardProps) {
             to="/resumes/$resumeId"
             params={{ resumeId: resume.id }}
             search={(prev) => ({ ...prev, tab: "edit" })}
-            className="block">
+            className="block"
+          >
             <CardHeader>
               <div className="flex items-start gap-3">
                 <FileText className="text-primary mt-0.5 size-5 shrink-0" />
@@ -62,7 +63,8 @@ export function ResumeListCard({ resume, onClone }: ResumeListCardProps) {
               handleDelete(resume.id);
             }}
             disabled={deleteMutation.isPending}
-            data-test="resume-delete-btn">
+            data-test="resume-delete-btn"
+          >
             <Trash2 className="size-3.5" />
           </Button>
         </Card>
@@ -71,7 +73,8 @@ export function ResumeListCard({ resume, onClone }: ResumeListCardProps) {
         <ContextMenuItem
           onClick={() => onClone?.(resume.id)}
           className="gap-2"
-          data-test="resume-clone-btn">
+          data-test="resume-clone-btn"
+        >
           <Copy className="size-4" />
           Clone Resume
         </ContextMenuItem>
@@ -79,7 +82,8 @@ export function ResumeListCard({ resume, onClone }: ResumeListCardProps) {
           onClick={() => handleDelete(resume.id)}
           disabled={deleteMutation.isPending}
           className="text-destructive gap-2"
-          data-test="resume-context-delete-btn">
+          data-test="resume-context-delete-btn"
+        >
           <Trash2 className="size-4" />
           Delete
         </ContextMenuItem>
