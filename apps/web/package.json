@@ -57,7 +57,7 @@
     "diff": "^8.0.4",
     "drizzle-orm": "^0.45.2",
     "embla-carousel-react": "^8.6.0",
-    "hono": "^4.12.3",
+    "hono": "^4.12.14",
     "input-otp": "^1.4.2",
     "lucide-react": "^0.561.0",
     "motion": "^12.38.0",
