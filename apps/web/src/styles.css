@@ -9,10 +9,7 @@
 } */
 
 @plugin "daisyui" {
-  themes:
-    light --default,
-    dark --prefersdark;
-  /* themes: all; */
+  themes: false;
   logs: false;
 }
 
@@ -62,7 +59,7 @@
 
 @plugin "daisyui/theme" {
   name: "dark";
-  default: false;
+  prefersdark: true;
   color-scheme: dark;
 
   /* Base surfaces - sophisticated dark with forest undertones */
