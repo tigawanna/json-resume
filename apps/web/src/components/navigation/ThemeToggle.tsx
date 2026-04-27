@@ -10,7 +10,7 @@ export function ThemeToggle(_props: ThemeToggleProps) {
     const newTheme = theme === "light" ? "dark" : "light";
     if (typeof document !== "undefined" && "startViewTransition" in document) {
       try {
-        (document as any).startViewTransition(() => updateTheme(newTheme));
+        document.startViewTransition(() => updateTheme(newTheme));
         return;
       } catch {}
     }
