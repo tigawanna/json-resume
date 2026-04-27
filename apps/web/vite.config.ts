@@ -19,9 +19,7 @@ const config = defineConfig({
   },
   plugins: [
     devtools(),
-    nitro({
-      preset: process.env.NITRO_PRESET ?? (process.env.VERCEL ? "vercel" : "node-server"),
-    }),
+    nitro(),
     // this is the plugin that enables path aliases
     tailwindcss(),
     tanstackStart({
