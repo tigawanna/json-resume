@@ -51,7 +51,7 @@ export function SignupComponent() {
       });
       await router.invalidate();
       await qc.fetchQuery(viewerqueryOptions);
-      void navigate({ to: returnTo ?? "/profile" });
+      void navigate({ to: returnTo ?? "/dashboard" });
     },
     onError(error) {
       toast.error("Something went wrong", {
@@ -65,7 +65,7 @@ export function SignupComponent() {
     mutationFn: async () => {
       await authClient.signIn.social({
         provider: "github",
-        callbackURL: returnTo ?? "/profile",
+        callbackURL: returnTo ?? "/dashboard",
       });
     },
     onError: async (error: unknown) => {

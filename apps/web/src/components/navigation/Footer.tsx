@@ -60,13 +60,8 @@ export function Footer() {
                   </Link>
                 </li>
                 <li>
-                  <Link to="/profile" className="link link-hover">
+                  <Link to="/dashboard" className="link link-hover">
                     Dashboard
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/profile" className="link link-hover">
-                    Profile
                   </Link>
                 </li>
                 <li>

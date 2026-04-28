@@ -19,7 +19,6 @@ import { Route as AuthIndexRouteImport } from './routes/auth/index'
 import { Route as AuthSignupRouteImport } from './routes/auth/signup'
 import { Route as AuthGithubRouteImport } from './routes/auth/github'
 import { Route as PublicWorkbenchRouteImport } from './routes/_public/workbench'
-import { Route as DashboardProfileRouteImport } from './routes/_dashboard/profile'
 import { Route as DashboardDashboardRouteImport } from './routes/_dashboard/dashboard'
 import { Route as DotwellKnownOauthProtectedResourceRouteImport } from './routes/[.]well-known/oauth-protected-resource'
 import { Route as DotwellKnownOauthAuthorizationServerRouteImport } from './routes/[.]well-known/oauth-authorization-server'
@@ -39,7 +38,6 @@ import { Route as DashboardExperiencesIndexRouteImport } from './routes/_dashboa
 import { Route as DashboardEducationIndexRouteImport } from './routes/_dashboard/education/index'
 import { Route as DashboardContactsIndexRouteImport } from './routes/_dashboard/contacts/index'
 import { Route as DashboardCertificationsIndexRouteImport } from './routes/_dashboard/certifications/index'
-import { Route as DashboardAdminIndexRouteImport } from './routes/_dashboard/admin/index'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as DashboardResumesResumeIdIndexRouteImport } from './routes/_dashboard/resumes/$resumeId/index'
 
@@ -90,11 +88,6 @@ const PublicWorkbenchRoute = PublicWorkbenchRouteImport.update({
   id: '/workbench',
   path: '/workbench',
   getParentRoute: () => PublicLayoutRoute,
-} as any)
-const DashboardProfileRoute = DashboardProfileRouteImport.update({
-  id: '/profile',
-  path: '/profile',
-  getParentRoute: () => DashboardLayoutRoute,
 } as any)
 const DashboardDashboardRoute = DashboardDashboardRouteImport.update({
   id: '/dashboard',
@@ -199,11 +192,6 @@ const DashboardCertificationsIndexRoute =
     path: '/certifications/',
     getParentRoute: () => DashboardLayoutRoute,
   } as any)
-const DashboardAdminIndexRoute = DashboardAdminIndexRouteImport.update({
-  id: '/admin/',
-  path: '/admin/',
-  getParentRoute: () => DashboardLayoutRoute,
-} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
@@ -223,14 +211,12 @@ export interface FileRoutesByFullPath {
   '/.well-known/oauth-authorization-server': typeof DotwellKnownOauthAuthorizationServerRoute
   '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRoute
   '/dashboard': typeof DashboardDashboardRoute
-  '/profile': typeof DashboardProfileRoute
   '/workbench': typeof PublicWorkbenchRoute
   '/auth/github': typeof AuthGithubRoute
   '/auth/signup': typeof AuthSignupRoute
   '/auth/': typeof AuthIndexRoute
   '/test/': typeof TestIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/admin/': typeof DashboardAdminIndexRoute
   '/certifications/': typeof DashboardCertificationsIndexRoute
   '/contacts/': typeof DashboardContactsIndexRoute
   '/education/': typeof DashboardEducationIndexRoute
@@ -255,14 +241,12 @@ export interface FileRoutesByTo {
   '/.well-known/oauth-authorization-server': typeof DotwellKnownOauthAuthorizationServerRoute
   '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRoute
   '/dashboard': typeof DashboardDashboardRoute
-  '/profile': typeof DashboardProfileRoute
   '/workbench': typeof PublicWorkbenchRoute
   '/auth/github': typeof AuthGithubRoute
   '/auth/signup': typeof AuthSignupRoute
   '/auth': typeof AuthIndexRoute
   '/test': typeof TestIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/admin': typeof DashboardAdminIndexRoute
   '/certifications': typeof DashboardCertificationsIndexRoute
   '/contacts': typeof DashboardContactsIndexRoute
   '/education': typeof DashboardEducationIndexRoute
@@ -291,14 +275,12 @@ export interface FileRoutesById {
   '/.well-known/oauth-authorization-server': typeof DotwellKnownOauthAuthorizationServerRoute
   '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRoute
   '/_dashboard/dashboard': typeof DashboardDashboardRoute
-  '/_dashboard/profile': typeof DashboardProfileRoute
   '/_public/workbench': typeof PublicWorkbenchRoute
   '/auth/github': typeof AuthGithubRoute
   '/auth/signup': typeof AuthSignupRoute
   '/auth/': typeof AuthIndexRoute
   '/test/': typeof TestIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/_dashboard/admin/': typeof DashboardAdminIndexRoute
   '/_dashboard/certifications/': typeof DashboardCertificationsIndexRoute
   '/_dashboard/contacts/': typeof DashboardContactsIndexRoute
   '/_dashboard/education/': typeof DashboardEducationIndexRoute
@@ -326,14 +308,12 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-authorization-server'
     | '/.well-known/oauth-protected-resource'
     | '/dashboard'
-    | '/profile'
     | '/workbench'
     | '/auth/github'
     | '/auth/signup'
     | '/auth/'
     | '/test/'
     | '/api/auth/$'
-    | '/admin/'
     | '/certifications/'
     | '/contacts/'
     | '/education/'
@@ -358,14 +338,12 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-authorization-server'
     | '/.well-known/oauth-protected-resource'
     | '/dashboard'
-    | '/profile'
     | '/workbench'
     | '/auth/github'
     | '/auth/signup'
     | '/auth'
     | '/test'
     | '/api/auth/$'
-    | '/admin'
     | '/certifications'
     | '/contacts'
     | '/education'
@@ -393,14 +371,12 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-authorization-server'
     | '/.well-known/oauth-protected-resource'
     | '/_dashboard/dashboard'
-    | '/_dashboard/profile'
     | '/_public/workbench'
     | '/auth/github'
     | '/auth/signup'
     | '/auth/'
     | '/test/'
     | '/api/auth/$'
-    | '/_dashboard/admin/'
     | '/_dashboard/certifications/'
     | '/_dashboard/contacts/'
     | '/_dashboard/education/'
@@ -503,13 +479,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/workbench'
       preLoaderRoute: typeof PublicWorkbenchRouteImport
       parentRoute: typeof PublicLayoutRoute
-    }
-    '/_dashboard/profile': {
-      id: '/_dashboard/profile'
-      path: '/profile'
-      fullPath: '/profile'
-      preLoaderRoute: typeof DashboardProfileRouteImport
-      parentRoute: typeof DashboardLayoutRoute
     }
     '/_dashboard/dashboard': {
       id: '/_dashboard/dashboard'
@@ -644,13 +613,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardCertificationsIndexRouteImport
       parentRoute: typeof DashboardLayoutRoute
     }
-    '/_dashboard/admin/': {
-      id: '/_dashboard/admin/'
-      path: '/admin'
-      fullPath: '/admin/'
-      preLoaderRoute: typeof DashboardAdminIndexRouteImport
-      parentRoute: typeof DashboardLayoutRoute
-    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
@@ -670,8 +632,6 @@ declare module '@tanstack/react-router' {
 
 interface DashboardLayoutRouteChildren {
   DashboardDashboardRoute: typeof DashboardDashboardRoute
-  DashboardProfileRoute: typeof DashboardProfileRoute
-  DashboardAdminIndexRoute: typeof DashboardAdminIndexRoute
   DashboardCertificationsIndexRoute: typeof DashboardCertificationsIndexRoute
   DashboardContactsIndexRoute: typeof DashboardContactsIndexRoute
   DashboardEducationIndexRoute: typeof DashboardEducationIndexRoute
@@ -693,8 +653,6 @@ interface DashboardLayoutRouteChildren {
 
 const DashboardLayoutRouteChildren: DashboardLayoutRouteChildren = {
   DashboardDashboardRoute: DashboardDashboardRoute,
-  DashboardProfileRoute: DashboardProfileRoute,
-  DashboardAdminIndexRoute: DashboardAdminIndexRoute,
   DashboardCertificationsIndexRoute: DashboardCertificationsIndexRoute,
   DashboardContactsIndexRoute: DashboardContactsIndexRoute,
   DashboardEducationIndexRoute: DashboardEducationIndexRoute,

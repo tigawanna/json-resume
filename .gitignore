@@ -45,3 +45,4 @@ apps/site/*.sqlite3
 apps/site/*.db
 *.sqlite
 *.sqlite3
+*.tsbuildinfo

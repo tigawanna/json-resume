@@ -7,7 +7,7 @@ const ProjectsAndRepositries = lazy(() => import("./-components/ProjectsAndRepos
 const projectsSearchSchema = z.object({
   search: z.string().optional().default(""),
   sort: z.enum(["updated", "stars", "name", "created"]).optional().default("updated"),
-  forks: z.enum(["all", "source", "fork"]).optional().default("all"),
+  forks: z.enum(["all", "source", "fork"]).optional().default("source"),
 });
 
 export const Route = createFileRoute("/_dashboard/projects/")({

@@ -75,8 +75,8 @@ export default function RepoFilters({
             <SelectValue placeholder="Fork filter" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All repos</SelectItem>
             <SelectItem value="source">Sources only</SelectItem>
+            <SelectItem value="all">All repos</SelectItem>
             <SelectItem value="fork">Forks only</SelectItem>
           </SelectContent>
         </Select>

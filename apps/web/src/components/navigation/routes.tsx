@@ -1,5 +1,5 @@
 import { dashboard_routes } from "@/routes/_dashboard/-components/dashoboard-sidebar/dashboard_routes";
-import { Home, Store, User } from "lucide-react";
+import { Home, Store } from "lucide-react";
 
 export const routes = [
   {
@@ -10,14 +10,8 @@ export const routes = [
   },
   {
     title: "Dashboard",
-    href: "/profile",
+    href: "/dashboard",
     icon: Store,
     sublinks: dashboard_routes,
-  },
-  {
-    title: "Profile",
-    href: "/profile",
-    icon: User,
-    sublinks: undefined,
   },
 ] as const;

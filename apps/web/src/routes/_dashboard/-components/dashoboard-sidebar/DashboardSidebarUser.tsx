@@ -24,11 +24,11 @@ import { unwrapUnknownError } from "@/utils/errors";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useLocation, useNavigate, useRouter } from "@tanstack/react-router";
 import {
-  BadgeCheck,
   Bell,
   ChevronsUpDown,
   CreditCard,
   LogOut,
+  Settings,
   Sparkles,
   UserPlus,
 } from "lucide-react";
@@ -185,10 +185,10 @@ export function DashboardSidebarUser() {
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <Link to="/profile" className="w-full">
+              <Link to="/settings" className="w-full">
                 <DropdownMenuItem>
-                  <BadgeCheck />
-                  Account
+                  <Settings />
+                  Settings
                 </DropdownMenuItem>
               </Link>
               <DropdownMenuItem>
