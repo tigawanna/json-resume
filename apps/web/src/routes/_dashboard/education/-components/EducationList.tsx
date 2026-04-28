@@ -11,8 +11,9 @@ import {
 import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
 import { listEducation } from "@/data-access-layer/resume/education/education.functions";
 import { deleteEducationMutationOptions } from "@/data-access-layer/resume/education/education.mutation-options";
+import { RouterPendingComponent } from "@/lib/tanstack/router/RouterPendingComponent";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { GraduationCap, Loader, Loader2, Plus } from "lucide-react";
+import { GraduationCap, Loader2, Plus } from "lucide-react";
 import { useState, useTransition } from "react";
 import { Route } from "..";
 import { EducationCreateFormDilaog } from "./EducationCreateForm";
@@ -39,7 +40,7 @@ export function EducationList() {
   if (isLoading) {
     return (
       <div className="flex w-full h-full flex-col gap-6" data-test="education-list-page">
-        <Loader className="animate-spin" />
+        <RouterPendingComponent />
       </div>
     );
   }
