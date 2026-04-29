@@ -15,11 +15,11 @@ export function DashboardSidebarHeader() {
       <SidebarMenu>
         <SidebarMenuItem>
           <SidebarMenuButton size="lg" asChild onClick={() => setOpenMobile(false)}>
-            <Link to="/" className="hover:bg-base-300 cursor-pointer rounded-sm">
-              {(() => {
-                const Icon = AppConfig.icon;
-                return <Icon className="text-primary size-5" />;
-              })()}
+            <Link
+              to="/"
+              className="hover:bg-primary/10 cursor-pointer rounded-sm flex justify-center items-center"
+            >
+              <AppConfig.icon className="text-primary size-6" />
               {state === "expanded" || isMobile ? (
                 <span className="font-serif text-xl tracking-tight">
                   {AppConfig.wordmark}

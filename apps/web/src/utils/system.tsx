@@ -2,7 +2,7 @@ import { FileJson } from "lucide-react";
 
 export const AppConfig = {
   name: "Agentic JSON Resume",
-  wordmark: "agentic",
+  wordmark: "AJR",
   brief:
     "Turn your résumé into JSON, tailor it with any LLM using a job description, and export a clean PDF—without pasting prose back into a doc.",
   description:
