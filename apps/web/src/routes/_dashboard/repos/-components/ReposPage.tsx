@@ -1,6 +1,15 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -14,8 +23,6 @@ import {
   searchGithubRepos,
   type GithubRepo,
   type GithubRepoForkFilter,
-  type GithubRepoOrder,
-  type GithubRepoSort,
 } from "@/data-access-layer/github/repos.functions";
 import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
 import {
@@ -39,34 +46,25 @@ import {
   SlidersHorizontal,
   Star,
 } from "lucide-react";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import type { RepoArchivedFilter } from "@/routes/_dashboard/repos/-components/repos-search-query";
+import {
+  canonicalizePopularLanguage,
+  LANGUAGE_SELECT_CUSTOM,
+  LANGUAGE_SELECT_NONE,
+  POPULAR_GITHUB_LANGUAGES,
+  repositoryLanguageControlValue,
+  splitLanguageForUi,
+} from "@/routes/_dashboard/repos/-components/popular-github-languages";
+import {
+  buildRepoSearchPreview,
+  defaultRepoSearch,
+  parseRepoSearchBar,
+  type RepoSearchFilters,
+} from "@/routes/_dashboard/repos/-components/repos-search-query";
 
-type ArchivedFilter = "any" | "active" | "archived";
-
-interface RepoSearchState {
-  query: string;
-  language: string;
-  topic: string;
-  minStars: string;
-  fork: GithubRepoForkFilter;
-  archived: ArchivedFilter;
-  sort: GithubRepoSort;
-  order: GithubRepoOrder;
-}
-
-const defaultRepoSearch: RepoSearchState = {
-  query: "",
-  language: "",
-  topic: "",
-  minStars: "",
-  fork: "source",
-  archived: "active",
-  sort: "updated",
-  order: "desc",
-};
-
-function githubReposQueryOptions(filters: RepoSearchState) {
+function githubReposQueryOptions(filters: RepoSearchFilters) {
   const minStars = filters.minStars ? Number(filters.minStars) : undefined;
 
   return queryOptions({
@@ -92,28 +90,39 @@ const savedProjectsQueryOptions = queryOptions({
   queryFn: () => getSavedProjects(),
 });
 
-function buildSearchPreview(filters: RepoSearchState) {
-  const parts = ["user:{you}"];
-  if (filters.query) parts.push(filters.query);
-  if (filters.language) parts.push(`language:${filters.language}`);
-  if (filters.topic) parts.push(`topic:${filters.topic}`);
-  if (filters.minStars) parts.push(`stars:>=${filters.minStars}`);
-  if (filters.fork === "all") parts.push("fork:true");
-  if (filters.fork === "fork") parts.push("fork:only");
-  if (filters.archived === "active") parts.push("archived:false");
-  if (filters.archived === "archived") parts.push("archived:true");
-  return parts.join(" ");
-}
-
 export function ReposPage() {
-  const [filters, setFilters] = useState<RepoSearchState>(defaultRepoSearch);
-  const { debouncedValue: debouncedFilters } = useDebouncedValue(filters, 300);
+  const [filters, setFilters] = useState<RepoSearchFilters>(defaultRepoSearch);
+  const [queryDraft, setQueryDraft] = useState(() => buildRepoSearchPreview(defaultRepoSearch));
+  const [languageOtherOpen, setLanguageOtherOpen] = useState(false);
 
-  const reposQuery = useQuery(githubReposQueryOptions(debouncedFilters));
+  const commitFilters = useCallback((next: RepoSearchFilters) => {
+    setFilters(next);
+    setQueryDraft(buildRepoSearchPreview(next));
+  }, []);
+
+  const { debouncedValue: debouncedQueryDraft } = useDebouncedValue(queryDraft, 300);
+
+  useEffect(() => {
+    setFilters((prev) => parseRepoSearchBar(debouncedQueryDraft, prev));
+  }, [debouncedQueryDraft]);
+
+  useEffect(() => {
+    if (repositoryLanguageControlValue(filters.language) === LANGUAGE_SELECT_CUSTOM) {
+      setLanguageOtherOpen(true);
+    }
+  }, [filters.language]);
+
+  const reposQuery = useQuery(githubReposQueryOptions(filters));
   const savedQuery = useSuspenseQuery(savedProjectsQueryOptions);
   const savedUrls = new Set(savedQuery.data?.map((p: { url: string }) => p.url) || []);
   const repos = reposQuery.data?.repos || [];
-  const preview = buildSearchPreview(filters);
+
+  const langSplit = splitLanguageForUi(filters.language);
+  const languageSelectValue =
+    langSplit.preset === LANGUAGE_SELECT_CUSTOM ||
+    (languageOtherOpen && langSplit.preset === LANGUAGE_SELECT_NONE)
+      ? LANGUAGE_SELECT_CUSTOM
+      : langSplit.preset;
 
   if (reposQuery.data && !reposQuery.data.hasToken) {
     return (
@@ -140,125 +149,34 @@ export function ReposPage() {
         </p>
       </div>
 
-      <Card data-test="repo-search-builder">
-        <CardHeader className="gap-2">
-          <div className="flex items-center gap-2">
-            <SlidersHorizontal className="size-5 text-primary" />
-            <CardTitle>Repository search builder</CardTitle>
+      <div className="@container/repo-toolbar w-full min-w-0" data-test="repo-search-builder">
+        <div className="flex w-full min-w-0 flex-col gap-3 @min-[28rem]/repo-toolbar:flex-row @min-[28rem]/repo-toolbar:items-stretch @min-[28rem]/repo-toolbar:gap-3">
+          <div className="relative min-h-9 min-w-0 w-full flex-[1_1_auto] @min-[28rem]/repo-toolbar:flex-[7_1_0%]">
+            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              id="repo-query"
+              data-test="repo-query"
+              placeholder="user:{you} portfolio in:name archived:false …"
+              value={queryDraft}
+              onChange={(event) => setQueryDraft(event.target.value)}
+              className="pl-9 font-mono text-sm"
+              spellCheck={false}
+              aria-label="GitHub search query string"
+            />
           </div>
-          <CardDescription>
-            Compose GitHub repository qualifiers without memorizing the syntax.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid gap-3 md:grid-cols-[minmax(0,2fr)_minmax(11rem,1fr)_minmax(11rem,1fr)]">
-            <div className="space-y-2">
-              <Label htmlFor="repo-query">Keywords or qualifiers</Label>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  id="repo-query"
-                  data-test="repo-query"
-                  placeholder="portfolio in:name,readme"
-                  value={filters.query}
-                  onChange={(event) =>
-                    setFilters((current) => ({ ...current, query: event.target.value }))
-                  }
-                  className="pl-9"
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="repo-language">Language</Label>
-              <Input
-                id="repo-language"
-                data-test="repo-language"
-                placeholder="TypeScript"
-                value={filters.language}
-                onChange={(event) =>
-                  setFilters((current) => ({ ...current, language: event.target.value }))
-                }
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="repo-topic">Topic</Label>
-              <Input
-                id="repo-topic"
-                data-test="repo-topic"
-                placeholder="react"
-                value={filters.topic}
-                onChange={(event) =>
-                  setFilters((current) => ({ ...current, topic: event.target.value }))
-                }
-              />
-            </div>
-          </div>
-
-          <div className="grid gap-3 md:grid-cols-5">
-            <div className="space-y-2">
-              <Label htmlFor="repo-stars">Minimum stars</Label>
-              <Input
-                id="repo-stars"
-                data-test="repo-stars"
-                min={0}
-                inputMode="numeric"
-                type="number"
-                placeholder="0"
-                value={filters.minStars}
-                onChange={(event) =>
-                  setFilters((current) => ({ ...current, minStars: event.target.value }))
-                }
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Forks</Label>
-              <Select
-                value={filters.fork}
-                onValueChange={(value) =>
-                  setFilters((current) => ({
-                    ...current,
-                    fork: value as GithubRepoForkFilter,
-                  }))
-                }
-              >
-                <SelectTrigger data-test="repo-fork-filter" className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="source">Sources only</SelectItem>
-                  <SelectItem value="all">Include forks</SelectItem>
-                  <SelectItem value="fork">Forks only</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Archive state</Label>
-              <Select
-                value={filters.archived}
-                onValueChange={(value) =>
-                  setFilters((current) => ({ ...current, archived: value as ArchivedFilter }))
-                }
-              >
-                <SelectTrigger data-test="repo-archived-filter" className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="active">Active only</SelectItem>
-                  <SelectItem value="any">Any state</SelectItem>
-                  <SelectItem value="archived">Archived only</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Sort</Label>
+          <div className="flex w-full min-w-0 flex-[1_1_auto] flex-row flex-nowrap items-center gap-2 @min-[28rem]/repo-toolbar:w-auto @min-[28rem]/repo-toolbar:flex-[3_1_0%] @min-[28rem]/repo-toolbar:max-w-[30%]">
+            <div className="min-w-0 flex-1">
               <Select
                 value={filters.sort}
                 onValueChange={(value) =>
-                  setFilters((current) => ({ ...current, sort: value as GithubRepoSort }))
+                  commitFilters({ ...filters, sort: value as RepoSearchFilters["sort"] })
                 }
               >
-                <SelectTrigger data-test="repo-sort" className="w-full">
-                  <SelectValue />
+                <SelectTrigger
+                  data-test="repo-sort"
+                  className="h-9 w-full min-w-0 max-w-full justify-between"
+                >
+                  <SelectValue placeholder="Sort" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="updated">Recently updated</SelectItem>
@@ -269,44 +187,188 @@ export function ReposPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2">
-              <Label>Order</Label>
-              <Select
-                value={filters.order}
-                onValueChange={(value) =>
-                  setFilters((current) => ({ ...current, order: value as GithubRepoOrder }))
-                }
-              >
-                <SelectTrigger data-test="repo-order" className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="desc">High to low</SelectItem>
-                  <SelectItem value="asc">Low to high</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="shrink-0"
+                  aria-label="Search filters"
+                >
+                  <SlidersHorizontal className="size-4" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-h-[min(85vh,36rem)] max-w-xl gap-6 overflow-y-auto sm:max-w-xl">
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2">
+                    <SlidersHorizontal className="size-5 text-primary" />
+                    Repository search builder
+                  </DialogTitle>
+                  <DialogDescription>
+                    Compose structured GitHub qualifiers; the main field shows the full query GitHub
+                    receives (except sort and order API parameters).
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="repo-language-preset">Language</Label>
+                    <Select
+                      value={languageSelectValue}
+                      onValueChange={(value) => {
+                        if (value === LANGUAGE_SELECT_NONE) {
+                          setLanguageOtherOpen(false);
+                          commitFilters({ ...filters, language: "" });
+                          return;
+                        }
+                        if (value === LANGUAGE_SELECT_CUSTOM) {
+                          setLanguageOtherOpen(true);
+                          const canon = canonicalizePopularLanguage(filters.language.trim());
+                          if (canon) {
+                            commitFilters({ ...filters, language: "" });
+                          }
+                          return;
+                        }
+                        setLanguageOtherOpen(false);
+                        commitFilters({ ...filters, language: value });
+                      }}
+                    >
+                      <SelectTrigger
+                        id="repo-language-preset"
+                        data-test="repo-language"
+                        className="w-full"
+                      >
+                        <SelectValue placeholder="Filter by language" />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-[min(280px,50vh)]">
+                        <SelectItem value={LANGUAGE_SELECT_NONE}>Any language</SelectItem>
+                        {POPULAR_GITHUB_LANGUAGES.map((lang) => (
+                          <SelectItem key={lang} value={lang}>
+                            {lang}
+                          </SelectItem>
+                        ))}
+                        <SelectItem value={LANGUAGE_SELECT_CUSTOM}>
+                          Other (type manually)
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {languageSelectValue === LANGUAGE_SELECT_CUSTOM ? (
+                      <Input
+                        id="repo-language-custom"
+                        data-test="repo-language-custom"
+                        placeholder="e.g. Solidity, Fortran, COBOL"
+                        value={filters.language}
+                        onChange={(event) =>
+                          commitFilters({ ...filters, language: event.target.value })
+                        }
+                        className="font-mono text-sm"
+                      />
+                    ) : null}
+                  </div>
+                  <div className="flex flex-wrap gap-3">
+                    <div className="flex min-w-[min(100%,10rem)] flex-1 flex-col gap-2">
+                      <Label htmlFor="repo-topic">Topic</Label>
+                      <Input
+                        id="repo-topic"
+                        data-test="repo-topic"
+                        placeholder="react"
+                        value={filters.topic}
+                        onChange={(event) =>
+                          commitFilters({ ...filters, topic: event.target.value })
+                        }
+                      />
+                    </div>
+                    <div className="flex min-w-[min(100%,10rem)] flex-1 flex-col gap-2">
+                      <Label htmlFor="repo-stars">Minimum stars</Label>
+                      <Input
+                        id="repo-stars"
+                        data-test="repo-stars"
+                        min={0}
+                        inputMode="numeric"
+                        type="number"
+                        placeholder="0"
+                        value={filters.minStars}
+                        onChange={(event) =>
+                          commitFilters({ ...filters, minStars: event.target.value })
+                        }
+                      />
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-3">
+                    <div className="flex min-w-[min(100%,10rem)] flex-1 flex-col gap-2">
+                      <Label>Forks</Label>
+                      <Select
+                        value={filters.fork}
+                        onValueChange={(value) =>
+                          commitFilters({ ...filters, fork: value as GithubRepoForkFilter })
+                        }
+                      >
+                        <SelectTrigger data-test="repo-fork-filter" className="w-full">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="source">Sources only</SelectItem>
+                          <SelectItem value="all">Include forks</SelectItem>
+                          <SelectItem value="fork">Forks only</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex min-w-[min(100%,10rem)] flex-1 flex-col gap-2">
+                      <Label>Archive state</Label>
+                      <Select
+                        value={filters.archived}
+                        onValueChange={(value) =>
+                          commitFilters({ ...filters, archived: value as RepoArchivedFilter })
+                        }
+                      >
+                        <SelectTrigger data-test="repo-archived-filter" className="w-full">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="active">Active only</SelectItem>
+                          <SelectItem value="any">Any state</SelectItem>
+                          <SelectItem value="archived">Archived only</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex min-w-[min(100%,10rem)] flex-1 flex-col gap-2">
+                      <Label>Order</Label>
+                      <Select
+                        value={filters.order}
+                        onValueChange={(value) =>
+                          commitFilters({ ...filters, order: value as RepoSearchFilters["order"] })
+                        }
+                      >
+                        <SelectTrigger data-test="repo-order" className="w-full">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="desc">High to low</SelectItem>
+                          <SelectItem value="asc">Low to high</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    data-test="repo-reset-filters"
+                    onClick={() => {
+                      setLanguageOtherOpen(false);
+                      commitFilters(defaultRepoSearch);
+                    }}
+                  >
+                    <RotateCcw className="size-4" />
+                    Reset
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
-
-          <div className="flex flex-col gap-3 rounded-md border bg-muted/30 p-3 md:flex-row md:items-center">
-            <div className="min-w-0 flex-1">
-              <p className="text-xs font-medium uppercase text-muted-foreground">GitHub query</p>
-              <p className="truncate font-mono text-sm" title={preview}>
-                {preview}
-              </p>
-            </div>
-            <Button
-              type="button"
-              variant="outline"
-              data-test="repo-reset-filters"
-              onClick={() => setFilters(defaultRepoSearch)}
-            >
-              <RotateCcw className="size-4" />
-              Reset
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
         <Badge variant="secondary">{reposQuery.data?.totalCount ?? repos.length} matched</Badge>
