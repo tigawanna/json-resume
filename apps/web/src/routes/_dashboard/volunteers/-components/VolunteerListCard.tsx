@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import type { VolunteerListItemDTO } from "@/data-access-layer/resume/volunteers/volunteer.types";
 import { Heart, Pencil, Trash2 } from "lucide-react";
@@ -17,9 +17,12 @@ export function VolunteerListCard({ volunteer, onDelete }: VolunteerListCardProp
   const dateRange = [volunteer.startDate, volunteer.endDate].filter(Boolean).join(" – ");
   return (
     <>
-      <Card className="group flex flex-col" data-test={`volunteer-card-${volunteer.id}`}>
-        <CardHeader className="pb-2">
-          <div className="flex items-start gap-3 min-w-0">
+      <Card
+        className="flex flex-row items-start gap-2 py-6"
+        data-test={`volunteer-card-${volunteer.id}`}
+      >
+        <CardHeader className="min-w-0 flex-1 space-y-0 p-0 px-6 pr-3 pb-0">
+          <div className="flex min-w-0 items-start gap-3">
             <Heart className="text-primary mt-0.5 size-5 shrink-0" />
             <div className="min-w-0 flex-1">
               <CardTitle className="truncate text-base">{volunteer.organization}</CardTitle>
@@ -40,11 +43,11 @@ export function VolunteerListCard({ volunteer, onDelete }: VolunteerListCardProp
             </div>
           </div>
         </CardHeader>
-        <CardFooter className="mt-auto flex justify-end gap-1 px-3 py-1 opacity-0 transition-opacity group-hover:opacity-100">
+        <div className="flex shrink-0 flex-col gap-0.5 pr-6">
           <Button
             variant="ghost"
             size="icon"
-            className="size-7"
+            className="size-7 shrink-0"
             onClick={() => setOpen(true)}
             data-test="volunteer-edit-btn"
           >
@@ -53,13 +56,13 @@ export function VolunteerListCard({ volunteer, onDelete }: VolunteerListCardProp
           <Button
             variant="ghost"
             size="icon"
-            className="size-7"
+            className="size-7 shrink-0"
             onClick={() => onDelete?.(volunteer.id)}
             data-test="volunteer-delete-btn"
           >
             <Trash2 className="size-3.5" />
           </Button>
-        </CardFooter>
+        </div>
       </Card>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-lg">
