@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import type { SkillGroupListItemDTO } from "@/data-access-layer/resume/skill-groups/skill-group.types";
 import { Layers, Pencil, Trash2 } from "lucide-react";
@@ -26,9 +26,9 @@ export function SkillGroupListCard({ skillGroup, onDelete }: SkillGroupListCardP
   const displaySkills = parseSkills(skillGroup.skills);
   return (
     <>
-      <Card className="group relative" data-test={`skill-group-card-${skillGroup.id}`}>
-        <CardHeader>
-          <div className="flex items-start gap-3">
+      <Card className="group flex flex-col" data-test={`skill-group-card-${skillGroup.id}`}>
+        <CardHeader className="pb-2">
+          <div className="flex items-start gap-3 min-w-0">
             <Layers className="text-primary mt-0.5 size-5 shrink-0" />
             <div className="min-w-0 flex-1">
               <CardTitle className="truncate text-base">{skillGroup.name}</CardTitle>
@@ -46,13 +46,13 @@ export function SkillGroupListCard({ skillGroup, onDelete }: SkillGroupListCardP
                   ))}
                 </div>
               )}
-              <Badge variant="outline" className="mt-2 text-xs">
+              <Badge variant="outline" className="mt-2 max-w-[12rem] truncate text-xs">
                 {skillGroup.resumeName}
               </Badge>
             </div>
           </div>
         </CardHeader>
-        <div className="absolute top-2 right-2 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+        <CardFooter className="mt-auto flex justify-end gap-1 px-3 py-1 opacity-0 transition-opacity group-hover:opacity-100">
           <Button
             variant="ghost"
             size="icon"
@@ -71,7 +71,7 @@ export function SkillGroupListCard({ skillGroup, onDelete }: SkillGroupListCardP
           >
             <Trash2 className="size-3.5" />
           </Button>
-        </div>
+        </CardFooter>
       </Card>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-lg">
