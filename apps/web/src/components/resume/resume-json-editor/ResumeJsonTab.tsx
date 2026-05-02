@@ -198,7 +198,11 @@ export function ResumeJsonTab({ resumeId }: ResumeJsonTabProps) {
   });
 
   return (
-    <div ref={dropRef} className="relative flex flex-col px-4" data-test="resume-json-tab">
+    <div
+      ref={dropRef}
+      className="relative flex min-w-0 flex-col overflow-hidden px-4"
+      data-test="resume-json-tab"
+    >
       {/* Drag overlay */}
       {isDragOver && (
         <div className="pointer-events-none absolute inset-0 z-50 flex items-center justify-center bg-black/60">
