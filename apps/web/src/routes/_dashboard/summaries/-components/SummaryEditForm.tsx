@@ -4,7 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
 import { editSummaryItem } from "@/data-access-layer/resume/resume.functions";
-import { summariesCollection } from "@/data-access-layer/resume/summaries/summary.collection";
+// import { summariesCollection } from "@/data-access-layer/resume/summaries/summary.collection";
 import type { SummaryListItemDTO } from "@/data-access-layer/resume/summaries/summary.types";
 import { useAppForm } from "@/lib/tanstack/form";
 import { unwrapUnknownError } from "@/utils/errors";
@@ -25,9 +25,9 @@ export function SummaryEditForm({ summary, onSuccess }: SummaryEditFormProps) {
   const mutation = useMutation({
     mutationFn: async (values: typeof summaryEditOpts.defaultValues) =>
       editSummaryItem({ data: { id: summary.id, ...values } }),
-    onSuccess(data, values) {
+    onSuccess() {
       toast.success("Summary saved");
-      summariesCollection.utils.writeUpdate({ ...summary, ...values });
+      // summariesCollection.utils.writeUpdate({ ...summary, ...values });
       onSuccess?.();
     },
     onError(err: unknown) {

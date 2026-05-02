@@ -24,11 +24,9 @@ export function CertificationEditForm({ certification, onSuccess }: Certificatio
   const mutation = useMutation({
     mutationFn: async (values: typeof certificationEditOpts.defaultValues) =>
       editCertification({ data: { id: certification.id, ...values } }),
-    onSuccess(_, __, ____, ctx) {
+    onSuccess() {
       toast.success("Certification saved");
       // certificationsCollection.utils.writeUpdate({ ...certification, ...values });
-      void ctx.client.invalidateQueries({ queryKey: [queryKeyPrefixes.certifications] });
-      void ctx.client.invalidateQueries({ queryKey: [queryKeyPrefixes.resumes] });
       onSuccess?.();
     },
     onError(err: unknown) {

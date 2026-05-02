@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
-import { resumeProjectsCollection } from "@/data-access-layer/resume/resume-projects/resume-project.collection";
+// import { resumeProjectsCollection } from "@/data-access-layer/resume/resume-projects/resume-project.collection";
 import type { ResumeProjectListItemDTO } from "@/data-access-layer/resume/resume-projects/resume-project.types";
 import { editProject } from "@/data-access-layer/resume/resume.functions";
 import { useAppForm } from "@/lib/tanstack/form";
@@ -47,13 +47,13 @@ export function ProjectEditForm({ project, onSuccess }: ProjectEditFormProps) {
       editProject({
         data: { id: project.id, ...values, tech: techTags },
       }),
-    onSuccess(data, values) {
+    onSuccess() {
       toast.success("Project saved");
-      resumeProjectsCollection.utils.writeUpdate({
-        ...project,
-        ...values,
-        tech: JSON.stringify(techTags),
-      });
+      // resumeProjectsCollection.utils.writeUpdate({
+      //   ...project,
+      //   ...values,
+      //   tech: JSON.stringify(techTags),
+      // });
       onSuccess?.();
     },
     onError(err: unknown) {

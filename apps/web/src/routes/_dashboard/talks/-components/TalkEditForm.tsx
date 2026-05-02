@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
 import { editTalk } from "@/data-access-layer/resume/resume.functions";
-import { talksCollection } from "@/data-access-layer/resume/talks/talk.collection";
+// import { talksCollection } from "@/data-access-layer/resume/talks/talk.collection";
 import type { TalkListItemDTO } from "@/data-access-layer/resume/talks/talk.types";
 import { useAppForm } from "@/lib/tanstack/form";
 import { unwrapUnknownError } from "@/utils/errors";
@@ -26,9 +26,9 @@ export function TalkEditForm({ talk, onSuccess }: TalkEditFormProps) {
   const mutation = useMutation({
     mutationFn: async (values: typeof talkEditOpts.defaultValues) =>
       editTalk({ data: { id: talk.id, ...values } }),
-    onSuccess(data, values) {
+    onSuccess() {
       toast.success("Talk saved");
-      talksCollection.utils.writeUpdate({ ...talk, ...values });
+      // talksCollection.utils.writeUpdate({ ...talk, ...values });
       onSuccess?.();
     },
     onError(err: unknown) {

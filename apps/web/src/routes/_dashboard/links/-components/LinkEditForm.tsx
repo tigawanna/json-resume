@@ -3,7 +3,7 @@ import { DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
-import { linksCollection } from "@/data-access-layer/resume/links/link.collection";
+// import { linksCollection } from "@/data-access-layer/resume/links/link.collection";
 import type { LinkListItemDTO } from "@/data-access-layer/resume/links/link.types";
 import { editLink } from "@/data-access-layer/resume/resume.functions";
 import { useAppForm } from "@/lib/tanstack/form";
@@ -25,9 +25,9 @@ export function LinkEditForm({ link, onSuccess }: LinkEditFormProps) {
   const mutation = useMutation({
     mutationFn: async (values: typeof linkEditOpts.defaultValues) =>
       editLink({ data: { id: link.id, ...values } }),
-    onSuccess(data, values) {
+    onSuccess() {
       toast.success("Link saved");
-      linksCollection.utils.writeUpdate({ ...link, ...values });
+      // linksCollection.utils.writeUpdate({ ...link, ...values });
       onSuccess?.();
     },
     onError(err: unknown) {

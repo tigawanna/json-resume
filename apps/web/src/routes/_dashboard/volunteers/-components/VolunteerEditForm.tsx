@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
 import { editVolunteer } from "@/data-access-layer/resume/resume.functions";
-import { volunteersCollection } from "@/data-access-layer/resume/volunteers/volunteer.collection";
+// import { volunteersCollection } from "@/data-access-layer/resume/volunteers/volunteer.collection";
 import type { VolunteerListItemDTO } from "@/data-access-layer/resume/volunteers/volunteer.types";
 import { useAppForm } from "@/lib/tanstack/form";
 import { unwrapUnknownError } from "@/utils/errors";
@@ -26,9 +26,9 @@ export function VolunteerEditForm({ volunteer, onSuccess }: VolunteerEditFormPro
   const mutation = useMutation({
     mutationFn: async (values: typeof volunteerEditOpts.defaultValues) =>
       editVolunteer({ data: { id: volunteer.id, ...values } }),
-    onSuccess(data, values) {
+    onSuccess() {
       toast.success("Volunteer entry saved");
-      volunteersCollection.utils.writeUpdate({ ...volunteer, ...values });
+      // volunteersCollection.utils.writeUpdate({ ...volunteer, ...values });
       onSuccess?.();
     },
     onError(err: unknown) {

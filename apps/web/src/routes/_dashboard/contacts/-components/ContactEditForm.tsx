@@ -10,7 +10,7 @@ import { DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
-import { contactsCollection } from "@/data-access-layer/resume/contacts/contact.collection";
+// import { contactsCollection } from "@/data-access-layer/resume/contacts/contact.collection";
 import type { ContactListItemDTO } from "@/data-access-layer/resume/contacts/contact.types";
 import { editContact } from "@/data-access-layer/resume/resume.functions";
 import { useAppForm } from "@/lib/tanstack/form";
@@ -34,9 +34,9 @@ export function ContactEditForm({ contact, onSuccess }: ContactEditFormProps) {
   const mutation = useMutation({
     mutationFn: async (values: typeof contactEditOpts.defaultValues) =>
       editContact({ data: { id: contact.id, ...values } }),
-    onSuccess(data, values) {
+    onSuccess() {
       toast.success("Contact saved");
-      contactsCollection.utils.writeUpdate({ ...contact, ...values });
+      // contactsCollection.utils.writeUpdate({ ...contact, ...values });
       onSuccess?.();
     },
     onError(err: unknown) {

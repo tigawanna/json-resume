@@ -10,7 +10,7 @@ import { DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
-import { languagesCollection } from "@/data-access-layer/resume/languages/language.collection";
+// import { languagesCollection } from "@/data-access-layer/resume/languages/language.collection";
 import type { LanguageListItemDTO } from "@/data-access-layer/resume/languages/language.types";
 import { editLanguage } from "@/data-access-layer/resume/resume.functions";
 import { useAppForm } from "@/lib/tanstack/form";
@@ -34,9 +34,9 @@ export function LanguageEditForm({ language, onSuccess }: LanguageEditFormProps)
   const mutation = useMutation({
     mutationFn: async (values: typeof languageEditOpts.defaultValues) =>
       editLanguage({ data: { id: language.id, ...values } }),
-    onSuccess(data, values) {
+    onSuccess() {
       toast.success("Language saved");
-      languagesCollection.utils.writeUpdate({ ...language, ...values });
+      // languagesCollection.utils.writeUpdate({ ...language, ...values });
       onSuccess?.();
     },
     onError(err: unknown) {

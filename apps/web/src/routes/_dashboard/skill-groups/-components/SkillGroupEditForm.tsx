@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
 import { editSkillGroup } from "@/data-access-layer/resume/resume.functions";
-import { skillGroupsCollection } from "@/data-access-layer/resume/skill-groups/skill-group.collection";
+// import { skillGroupsCollection } from "@/data-access-layer/resume/skill-groups/skill-group.collection";
 import type { SkillGroupListItemDTO } from "@/data-access-layer/resume/skill-groups/skill-group.types";
 import { useAppForm } from "@/lib/tanstack/form";
 import { unwrapUnknownError } from "@/utils/errors";
@@ -39,13 +39,13 @@ export function SkillGroupEditForm({ skillGroup, onSuccess }: SkillGroupEditForm
   const mutation = useMutation({
     mutationFn: async (values: typeof skillGroupEditOpts.defaultValues) =>
       editSkillGroup({ data: { id: skillGroup.id, ...values, skills } }),
-    onSuccess(data, values) {
+    onSuccess() {
       toast.success("Skill group saved");
-      skillGroupsCollection.utils.writeUpdate({
-        ...skillGroup,
-        ...values,
-        skills: JSON.stringify(skills),
-      });
+      // skillGroupsCollection.utils.writeUpdate({
+      //   ...skillGroup,
+      //   ...values,
+      //   skills: JSON.stringify(skills),
+      // });
       onSuccess?.();
     },
     onError(err: unknown) {
