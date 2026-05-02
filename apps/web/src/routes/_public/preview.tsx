@@ -23,7 +23,7 @@ import { z } from "zod";
 const tabsList = ["edit", "preview", "json"] as const;
 const tabSchema = z.enum(tabsList).default("edit").catch("edit");
 
-export const Route = createFileRoute("/_public/workbench")({
+export const Route = createFileRoute("/_public/preview")({
   component: RouteComponent,
   validateSearch: (search) => z.object({ tab: tabSchema }).parse(search),
   head: () => ({

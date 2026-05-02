@@ -48,7 +48,7 @@ export function LandingHero() {
             a print-ready PDF — without reformatting a doc.
           </p>
 
-          <div className="mt-4 flex flex-wrap gap-4 animate-fade-in">
+          <div className="mt-4 flex flex-wrap gap-4 animate-fade-in z-30">
             <Link
               to="/auth"
               search={{ returnTo: "/dashboard" }}
@@ -57,7 +57,7 @@ export function LandingHero() {
               Get Started →
             </Link>
             <Link
-              to="/workbench"
+              to="/preview"
               search={{ tab: "edit" }}
               className="border border-border px-6 py-3 font-mono text-base-content transition-colors hover:bg-neutral"
             >

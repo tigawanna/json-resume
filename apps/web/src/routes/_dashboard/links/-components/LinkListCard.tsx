@@ -29,7 +29,7 @@ export function LinkListCard({ link, onDelete }: LinkListCardProps) {
               {link.icon && (
                 <p className="text-muted-foreground mt-1 truncate text-xs">Icon: {link.icon}</p>
               )}
-              <Badge variant="outline" className="mt-2 max-w-[12rem] truncate text-xs">
+              <Badge variant="outline" className="mt-2 max-w-48 truncate text-xs">
                 {link.resumeName}
               </Badge>
             </div>
