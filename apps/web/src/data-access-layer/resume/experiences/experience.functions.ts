@@ -1,6 +1,10 @@
 import { viewerMiddleware } from "@/data-access-layer/auth/viewer";
 import { createServerFn } from "@tanstack/react-start";
-import { deleteExperienceForUser, listExperiencesForUserPaginated } from "./experience.server";
+import {
+  deleteExperienceForUser,
+  listExperiencesForUserPaginated,
+  swapExperienceSortOrder,
+} from "./experience.server";
 
 export const listExperiences = createServerFn({ method: "GET" })
   .middleware([viewerMiddleware])
@@ -20,5 +24,13 @@ export const deleteExperienceFn = createServerFn({ method: "POST" })
   .inputValidator((input: { id: string }) => input)
   .handler(async ({ context, data }) => {
     await deleteExperienceForUser(data.id, context.viewer.user.id);
+    return { success: true };
+  });
+
+export const reorderExperienceFn = createServerFn({ method: "POST" })
+  .middleware([viewerMiddleware])
+  .inputValidator((input: { idA: string; idB: string }) => input)
+  .handler(async ({ context, data }) => {
+    await swapExperienceSortOrder(context.viewer.user.id, data.idA, data.idB);
     return { success: true };
   });

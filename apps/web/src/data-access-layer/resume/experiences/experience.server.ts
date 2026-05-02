@@ -7,6 +7,22 @@ import { DEFAULT_PAGE_SIZE } from "../../pagination.types";
 import type { PaginatedResult } from "../../pagination.types";
 import type { ExperienceListItemDTO } from "./experience.types";
 
+function encodeExperienceCursor(sortOrder: number, id: string): string {
+  return `${sortOrder}:${id}`;
+}
+
+function parseExperienceCursor(
+  cursor: string | undefined,
+): { sortOrder: number; id: string } | undefined {
+  if (!cursor) return undefined;
+  const i = cursor.indexOf(":");
+  if (i < 0) return undefined;
+  const sortOrder = Number(cursor.slice(0, i));
+  const id = cursor.slice(i + 1);
+  if (!Number.isFinite(sortOrder) || id.length === 0) return undefined;
+  return { sortOrder, id };
+}
+
 export async function listExperiencesForUserPaginated(
   userId: string,
   opts?: { keyword?: string; cursor?: string; direction?: "after" | "before" },
@@ -25,12 +41,29 @@ export async function listExperiencesForUserPaginated(
     );
   }
 
-  if (opts?.cursor) {
-    conditions.push(
-      direction === "before"
-        ? lt(resumeExperience.id, opts.cursor)
-        : gt(resumeExperience.id, opts.cursor),
-    );
+  const cursorKey = parseExperienceCursor(opts?.cursor);
+  if (cursorKey) {
+    if (direction === "before") {
+      conditions.push(
+        or(
+          gt(resumeExperience.sortOrder, cursorKey.sortOrder),
+          and(
+            eq(resumeExperience.sortOrder, cursorKey.sortOrder),
+            gt(resumeExperience.id, cursorKey.id),
+          ),
+        )!,
+      );
+    } else {
+      conditions.push(
+        or(
+          lt(resumeExperience.sortOrder, cursorKey.sortOrder),
+          and(
+            eq(resumeExperience.sortOrder, cursorKey.sortOrder),
+            lt(resumeExperience.id, cursorKey.id),
+          ),
+        )!,
+      );
+    }
   }
 
   const rows = await db
@@ -50,7 +83,11 @@ export async function listExperiencesForUserPaginated(
     .from(resumeExperience)
     .innerJoin(resume, eq(resumeExperience.resumeId, resume.id))
     .where(and(...conditions))
-    .orderBy(direction === "before" ? desc(resumeExperience.id) : asc(resumeExperience.id))
+    .orderBy(
+      ...(direction === "before"
+        ? [asc(resumeExperience.sortOrder), asc(resumeExperience.id)]
+        : [desc(resumeExperience.sortOrder), desc(resumeExperience.id)]),
+    )
     .limit(DEFAULT_PAGE_SIZE + 1);
 
   const hasMore = rows.length > DEFAULT_PAGE_SIZE;
@@ -69,11 +106,22 @@ export async function listExperiencesForUserPaginated(
   let previousCursor: string | undefined;
 
   if (direction === "after") {
-    nextCursor = hasMore ? items[items.length - 1].id : undefined;
-    previousCursor = opts?.cursor !== undefined ? items[0]?.id : undefined;
+    nextCursor = hasMore
+      ? encodeExperienceCursor(items[items.length - 1].sortOrder, items[items.length - 1].id)
+      : undefined;
+    previousCursor =
+      opts?.cursor !== undefined && items.length > 0
+        ? encodeExperienceCursor(items[0].sortOrder, items[0].id)
+        : undefined;
   } else {
-    previousCursor = hasMore ? items[0]?.id : undefined;
-    nextCursor = items.length > 0 ? items[items.length - 1].id : undefined;
+    previousCursor =
+      hasMore && items.length > 0
+        ? encodeExperienceCursor(items[0].sortOrder, items[0].id)
+        : undefined;
+    nextCursor =
+      items.length > 0
+        ? encodeExperienceCursor(items[items.length - 1].sortOrder, items[items.length - 1].id)
+        : undefined;
   }
 
   return { items, nextCursor, previousCursor };
@@ -112,7 +160,7 @@ export async function listExperiencesForUser(
     .from(resumeExperience)
     .innerJoin(resume, eq(resumeExperience.resumeId, resume.id))
     .where(and(...conditions))
-    .orderBy(desc(resumeExperience.updatedAt));
+    .orderBy(desc(resumeExperience.sortOrder), desc(resumeExperience.id));
 
   return rows.map((r) => ({
     ...r,
@@ -130,4 +178,39 @@ export async function deleteExperienceForUser(experienceId: string, userId: stri
     .limit(1);
   if (row.length === 0) throw new Error("Experience not found");
   await db.delete(resumeExperience).where(eq(resumeExperience.id, experienceId));
+}
+
+export async function swapExperienceSortOrder(
+  userId: string,
+  idA: string,
+  idB: string,
+): Promise<void> {
+  const rows = await db
+    .select({ id: resumeExperience.id, sortOrder: resumeExperience.sortOrder })
+    .from(resumeExperience)
+    .innerJoin(resume, eq(resumeExperience.resumeId, resume.id))
+    .where(
+      and(
+        eq(resume.userId, userId),
+        or(eq(resumeExperience.id, idA), eq(resumeExperience.id, idB)),
+      ),
+    )
+    .limit(2);
+
+  if (rows.length !== 2) throw new Error("One or both experiences not found");
+
+  const [first, second] = rows as [
+    { id: string; sortOrder: number },
+    { id: string; sortOrder: number },
+  ];
+
+  await db
+    .update(resumeExperience)
+    .set({ sortOrder: second.sortOrder })
+    .where(eq(resumeExperience.id, first.id));
+
+  await db
+    .update(resumeExperience)
+    .set({ sortOrder: first.sortOrder })
+    .where(eq(resumeExperience.id, second.id));
 }

@@ -2,15 +2,16 @@ import { Button } from "@/components/ui/button";
 import { DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
 import { experiencesCollection } from "@/data-access-layer/resume/experiences/experience.collection";
 import type { ExperienceListItemDTO } from "@/data-access-layer/resume/experiences/experience.types";
 import { editExperience } from "@/data-access-layer/resume/resume.functions";
+
 import { useAppForm } from "@/lib/tanstack/form";
 import { unwrapUnknownError } from "@/utils/errors";
 import { formOptions } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
 
 const experienceEditOpts = formOptions({
   defaultValues: {
@@ -19,6 +20,7 @@ const experienceEditOpts = formOptions({
     startDate: "",
     endDate: "",
     location: "",
+    sortOrder: 0,
   },
 });
 
@@ -33,21 +35,21 @@ export function ExperienceEditForm({ experience, onSuccess }: ExperienceEditForm
       editExperience({
         data: { id: experience.id, ...values },
       }),
-    onSuccess(data, values) {
+    async onSuccess(data, values, ____, ctx) {
       toast.success("Experience saved");
       experiencesCollection.utils.writeUpdate({
         ...experience,
         ...values,
       });
+      void ctx.client.invalidateQueries({ queryKey: [queryKeyPrefixes.experiences] });
+      void ctx.client.invalidateQueries({ queryKey: [queryKeyPrefixes.resumes] });
+      void ctx.client.invalidateQueries({ queryKey: [queryKeyPrefixes.resumes] });
       onSuccess?.();
     },
     onError(err: unknown) {
       toast.error("Failed to save experience", {
         description: unwrapUnknownError(err).message,
       });
-    },
-    meta: {
-      invalidates: [[queryKeyPrefixes.experiences], [queryKeyPrefixes.resumes]],
     },
   });
 
@@ -59,6 +61,7 @@ export function ExperienceEditForm({ experience, onSuccess }: ExperienceEditForm
       startDate: experience.startDate,
       endDate: experience.endDate,
       location: experience.location,
+      sortOrder: experience.sortOrder,
     },
     onSubmit: async ({ value }) => {
       await mutation.mutateAsync(value);
@@ -150,6 +153,31 @@ export function ExperienceEditForm({ experience, onSuccess }: ExperienceEditForm
               onChange={(e) => field.handleChange(e.target.value)}
               className="mt-1"
             />
+          </div>
+        )}
+      </form.AppField>
+
+      <form.AppField
+        name="sortOrder"
+        validators={{
+          onChange: ({ value }) =>
+            !Number.isInteger(value) || value < 0 ? "Must be a non-negative integer" : undefined,
+        }}
+      >
+        {(field) => (
+          <div className="w-32">
+            <Label className="text-xs">Display Order</Label>
+            <Input
+              type="number"
+              min={0}
+              step={1}
+              value={field.state.value}
+              onChange={(e) => field.handleChange(Number(e.target.value))}
+              className="mt-1"
+            />
+            <p className="text-muted-foreground mt-1 text-xs">
+              Higher numbers appear first on the resume
+            </p>
           </div>
         )}
       </form.AppField>

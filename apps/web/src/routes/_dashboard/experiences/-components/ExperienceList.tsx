@@ -1,7 +1,11 @@
 import Nprogress from "@/components/navigation/nprogress/Nprogress";
 import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
-import { listExperiences } from "@/data-access-layer/resume/experiences/experience.functions";
+import {
+  listExperiences,
+  reorderExperienceFn,
+} from "@/data-access-layer/resume/experiences/experience.functions";
 import { deleteExperienceMutationOptions } from "@/data-access-layer/resume/experiences/experience.mutation-options";
+
 import { RouterPendingComponent } from "@/lib/tanstack/router/RouterPendingComponent";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Briefcase } from "lucide-react";
@@ -16,6 +20,15 @@ export function ExperienceList() {
     placeholderData: (prevData) => prevData,
   });
   const deleteMutation = useMutation(deleteExperienceMutationOptions);
+  const reorderMutation = useMutation({
+    mutationFn: (ids: { idA: string; idB: string }) => reorderExperienceFn({ data: ids }),
+    onSuccess(_, ___, ____, ctx) {
+      void ctx.client.invalidateQueries({
+        queryKey: [queryKeyPrefixes.experiences, "page", cursor, dir ?? "after", sq],
+      });
+      void ctx.client.invalidateQueries({ queryKey: [queryKeyPrefixes.resumes] });
+    },
+  });
 
   if (isLoading) {
     return (
@@ -42,11 +55,29 @@ export function ExperienceList() {
     <div className="flex w-full h-full flex-col gap-6" data-test="experience-list-page">
       <Nprogress isAnimating={isRefetching} />
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" data-test="experience-list">
-        {data.items.map((experience) => (
+        {data.items.map((experience, index) => (
           <ExperienceListCard
             key={experience.id}
             experience={experience}
             onDelete={(id) => deleteMutation.mutate(id)}
+            onMoveUp={
+              index > 0
+                ? () =>
+                    reorderMutation.mutate({
+                      idA: experience.id,
+                      idB: data.items[index - 1].id,
+                    })
+                : undefined
+            }
+            onMoveDown={
+              index < data.items.length - 1
+                ? () =>
+                    reorderMutation.mutate({
+                      idA: experience.id,
+                      idB: data.items[index + 1].id,
+                    })
+                : undefined
+            }
           />
         ))}
       </div>

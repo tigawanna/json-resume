@@ -19,6 +19,7 @@ const createOpts = formOptions({
     startDate: "",
     endDate: "",
     location: "",
+    sortOrder: 0,
   },
 });
 
@@ -37,7 +38,7 @@ export function ExperienceCreateForm({ onSuccess }: ExperienceCreateFormProps) {
           startDate: values.startDate,
           endDate: values.endDate,
           location: values.location,
-          sortOrder: 0,
+          sortOrder: values.sortOrder,
           bullets: [],
         },
       }),
@@ -158,6 +159,32 @@ export function ExperienceCreateForm({ onSuccess }: ExperienceCreateFormProps) {
           </div>
         )}
       </form.AppField>
+
+      <form.AppField
+        name="sortOrder"
+        validators={{
+          onChange: ({ value }) =>
+            !Number.isInteger(value) || value < 0 ? "Must be a non-negative integer" : undefined,
+        }}
+      >
+        {(field) => (
+          <div className="w-32">
+            <Label className="text-xs">Display Order</Label>
+            <Input
+              type="number"
+              min={0}
+              step={1}
+              value={field.state.value}
+              onChange={(e) => field.handleChange(Number(e.target.value))}
+              className="mt-1"
+            />
+            <p className="text-muted-foreground mt-1 text-xs">
+              Higher numbers appear first on the resume
+            </p>
+          </div>
+        )}
+      </form.AppField>
+
       <DialogFooter>
         <Button
           type="button"

@@ -143,7 +143,7 @@ export async function getResumeDetail(
       links: { orderBy: [asc(resumeLink.sortOrder)] },
       summaries: { orderBy: [asc(resumeSummary.sortOrder)] },
       experiences: {
-        orderBy: [asc(resumeExperience.sortOrder)],
+        orderBy: [desc(resumeExperience.sortOrder), desc(resumeExperience.id)],
         with: {
           bullets: { orderBy: [asc(resumeExperienceBullet.sortOrder)] },
         },
