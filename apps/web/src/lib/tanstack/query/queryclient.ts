@@ -19,7 +19,9 @@ declare module "@tanstack/react-query" {
 export const queryClient = new QueryClient({
   mutationCache: new MutationCache({
     onSuccess: async (_, __, ___, mutation) => {
+      console.log("mutation success", mutation.meta?.invalidates);
       if (Array.isArray(mutation.meta?.invalidates)) {
+        console.log("invalidating queries", mutation.meta?.invalidates);
         mutation.meta?.invalidates.forEach((queryKey) => {
           return queryClient.invalidateQueries({
             queryKey,

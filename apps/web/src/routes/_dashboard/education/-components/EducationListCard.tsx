@@ -33,7 +33,7 @@ export function EducationListCard({ education, onDelete }: EducationListCardProp
                 <CardDescription className="mt-1 truncate text-xs">{subtitle}</CardDescription>
               )}
               {dateRange && <p className="text-muted-foreground mt-1 text-xs">{dateRange}</p>}
-              <Badge variant="outline" className="mt-2 max-w-[12rem] truncate text-xs">
+              <Badge variant="outline" className="mt-2 max-w-48 truncate text-xs">
                 {education.resumeName}
               </Badge>
             </div>

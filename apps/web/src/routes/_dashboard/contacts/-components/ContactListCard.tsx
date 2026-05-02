@@ -29,7 +29,7 @@ export function ContactListCard({ contact, onDelete }: ContactListCardProps) {
                 {contact.type}
                 {contact.label ? ` · ${contact.label}` : ""}
               </CardDescription>
-              <Badge variant="outline" className="mt-2 max-w-[12rem] truncate text-xs">
+              <Badge variant="outline" className="mt-2 max-w-48 truncate text-xs">
                 {contact.resumeName}
               </Badge>
             </div>

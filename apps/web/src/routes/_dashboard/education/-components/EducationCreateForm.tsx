@@ -79,7 +79,9 @@ export function EducationCreateForm({ onSuccess }: EducationCreateFormProps) {
     >
       <form.AppField
         name="resumeId"
-        validators={{ onChange: ({ value }) => (!value ? "Resume is required" : undefined) }}
+        validators={{
+          onChange: ({ value }) => (!value ? "Resume is required" : undefined),
+        }}
       >
         {(field) => (
           <ResumePickerField
@@ -163,19 +165,31 @@ export function EducationCreateForm({ onSuccess }: EducationCreateFormProps) {
           )}
         </form.AppField>
       </div>
-      <DialogFooter>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => form.reset()}
-          disabled={mutation.isPending}
-        >
-          Reset
-        </Button>
-        <Button type="submit" disabled={mutation.isPending || !form.state.isFormValid}>
-          {mutation.isPending ? "Creating…" : "Create"}
-        </Button>
-      </DialogFooter>
+      <form.Subscribe selector={(s) => s.values}>
+        {(values) => {
+          const hasRequired = Boolean(
+            values.resumeId && values.school.trim() && values.degree.trim(),
+          );
+          return (
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => form.reset()}
+                disabled={mutation.isPending}
+              >
+                Reset
+              </Button>
+              <Button
+                type="submit"
+                disabled={mutation.isPending || !hasRequired || !form.state.isFormValid}
+              >
+                {mutation.isPending ? "Creating…" : "Create"}
+              </Button>
+            </DialogFooter>
+          );
+        }}
+      </form.Subscribe>
     </form>
   );
 }

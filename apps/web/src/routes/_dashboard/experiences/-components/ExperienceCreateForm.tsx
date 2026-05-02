@@ -185,19 +185,31 @@ export function ExperienceCreateForm({ onSuccess }: ExperienceCreateFormProps) {
         )}
       </form.AppField>
 
-      <DialogFooter>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => form.reset()}
-          disabled={mutation.isPending}
-        >
-          Reset
-        </Button>
-        <Button type="submit" disabled={mutation.isPending || !form.state.isFormValid}>
-          {mutation.isPending ? "Creating…" : "Create"}
-        </Button>
-      </DialogFooter>
+      <form.Subscribe selector={(s) => s.values}>
+        {(values) => {
+          const hasRequired = Boolean(
+            values.resumeId && values.role.trim() && values.company.trim(),
+          );
+          return (
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => form.reset()}
+                disabled={mutation.isPending}
+              >
+                Reset
+              </Button>
+              <Button
+                type="submit"
+                disabled={mutation.isPending || !hasRequired || !form.state.isFormValid}
+              >
+                {mutation.isPending ? "Creating…" : "Create"}
+              </Button>
+            </DialogFooter>
+          );
+        }}
+      </form.Subscribe>
     </form>
   );
 }

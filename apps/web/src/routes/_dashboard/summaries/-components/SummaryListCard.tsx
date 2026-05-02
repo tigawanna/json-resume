@@ -26,7 +26,7 @@ export function SummaryListCard({ summary, onDelete }: SummaryListCardProps) {
             <FileText className="text-primary mt-0.5 size-5 shrink-0" />
             <div className="min-w-0 flex-1">
               <CardTitle className="text-base leading-snug line-clamp-2">{preview}</CardTitle>
-              <Badge variant="outline" className="mt-2 max-w-[12rem] truncate text-xs">
+              <Badge variant="outline" className="mt-2 max-w-48 truncate text-xs">
                 {summary.resumeName}
               </Badge>
             </div>

@@ -49,7 +49,7 @@ export function SkillGroupListCard({ skillGroup, onDelete }: SkillGroupListCardP
                   ))}
                 </div>
               )}
-              <Badge variant="outline" className="mt-2 max-w-[12rem] truncate text-xs">
+              <Badge variant="outline" className="mt-2 max-w-48 truncate text-xs">
                 {skillGroup.resumeName}
               </Badge>
             </div>

@@ -17,6 +17,7 @@ import { useAppForm } from "@/lib/tanstack/form";
 import { unwrapUnknownError } from "@/utils/errors";
 import { formOptions } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
+import { useRef } from "react";
 import { toast } from "sonner";
 
 const CONTACT_TYPE_OPTIONS = ["email", "phone", "location", "address", "website"];
@@ -59,8 +60,11 @@ export function ContactEditForm({ contact, onSuccess }: ContactEditFormProps) {
     },
   });
 
+  const containerRef = useRef<HTMLFormElement>(null);
+
   return (
     <form
+      ref={containerRef}
       onSubmit={(e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -88,7 +92,7 @@ export function ContactEditForm({ contact, onSuccess }: ContactEditFormProps) {
                 showClear
                 disabled={false}
               />
-              <ComboboxContent>
+              <ComboboxContent container={containerRef}>
                 <ComboboxList>
                   {CONTACT_TYPE_OPTIONS.map((option) => (
                     <ComboboxItem key={option} value={option}>

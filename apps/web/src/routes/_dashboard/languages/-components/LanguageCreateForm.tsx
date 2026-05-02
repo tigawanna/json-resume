@@ -16,6 +16,7 @@ import { useAppForm } from "@/lib/tanstack/form";
 import { unwrapUnknownError } from "@/utils/errors";
 import { formOptions } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
+import { useRef } from "react";
 import { toast } from "sonner";
 
 const PROFICIENCY_OPTIONS = ["Native", "Fluent", "Professional", "Conversational", "Basic"];
@@ -56,8 +57,11 @@ export function LanguageCreateForm({ onSuccess }: LanguageCreateFormProps) {
     },
   });
 
+  const containerRef = useRef<HTMLFormElement>(null);
+
   return (
     <form
+      ref={containerRef}
       onSubmit={(e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -68,7 +72,9 @@ export function LanguageCreateForm({ onSuccess }: LanguageCreateFormProps) {
     >
       <form.AppField
         name="resumeId"
-        validators={{ onChange: ({ value }) => (!value ? "Resume is required" : undefined) }}
+        validators={{
+          onChange: ({ value }) => (!value ? "Resume is required" : undefined),
+        }}
       >
         {(field) => (
           <ResumePickerField
@@ -109,7 +115,7 @@ export function LanguageCreateForm({ onSuccess }: LanguageCreateFormProps) {
                 showClear
                 disabled={false}
               />
-              <ComboboxContent>
+              <ComboboxContent container={containerRef}>
                 <ComboboxList>
                   {PROFICIENCY_OPTIONS.map((option) => (
                     <ComboboxItem key={option} value={option}>
@@ -122,19 +128,29 @@ export function LanguageCreateForm({ onSuccess }: LanguageCreateFormProps) {
           </div>
         )}
       </form.AppField>
-      <DialogFooter>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => form.reset()}
-          disabled={mutation.isPending}
-        >
-          Reset
-        </Button>
-        <Button type="submit" disabled={mutation.isPending || !form.state.isFormValid}>
-          {mutation.isPending ? "Creating…" : "Create"}
-        </Button>
-      </DialogFooter>
+      <form.Subscribe selector={(s) => s.values}>
+        {(values) => {
+          const hasRequired = Boolean(values.resumeId && values.name.trim());
+          return (
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => form.reset()}
+                disabled={mutation.isPending}
+              >
+                Reset
+              </Button>
+              <Button
+                type="submit"
+                disabled={mutation.isPending || !hasRequired || !form.state.isFormValid}
+              >
+                {mutation.isPending ? "Creating…" : "Create"}
+              </Button>
+            </DialogFooter>
+          );
+        }}
+      </form.Subscribe>
     </form>
   );
 }

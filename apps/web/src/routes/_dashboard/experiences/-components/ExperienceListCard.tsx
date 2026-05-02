@@ -48,7 +48,7 @@ export function ExperienceListCard({
           </CardHeader>
           <CardContent className="p-0 px-6 pr-3 pt-0">
             <div className="flex flex-wrap gap-1.5">
-              <Badge variant="outline" className="max-w-[12rem] truncate text-xs">
+              <Badge variant="outline" className="max-w-48 truncate text-xs">
                 {experience.resumeName}
               </Badge>
               <Badge

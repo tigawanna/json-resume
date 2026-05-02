@@ -17,6 +17,7 @@ import { useAppForm } from "@/lib/tanstack/form";
 import { unwrapUnknownError } from "@/utils/errors";
 import { formOptions } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
+import { useRef } from "react";
 import { toast } from "sonner";
 
 const DEGREE_OPTIONS = ["Degree", "Diploma", "Certificate"];
@@ -72,8 +73,11 @@ export function EducationEditForm({ education, onSuccess }: EducationEditFormPro
     },
   });
 
+  const containerRef = useRef<HTMLFormElement>(null);
+
   return (
     <form
+      ref={containerRef}
       onSubmit={(e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -120,7 +124,7 @@ export function EducationEditForm({ education, onSuccess }: EducationEditFormPro
                   showClear
                   disabled={false}
                 />
-                <ComboboxContent>
+                <ComboboxContent container={containerRef}>
                   <ComboboxList>
                     {DEGREE_OPTIONS.map((option) => (
                       <ComboboxItem key={option} value={option}>

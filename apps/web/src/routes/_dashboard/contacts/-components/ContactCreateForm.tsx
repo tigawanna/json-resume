@@ -16,6 +16,7 @@ import { useAppForm } from "@/lib/tanstack/form";
 import { unwrapUnknownError } from "@/utils/errors";
 import { formOptions } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
+import { useRef } from "react";
 import { toast } from "sonner";
 
 const CONTACT_TYPE_OPTIONS = ["email", "phone", "location", "address", "website"];
@@ -57,8 +58,11 @@ export function ContactCreateForm({ onSuccess }: ContactCreateFormProps) {
     },
   });
 
+  const containerRef = useRef<HTMLFormElement>(null);
+
   return (
     <form
+      ref={containerRef}
       onSubmit={(e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -69,7 +73,9 @@ export function ContactCreateForm({ onSuccess }: ContactCreateFormProps) {
     >
       <form.AppField
         name="resumeId"
-        validators={{ onChange: ({ value }) => (!value ? "Resume is required" : undefined) }}
+        validators={{
+          onChange: ({ value }) => (!value ? "Resume is required" : undefined),
+        }}
       >
         {(field) => (
           <ResumePickerField
@@ -81,7 +87,9 @@ export function ContactCreateForm({ onSuccess }: ContactCreateFormProps) {
       </form.AppField>
       <form.AppField
         name="type"
-        validators={{ onChange: ({ value }) => (!value?.trim() ? "Type is required" : undefined) }}
+        validators={{
+          onChange: ({ value }) => (!value?.trim() ? "Type is required" : undefined),
+        }}
       >
         {(field) => (
           <div>
@@ -96,7 +104,7 @@ export function ContactCreateForm({ onSuccess }: ContactCreateFormProps) {
                 showClear
                 disabled={false}
               />
-              <ComboboxContent>
+              <ComboboxContent container={containerRef}>
                 <ComboboxList>
                   {CONTACT_TYPE_OPTIONS.map((option) => (
                     <ComboboxItem key={option} value={option}>
@@ -139,19 +147,29 @@ export function ContactCreateForm({ onSuccess }: ContactCreateFormProps) {
           </div>
         )}
       </form.AppField>
-      <DialogFooter>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => form.reset()}
-          disabled={mutation.isPending}
-        >
-          Reset
-        </Button>
-        <Button type="submit" disabled={mutation.isPending || !form.state.isFormValid}>
-          {mutation.isPending ? "Creating…" : "Create"}
-        </Button>
-      </DialogFooter>
+      <form.Subscribe selector={(s) => s.values}>
+        {(values) => {
+          const hasRequired = Boolean(values.resumeId && values.type.trim() && values.value.trim());
+          return (
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => form.reset()}
+                disabled={mutation.isPending}
+              >
+                Reset
+              </Button>
+              <Button
+                type="submit"
+                disabled={mutation.isPending || !hasRequired || !form.state.isFormValid}
+              >
+                {mutation.isPending ? "Creating…" : "Create"}
+              </Button>
+            </DialogFooter>
+          );
+        }}
+      </form.Subscribe>
     </form>
   );
 }

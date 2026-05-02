@@ -30,7 +30,7 @@ export function LanguageListCard({ language, onDelete }: LanguageListCardProps) 
                   {language.proficiency}
                 </CardDescription>
               )}
-              <Badge variant="outline" className="mt-2 max-w-[12rem] truncate text-xs">
+              <Badge variant="outline" className="mt-2 max-w-48 truncate text-xs">
                 {language.resumeName}
               </Badge>
             </div>

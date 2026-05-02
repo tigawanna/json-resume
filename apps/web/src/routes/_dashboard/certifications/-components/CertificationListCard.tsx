@@ -33,7 +33,7 @@ export function CertificationListCard({ certification, onDelete }: Certification
               {certification.date && (
                 <p className="text-muted-foreground mt-1 text-xs">{certification.date}</p>
               )}
-              <Badge variant="outline" className="mt-2 max-w-[12rem] truncate text-xs">
+              <Badge variant="outline" className="mt-2 max-w-48 truncate text-xs">
                 {certification.resumeName}
               </Badge>
             </div>

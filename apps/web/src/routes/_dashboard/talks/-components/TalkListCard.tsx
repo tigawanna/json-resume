@@ -31,7 +31,7 @@ export function TalkListCard({ talk, onDelete }: TalkListCardProps) {
                   {talk.description}
                 </p>
               )}
-              <Badge variant="outline" className="mt-2 max-w-[12rem] truncate text-xs">
+              <Badge variant="outline" className="mt-2 max-w-48 truncate text-xs">
                 {talk.resumeName}
               </Badge>
             </div>

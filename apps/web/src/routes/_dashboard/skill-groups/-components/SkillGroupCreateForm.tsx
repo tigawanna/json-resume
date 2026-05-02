@@ -75,7 +75,9 @@ export function SkillGroupCreateForm({ onSuccess }: SkillGroupCreateFormProps) {
     >
       <form.AppField
         name="resumeId"
-        validators={{ onChange: ({ value }) => (!value ? "Resume is required" : undefined) }}
+        validators={{
+          onChange: ({ value }) => (!value ? "Resume is required" : undefined),
+        }}
       >
         {(field) => (
           <ResumePickerField
@@ -131,22 +133,32 @@ export function SkillGroupCreateForm({ onSuccess }: SkillGroupCreateFormProps) {
           </div>
         )}
       </div>
-      <DialogFooter>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => {
-            form.reset();
-            setSkills([]);
-          }}
-          disabled={mutation.isPending}
-        >
-          Reset
-        </Button>
-        <Button type="submit" disabled={mutation.isPending || !form.state.isFormValid}>
-          {mutation.isPending ? "Creating…" : "Create"}
-        </Button>
-      </DialogFooter>
+      <form.Subscribe selector={(s) => s.values}>
+        {(values) => {
+          const hasRequired = Boolean(values.resumeId && values.name.trim());
+          return (
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  form.reset();
+                  setSkills([]);
+                }}
+                disabled={mutation.isPending}
+              >
+                Reset
+              </Button>
+              <Button
+                type="submit"
+                disabled={mutation.isPending || !hasRequired || !form.state.isFormValid}
+              >
+                {mutation.isPending ? "Creating…" : "Create"}
+              </Button>
+            </DialogFooter>
+          );
+        }}
+      </form.Subscribe>
     </form>
   );
 }

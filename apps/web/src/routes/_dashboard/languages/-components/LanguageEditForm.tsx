@@ -17,6 +17,7 @@ import { useAppForm } from "@/lib/tanstack/form";
 import { unwrapUnknownError } from "@/utils/errors";
 import { formOptions } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
+import { useRef } from "react";
 import { toast } from "sonner";
 
 const PROFICIENCY_OPTIONS = ["Native", "Fluent", "Professional", "Conversational", "Basic"];
@@ -58,8 +59,11 @@ export function LanguageEditForm({ language, onSuccess }: LanguageEditFormProps)
     },
   });
 
+  const containerRef = useRef<HTMLFormElement>(null);
+
   return (
     <form
+      ref={containerRef}
       onSubmit={(e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -99,7 +103,7 @@ export function LanguageEditForm({ language, onSuccess }: LanguageEditFormProps)
                 showClear
                 disabled={false}
               />
-              <ComboboxContent>
+              <ComboboxContent container={containerRef}>
                 <ComboboxList>
                   {PROFICIENCY_OPTIONS.map((option) => (
                     <ComboboxItem key={option} value={option}>
