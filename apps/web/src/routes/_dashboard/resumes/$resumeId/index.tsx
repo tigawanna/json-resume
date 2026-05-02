@@ -3,6 +3,14 @@ import { ResumeWorkspaceProvider } from "@/components/resume/resume-workspace/Re
 import { createRemoteResumeWorkspace } from "@/components/resume/resume-workspace/remote-resume-workspace";
 import { Button } from "@/components/ui/button";
 import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   Empty,
   EmptyContent,
   EmptyDescription,
@@ -13,14 +21,15 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { resumeDetailToDocument } from "@/data-access-layer/resume/resume-converters";
 import { resumeDetailQueryOptions } from "@/data-access-layer/resume/resume-query-options";
+import { replaceResumeDoc } from "@/data-access-layer/resume/resume.functions";
 import type { ResumeDetailDTO } from "@/data-access-layer/resume/resume.types";
 import { resumeCollection } from "@/data-access-layer/resume/resumes-query-collection";
-import { TemplateId } from "@/features/resume/resume-schema";
+import { safeParseResumeJson, TemplateId } from "@/features/resume/resume-schema";
 import { unwrapUnknownError } from "@/utils/errors";
 import { eq, useLiveSuspenseQuery } from "@tanstack/react-db";
-import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
-import { File, Save } from "lucide-react";
+import { File, FileUp, Save } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -68,6 +77,7 @@ function ResumeWorkbench({ resumeId }: ResumeWorkbenchProps) {
   );
 
   const { data: serverResume } = useSuspenseQuery(resumeDetailQueryOptions(resumeId));
+  const queryClient = useQueryClient();
 
   const [selectedTemplate, setSelectedTemplate] = useState<TemplateId>(
     (serverResume?.templateId as TemplateId) ?? "classic",
@@ -75,6 +85,9 @@ function ResumeWorkbench({ resumeId }: ResumeWorkbenchProps) {
   const [initialTemplateId] = useState<TemplateId>(
     (serverResume?.templateId as TemplateId) ?? "classic",
   );
+  const [importOpen, setImportOpen] = useState(false);
+  const [importText, setImportText] = useState("");
+  const [importError, setImportError] = useState<string | null>(null);
 
   const router = useRouter();
   const { tab } = Route.useSearch();
@@ -106,13 +119,33 @@ function ResumeWorkbench({ resumeId }: ResumeWorkbenchProps) {
     },
     onSuccess() {
       toast.success("Template saved");
+      void queryClient.invalidateQueries({ queryKey: ["resumes"] });
     },
     onError(err: unknown) {
       toast.error("Failed to save", {
         description: unwrapUnknownError(err).message,
       });
     },
-    meta: { invalidates: [["resumes"]] },
+  });
+
+  const importMutation = useMutation({
+    mutationFn: async (jsonText: string) => {
+      const result = safeParseResumeJson(jsonText);
+      if (!result.ok) throw new Error(result.error);
+      await replaceResumeDoc({ data: { id: resumeId, doc: result.data } });
+    },
+    onSuccess() {
+      void resumeCollection.utils.refetch();
+      void queryClient.invalidateQueries({ queryKey: ["resumes"] });
+      toast.success("Resume imported from JSON");
+      setImportText("");
+      setImportError(null);
+      setImportOpen(false);
+      navigateToTab("edit");
+    },
+    onError(err: unknown) {
+      setImportError(unwrapUnknownError(err).message);
+    },
   });
 
   if (!displayResume) {
@@ -157,6 +190,11 @@ function ResumeWorkbench({ resumeId }: ResumeWorkbenchProps) {
               <p className="text-muted-foreground mt-1 text-sm">{resume.headline}</p>
             )}
           </div>
+
+          <Button variant="outline" size="sm" className="gap-2" onClick={() => setImportOpen(true)}>
+            <FileUp className="size-4" />
+            Import JSON
+          </Button>
         </div>
 
         {/* Template Picker */}
@@ -201,6 +239,36 @@ function ResumeWorkbench({ resumeId }: ResumeWorkbenchProps) {
             <PromptTab resumeId={resumeId} doc={doc} />
           </TabsContent>
         </Tabs>
+
+        <Dialog open={importOpen} onOpenChange={setImportOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Import Resume JSON</DialogTitle>
+            </DialogHeader>
+            <textarea
+              value={importText}
+              onChange={(e) => {
+                setImportText(e.target.value);
+                setImportError(null);
+              }}
+              placeholder='{"version": 1, "meta": {...}, ...}'
+              spellCheck={false}
+              className="border-input min-h-50 w-full rounded-md border bg-transparent px-3 py-2 font-mono text-sm outline-none"
+            />
+            {importError && <p className="text-destructive text-xs">{importError}</p>}
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button variant="ghost">Cancel</Button>
+              </DialogClose>
+              <Button
+                onClick={() => importMutation.mutate(importText)}
+                disabled={!importText.trim() || importMutation.isPending}
+              >
+                {importMutation.isPending ? "Importing..." : "Import"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </ResumeWorkspaceProvider>
   );

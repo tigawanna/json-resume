@@ -6,7 +6,7 @@ import { eq, useLiveSuspenseQuery } from "@tanstack/react-db";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { PromptCopySection } from "./PromptCopySection";
+import { PromptCopySection } from "@/components/resume/PromptCopySection";
 
 export function PromptTab({ resumeId, doc }: { resumeId: string; doc: ResumeDocumentV1 }) {
   const router = useRouter();

@@ -8,19 +8,33 @@ import {
 } from "@/components/resume/resume-workspace/local-resume-collection";
 import { createLocalResumeDetail } from "@/components/resume/resume-workspace/resume-workspace-utils";
 import { ResumePdfPreviewCard } from "@/features/resume/ResumePdfPreviewCard";
-import { createDefaultResume, type TemplateId } from "@/features/resume/resume-schema";
+import {
+  createDefaultResume,
+  safeParseResumeJson,
+  type ResumeDocumentV1,
+  type TemplateId,
+} from "@/features/resume/resume-schema";
 import { resumeDetailToDocument } from "@/data-access-layer/resume/resume-converters";
+import { PromptCopySection } from "@/components/resume/PromptCopySection";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TemplatePicker } from "@/components/resume/TemplatePicker";
 import { eq, useLiveSuspenseQuery } from "@tanstack/react-db";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
-import { Save } from "lucide-react";
+import { FileUp, Save } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 
-const tabsList = ["edit", "preview", "json"] as const;
+const tabsList = ["edit", "preview", "json", "prompt"] as const;
 const tabSchema = z.enum(tabsList).default("edit").catch("edit");
 
 export const Route = createFileRoute("/_public/preview")({
@@ -77,6 +91,9 @@ function LocalWorkbench({ resumeId }: { resumeId: string }) {
   const [selectedTemplate, setSelectedTemplate] = useState<TemplateId>(
     resume?.templateId ?? "classic",
   );
+  const [importOpen, setImportOpen] = useState(false);
+  const [importText, setImportText] = useState("");
+  const [importError, setImportError] = useState<string | null>(null);
 
   if (!resume) {
     return (
@@ -111,6 +128,26 @@ function LocalWorkbench({ resumeId }: { resumeId: string }) {
     toast.success("Template saved locally");
   }
 
+  async function handleImportJson() {
+    const result = safeParseResumeJson(importText);
+    if (!result.ok) {
+      setImportError(result.error);
+      return;
+    }
+    await workspace.replaceDocument(result.data);
+    toast.success("Resume imported from JSON");
+    setImportText("");
+    setImportError(null);
+    setImportOpen(false);
+    navigateToTab("edit");
+  }
+
+  async function handleApplyPromptResult(newDoc: ResumeDocumentV1) {
+    await workspace.replaceDocument(newDoc);
+    toast.success("Resume updated — switching to editor");
+    navigateToTab("edit");
+  }
+
   return (
     <ResumeWorkspaceProvider value={workspace}>
       <div
@@ -124,6 +161,11 @@ function LocalWorkbench({ resumeId }: { resumeId: string }) {
               Stored in this browser. No account needed.
             </p>
           </div>
+
+          <Button variant="outline" size="sm" className="gap-2" onClick={() => setImportOpen(true)}>
+            <FileUp className="size-4" />
+            Import JSON
+          </Button>
         </div>
 
         <TemplatePicker selected={selectedTemplate} onSelect={setSelectedTemplate} />
@@ -134,6 +176,7 @@ function LocalWorkbench({ resumeId }: { resumeId: string }) {
               <TabsTrigger value="edit">Edit</TabsTrigger>
               <TabsTrigger value="preview">Preview</TabsTrigger>
               <TabsTrigger value="json">JSON</TabsTrigger>
+              <TabsTrigger value="prompt">LLM Prompt</TabsTrigger>
             </TabsList>
 
             <Button
@@ -164,7 +207,45 @@ function LocalWorkbench({ resumeId }: { resumeId: string }) {
           <TabsContent value="json" forceMount className="mt-4 data-[state=inactive]:hidden">
             <ResumeJsonTab resumeId={currentResume.id} />
           </TabsContent>
+
+          <TabsContent value="prompt" className="mt-4">
+            <div className="mx-auto max-w-3xl">
+              <PromptCopySection
+                doc={doc}
+                jobDescription={currentResume.jobDescription ?? ""}
+                onApplyResult={handleApplyPromptResult}
+                isApplying={false}
+              />
+            </div>
+          </TabsContent>
         </Tabs>
+
+        <Dialog open={importOpen} onOpenChange={setImportOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Import Resume JSON</DialogTitle>
+            </DialogHeader>
+            <textarea
+              value={importText}
+              onChange={(e) => {
+                setImportText(e.target.value);
+                setImportError(null);
+              }}
+              placeholder='{"version": 1, "meta": {...}, ...}'
+              spellCheck={false}
+              className="border-input min-h-50 w-full rounded-md border bg-transparent px-3 py-2 font-mono text-sm outline-none"
+            />
+            {importError && <p className="text-destructive text-xs">{importError}</p>}
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button variant="ghost">Cancel</Button>
+              </DialogClose>
+              <Button onClick={() => void handleImportJson()} disabled={!importText.trim()}>
+                Import
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </ResumeWorkspaceProvider>
   );
