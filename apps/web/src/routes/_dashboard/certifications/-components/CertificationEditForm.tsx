@@ -3,7 +3,6 @@ import { DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
-import { certificationsCollection } from "@/data-access-layer/resume/certifications/certification.collection";
 import type { CertificationListItemDTO } from "@/data-access-layer/resume/certifications/certification.types";
 import { editCertification } from "@/data-access-layer/resume/resume.functions";
 import { useAppForm } from "@/lib/tanstack/form";
@@ -25,9 +24,11 @@ export function CertificationEditForm({ certification, onSuccess }: Certificatio
   const mutation = useMutation({
     mutationFn: async (values: typeof certificationEditOpts.defaultValues) =>
       editCertification({ data: { id: certification.id, ...values } }),
-    onSuccess(data, values) {
+    onSuccess(_, __, ____, ctx) {
       toast.success("Certification saved");
-      certificationsCollection.utils.writeUpdate({ ...certification, ...values });
+      // certificationsCollection.utils.writeUpdate({ ...certification, ...values });
+      void ctx.client.invalidateQueries({ queryKey: [queryKeyPrefixes.certifications] });
+      void ctx.client.invalidateQueries({ queryKey: [queryKeyPrefixes.resumes] });
       onSuccess?.();
     },
     onError(err: unknown) {

@@ -2,16 +2,15 @@ import { Button } from "@/components/ui/button";
 import { DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { experiencesCollection } from "@/data-access-layer/resume/experiences/experience.collection";
 import type { ExperienceListItemDTO } from "@/data-access-layer/resume/experiences/experience.types";
 import { editExperience } from "@/data-access-layer/resume/resume.functions";
 
+import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
 import { useAppForm } from "@/lib/tanstack/form";
 import { unwrapUnknownError } from "@/utils/errors";
 import { formOptions } from "@tanstack/react-form";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
 
 const experienceEditOpts = formOptions({
   defaultValues: {
@@ -30,22 +29,16 @@ interface ExperienceEditFormProps {
 }
 
 export function ExperienceEditForm({ experience, onSuccess }: ExperienceEditFormProps) {
-  const queryClient = useQueryClient();
-
   const mutation = useMutation({
     mutationFn: async (values: typeof experienceEditOpts.defaultValues) =>
       editExperience({
         data: { id: experience.id, ...values },
       }),
-    async onSuccess(_, values) {
+    async onSuccess(_, __, ____, ctx) {
       toast.success("Experience saved");
-      experiencesCollection.utils.writeUpdate({
-        ...experience,
-        ...values,
-      });
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: [queryKeyPrefixes.experiences] }),
-        queryClient.invalidateQueries({ queryKey: [queryKeyPrefixes.resumes] }),
+        ctx.client.invalidateQueries({ queryKey: [queryKeyPrefixes.experiences] }),
+        ctx.client.invalidateQueries({ queryKey: [queryKeyPrefixes.resumes] }),
       ]);
       onSuccess?.();
     },
