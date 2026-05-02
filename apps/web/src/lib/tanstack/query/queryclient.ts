@@ -15,6 +15,7 @@ declare module "@tanstack/react-query" {
   }
 }
 
+// Do NOT import this directly inot components fro query invalidatio use useQueryClient instead
 export const queryClient = new QueryClient({
   mutationCache: new MutationCache({
     onSuccess: async (_, __, ___, mutation) => {

@@ -9,7 +9,7 @@ import { editExperience } from "@/data-access-layer/resume/resume.functions";
 import { useAppForm } from "@/lib/tanstack/form";
 import { unwrapUnknownError } from "@/utils/errors";
 import { formOptions } from "@tanstack/react-form";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
 
@@ -30,20 +30,23 @@ interface ExperienceEditFormProps {
 }
 
 export function ExperienceEditForm({ experience, onSuccess }: ExperienceEditFormProps) {
+  const queryClient = useQueryClient();
+
   const mutation = useMutation({
     mutationFn: async (values: typeof experienceEditOpts.defaultValues) =>
       editExperience({
         data: { id: experience.id, ...values },
       }),
-    async onSuccess(data, values, ____, ctx) {
+    async onSuccess(_, values) {
       toast.success("Experience saved");
       experiencesCollection.utils.writeUpdate({
         ...experience,
         ...values,
       });
-      void ctx.client.invalidateQueries({ queryKey: [queryKeyPrefixes.experiences] });
-      void ctx.client.invalidateQueries({ queryKey: [queryKeyPrefixes.resumes] });
-      void ctx.client.invalidateQueries({ queryKey: [queryKeyPrefixes.resumes] });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: [queryKeyPrefixes.experiences] }),
+        queryClient.invalidateQueries({ queryKey: [queryKeyPrefixes.resumes] }),
+      ]);
       onSuccess?.();
     },
     onError(err: unknown) {
