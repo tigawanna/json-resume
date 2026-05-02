@@ -79,6 +79,8 @@ function RouteComponent() {
     });
   }
 
+  const showPagination = Boolean(pageData?.items?.length);
+
   return (
     <div className="flex w-full flex-col gap-6">
       <div className="flex items-center justify-between">
@@ -113,26 +115,28 @@ function RouteComponent() {
       <Suspense fallback={<RouterPendingComponent />}>
         <LanguageList />
       </Suspense>
-      <div className="flex items-center justify-between border-t pt-4">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={goPrevious}
-          disabled={!pageData?.previousCursor}
-          data-test="pagination-prev"
-        >
-          <ChevronLeft className="mr-1 size-4" /> Previous
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={goNext}
-          disabled={!pageData?.nextCursor}
-          data-test="pagination-next"
-        >
-          Next <ChevronRight className="ml-1 size-4" />
-        </Button>
-      </div>
+      {showPagination ? (
+        <div className="flex items-center justify-between border-t pt-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={goPrevious}
+            disabled={!pageData?.previousCursor}
+            data-test="pagination-prev"
+          >
+            <ChevronLeft className="mr-1 size-4" /> Previous
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={goNext}
+            disabled={!pageData?.nextCursor}
+            data-test="pagination-next"
+          >
+            Next <ChevronRight className="ml-1 size-4" />
+          </Button>
+        </div>
+      ) : null}
     </div>
   );
 }
