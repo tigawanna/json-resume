@@ -19,7 +19,7 @@ export function CertificationList() {
 
   if (isLoading) {
     return (
-      <div className="flex w-full h-full flex-col gap-6" data-test="certification-list-page">
+      <div className="flex w-full flex-col gap-6" data-test="certification-list-page">
         <RouterPendingComponent />
       </div>
     );
@@ -27,8 +27,8 @@ export function CertificationList() {
 
   if (!data || data.items.length === 0) {
     return (
-      <div className="flex w-full h-full flex-col gap-6" data-test="certification-list-page">
-        <div className="flex flex-col h-full items-center justify-center gap-4 py-16">
+      <div className="flex w-full flex-col gap-6" data-test="certification-list-page">
+        <div className="flex flex-col items-center justify-center gap-4 py-20 min-h-[min(380px,50dvh)]">
           <Award className="text-muted-foreground size-12" />
           <p className="text-muted-foreground text-sm">
             No certifications found. Add certifications to your resumes first.
@@ -39,7 +39,7 @@ export function CertificationList() {
   }
 
   return (
-    <div className="flex w-full h-full flex-col gap-6" data-test="certification-list-page">
+    <div className="flex w-full flex-col gap-6" data-test="certification-list-page">
       <Nprogress isAnimating={isRefetching} />
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" data-test="certification-list">
         {data.items.map((item) => (

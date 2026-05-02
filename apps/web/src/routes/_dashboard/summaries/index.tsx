@@ -80,7 +80,7 @@ function RouteComponent() {
   }
 
   return (
-    <div className="flex w-full min-h-screen flex-col gap-6">
+    <div className="flex w-full flex-col gap-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Summaries</h1>

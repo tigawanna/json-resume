@@ -32,7 +32,7 @@ export function ExperienceList() {
 
   if (isLoading) {
     return (
-      <div className="flex w-full h-full flex-col gap-6" data-test="experience-list-page">
+      <div className="flex w-full flex-col gap-6" data-test="experience-list-page">
         <RouterPendingComponent />
       </div>
     );
@@ -40,8 +40,8 @@ export function ExperienceList() {
 
   if (!data || data.items.length === 0) {
     return (
-      <div className="flex w-full h-full flex-col gap-6" data-test="experience-list-page">
-        <div className="flex flex-col h-full items-center justify-center gap-4 py-16">
+      <div className="flex w-full flex-col gap-6" data-test="experience-list-page">
+        <div className="flex flex-col items-center justify-center gap-4 py-20 min-h-[min(380px,50dvh)]">
           <Briefcase className="text-muted-foreground size-12" />
           <p className="text-muted-foreground text-sm">
             No experiences found. Add experiences to your resumes first.
@@ -52,7 +52,7 @@ export function ExperienceList() {
   }
 
   return (
-    <div className="flex w-full h-full flex-col gap-6" data-test="experience-list-page">
+    <div className="flex w-full flex-col gap-6" data-test="experience-list-page">
       <Nprogress isAnimating={isRefetching} />
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" data-test="experience-list">
         {data.items.map((experience, index) => (
