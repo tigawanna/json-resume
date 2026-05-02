@@ -9,7 +9,7 @@ import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
 import { useAppForm } from "@/lib/tanstack/form";
 import { unwrapUnknownError } from "@/utils/errors";
 import { formOptions } from "@tanstack/react-form";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 const experienceEditOpts = formOptions({
@@ -29,6 +29,8 @@ interface ExperienceEditFormProps {
 }
 
 export function ExperienceEditForm({ experience, onSuccess }: ExperienceEditFormProps) {
+  const queryClient = useQueryClient();
+
   const mutation = useMutation({
     mutationFn: async (values: typeof experienceEditOpts.defaultValues) =>
       editExperience({
@@ -36,6 +38,8 @@ export function ExperienceEditForm({ experience, onSuccess }: ExperienceEditForm
       }),
     onSuccess() {
       toast.success("Experience saved");
+      void queryClient.invalidateQueries({ queryKey: [queryKeyPrefixes.experiences] });
+      void queryClient.invalidateQueries({ queryKey: [queryKeyPrefixes.resumes] });
       onSuccess?.();
     },
     onError(err: unknown) {
@@ -43,7 +47,6 @@ export function ExperienceEditForm({ experience, onSuccess }: ExperienceEditForm
         description: unwrapUnknownError(err).message,
       });
     },
-    meta: { invalidates: [[queryKeyPrefixes.experiences], [queryKeyPrefixes.resumes]] },
   });
 
   const form = useAppForm({
@@ -175,19 +178,29 @@ export function ExperienceEditForm({ experience, onSuccess }: ExperienceEditForm
         )}
       </form.AppField>
 
-      <DialogFooter>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => form.reset()}
-          disabled={mutation.isPending}
-        >
-          Cancel
-        </Button>
-        <Button type="submit" disabled={mutation.isPending || !form.state.isFormValid}>
-          {mutation.isPending ? "Saving…" : "Save"}
-        </Button>
-      </DialogFooter>
+      <form.Subscribe selector={(s) => s.values}>
+        {(values) => {
+          const hasRequired = Boolean(values.role.trim() && values.company.trim());
+          return (
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => form.reset()}
+                disabled={mutation.isPending}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={mutation.isPending || !hasRequired || !form.state.isFormValid}
+              >
+                {mutation.isPending ? "Saving…" : "Save"}
+              </Button>
+            </DialogFooter>
+          );
+        }}
+      </form.Subscribe>
     </form>
   );
 }

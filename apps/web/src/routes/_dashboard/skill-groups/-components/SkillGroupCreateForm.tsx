@@ -8,7 +8,7 @@ import { createSkillGroup } from "@/data-access-layer/resume/resume.functions";
 import { useAppForm } from "@/lib/tanstack/form";
 import { unwrapUnknownError } from "@/utils/errors";
 import { formOptions } from "@tanstack/react-form";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { X } from "lucide-react";
 import { useState, type KeyboardEvent } from "react";
 import { toast } from "sonner";
@@ -22,6 +22,7 @@ interface SkillGroupCreateFormProps {
 }
 
 export function SkillGroupCreateForm({ onSuccess }: SkillGroupCreateFormProps) {
+  const queryClient = useQueryClient();
   const [skills, setSkills] = useState<string[]>([]);
   const [skillInput, setSkillInput] = useState("");
 
@@ -37,6 +38,8 @@ export function SkillGroupCreateForm({ onSuccess }: SkillGroupCreateFormProps) {
       }),
     onSuccess() {
       toast.success("Skill group created");
+      void queryClient.invalidateQueries({ queryKey: [queryKeyPrefixes.skillGroups] });
+      void queryClient.invalidateQueries({ queryKey: [queryKeyPrefixes.resumes] });
       onSuccess?.();
     },
     onError(err: unknown) {
@@ -44,7 +47,6 @@ export function SkillGroupCreateForm({ onSuccess }: SkillGroupCreateFormProps) {
         description: unwrapUnknownError(err).message,
       });
     },
-    meta: { invalidates: [[queryKeyPrefixes.skillGroups], [queryKeyPrefixes.resumes]] },
   });
 
   const form = useAppForm({

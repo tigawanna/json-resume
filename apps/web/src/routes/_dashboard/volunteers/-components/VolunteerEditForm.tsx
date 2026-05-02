@@ -5,12 +5,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
 import { editVolunteer } from "@/data-access-layer/resume/resume.functions";
-// import { volunteersCollection } from "@/data-access-layer/resume/volunteers/volunteer.collection";
 import type { VolunteerListItemDTO } from "@/data-access-layer/resume/volunteers/volunteer.types";
 import { useAppForm } from "@/lib/tanstack/form";
 import { unwrapUnknownError } from "@/utils/errors";
 import { formOptions } from "@tanstack/react-form";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 const volunteerEditOpts = formOptions({
@@ -23,12 +22,15 @@ interface VolunteerEditFormProps {
 }
 
 export function VolunteerEditForm({ volunteer, onSuccess }: VolunteerEditFormProps) {
+  const queryClient = useQueryClient();
+
   const mutation = useMutation({
     mutationFn: async (values: typeof volunteerEditOpts.defaultValues) =>
       editVolunteer({ data: { id: volunteer.id, ...values } }),
     onSuccess() {
       toast.success("Volunteer entry saved");
-      // volunteersCollection.utils.writeUpdate({ ...volunteer, ...values });
+      void queryClient.invalidateQueries({ queryKey: [queryKeyPrefixes.volunteers] });
+      void queryClient.invalidateQueries({ queryKey: [queryKeyPrefixes.resumes] });
       onSuccess?.();
     },
     onError(err: unknown) {
@@ -36,7 +38,6 @@ export function VolunteerEditForm({ volunteer, onSuccess }: VolunteerEditFormPro
         description: unwrapUnknownError(err).message,
       });
     },
-    meta: { invalidates: [[queryKeyPrefixes.volunteers], [queryKeyPrefixes.resumes]] },
   });
 
   const form = useAppForm({
@@ -131,19 +132,29 @@ export function VolunteerEditForm({ volunteer, onSuccess }: VolunteerEditFormPro
           </div>
         )}
       </form.AppField>
-      <DialogFooter>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => form.reset()}
-          disabled={mutation.isPending}
-        >
-          Cancel
-        </Button>
-        <Button type="submit" disabled={mutation.isPending || !form.state.isFormValid}>
-          {mutation.isPending ? "Saving…" : "Save"}
-        </Button>
-      </DialogFooter>
+      <form.Subscribe selector={(s) => s.values}>
+        {(values) => {
+          const hasRequired = Boolean(values.organization.trim());
+          return (
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => form.reset()}
+                disabled={mutation.isPending}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={mutation.isPending || !hasRequired || !form.state.isFormValid}
+              >
+                {mutation.isPending ? "Saving…" : "Save"}
+              </Button>
+            </DialogFooter>
+          );
+        }}
+      </form.Subscribe>
     </form>
   );
 }

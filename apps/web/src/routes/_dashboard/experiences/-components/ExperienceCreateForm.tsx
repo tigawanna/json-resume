@@ -8,7 +8,7 @@ import { createExperience } from "@/data-access-layer/resume/resume.functions";
 import { useAppForm } from "@/lib/tanstack/form";
 import { unwrapUnknownError } from "@/utils/errors";
 import { formOptions } from "@tanstack/react-form";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 const createOpts = formOptions({
@@ -28,6 +28,7 @@ interface ExperienceCreateFormProps {
 }
 
 export function ExperienceCreateForm({ onSuccess }: ExperienceCreateFormProps) {
+  const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: async (values: typeof createOpts.defaultValues) =>
       createExperience({
@@ -44,6 +45,8 @@ export function ExperienceCreateForm({ onSuccess }: ExperienceCreateFormProps) {
       }),
     onSuccess() {
       toast.success("Experience created");
+      void queryClient.invalidateQueries({ queryKey: [queryKeyPrefixes.experiences] });
+      void queryClient.invalidateQueries({ queryKey: [queryKeyPrefixes.resumes] });
       onSuccess?.();
     },
     onError(err: unknown) {
@@ -51,7 +54,6 @@ export function ExperienceCreateForm({ onSuccess }: ExperienceCreateFormProps) {
         description: unwrapUnknownError(err).message,
       });
     },
-    meta: { invalidates: [[queryKeyPrefixes.experiences], [queryKeyPrefixes.resumes]] },
   });
 
   const form = useAppForm({

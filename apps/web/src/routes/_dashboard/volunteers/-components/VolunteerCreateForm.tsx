@@ -9,7 +9,7 @@ import { createVolunteer } from "@/data-access-layer/resume/resume.functions";
 import { useAppForm } from "@/lib/tanstack/form";
 import { unwrapUnknownError } from "@/utils/errors";
 import { formOptions } from "@tanstack/react-form";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 const createOpts = formOptions({
@@ -28,6 +28,7 @@ interface VolunteerCreateFormProps {
 }
 
 export function VolunteerCreateForm({ onSuccess }: VolunteerCreateFormProps) {
+  const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: async (values: typeof createOpts.defaultValues) =>
       createVolunteer({
@@ -43,6 +44,8 @@ export function VolunteerCreateForm({ onSuccess }: VolunteerCreateFormProps) {
       }),
     onSuccess() {
       toast.success("Volunteer entry created");
+      void queryClient.invalidateQueries({ queryKey: [queryKeyPrefixes.volunteers] });
+      void queryClient.invalidateQueries({ queryKey: [queryKeyPrefixes.resumes] });
       onSuccess?.();
     },
     onError(err: unknown) {
@@ -50,7 +53,6 @@ export function VolunteerCreateForm({ onSuccess }: VolunteerCreateFormProps) {
         description: unwrapUnknownError(err).message,
       });
     },
-    meta: { invalidates: [[queryKeyPrefixes.volunteers], [queryKeyPrefixes.resumes]] },
   });
 
   const form = useAppForm({

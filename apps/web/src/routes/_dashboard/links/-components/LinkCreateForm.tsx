@@ -8,7 +8,7 @@ import { createLink } from "@/data-access-layer/resume/resume.functions";
 import { useAppForm } from "@/lib/tanstack/form";
 import { unwrapUnknownError } from "@/utils/errors";
 import { formOptions } from "@tanstack/react-form";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 const createOpts = formOptions({
@@ -20,6 +20,7 @@ interface LinkCreateFormProps {
 }
 
 export function LinkCreateForm({ onSuccess }: LinkCreateFormProps) {
+  const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: async (values: typeof createOpts.defaultValues) =>
       createLink({
@@ -33,12 +34,13 @@ export function LinkCreateForm({ onSuccess }: LinkCreateFormProps) {
       }),
     onSuccess() {
       toast.success("Link created");
+      void queryClient.invalidateQueries({ queryKey: [queryKeyPrefixes.links] });
+      void queryClient.invalidateQueries({ queryKey: [queryKeyPrefixes.resumes] });
       onSuccess?.();
     },
     onError(err: unknown) {
       toast.error("Failed to create link", { description: unwrapUnknownError(err).message });
     },
-    meta: { invalidates: [[queryKeyPrefixes.links], [queryKeyPrefixes.resumes]] },
   });
 
   const form = useAppForm({

@@ -4,12 +4,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
 import { editSummaryItem } from "@/data-access-layer/resume/resume.functions";
-// import { summariesCollection } from "@/data-access-layer/resume/summaries/summary.collection";
 import type { SummaryListItemDTO } from "@/data-access-layer/resume/summaries/summary.types";
 import { useAppForm } from "@/lib/tanstack/form";
 import { unwrapUnknownError } from "@/utils/errors";
 import { formOptions } from "@tanstack/react-form";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 const summaryEditOpts = formOptions({
@@ -22,12 +21,15 @@ interface SummaryEditFormProps {
 }
 
 export function SummaryEditForm({ summary, onSuccess }: SummaryEditFormProps) {
+  const queryClient = useQueryClient();
+
   const mutation = useMutation({
     mutationFn: async (values: typeof summaryEditOpts.defaultValues) =>
       editSummaryItem({ data: { id: summary.id, ...values } }),
     onSuccess() {
       toast.success("Summary saved");
-      // summariesCollection.utils.writeUpdate({ ...summary, ...values });
+      void queryClient.invalidateQueries({ queryKey: [queryKeyPrefixes.summaries] });
+      void queryClient.invalidateQueries({ queryKey: [queryKeyPrefixes.resumes] });
       onSuccess?.();
     },
     onError(err: unknown) {
@@ -35,7 +37,6 @@ export function SummaryEditForm({ summary, onSuccess }: SummaryEditFormProps) {
         description: unwrapUnknownError(err).message,
       });
     },
-    meta: { invalidates: [[queryKeyPrefixes.summaries], [queryKeyPrefixes.resumes]] },
   });
 
   const form = useAppForm({
@@ -74,19 +75,29 @@ export function SummaryEditForm({ summary, onSuccess }: SummaryEditFormProps) {
           </div>
         )}
       </form.AppField>
-      <DialogFooter>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => form.reset()}
-          disabled={mutation.isPending}
-        >
-          Cancel
-        </Button>
-        <Button type="submit" disabled={mutation.isPending || !form.state.isFormValid}>
-          {mutation.isPending ? "Saving…" : "Save"}
-        </Button>
-      </DialogFooter>
+      <form.Subscribe selector={(s) => s.values}>
+        {(values) => {
+          const hasRequired = Boolean(values.text.trim());
+          return (
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => form.reset()}
+                disabled={mutation.isPending}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={mutation.isPending || !hasRequired || !form.state.isFormValid}
+              >
+                {mutation.isPending ? "Saving…" : "Save"}
+              </Button>
+            </DialogFooter>
+          );
+        }}
+      </form.Subscribe>
     </form>
   );
 }

@@ -14,7 +14,7 @@ import { createEducation } from "@/data-access-layer/resume/resume.functions";
 import { useAppForm } from "@/lib/tanstack/form";
 import { unwrapUnknownError } from "@/utils/errors";
 import { formOptions } from "@tanstack/react-form";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 const createOpts = formOptions({
@@ -34,6 +34,7 @@ interface EducationCreateFormProps {
 }
 
 export function EducationCreateForm({ onSuccess }: EducationCreateFormProps) {
+  const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: async (values: typeof createOpts.defaultValues) =>
       createEducation({
@@ -50,6 +51,8 @@ export function EducationCreateForm({ onSuccess }: EducationCreateFormProps) {
       }),
     onSuccess() {
       toast.success("Education created");
+      void queryClient.invalidateQueries({ queryKey: [queryKeyPrefixes.education] });
+      void queryClient.invalidateQueries({ queryKey: [queryKeyPrefixes.resumes] });
       onSuccess?.();
     },
     onError(err: unknown) {
@@ -57,7 +60,6 @@ export function EducationCreateForm({ onSuccess }: EducationCreateFormProps) {
         description: unwrapUnknownError(err).message,
       });
     },
-    meta: { invalidates: [[queryKeyPrefixes.education], [queryKeyPrefixes.resumes]] },
   });
 
   const form = useAppForm({

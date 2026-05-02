@@ -15,7 +15,7 @@ import { createContact } from "@/data-access-layer/resume/resume.functions";
 import { useAppForm } from "@/lib/tanstack/form";
 import { unwrapUnknownError } from "@/utils/errors";
 import { formOptions } from "@tanstack/react-form";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRef } from "react";
 import { toast } from "sonner";
 
@@ -30,6 +30,7 @@ interface ContactCreateFormProps {
 }
 
 export function ContactCreateForm({ onSuccess }: ContactCreateFormProps) {
+  const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: async (values: typeof createOpts.defaultValues) =>
       createContact({
@@ -43,12 +44,13 @@ export function ContactCreateForm({ onSuccess }: ContactCreateFormProps) {
       }),
     onSuccess() {
       toast.success("Contact created");
+      void queryClient.invalidateQueries({ queryKey: [queryKeyPrefixes.contacts] });
+      void queryClient.invalidateQueries({ queryKey: [queryKeyPrefixes.resumes] });
       onSuccess?.();
     },
     onError(err: unknown) {
       toast.error("Failed to create contact", { description: unwrapUnknownError(err).message });
     },
-    meta: { invalidates: [[queryKeyPrefixes.contacts], [queryKeyPrefixes.resumes]] },
   });
 
   const form = useAppForm({

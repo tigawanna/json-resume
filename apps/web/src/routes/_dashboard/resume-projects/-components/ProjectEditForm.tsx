@@ -5,13 +5,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
-// import { resumeProjectsCollection } from "@/data-access-layer/resume/resume-projects/resume-project.collection";
 import type { ResumeProjectListItemDTO } from "@/data-access-layer/resume/resume-projects/resume-project.types";
 import { editProject } from "@/data-access-layer/resume/resume.functions";
 import { useAppForm } from "@/lib/tanstack/form";
 import { unwrapUnknownError } from "@/utils/errors";
 import { formOptions } from "@tanstack/react-form";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -40,6 +39,7 @@ interface ProjectEditFormProps {
 }
 
 export function ProjectEditForm({ project, onSuccess }: ProjectEditFormProps) {
+  const queryClient = useQueryClient();
   const [techTags, setTechTags] = useState(() => parseTechTags(project.tech));
 
   const mutation = useMutation({
@@ -49,20 +49,14 @@ export function ProjectEditForm({ project, onSuccess }: ProjectEditFormProps) {
       }),
     onSuccess() {
       toast.success("Project saved");
-      // resumeProjectsCollection.utils.writeUpdate({
-      //   ...project,
-      //   ...values,
-      //   tech: JSON.stringify(techTags),
-      // });
+      void queryClient.invalidateQueries({ queryKey: [queryKeyPrefixes.resumeProjects] });
+      void queryClient.invalidateQueries({ queryKey: [queryKeyPrefixes.resumes] });
       onSuccess?.();
     },
     onError(err: unknown) {
       toast.error("Failed to save project", {
         description: unwrapUnknownError(err).message,
       });
-    },
-    meta: {
-      invalidates: [[queryKeyPrefixes.resumeProjects], [queryKeyPrefixes.resumes]],
     },
   });
 
@@ -187,22 +181,32 @@ export function ProjectEditForm({ project, onSuccess }: ProjectEditFormProps) {
         )}
       </div>
 
-      <DialogFooter>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => {
-            form.reset();
-            setTechTags(parseTechTags(project.tech));
-          }}
-          disabled={mutation.isPending}
-        >
-          Cancel
-        </Button>
-        <Button type="submit" disabled={mutation.isPending || !form.state.isFormValid}>
-          {mutation.isPending ? "Saving…" : "Save"}
-        </Button>
-      </DialogFooter>
+      <form.Subscribe selector={(s) => s.values}>
+        {(values) => {
+          const hasRequired = Boolean(values.name.trim());
+          return (
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  form.reset();
+                  setTechTags(parseTechTags(project.tech));
+                }}
+                disabled={mutation.isPending}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={mutation.isPending || !hasRequired || !form.state.isFormValid}
+              >
+                {mutation.isPending ? "Saving…" : "Save"}
+              </Button>
+            </DialogFooter>
+          );
+        }}
+      </form.Subscribe>
     </form>
   );
 }

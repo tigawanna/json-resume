@@ -9,7 +9,7 @@ import { createTalk } from "@/data-access-layer/resume/resume.functions";
 import { useAppForm } from "@/lib/tanstack/form";
 import { unwrapUnknownError } from "@/utils/errors";
 import { formOptions } from "@tanstack/react-form";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 const createOpts = formOptions({
@@ -21,6 +21,7 @@ interface TalkCreateFormProps {
 }
 
 export function TalkCreateForm({ onSuccess }: TalkCreateFormProps) {
+  const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: async (values: typeof createOpts.defaultValues) =>
       createTalk({
@@ -35,12 +36,13 @@ export function TalkCreateForm({ onSuccess }: TalkCreateFormProps) {
       }),
     onSuccess() {
       toast.success("Talk created");
+      void queryClient.invalidateQueries({ queryKey: [queryKeyPrefixes.talks] });
+      void queryClient.invalidateQueries({ queryKey: [queryKeyPrefixes.resumes] });
       onSuccess?.();
     },
     onError(err: unknown) {
       toast.error("Failed to create talk", { description: unwrapUnknownError(err).message });
     },
-    meta: { invalidates: [[queryKeyPrefixes.talks], [queryKeyPrefixes.resumes]] },
   });
 
   const form = useAppForm({

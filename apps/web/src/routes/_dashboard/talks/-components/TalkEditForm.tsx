@@ -5,12 +5,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
 import { editTalk } from "@/data-access-layer/resume/resume.functions";
-// import { talksCollection } from "@/data-access-layer/resume/talks/talk.collection";
 import type { TalkListItemDTO } from "@/data-access-layer/resume/talks/talk.types";
 import { useAppForm } from "@/lib/tanstack/form";
 import { unwrapUnknownError } from "@/utils/errors";
 import { formOptions } from "@tanstack/react-form";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 const talkEditOpts = formOptions({
@@ -23,12 +22,15 @@ interface TalkEditFormProps {
 }
 
 export function TalkEditForm({ talk, onSuccess }: TalkEditFormProps) {
+  const queryClient = useQueryClient();
+
   const mutation = useMutation({
     mutationFn: async (values: typeof talkEditOpts.defaultValues) =>
       editTalk({ data: { id: talk.id, ...values } }),
     onSuccess() {
       toast.success("Talk saved");
-      // talksCollection.utils.writeUpdate({ ...talk, ...values });
+      void queryClient.invalidateQueries({ queryKey: [queryKeyPrefixes.talks] });
+      void queryClient.invalidateQueries({ queryKey: [queryKeyPrefixes.resumes] });
       onSuccess?.();
     },
     onError(err: unknown) {
@@ -36,7 +38,6 @@ export function TalkEditForm({ talk, onSuccess }: TalkEditFormProps) {
         description: unwrapUnknownError(err).message,
       });
     },
-    meta: { invalidates: [[queryKeyPrefixes.talks], [queryKeyPrefixes.resumes]] },
   });
 
   const form = useAppForm({
@@ -118,19 +119,29 @@ export function TalkEditForm({ talk, onSuccess }: TalkEditFormProps) {
           </div>
         )}
       </form.AppField>
-      <DialogFooter>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => form.reset()}
-          disabled={mutation.isPending}
-        >
-          Cancel
-        </Button>
-        <Button type="submit" disabled={mutation.isPending || !form.state.isFormValid}>
-          {mutation.isPending ? "Saving…" : "Save"}
-        </Button>
-      </DialogFooter>
+      <form.Subscribe selector={(s) => s.values}>
+        {(values) => {
+          const hasRequired = Boolean(values.title.trim());
+          return (
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => form.reset()}
+                disabled={mutation.isPending}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={mutation.isPending || !hasRequired || !form.state.isFormValid}
+              >
+                {mutation.isPending ? "Saving…" : "Save"}
+              </Button>
+            </DialogFooter>
+          );
+        }}
+      </form.Subscribe>
     </form>
   );
 }

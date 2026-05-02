@@ -5,12 +5,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
 import { editSkillGroup } from "@/data-access-layer/resume/resume.functions";
-// import { skillGroupsCollection } from "@/data-access-layer/resume/skill-groups/skill-group.collection";
 import type { SkillGroupListItemDTO } from "@/data-access-layer/resume/skill-groups/skill-group.types";
 import { useAppForm } from "@/lib/tanstack/form";
 import { unwrapUnknownError } from "@/utils/errors";
 import { formOptions } from "@tanstack/react-form";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -34,6 +33,7 @@ interface SkillGroupEditFormProps {
 }
 
 export function SkillGroupEditForm({ skillGroup, onSuccess }: SkillGroupEditFormProps) {
+  const queryClient = useQueryClient();
   const [skills, setSkills] = useState(() => parseSkills(skillGroup.skills));
 
   const mutation = useMutation({
@@ -41,11 +41,8 @@ export function SkillGroupEditForm({ skillGroup, onSuccess }: SkillGroupEditForm
       editSkillGroup({ data: { id: skillGroup.id, ...values, skills } }),
     onSuccess() {
       toast.success("Skill group saved");
-      // skillGroupsCollection.utils.writeUpdate({
-      //   ...skillGroup,
-      //   ...values,
-      //   skills: JSON.stringify(skills),
-      // });
+      void queryClient.invalidateQueries({ queryKey: [queryKeyPrefixes.skillGroups] });
+      void queryClient.invalidateQueries({ queryKey: [queryKeyPrefixes.resumes] });
       onSuccess?.();
     },
     onError(err: unknown) {
@@ -53,7 +50,6 @@ export function SkillGroupEditForm({ skillGroup, onSuccess }: SkillGroupEditForm
         description: unwrapUnknownError(err).message,
       });
     },
-    meta: { invalidates: [[queryKeyPrefixes.skillGroups], [queryKeyPrefixes.resumes]] },
   });
 
   const form = useAppForm({
@@ -128,22 +124,32 @@ export function SkillGroupEditForm({ skillGroup, onSuccess }: SkillGroupEditForm
           </div>
         )}
       </div>
-      <DialogFooter>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => {
-            form.reset();
-            setSkills(parseSkills(skillGroup.skills));
-          }}
-          disabled={mutation.isPending}
-        >
-          Cancel
-        </Button>
-        <Button type="submit" disabled={mutation.isPending || !form.state.isFormValid}>
-          {mutation.isPending ? "Saving…" : "Save"}
-        </Button>
-      </DialogFooter>
+      <form.Subscribe selector={(s) => s.values}>
+        {(values) => {
+          const hasRequired = Boolean(values.name.trim());
+          return (
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  form.reset();
+                  setSkills(parseSkills(skillGroup.skills));
+                }}
+                disabled={mutation.isPending}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={mutation.isPending || !hasRequired || !form.state.isFormValid}
+              >
+                {mutation.isPending ? "Saving…" : "Save"}
+              </Button>
+            </DialogFooter>
+          );
+        }}
+      </form.Subscribe>
     </form>
   );
 }

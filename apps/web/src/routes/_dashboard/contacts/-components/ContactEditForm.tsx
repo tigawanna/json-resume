@@ -10,13 +10,12 @@ import { DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
-// import { contactsCollection } from "@/data-access-layer/resume/contacts/contact.collection";
 import type { ContactListItemDTO } from "@/data-access-layer/resume/contacts/contact.types";
 import { editContact } from "@/data-access-layer/resume/resume.functions";
 import { useAppForm } from "@/lib/tanstack/form";
 import { unwrapUnknownError } from "@/utils/errors";
 import { formOptions } from "@tanstack/react-form";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRef } from "react";
 import { toast } from "sonner";
 
@@ -32,12 +31,15 @@ interface ContactEditFormProps {
 }
 
 export function ContactEditForm({ contact, onSuccess }: ContactEditFormProps) {
+  const queryClient = useQueryClient();
+
   const mutation = useMutation({
     mutationFn: async (values: typeof contactEditOpts.defaultValues) =>
       editContact({ data: { id: contact.id, ...values } }),
     onSuccess() {
       toast.success("Contact saved");
-      // contactsCollection.utils.writeUpdate({ ...contact, ...values });
+      void queryClient.invalidateQueries({ queryKey: [queryKeyPrefixes.contacts] });
+      void queryClient.invalidateQueries({ queryKey: [queryKeyPrefixes.resumes] });
       onSuccess?.();
     },
     onError(err: unknown) {
@@ -45,7 +47,6 @@ export function ContactEditForm({ contact, onSuccess }: ContactEditFormProps) {
         description: unwrapUnknownError(err).message,
       });
     },
-    meta: { invalidates: [[queryKeyPrefixes.contacts], [queryKeyPrefixes.resumes]] },
   });
 
   const form = useAppForm({
@@ -135,19 +136,29 @@ export function ContactEditForm({ contact, onSuccess }: ContactEditFormProps) {
           </div>
         )}
       </form.AppField>
-      <DialogFooter>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => form.reset()}
-          disabled={mutation.isPending}
-        >
-          Cancel
-        </Button>
-        <Button type="submit" disabled={mutation.isPending || !form.state.isFormValid}>
-          {mutation.isPending ? "Saving…" : "Save"}
-        </Button>
-      </DialogFooter>
+      <form.Subscribe selector={(s) => s.values}>
+        {(values) => {
+          const hasRequired = Boolean(values.type.trim() && values.value.trim());
+          return (
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => form.reset()}
+                disabled={mutation.isPending}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={mutation.isPending || !hasRequired || !form.state.isFormValid}
+              >
+                {mutation.isPending ? "Saving…" : "Save"}
+              </Button>
+            </DialogFooter>
+          );
+        }}
+      </form.Subscribe>
     </form>
   );
 }

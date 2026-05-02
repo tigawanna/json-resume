@@ -8,7 +8,7 @@ import { createSummaryItem } from "@/data-access-layer/resume/resume.functions";
 import { useAppForm } from "@/lib/tanstack/form";
 import { unwrapUnknownError } from "@/utils/errors";
 import { formOptions } from "@tanstack/react-form";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 const createOpts = formOptions({
@@ -20,6 +20,7 @@ interface SummaryCreateFormProps {
 }
 
 export function SummaryCreateForm({ onSuccess }: SummaryCreateFormProps) {
+  const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: async (values: typeof createOpts.defaultValues) =>
       createSummaryItem({
@@ -27,12 +28,13 @@ export function SummaryCreateForm({ onSuccess }: SummaryCreateFormProps) {
       }),
     onSuccess() {
       toast.success("Summary created");
+      void queryClient.invalidateQueries({ queryKey: [queryKeyPrefixes.summaries] });
+      void queryClient.invalidateQueries({ queryKey: [queryKeyPrefixes.resumes] });
       onSuccess?.();
     },
     onError(err: unknown) {
       toast.error("Failed to create summary", { description: unwrapUnknownError(err).message });
     },
-    meta: { invalidates: [[queryKeyPrefixes.summaries], [queryKeyPrefixes.resumes]] },
   });
 
   const form = useAppForm({

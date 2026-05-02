@@ -8,7 +8,7 @@ import { editCertification } from "@/data-access-layer/resume/resume.functions";
 import { useAppForm } from "@/lib/tanstack/form";
 import { unwrapUnknownError } from "@/utils/errors";
 import { formOptions } from "@tanstack/react-form";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 const certificationEditOpts = formOptions({
@@ -21,12 +21,15 @@ interface CertificationEditFormProps {
 }
 
 export function CertificationEditForm({ certification, onSuccess }: CertificationEditFormProps) {
+  const queryClient = useQueryClient();
+
   const mutation = useMutation({
     mutationFn: async (values: typeof certificationEditOpts.defaultValues) =>
       editCertification({ data: { id: certification.id, ...values } }),
     onSuccess() {
       toast.success("Certification saved");
-      // certificationsCollection.utils.writeUpdate({ ...certification, ...values });
+      void queryClient.invalidateQueries({ queryKey: [queryKeyPrefixes.certifications] });
+      void queryClient.invalidateQueries({ queryKey: [queryKeyPrefixes.resumes] });
       onSuccess?.();
     },
     onError(err: unknown) {
@@ -34,7 +37,6 @@ export function CertificationEditForm({ certification, onSuccess }: Certificatio
         description: unwrapUnknownError(err).message,
       });
     },
-    meta: { invalidates: [[queryKeyPrefixes.certifications], [queryKeyPrefixes.resumes]] },
   });
 
   const form = useAppForm({
@@ -115,19 +117,29 @@ export function CertificationEditForm({ certification, onSuccess }: Certificatio
           )}
         </form.AppField>
       </div>
-      <DialogFooter>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => form.reset()}
-          disabled={mutation.isPending}
-        >
-          Cancel
-        </Button>
-        <Button type="submit" disabled={mutation.isPending || !form.state.isFormValid}>
-          {mutation.isPending ? "Saving…" : "Save"}
-        </Button>
-      </DialogFooter>
+      <form.Subscribe selector={(s) => s.values}>
+        {(values) => {
+          const hasRequired = Boolean(values.name.trim());
+          return (
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => form.reset()}
+                disabled={mutation.isPending}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={mutation.isPending || !hasRequired || !form.state.isFormValid}
+              >
+                {mutation.isPending ? "Saving…" : "Save"}
+              </Button>
+            </DialogFooter>
+          );
+        }}
+      </form.Subscribe>
     </form>
   );
 }

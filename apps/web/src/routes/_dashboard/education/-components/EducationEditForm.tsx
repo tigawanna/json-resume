@@ -16,7 +16,7 @@ import { editEducation } from "@/data-access-layer/resume/resume.functions";
 import { useAppForm } from "@/lib/tanstack/form";
 import { unwrapUnknownError } from "@/utils/errors";
 import { formOptions } from "@tanstack/react-form";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRef } from "react";
 import { toast } from "sonner";
 
@@ -39,6 +39,8 @@ interface EducationEditFormProps {
 }
 
 export function EducationEditForm({ education, onSuccess }: EducationEditFormProps) {
+  const queryClient = useQueryClient();
+
   const mutation = useMutation({
     mutationFn: async (values: typeof educationEditOpts.defaultValues) =>
       editEducation({
@@ -46,15 +48,14 @@ export function EducationEditForm({ education, onSuccess }: EducationEditFormPro
       }),
     onSuccess() {
       toast.success("Education saved");
+      void queryClient.invalidateQueries({ queryKey: [queryKeyPrefixes.education] });
+      void queryClient.invalidateQueries({ queryKey: [queryKeyPrefixes.resumes] });
       onSuccess?.();
     },
     onError(err: unknown) {
       toast.error("Failed to save education", {
         description: unwrapUnknownError(err).message,
       });
-    },
-    meta: {
-      invalidates: [[queryKeyPrefixes.education], [queryKeyPrefixes.resumes]],
     },
   });
 
@@ -194,19 +195,29 @@ export function EducationEditForm({ education, onSuccess }: EducationEditFormPro
         )}
       </form.AppField>
 
-      <DialogFooter>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => form.reset()}
-          disabled={mutation.isPending}
-        >
-          Cancel
-        </Button>
-        <Button type="submit" disabled={mutation.isPending || !form.state.isFormValid}>
-          {mutation.isPending ? "Saving…" : "Save"}
-        </Button>
-      </DialogFooter>
+      <form.Subscribe selector={(s) => s.values}>
+        {(values) => {
+          const hasRequired = Boolean(values.school.trim() && values.degree.trim());
+          return (
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => form.reset()}
+                disabled={mutation.isPending}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={mutation.isPending || !hasRequired || !form.state.isFormValid}
+              >
+                {mutation.isPending ? "Saving…" : "Save"}
+              </Button>
+            </DialogFooter>
+          );
+        }}
+      </form.Subscribe>
     </form>
   );
 }
