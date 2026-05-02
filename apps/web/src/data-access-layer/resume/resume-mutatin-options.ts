@@ -4,10 +4,9 @@ import { unwrapUnknownError } from "@/utils/errors";
 import { mutationOptions } from "@tanstack/react-query";
 import { redirect } from "@tanstack/react-router";
 import { toast } from "sonner";
+import { queryKeyPrefixes } from "../query-keys";
 import { resumeDetailToDocument } from "./resume-converters";
 import { createResume, deleteResume, getResume } from "./resume.functions";
-import { resumesCollection } from "./resumes-query-collection";
-import { queryKeyPrefixes } from "../query-keys";
 
 export const createResumeMuationOptions = mutationOptions({
   mutationFn: async () => {
@@ -21,18 +20,19 @@ export const createResumeMuationOptions = mutationOptions({
       },
     });
   },
-  onSuccess(result) {
-    const now = new Date().toISOString();
-    resumesCollection.utils.writeInsert({
-      id: result.id,
-      name: "Untitled Resume",
-      fullName: "",
-      headline: "",
-      description: "",
-      templateId: "classic",
-      createdAt: now,
-      updatedAt: now,
-    });
+  onSuccess(result, __, ___, ctx) {
+    void ctx.client.invalidateQueries({ queryKey: [queryKeyPrefixes.resumes] });
+    // const now = new Date().toISOString();
+    // resumesCollection.utils.writeInsert({
+    //   id: result.id,
+    //   name: "Untitled Resume",
+    //   fullName: "",
+    //   headline: "",
+    //   description: "",
+    //   templateId: "classic",
+    //   createdAt: now,
+    //   updatedAt: now,
+    // });
     toast.success("Resume created");
     throw redirect({
       to: "/resumes/$resumeId",
