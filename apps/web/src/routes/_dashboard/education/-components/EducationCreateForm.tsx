@@ -114,12 +114,12 @@ export function EducationCreateForm({ onSuccess }: EducationCreateFormProps) {
         <form.AppField
           name="degree"
           validators={{
-            onChange: ({ value }) => (!value?.trim() ? "Degree is required" : undefined),
+            onChange: ({ value }) => (!value?.trim() ? "Qualification is required" : undefined),
           }}
         >
           {(field) => (
             <div>
-              <Label className="text-xs">Degree</Label>
+              <Label className="text-xs">Qualification</Label>
               <Input
                 value={field.state.value}
                 onChange={(e) => field.handleChange(e.target.value)}

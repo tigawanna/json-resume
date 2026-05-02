@@ -109,12 +109,12 @@ export function EducationEditForm({ education, onSuccess }: EducationEditFormPro
         <form.AppField
           name="degree"
           validators={{
-            onChange: ({ value }) => (!value?.trim() ? "Degree is required" : undefined),
+            onChange: ({ value }) => (!value?.trim() ? "Qualification is required" : undefined),
           }}
         >
           {(field) => (
             <div>
-              <Label className="text-xs">Degree / Diploma / Certificate</Label>
+              <Label className="text-xs">Qualification</Label>
               <Combobox
                 value={field.state.value}
                 onValueChange={(value) => field.handleChange(value ?? "")}

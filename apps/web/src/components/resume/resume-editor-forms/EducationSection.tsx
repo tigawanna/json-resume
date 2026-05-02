@@ -171,7 +171,7 @@ function EducationCard({
             <Input value={school} onChange={(e) => setSchool(e.target.value)} className="mt-1" />
           </div>
           <div>
-            <Label className="text-xs">Degree</Label>
+            <Label className="text-xs">Qualification</Label>
             <Input value={degree} onChange={(e) => setDegree(e.target.value)} className="mt-1" />
           </div>
         </div>
@@ -291,7 +291,7 @@ function AddEducationForm({
               {(field) => <field.TextField label="School" />}
             </form.AppField>
             <form.AppField name="degree" validators={{ onChange: z.string().min(1, "Required") }}>
-              {(field) => <field.TextField label="Degree" />}
+              {(field) => <field.TextField label="Qualification" />}
             </form.AppField>
           </div>
           <form.AppField name="field">
