@@ -19,11 +19,7 @@ import { JsonToolbar } from "./json-toolbar";
 import { VJ_THEME_VARS } from "./theme-vars";
 import type { ViewMode } from "./types";
 
-interface ResumeJsonTabProps {
-  resumeId: string;
-}
-
-export function ResumeJsonTab({ resumeId }: ResumeJsonTabProps) {
+export function ResumeJsonTab() {
   const { resume, replaceDocument } = useResumeWorkspace();
 
   const doc = resume ? resumeDetailToDocument(resume) : null;
@@ -145,7 +141,7 @@ export function ResumeJsonTab({ resumeId }: ResumeJsonTabProps) {
       await navigator.clipboard.writeText(JSON.stringify(jsonValue, null, 2));
       toast.success("Copied to clipboard");
     } catch {
-      // clipboard write failed silently
+      toast.error("Failed to copy JSON to clipboard");
     }
   }
 
@@ -154,7 +150,7 @@ export function ResumeJsonTab({ resumeId }: ResumeJsonTabProps) {
       await navigator.clipboard.writeText(buildSchemaPrompt());
       toast.success("Schema copied to clipboard");
     } catch {
-      // clipboard write failed silently
+      toast.error("Failed to copy schema to clipboard");
     }
   }
 

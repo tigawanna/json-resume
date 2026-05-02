@@ -201,7 +201,7 @@ function ResumeWorkbench({ resumeId }: ResumeWorkbenchProps) {
         <TemplatePicker selected={selectedTemplate} onSelect={setSelectedTemplate} />
 
         {/* Tabs + Save */}
-        <Tabs value={tab} onValueChange={navigateToTab} className="w-full">
+        <Tabs value={tab} onValueChange={navigateToTab} className="w-full max-w-[95%]">
           <div className="flex flex-wrap items-center gap-3">
             <TabsList className="flex-1">
               <TabsTrigger value="edit">Edit</TabsTrigger>
@@ -232,7 +232,7 @@ function ResumeWorkbench({ resumeId }: ResumeWorkbenchProps) {
           </TabsContent>
 
           <TabsContent value="json" forceMount className="mt-4 data-[state=inactive]:hidden">
-            <ResumeJsonTab resumeId={resumeId} />
+            <ResumeJsonTab />
           </TabsContent>
 
           <TabsContent value="prompt" className="mt-4">

@@ -1,94 +1,23 @@
-import type { ResumeDocumentV1 } from "./resume-schema";
+import { z } from "zod";
+import { resumeDocumentV1Schema, type ResumeDocumentV1 } from "./resume-schema";
 
 export function buildSchemaPrompt(): string {
-  return `The resume JSON must conform exactly to this schema (version 1).
+  const jsonSchema = z.toJSONSchema(resumeDocumentV1Schema);
+  const schemaJson = JSON.stringify(jsonSchema, null, 2);
+
+  return `The resume JSON must conform exactly to this JSON Schema (version 1).
 Return ONLY valid JSON matching this structure — no markdown fences, no explanation.
 
-## Schema
+## JSON Schema
 
 \`\`\`json
-{
-  "version": 1,
-  "meta": {
-    "templateId": "classic" // one of: "classic" | "sidebar" | "accent" | "modern"
-  },
-  "sectionOrder": ["header", "summary", "experience", "education", "projects", "talks", "skills"],
-  "header": {
-    "enabled": true,
-    "fullName": "string",
-    "headline": "string",
-    "email": "string",
-    "location": "string",
-    "links": [{ "label": "string", "url": "string" }]
-  },
-  "summary": {
-    "enabled": true,
-    "text": "string"
-  },
-  "experience": {
-    "enabled": true,
-    "items": [
-      {
-        "company": "string",
-        "role": "string",
-        "start": "string",
-        "end": "string",
-        "location": "string (optional)",
-        "bullets": ["string"]
-      }
-    ]
-  },
-  "education": {
-    "enabled": true,
-    "items": [
-      {
-        "school": "string",
-        "degree": "string",
-        "field": "string (optional)",
-        "year": "string",
-        "bullets": ["string (optional)"]
-      }
-    ]
-  },
-  "projects": {
-    "enabled": true,
-    "items": [
-      {
-        "name": "string",
-        "url": "string",
-        "homepageUrl": "string (optional)",
-        "description": "string",
-        "tech": ["string"]
-      }
-    ]
-  },
-  "talks": {
-    "enabled": true,
-    "items": [
-      {
-        "title": "string",
-        "event": "string",
-        "date": "string",
-        "links": [{ "label": "string", "url": "string" }]
-      }
-    ]
-  },
-  "skills": {
-    "enabled": true,
-    "groups": [
-      {
-        "name": "string",
-        "items": ["string"]
-      }
-    ]
-  }
-}
+${schemaJson}
 \`\`\`
 
 ## Rules
 - Do NOT add or remove top-level keys.
 - Each experience bullet must be a separate string in the \`bullets\` array.
-- \`sectionOrder\` controls render order — only include the valid keys listed above.
+- \`sectionOrder\` controls render order — only use the keys listed in its \`enum\`.
 - Keep \`version\` as \`1\`.`;
 }
 
