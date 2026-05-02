@@ -11,7 +11,7 @@ import type { ResumeDetailDTO } from "@/data-access-layer/resume/resume.types";
 import { useAppForm } from "@/lib/tanstack/form";
 import { unwrapUnknownError } from "@/utils/errors";
 import { formOptions } from "@tanstack/react-form";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Library, Pencil, Plus, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -22,10 +22,55 @@ interface ProjectSectionProps {
 }
 
 export function ProjectSection({ resumeId }: ProjectSectionProps) {
-  const { resume, searches } = useResumeWorkspace();
+  const { resume, searches, createProject } = useResumeWorkspace();
   const searchProjects = searches?.projects;
+  const queryClient = useQueryClient();
 
   const [pickOpen, setPickOpen] = useState(false);
+
+  const pickMutation = useMutation({
+    mutationFn: async (
+      rawItems: {
+        id: string;
+        name: string;
+        description: string;
+        url: string;
+        homepageUrl: string;
+        tech: string;
+      }[],
+    ) =>
+      Promise.all(
+        rawItems.map((p) => {
+          const tech = (() => {
+            try {
+              const parsed: unknown = JSON.parse(p.tech);
+              return Array.isArray(parsed)
+                ? parsed.filter((x): x is string => typeof x === "string")
+                : [];
+            } catch {
+              return [];
+            }
+          })();
+          return createProject({
+            name: p.name,
+            description: p.description,
+            url: p.url,
+            homepageUrl: p.homepageUrl,
+            tech,
+          });
+        }),
+      ),
+    onSuccess(_, rawItems) {
+      void queryClient.invalidateQueries({ queryKey: [queryKeyPrefixes.resumes] });
+      toast.success(`Added ${rawItems.length} project(s)`);
+      setPickOpen(false);
+    },
+    onError(err: unknown) {
+      toast.error("Failed to add projects", {
+        description: unwrapUnknownError(err).message,
+      });
+    },
+  });
 
   if (!resume) return null;
 
@@ -59,18 +104,28 @@ export function ProjectSection({ resumeId }: ProjectSectionProps) {
           onOpenChange={setPickOpen}
           title="Pick from Existing Projects"
           description="Search across all your resumes to copy a project."
+          multi
           getSearchQueryKey={(q) => [queryKeyPrefixes.resumes, "search", "projects", q]}
           getSearchQueryFn={(q) => () => searchProjects(q)}
           mapToItems={(data) =>
-            data.map((p) => ({
-              id: p.id,
-              primary: p.name,
-              secondary: p.description,
-            }))
+            data.map((p) => {
+              const tech = (() => {
+                try {
+                  const parsed: unknown = JSON.parse(p.tech);
+                  return Array.isArray(parsed) ? (parsed as string[]).join(", ") : "";
+                } catch {
+                  return "";
+                }
+              })();
+              return {
+                id: p.id,
+                primary: p.name,
+                secondary: p.description,
+                detail: tech || undefined,
+              };
+            })
           }
-          onPick={(items) => {
-            toast.info(`Selected ${items.length} project(s) — add them via the form`);
-          }}
+          onPick={(_, rawItems) => pickMutation.mutate(rawItems)}
         />
       )}
     </div>

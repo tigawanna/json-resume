@@ -68,7 +68,16 @@ export interface ResumeSearchAdapter {
   education?: (
     query: string,
   ) => Promise<{ id: string; school: string; degree: string; field: string }[]>;
-  projects?: (query: string) => Promise<{ id: string; name: string; description: string }[]>;
+  projects?: (query: string) => Promise<
+    {
+      id: string;
+      name: string;
+      description: string;
+      url: string;
+      homepageUrl: string;
+      tech: string;
+    }[]
+  >;
   skills?: (query: string) => Promise<{ id: string; name: string; groupName?: string }[]>;
   talks?: (query: string) => Promise<{ id: string; title: string; event: string; date: string }[]>;
 }

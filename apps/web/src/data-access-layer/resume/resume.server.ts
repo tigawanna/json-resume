@@ -20,6 +20,7 @@ import {
   resumeTalk,
   resumeVolunteer,
 } from "@/lib/drizzle/scheam";
+import { savedProject } from "@/lib/drizzle/scheam/saved-project-schema";
 import { and, asc, desc, eq, gt, like, lt, or } from "drizzle-orm";
 import { DEFAULT_PAGE_SIZE } from "../pagination.types";
 import type { PaginatedResult } from "../pagination.types";
@@ -1078,22 +1079,63 @@ export async function searchUserExperiences(
 export async function searchUserProjects(
   userId: string,
   query: string,
-): Promise<{ id: string; name: string; description: string; url: string; tech: string }[]> {
-  const rows = await db
-    .select({
-      id: resumeProject.id,
-      name: resumeProject.name,
-      description: resumeProject.description,
-      url: resumeProject.url,
-      tech: resumeProject.tech,
-    })
-    .from(resumeProject)
-    .innerJoin(resume, eq(resumeProject.resumeId, resume.id))
-    .where(eq(resume.userId, userId));
+): Promise<
+  {
+    id: string;
+    name: string;
+    description: string;
+    url: string;
+    homepageUrl: string;
+    tech: string;
+  }[]
+> {
+  const [resumeRows, savedRows] = await Promise.all([
+    db
+      .select({
+        id: resumeProject.id,
+        name: resumeProject.name,
+        description: resumeProject.description,
+        url: resumeProject.url,
+        homepageUrl: resumeProject.homepageUrl,
+        tech: resumeProject.tech,
+      })
+      .from(resumeProject)
+      .innerJoin(resume, eq(resumeProject.resumeId, resume.id))
+      .where(eq(resume.userId, userId)),
+    db
+      .select({
+        id: savedProject.id,
+        name: savedProject.name,
+        description: savedProject.description,
+        url: savedProject.url,
+        homepageUrl: savedProject.homepageUrl,
+        tech: savedProject.tech,
+      })
+      .from(savedProject)
+      .where(eq(savedProject.userId, userId)),
+  ]);
 
-  if (!query) return rows;
+  const seenNames = new Set<string>();
+  const merged: {
+    id: string;
+    name: string;
+    description: string;
+    url: string;
+    homepageUrl: string;
+    tech: string;
+  }[] = [];
+
+  for (const row of [...savedRows, ...resumeRows]) {
+    const key = row.name.toLowerCase();
+    if (!seenNames.has(key)) {
+      seenNames.add(key);
+      merged.push(row);
+    }
+  }
+
+  if (!query) return merged;
   const q = query.toLowerCase();
-  return rows.filter(
+  return merged.filter(
     (r) => r.name.toLowerCase().includes(q) || r.description.toLowerCase().includes(q),
   );
 }

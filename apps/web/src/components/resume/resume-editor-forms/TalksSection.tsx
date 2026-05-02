@@ -10,7 +10,7 @@ import type { ResumeDetailDTO } from "@/data-access-layer/resume/resume.types";
 import { useAppForm } from "@/lib/tanstack/form";
 import { unwrapUnknownError } from "@/utils/errors";
 import { formOptions } from "@tanstack/react-form";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ExternalLink, Library, Pencil, Plus, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -39,10 +39,35 @@ interface TalksSectionProps {
 }
 
 export function TalksSection({ resumeId }: TalksSectionProps) {
-  const { resume, searches } = useResumeWorkspace();
+  const { resume, searches, createTalk } = useResumeWorkspace();
   const searchTalks = searches?.talks;
+  const queryClient = useQueryClient();
 
   const [pickOpen, setPickOpen] = useState(false);
+
+  const pickMutation = useMutation({
+    mutationFn: async (rawItems: { title: string; event: string; date: string }[]) =>
+      Promise.all(
+        rawItems.map((talk) =>
+          createTalk({
+            title: talk.title,
+            event: talk.event,
+            date: talk.date,
+            description: "",
+          }),
+        ),
+      ),
+    onSuccess(_, rawItems) {
+      void queryClient.invalidateQueries({ queryKey: [queryKeyPrefixes.resumes] });
+      toast.success(`Added ${rawItems.length} talk(s)`);
+      setPickOpen(false);
+    },
+    onError(err: unknown) {
+      toast.error("Failed to add talks", {
+        description: unwrapUnknownError(err).message,
+      });
+    },
+  });
 
   if (!resume) return null;
   return (
@@ -69,6 +94,7 @@ export function TalksSection({ resumeId }: TalksSectionProps) {
           onOpenChange={setPickOpen}
           title="Pick from Existing Talks"
           description="Search across all your resumes to copy a talk entry."
+          multi
           getSearchQueryKey={(q) => [queryKeyPrefixes.resumes, "search", "talks", q]}
           getSearchQueryFn={(q) => () => searchTalks(q)}
           mapToItems={(data) =>
@@ -78,9 +104,7 @@ export function TalksSection({ resumeId }: TalksSectionProps) {
               secondary: `${talk.event}${talk.date ? ` · ${talk.date}` : ""}`,
             }))
           }
-          onPick={(items) => {
-            toast.info(`Selected ${items.length} talk(s) — add them via the form`);
-          }}
+          onPick={(_, rawItems) => pickMutation.mutate(rawItems)}
         />
       )}
     </div>

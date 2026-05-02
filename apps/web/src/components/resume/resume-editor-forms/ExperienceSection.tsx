@@ -9,7 +9,7 @@ import type { ResumeDetailDTO } from "@/data-access-layer/resume/resume.types";
 import { useAppForm } from "@/lib/tanstack/form";
 import { unwrapUnknownError } from "@/utils/errors";
 import { formOptions } from "@tanstack/react-form";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Library, Pencil, Plus, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -20,10 +20,38 @@ interface ExperienceSectionProps {
 }
 
 export function ExperienceSection({ resumeId }: ExperienceSectionProps) {
-  const { resume, searches } = useResumeWorkspace();
+  const { resume, searches, createExperience } = useResumeWorkspace();
   const searchExperiences = searches?.experiences;
+  const queryClient = useQueryClient();
 
   const [pickOpen, setPickOpen] = useState(false);
+
+  const pickMutation = useMutation({
+    mutationFn: async (
+      rawItems: { company: string; role: string; startDate: string; endDate: string }[],
+    ) =>
+      Promise.all(
+        rawItems.map((exp) =>
+          createExperience({
+            company: exp.company,
+            role: exp.role,
+            startDate: exp.startDate,
+            endDate: exp.endDate,
+            location: "",
+          }),
+        ),
+      ),
+    onSuccess(_, rawItems) {
+      void queryClient.invalidateQueries({ queryKey: [queryKeyPrefixes.resumes] });
+      toast.success(`Added ${rawItems.length} experience(s)`);
+      setPickOpen(false);
+    },
+    onError(err: unknown) {
+      toast.error("Failed to add experiences", {
+        description: unwrapUnknownError(err).message,
+      });
+    },
+  });
 
   if (!resume) return null;
 
@@ -57,6 +85,7 @@ export function ExperienceSection({ resumeId }: ExperienceSectionProps) {
           onOpenChange={setPickOpen}
           title="Pick from Existing Experiences"
           description="Search across all your resumes to copy an experience entry."
+          multi
           getSearchQueryKey={(q) => [queryKeyPrefixes.resumes, "search", "experiences", q]}
           getSearchQueryFn={(q) => () => searchExperiences(q)}
           mapToItems={(data) =>
@@ -66,9 +95,7 @@ export function ExperienceSection({ resumeId }: ExperienceSectionProps) {
               secondary: `${exp.startDate} – ${exp.endDate}`,
             }))
           }
-          onPick={(items) => {
-            toast.info(`Selected ${items.length} experience(s) — add them via the form`);
-          }}
+          onPick={(_, rawItems) => pickMutation.mutate(rawItems)}
         />
       )}
     </div>

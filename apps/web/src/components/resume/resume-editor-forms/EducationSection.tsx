@@ -10,7 +10,7 @@ import type { ResumeDetailDTO } from "@/data-access-layer/resume/resume.types";
 import { useAppForm } from "@/lib/tanstack/form";
 import { unwrapUnknownError } from "@/utils/errors";
 import { formOptions } from "@tanstack/react-form";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Library, Pencil, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -21,10 +21,39 @@ interface EducationSectionProps {
 }
 
 export function EducationSection({ resumeId }: EducationSectionProps) {
-  const { resume, searches } = useResumeWorkspace();
+  const { resume, searches, createEducation } = useResumeWorkspace();
   const searchEducation = searches?.education;
+  const queryClient = useQueryClient();
 
   const [pickOpen, setPickOpen] = useState(false);
+
+  const pickMutation = useMutation({
+    mutationFn: async (rawItems: { school: string; degree: string; field: string }[]) =>
+      Promise.all(
+        rawItems.map((edu) =>
+          createEducation({
+            school: edu.school,
+            degree: edu.degree,
+            field: edu.field,
+            startDate: "",
+            endDate: "",
+            description: "",
+          }),
+        ),
+      ),
+    onSuccess(_, rawItems) {
+      void queryClient.invalidateQueries({ queryKey: [queryKeyPrefixes.resumes] });
+      toast.success(
+        `Added ${rawItems.length} education entr${rawItems.length === 1 ? "y" : "ies"}`,
+      );
+      setPickOpen(false);
+    },
+    onError(err: unknown) {
+      toast.error("Failed to add education entries", {
+        description: unwrapUnknownError(err).message,
+      });
+    },
+  });
 
   if (!resume) return null;
 
@@ -58,6 +87,7 @@ export function EducationSection({ resumeId }: EducationSectionProps) {
           onOpenChange={setPickOpen}
           title="Pick from Existing Education"
           description="Search across all your resumes to copy an education entry."
+          multi
           getSearchQueryKey={(q) => [queryKeyPrefixes.resumes, "search", "education", q]}
           getSearchQueryFn={(q) => () => searchEducation(q)}
           mapToItems={(data) =>
@@ -67,9 +97,7 @@ export function EducationSection({ resumeId }: EducationSectionProps) {
               secondary: edu.school,
             }))
           }
-          onPick={(items) => {
-            toast.info(`Selected ${items.length} education(s) — add them via the form`);
-          }}
+          onPick={(_, rawItems) => pickMutation.mutate(rawItems)}
         />
       )}
     </div>

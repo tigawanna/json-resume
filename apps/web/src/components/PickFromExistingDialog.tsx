@@ -35,8 +35,8 @@ interface PickFromExistingDialogProps<T> {
   getSearchQueryFn: (query: string) => () => Promise<T[]>;
   /** Map raw data into display items */
   mapToItems: (data: T[]) => PickFromExistingItem[];
-  /** Called when user picks one or more items */
-  onPick: (items: PickFromExistingItem[]) => void;
+  /** Called when user picks one or more items, with both display items and raw source data */
+  onPick: (items: PickFromExistingItem[], rawItems: T[]) => void;
   /** Allow picking multiple items */
   multi?: boolean;
 }
@@ -62,7 +62,8 @@ export function PickFromExistingDialog<T>({
     enabled: open,
   });
 
-  const items = query.data ? mapToItems(query.data) : [];
+  const rawData = query.data ?? [];
+  const items = rawData.length > 0 ? mapToItems(rawData) : [];
 
   function toggleItem(item: PickFromExistingItem) {
     if (multi) {
@@ -76,7 +77,9 @@ export function PickFromExistingDialog<T>({
         return next;
       });
     } else {
-      onPick([item]);
+      const idx = items.findIndex((it) => it.id === item.id);
+      const raw = idx >= 0 && rawData[idx] ? [rawData[idx]] : [];
+      onPick([item], raw);
       onOpenChange(false);
       setSearch("");
       setSelected(new Set());
@@ -84,9 +87,15 @@ export function PickFromExistingDialog<T>({
   }
 
   function handleConfirm() {
-    const picked = items.filter((item) => selected.has(item.id));
-    if (picked.length > 0) {
-      onPick(picked);
+    const pickedIndices = items
+      .map((item, i) => ({ item, i }))
+      .filter(({ item }) => selected.has(item.id));
+    const pickedItems = pickedIndices.map(({ item }) => item);
+    const pickedRaw = pickedIndices
+      .map(({ i }) => rawData[i])
+      .filter((r): r is T => r !== undefined);
+    if (pickedItems.length > 0) {
+      onPick(pickedItems, pickedRaw);
     }
     onOpenChange(false);
     setSearch("");
