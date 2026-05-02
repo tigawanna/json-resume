@@ -183,25 +183,18 @@ function ResumeWorkbench({ resumeId }: ResumeWorkbenchProps) {
     <ResumeWorkspaceProvider value={workspace}>
       <div className="flex w-full flex-col gap-6 pb-24" data-test="resume-workbench">
         {/* Header */}
-        <div className="flex flex-wrap items-start gap-4">
-          <div className="min-w-0 flex-1">
-            <h1 className="text-2xl font-bold">{resume.name}</h1>
-            {resume.headline && (
-              <p className="text-muted-foreground mt-1 text-sm">{resume.headline}</p>
-            )}
-          </div>
-
-          <Button variant="outline" size="sm" className="gap-2" onClick={() => setImportOpen(true)}>
-            <FileUp className="size-4" />
-            Import JSON
-          </Button>
+        <div className="min-w-0">
+          <h1 className="text-2xl font-bold">{resume.name}</h1>
+          {resume.headline && (
+            <p className="text-muted-foreground mt-1 text-sm">{resume.headline}</p>
+          )}
         </div>
 
         {/* Template Picker */}
         <TemplatePicker selected={selectedTemplate} onSelect={setSelectedTemplate} />
 
         {/* Tabs + Save */}
-        <Tabs value={tab} onValueChange={navigateToTab} className="w-full max-w-[95%]">
+        <Tabs value={tab} onValueChange={navigateToTab} className="w-full">
           <div className="flex flex-wrap items-center gap-3">
             <TabsList className="flex-1">
               <TabsTrigger value="edit">Edit</TabsTrigger>
@@ -209,6 +202,16 @@ function ResumeWorkbench({ resumeId }: ResumeWorkbenchProps) {
               <TabsTrigger value="json">JSON</TabsTrigger>
               <TabsTrigger value="prompt">LLM Prompt</TabsTrigger>
             </TabsList>
+
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              onClick={() => setImportOpen(true)}
+            >
+              <FileUp className="size-4" />
+              Import JSON
+            </Button>
 
             <Button
               type="button"

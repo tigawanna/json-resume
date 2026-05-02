@@ -37,10 +37,10 @@ export function ResumeListCard({ resume, onClone }: ResumeListCardProps) {
             <CardHeader>
               <div className="flex items-start gap-3">
                 <FileText className="text-primary mt-0.5 size-5 shrink-0" />
-                <div className="min-w-0 flex-1">
-                  <CardTitle className="truncate text-base">{resume.name}</CardTitle>
+                <div className="min-w-0 flex-1 overflow-hidden">
+                  <CardTitle className="truncate text-base max-w-[85%]">{resume.name}</CardTitle>
                   {resume.headline && (
-                    <CardDescription className="mt-1 line-clamp-2 text-xs">
+                    <CardDescription className="mt-1 truncate text-xs">
                       {resume.headline}
                     </CardDescription>
                   )}

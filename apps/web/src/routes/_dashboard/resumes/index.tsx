@@ -9,6 +9,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Suspense, useState } from "react";
 import { z } from "zod";
+import { ImportResumeFromJsonButton } from "./-components/ImportResumeFromJsonButton";
 import { NewResumeButton } from "./-components/NewResumeButton";
 import { ResumeListPage } from "./-components/ResumeList";
 
@@ -81,14 +82,17 @@ function RouteComponent() {
 
   return (
     <div className="w-full flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex items-center justify-between gap-4">
+        <div className="min-w-0 flex-1">
           <h1 className="text-2xl font-bold">Resumes</h1>
-          <p className="text-muted-foreground mt-1 text-sm">
+          <p className="text-muted-foreground mt-1 truncate text-sm">
             Create, edit and tailor your resumes for different roles.
           </p>
         </div>
-        <NewResumeButton />
+        <div className="flex shrink-0 items-center gap-2">
+          <ImportResumeFromJsonButton />
+          <NewResumeButton />
+        </div>
       </div>
       <SearchBox
         keyword={keyword}

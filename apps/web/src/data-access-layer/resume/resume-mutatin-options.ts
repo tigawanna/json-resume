@@ -1,4 +1,4 @@
-import { createDefaultResume } from "@/features/resume/resume-schema";
+import { createDefaultResume, safeParseResumeJson } from "@/features/resume/resume-schema";
 import { isErrorThrownByRedirect } from "@/lib/tanstack/router/utils";
 import { unwrapUnknownError } from "@/utils/errors";
 import { mutationOptions } from "@tanstack/react-query";
@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { resumeDetailToDocument } from "./resume-converters";
 import { createResume, deleteResume, getResume } from "./resume.functions";
 import { resumesCollection } from "./resumes-query-collection";
+import { queryKeyPrefixes } from "../query-keys";
 
 export const createResumeMuationOptions = mutationOptions({
   mutationFn: async () => {
@@ -66,18 +67,19 @@ export const cloneResumeMuationOptions = mutationOptions({
     });
     return { id: result.id, name: clonedName, source };
   },
-  onSuccess(result) {
-    const now = new Date().toISOString();
-    resumesCollection.utils.writeInsert({
-      id: result.id,
-      name: result.name,
-      fullName: result.source.fullName,
-      headline: result.source.headline,
-      description: result.source.description,
-      templateId: result.source.templateId,
-      createdAt: now,
-      updatedAt: now,
-    });
+  onSuccess(result, __, ___, ctx) {
+    void ctx.client.invalidateQueries({ queryKey: [queryKeyPrefixes.resumes] });
+    // const now = new Date().toISOString();
+    // resumesCollection.utils.writeInsert({
+    //   id: result.id,
+    //   name: result.name,
+    //   fullName: result.source.fullName,
+    //   headline: result.source.headline,
+    //   description: result.source.description,
+    //   templateId: result.source.templateId,
+    //   createdAt: now,
+    //   updatedAt: now,
+    // });
     toast.success("Resume cloned");
     throw redirect({
       to: "/resumes/$resumeId",
@@ -96,9 +98,53 @@ export const cloneResumeMuationOptions = mutationOptions({
   meta: { invalidates: [["resumes"]] },
 });
 
+export const createResumeFromJsonMutationOptions = mutationOptions({
+  mutationFn: async (jsonText: string) => {
+    const result = safeParseResumeJson(jsonText);
+    if (!result.ok) throw new Error(result.error);
+    return createResume({
+      data: {
+        name: "Imported Resume",
+        description: "",
+        jobDescription: "",
+        doc: result.data,
+      },
+    });
+  },
+  onSuccess(result, __, ___, ctx) {
+    void ctx.client.invalidateQueries({ queryKey: [queryKeyPrefixes.resumes] });
+    // const now = new Date().toISOString();
+    // resumesCollection.utils.writeInsert({
+    //   id: result.id,
+    //   name: "Imported Resume",
+    //   fullName: "",
+    //   headline: "",
+    //   description: "",
+    //   templateId: "classic",
+    //   createdAt: now,
+    //   updatedAt: now,
+    // });
+    toast.success("Resume imported from JSON");
+    throw redirect({
+      to: "/resumes/$resumeId",
+      params: { resumeId: result.id },
+      search: (prev) => ({ ...prev, tab: "edit" }),
+    });
+  },
+  onError(err: unknown) {
+    if (isErrorThrownByRedirect(err)) {
+      return;
+    }
+    toast.error("Failed to import resume", {
+      description: unwrapUnknownError(err).message,
+    });
+  },
+});
+
 export const deleteResumeMutationOptions = mutationOptions({
   mutationFn: async (resumeId: string) => deleteResume({ data: { id: resumeId } }),
-  onSuccess() {
+  onSuccess(_, __, ___, ctx) {
+    void ctx.client.invalidateQueries({ queryKey: [queryKeyPrefixes.resumes] });
     toast.success("Resume deleted");
   },
   onError(err: unknown) {
@@ -106,5 +152,4 @@ export const deleteResumeMutationOptions = mutationOptions({
       description: unwrapUnknownError(err).message,
     });
   },
-  meta: { invalidates: [["resumes"]] },
 });

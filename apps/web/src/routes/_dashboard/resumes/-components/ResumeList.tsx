@@ -2,7 +2,9 @@ import Nprogress from "@/components/navigation/nprogress/Nprogress";
 import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
 import { cloneResumeMuationOptions } from "@/data-access-layer/resume/resume-mutatin-options";
 import { listResumesPaginated } from "@/data-access-layer/resume/resume.functions";
+import { resumeCollection } from "@/data-access-layer/resume/resumes-query-collection";
 import { RouterPendingComponent } from "@/lib/tanstack/router/RouterPendingComponent";
+import { useLiveSuspenseQuery } from "@tanstack/react-db";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { FileText } from "lucide-react";
 import { Route } from "..";
@@ -10,6 +12,7 @@ import { ResumeListCard } from "./ResumeListCard";
 
 export function ResumeListPage() {
   const { sq, cursor, dir } = Route.useSearch();
+  useLiveSuspenseQuery((q) => q.from({ resume: resumeCollection }));
   const { data, isLoading, isRefetching } = useQuery({
     queryKey: [queryKeyPrefixes.resumes, "page", cursor, dir ?? "after", sq],
     queryFn: () => listResumesPaginated({ data: { cursor, direction: dir, keyword: sq } }),
