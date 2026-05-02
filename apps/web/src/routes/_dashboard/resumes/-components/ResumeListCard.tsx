@@ -1,16 +1,16 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuTrigger,
-} from "@/components/ui/context-menu";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { deleteResumeMutationOptions } from "@/data-access-layer/resume/resume-mutatin-options";
 import type { ResumeListItemDTO } from "@/data-access-layer/resume/resume.types";
 import { useMutation } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { Copy, FileText, Trash2 } from "lucide-react";
+import { FileText, GitFork, MoreVertical, Trash2 } from "lucide-react";
 
 interface ResumeListCardProps {
   resume: ResumeListItemDTO;
@@ -25,69 +25,75 @@ export function ResumeListCard({ resume, onClone }: ResumeListCardProps) {
   };
 
   return (
-    <ContextMenu>
-      <ContextMenuTrigger asChild>
-        <Card className="group relative" data-test={`resume-card-${resume.id}`}>
+    <Card data-test={`resume-card-${resume.id}`}>
+      <CardHeader className="w-full">
+        <div className="flex w-full min-w-0 flex-col gap-1">
+          <div className="flex min-w-0 items-center gap-2">
+            <Link
+              to="/resumes/$resumeId"
+              params={{ resumeId: resume.id }}
+              search={(prev) => ({ ...prev, tab: "edit" })}
+              className="flex min-w-0 flex-1 items-center gap-3 no-underline outline-none"
+            >
+              <FileText className="text-primary size-5 shrink-0" />
+              <CardTitle className="min-w-0 flex-1 truncate text-base leading-tight">
+                {resume.name}
+              </CardTitle>
+            </Link>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="text-muted-foreground hover:text-foreground size-8 shrink-0"
+                  aria-label="Resume actions"
+                  data-test="resume-card-actions-trigger"
+                  onPointerDown={(e) => e.stopPropagation()}
+                >
+                  <MoreVertical className="size-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem
+                  className="gap-2"
+                  disabled={!onClone}
+                  onSelect={() => onClone?.(resume.id)}
+                  data-test="resume-clone-btn"
+                >
+                  <GitFork className="size-4" />
+                  Clone Resume
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  variant="destructive"
+                  className="gap-2"
+                  disabled={deleteMutation.isPending}
+                  onSelect={() => handleDelete(resume.id)}
+                  data-test="resume-delete-btn"
+                >
+                  <Trash2 className="size-4" />
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
           <Link
             to="/resumes/$resumeId"
             params={{ resumeId: resume.id }}
             search={(prev) => ({ ...prev, tab: "edit" })}
-            className="block w-full"
+            className="block min-w-0 space-y-2 pl-8 no-underline outline-none"
           >
-            <CardHeader className="w-full ">
-              <div className="flex items-start gap-3 w-full min-w-0">
-                <FileText className="text-primary mt-0.5 size-5 shrink-0" />
-                <div className="min-w-0 flex-1 overflow-hidden">
-                  <CardTitle className="truncate text-base max-w-[95%] w-full min-w-0">
-                    {resume.name}
-                  </CardTitle>
-                  {resume.headline && (
-                    <CardDescription className="mt-1 truncate text-xs max-w-[95%] min-w-0">
-                      {resume.headline}
-                    </CardDescription>
-                  )}
-                  <p className="text-muted-foreground mt-2 text-xs">
-                    Updated {new Date(resume.updatedAt).toLocaleDateString()}
-                  </p>
-                </div>
-              </div>
-            </CardHeader>
+            {resume.headline ? (
+              <CardDescription className="min-w-0 truncate text-xs leading-normal">
+                {resume.headline}
+              </CardDescription>
+            ) : null}
+            <p className="text-muted-foreground text-xs">
+              Updated {new Date(resume.updatedAt).toLocaleDateString()}
+            </p>
           </Link>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute top-2 right-2 size-7 opacity-0 transition-opacity group-hover:opacity-100"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              handleDelete(resume.id);
-            }}
-            disabled={deleteMutation.isPending}
-            data-test="resume-delete-btn"
-          >
-            <Trash2 className="size-3.5" />
-          </Button>
-        </Card>
-      </ContextMenuTrigger>
-      <ContextMenuContent>
-        <ContextMenuItem
-          onClick={() => onClone?.(resume.id)}
-          className="gap-2"
-          data-test="resume-clone-btn"
-        >
-          <Copy className="size-4" />
-          Clone Resume
-        </ContextMenuItem>
-        <ContextMenuItem
-          onClick={() => handleDelete(resume.id)}
-          disabled={deleteMutation.isPending}
-          className="text-destructive gap-2"
-          data-test="resume-context-delete-btn"
-        >
-          <Trash2 className="size-4" />
-          Delete
-        </ContextMenuItem>
-      </ContextMenuContent>
-    </ContextMenu>
+        </div>
+      </CardHeader>
+    </Card>
   );
 }
