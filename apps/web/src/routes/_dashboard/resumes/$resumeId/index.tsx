@@ -181,28 +181,16 @@ function ResumeWorkbench({ resumeId }: ResumeWorkbenchProps) {
 
   return (
     <ResumeWorkspaceProvider value={workspace}>
-      <div className="flex w-full flex-col gap-6 pb-24" data-test="resume-workbench">
+      <div className="flex w-full flex-col gap-6 pb-24 max-w-[98%]" data-test="resume-workbench">
         {/* Header */}
-        <div className="min-w-0">
-          <h1 className="text-2xl font-bold">{resume.name}</h1>
-          {resume.headline && (
-            <p className="text-muted-foreground mt-1 text-sm">{resume.headline}</p>
-          )}
-        </div>
-
-        {/* Template Picker */}
-        <TemplatePicker selected={selectedTemplate} onSelect={setSelectedTemplate} />
-
-        {/* Tabs + Save */}
-        <Tabs value={tab} onValueChange={navigateToTab} className="w-full">
-          <div className="flex flex-wrap items-center gap-3">
-            <TabsList className="flex-1">
-              <TabsTrigger value="edit">Edit</TabsTrigger>
-              <TabsTrigger value="preview">Preview</TabsTrigger>
-              <TabsTrigger value="json">JSON</TabsTrigger>
-              <TabsTrigger value="prompt">LLM Prompt</TabsTrigger>
-            </TabsList>
-
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <h1 className="text-2xl font-bold">{resume.name}</h1>
+            {resume.headline && (
+              <p className="text-muted-foreground mt-1 truncate text-sm">{resume.headline}</p>
+            )}
+          </div>
+          <div className="flex shrink-0 items-center gap-2">
             <Button
               variant="outline"
               size="sm"
@@ -212,7 +200,6 @@ function ResumeWorkbench({ resumeId }: ResumeWorkbenchProps) {
               <FileUp className="size-4" />
               Import JSON
             </Button>
-
             <Button
               type="button"
               onClick={() => saveMutation.mutate()}
@@ -225,6 +212,19 @@ function ResumeWorkbench({ resumeId }: ResumeWorkbenchProps) {
               {saveMutation.isPending ? "Saving..." : hasTemplateChange ? "Save template" : "Saved"}
             </Button>
           </div>
+        </div>
+
+        {/* Template Picker */}
+        <TemplatePicker selected={selectedTemplate} onSelect={setSelectedTemplate} />
+
+        {/* Tabs */}
+        <Tabs value={tab} onValueChange={navigateToTab} className="w-full">
+          <TabsList className="w-[95%]">
+            <TabsTrigger value="edit">Edit</TabsTrigger>
+            <TabsTrigger value="preview">Preview</TabsTrigger>
+            <TabsTrigger value="json">JSON</TabsTrigger>
+            <TabsTrigger value="prompt">LLM Prompt</TabsTrigger>
+          </TabsList>
 
           <TabsContent value="edit" forceMount className="mt-4 data-[state=inactive]:hidden">
             <ResumeEditTab resumeId={resumeId} />
@@ -234,7 +234,11 @@ function ResumeWorkbench({ resumeId }: ResumeWorkbenchProps) {
             <ResumePreviewTab resumeId={resumeId} selectedTemplate={selectedTemplate} doc={doc} />
           </TabsContent>
 
-          <TabsContent value="json" forceMount className="mt-4 data-[state=inactive]:hidden">
+          <TabsContent
+            value="json"
+            forceMount
+            className="mt-4 data-[state=inactive]:hidden max-w-[98%]"
+          >
             <ResumeJsonTab />
           </TabsContent>
 
