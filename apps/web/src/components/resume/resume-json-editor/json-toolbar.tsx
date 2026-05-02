@@ -4,6 +4,7 @@ import {
   ClipboardPaste,
   Copy,
   Download,
+  FileJson,
   PanelLeft,
   PanelLeftClose,
   Save,
@@ -19,6 +20,7 @@ interface JsonToolbarProps {
   onPaste: () => void;
   onDownload: () => void;
   onCopy: () => void;
+  onCopySchema: () => void;
   onOpenSettings: () => void;
   onSave: () => void;
   isSaving: boolean;
@@ -33,6 +35,7 @@ export function JsonToolbar({
   onPaste,
   onDownload,
   onCopy,
+  onCopySchema,
   onOpenSettings,
   onSave,
   isSaving,
@@ -76,6 +79,15 @@ export function JsonToolbar({
         </Button>
         <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onCopy} title="Copy JSON">
           <Copy className="h-3.5 w-3.5" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7"
+          onClick={onCopySchema}
+          title="Copy JSON schema (for LLM prompts)"
+        >
+          <FileJson className="h-3.5 w-3.5" />
         </Button>
       </div>
 

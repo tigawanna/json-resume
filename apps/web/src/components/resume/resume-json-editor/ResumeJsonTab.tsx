@@ -7,6 +7,7 @@ import {
 } from "@/features/resume/resume-schema";
 import { useDebouncedValue } from "@/hooks/use-debouncer";
 import { unwrapUnknownError } from "@/utils/errors";
+import { buildSchemaPrompt } from "@/features/resume/resume-prompt";
 import { useMutation } from "@tanstack/react-query";
 import type { JsonValue } from "@visual-json/core";
 import { DiffView, JsonEditor } from "@visual-json/react";
@@ -148,6 +149,15 @@ export function ResumeJsonTab({ resumeId }: ResumeJsonTabProps) {
     }
   }
 
+  async function handleCopySchema() {
+    try {
+      await navigator.clipboard.writeText(buildSchemaPrompt());
+      toast.success("Schema copied to clipboard");
+    } catch {
+      // clipboard write failed silently
+    }
+  }
+
   function handleRawChange(newText: string) {
     setRawText(newText);
     try {
@@ -231,6 +241,7 @@ export function ResumeJsonTab({ resumeId }: ResumeJsonTabProps) {
         onPaste={handlePaste}
         onDownload={handleDownload}
         onCopy={handleCopy}
+        onCopySchema={handleCopySchema}
         onOpenSettings={() => setSettingsOpen(true)}
         onSave={handleSave}
         isSaving={saveMutation.isPending}
