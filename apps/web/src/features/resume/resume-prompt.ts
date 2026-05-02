@@ -1,6 +1,16 @@
 import { z } from "zod";
 import { resumeDocumentV1Schema, type ResumeDocumentV1 } from "./resume-schema";
 
+const resumeSectionItemShapesMarkdown = `## Section item shapes
+
+The resume JSON below may show empty \`items\` or \`groups\` arrays. When you add or change entries, each object must use exactly these keys (no extras, no omissions):
+
+- \`experience.items[]\`: \`company\`, \`role\`, \`start\`, \`end\`, optional \`location\`, \`bullets\` (string array)
+- \`education.items[]\`: \`school\`, \`degree\`, optional \`field\`, \`year\`, optional \`bullets\` (string array)
+- \`projects.items[]\`: \`name\`, \`url\`, optional \`homepageUrl\`, \`description\`, \`tech\` (string array)
+- \`talks.items[]\`: \`title\`, \`event\`, \`date\` (strings), \`links\` (array of \`{ "label": string, "url": string }\`). Set \`talks.enabled\` to \`true\` when the talks section should render.
+- \`skills.groups[]\`: \`name\`, \`items\` (string array)`;
+
 export function buildSchemaPrompt(): string {
   const jsonSchema = z.toJSONSchema(resumeDocumentV1Schema);
   const schemaJson = JSON.stringify(jsonSchema, null, 2);
@@ -64,6 +74,8 @@ ${plain}
 ## Instructions
 
 ${instructionBlock}
+
+${resumeSectionItemShapesMarkdown}
 
 ## ${plain ? "Starter resume (JSON)" : "My current resume (JSON)"}
 
