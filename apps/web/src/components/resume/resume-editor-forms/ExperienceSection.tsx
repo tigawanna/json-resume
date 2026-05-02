@@ -96,6 +96,16 @@ function ExperienceCard({ resumeId, experience, allExperiences }: ExperienceCard
   const [bullets, setBullets] = useState(experience.bullets.map((b) => b.text));
   const [bulletPickOpen, setBulletPickOpen] = useState(false);
 
+  function enterEdit() {
+    setRole(experience.role);
+    setCompany(experience.company);
+    setStartDate(experience.startDate);
+    setEndDate(experience.endDate);
+    setLocation(experience.location);
+    setBullets(experience.bullets.map((b) => b.text));
+    setEditing(true);
+  }
+
   const deleteMutation = useMutation({
     mutationFn: async () => deleteExperience(experience.id),
     onSuccess() {
@@ -110,27 +120,16 @@ function ExperienceCard({ resumeId, experience, allExperiences }: ExperienceCard
   });
 
   const saveMutation = useMutation({
-    mutationFn: async () =>
-      updateExperience(experience.id, { role, company, startDate, endDate, location }),
+    mutationFn: async () => {
+      await updateExperience(experience.id, { role, company, startDate, endDate, location });
+      await updateExperienceBullets(experience.id, bullets);
+    },
     onSuccess() {
       toast.success("Experience saved");
       setEditing(false);
     },
     onError(err: unknown) {
       toast.error("Failed to save experience", {
-        description: unwrapUnknownError(err).message,
-      });
-    },
-    meta: { invalidates: [["resumes"], ["experiences"]] },
-  });
-
-  const bulletMutation = useMutation({
-    mutationFn: async () => updateExperienceBullets(experience.id, bullets),
-    onSuccess() {
-      toast.success("Bullets saved");
-    },
-    onError(err: unknown) {
-      toast.error("Failed to save bullets", {
         description: unwrapUnknownError(err).message,
       });
     },
@@ -157,7 +156,7 @@ function ExperienceCard({ resumeId, experience, allExperiences }: ExperienceCard
             {experience.role} at {experience.company}
           </CardTitle>
           <div className="flex gap-1">
-            <Button variant="ghost" size="icon" className="size-7" onClick={() => setEditing(true)}>
+            <Button variant="ghost" size="icon" className="size-7" onClick={enterEdit}>
               <Pencil className="size-3.5" />
             </Button>
             <Button
@@ -171,81 +170,20 @@ function ExperienceCard({ resumeId, experience, allExperiences }: ExperienceCard
             </Button>
           </div>
         </CardHeader>
-        <CardContent className="flex flex-col gap-3">
+        <CardContent className="flex flex-col gap-2">
           <p className="text-muted-foreground text-xs">
             {experience.startDate} – {experience.endDate}
             {experience.location ? ` · ${experience.location}` : ""}
           </p>
-
-          <div className="flex flex-col gap-2">
-            <Label className="text-xs font-medium">Bullets</Label>
-            {experience.bullets.map((bullet, index) => (
-              <div key={index} className="flex items-center gap-2">
-                <span className="text-muted-foreground text-xs">•</span>
-                <Input
-                  value={bullet.text}
-                  onChange={(e) => updateBullet(index, e.target.value)}
-                  className="h-8 text-sm"
-                />
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="size-6 shrink-0"
-                  onClick={() => removeBullet(index)}
-                >
-                  <X className="size-3" />
-                </Button>
-              </div>
-            ))}
-            <div className="flex gap-2">
-              <Button type="button" variant="outline" size="sm" onClick={addBullet}>
-                <Plus className="mr-1 size-3" /> Add Bullet
-              </Button>
-              {searchExperienceBullets && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setBulletPickOpen(true)}
-                >
-                  <Library className="mr-1 size-3" /> Pick Bullets
-                </Button>
-              )}
-              <Button
-                size="sm"
-                onClick={() => bulletMutation.mutate()}
-                disabled={bulletMutation.isPending}
-              >
-                Save Bullets
-              </Button>
-            </div>
-          </div>
-
-          {searchExperienceBullets && (
-            <PickFromExistingDialog
-              open={bulletPickOpen}
-              onOpenChange={setBulletPickOpen}
-              title="Pick Experience Bullets"
-              description="Search bullet points across all your experiences."
-              multi
-              getSearchQueryKey={(q) => [
-                queryKeyPrefixes.resumes,
-                "search",
-                "experience-bullets",
-                q,
-              ]}
-              getSearchQueryFn={(q) => () => searchExperienceBullets(q)}
-              mapToItems={(data) =>
-                data.map((b) => ({
-                  id: b.id,
-                  primary: b.text,
-                }))
-              }
-              onPick={(items) => {
-                setBullets((prev) => [...prev, ...items.map((i) => i.primary)]);
-                toast.success(`Added ${items.length} bullet(s)`);
-              }}
-            />
+          {experience.bullets.length > 0 && (
+            <ul className="flex flex-col gap-1 pl-1">
+              {experience.bullets.map((bullet, index) => (
+                <li key={index} className="flex items-start gap-2 text-sm">
+                  <span className="text-muted-foreground mt-0.5 shrink-0">•</span>
+                  <span>{bullet.text}</span>
+                </li>
+              ))}
+            </ul>
           )}
         </CardContent>
       </Card>
@@ -329,14 +267,7 @@ function ExperienceCard({ resumeId, experience, allExperiences }: ExperienceCard
             onClick={() => saveMutation.mutate()}
             disabled={saveMutation.isPending || !role.trim() || !company.trim()}
           >
-            Save
-          </Button>
-          <Button
-            size="sm"
-            onClick={() => bulletMutation.mutate()}
-            disabled={bulletMutation.isPending}
-          >
-            Save Bullets
+            {saveMutation.isPending ? "Saving…" : "Save"}
           </Button>
           <Button variant="ghost" size="sm" onClick={() => setEditing(false)}>
             Cancel
