@@ -86,7 +86,7 @@ export function DashboardLayout({
             <TSRBreadCrumbs />
           </div>
         </header>
-        <div className="flex min-h-0 min-w-0 w-full flex-1 flex-col overflow-auto p-6">
+        <div className="@container/main flex min-h-0 min-w-0 w-full flex-1 flex-col overflow-auto p-6">
           <Outlet />
         </div>
       </SidebarInset>

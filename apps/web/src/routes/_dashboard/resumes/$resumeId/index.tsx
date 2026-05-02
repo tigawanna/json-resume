@@ -181,7 +181,7 @@ function ResumeWorkbench({ resumeId }: ResumeWorkbenchProps) {
 
   return (
     <ResumeWorkspaceProvider value={workspace}>
-      <div className="flex w-full flex-col gap-6 pb-24 max-w-[98%]" data-test="resume-workbench">
+      <div className="flex w-full flex-col gap-6 pb-24" data-test="resume-workbench">
         {/* Header */}
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0 flex-1">

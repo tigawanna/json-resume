@@ -12,7 +12,7 @@ import {
 import { useViewer } from "@/data-access-layer/auth/viewer";
 import { MutationButton } from "@/lib/tanstack/query/MutationButton";
 import { Link, useLocation } from "@tanstack/react-router";
-import { CreditCard, Keyboard, Mail, Settings, User, UserCircle } from "lucide-react";
+import { Keyboard, Mail, Settings, User, UserCircle } from "lucide-react";
 
 interface CurrentUserProps {}
 
@@ -77,12 +77,6 @@ export function CurrentUser(_props: CurrentUserProps) {
             <User className="mr-2 h-4 w-4" />
             <span>Profile</span>
             <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
-          </DropdownMenuItem>
-
-          <DropdownMenuItem>
-            <CreditCard className="mr-2 h-4 w-4" />
-            <span>Billing</span>
-            <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
           </DropdownMenuItem>
           <DropdownMenuItem>
             <Settings className="mr-2 h-4 w-4" />

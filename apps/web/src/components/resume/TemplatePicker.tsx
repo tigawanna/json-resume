@@ -17,7 +17,7 @@ export function TemplatePicker({ selected, onSelect }: TemplatePickerProps) {
   return (
     <div className="flex flex-col gap-2" data-test="template-picker">
       <h2 className="text-sm font-medium">Template</h2>
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 @[640px]/main:grid-cols-4">
         {TEMPLATE_IDS.map((tid) => (
           <button
             key={tid}

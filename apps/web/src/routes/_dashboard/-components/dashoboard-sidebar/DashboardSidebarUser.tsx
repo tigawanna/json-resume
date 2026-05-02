@@ -23,15 +23,7 @@ import { useViewer, viewerqueryOptions } from "@/data-access-layer/auth/viewer";
 import { unwrapUnknownError } from "@/utils/errors";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useLocation, useNavigate, useRouter } from "@tanstack/react-router";
-import {
-  Bell,
-  ChevronsUpDown,
-  CreditCard,
-  LogOut,
-  Settings,
-  Sparkles,
-  UserPlus,
-} from "lucide-react";
+import { ChevronsUpDown, LogOut, Settings, Sparkles, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 
 function getInitials(name: string): string {
@@ -191,14 +183,6 @@ export function DashboardSidebarUser() {
                   Settings
                 </DropdownMenuItem>
               </Link>
-              <DropdownMenuItem>
-                <CreditCard />
-                Billing
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Bell />
-                Notifications
-              </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem
