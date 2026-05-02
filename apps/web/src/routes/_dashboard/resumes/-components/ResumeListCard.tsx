@@ -32,15 +32,17 @@ export function ResumeListCard({ resume, onClone }: ResumeListCardProps) {
             to="/resumes/$resumeId"
             params={{ resumeId: resume.id }}
             search={(prev) => ({ ...prev, tab: "edit" })}
-            className="block"
+            className="block w-full"
           >
-            <CardHeader>
-              <div className="flex items-start gap-3">
+            <CardHeader className="w-full ">
+              <div className="flex items-start gap-3 w-full min-w-0">
                 <FileText className="text-primary mt-0.5 size-5 shrink-0" />
                 <div className="min-w-0 flex-1 overflow-hidden">
-                  <CardTitle className="truncate text-base max-w-[85%]">{resume.name}</CardTitle>
+                  <CardTitle className="truncate text-base max-w-[95%] w-full min-w-0">
+                    {resume.name}
+                  </CardTitle>
                   {resume.headline && (
-                    <CardDescription className="mt-1 truncate text-xs">
+                    <CardDescription className="mt-1 truncate text-xs max-w-[95%] min-w-0">
                       {resume.headline}
                     </CardDescription>
                   )}
