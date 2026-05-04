@@ -25,6 +25,7 @@ import {
   updateSkillGroups,
   updateSummary,
 } from "@/data-access-layer/resume/resume.functions";
+import { reorderExperienceFn } from "@/data-access-layer/resume/experiences/experience.functions";
 import type { ResumeDetailDTO } from "@/data-access-layer/resume/resume.types";
 import {
   resumeCollection,
@@ -157,6 +158,19 @@ export function createRemoteResumeWorkspace(resume: ResumeDetailDTO): ResumeWork
       writeResumeUpdate(resume.id, {
         experiences: resume.experiences.filter((item) => item.id !== id),
       });
+    },
+    async reorderExperience(idA: string, idB: string) {
+      await reorderExperienceFn({ data: { idA, idB } });
+      const experiences = [...resume.experiences];
+      const indexA = experiences.findIndex((e) => e.id === idA);
+      const indexB = experiences.findIndex((e) => e.id === idB);
+      if (indexA >= 0 && indexB >= 0) {
+        const tempOrder = experiences[indexA].sortOrder;
+        experiences[indexA] = { ...experiences[indexA], sortOrder: experiences[indexB].sortOrder };
+        experiences[indexB] = { ...experiences[indexB], sortOrder: tempOrder };
+        experiences.sort((a, b) => b.sortOrder - a.sortOrder);
+        writeResumeUpdate(resume.id, { experiences });
+      }
     },
     async updateExperienceBullets(experienceId: string, bullets: string[]) {
       await updateExperienceBullets({ data: { experienceId, bullets } });

@@ -111,6 +111,18 @@ export function createLocalResumeWorkspace(resume: ResumeDetailDTO): ResumeWorks
         draft.experiences = draft.experiences.filter((e) => e.id !== expId);
       });
     },
+    async reorderExperience(idA: string, idB: string) {
+      await applyUpdate(id, (draft) => {
+        const a = draft.experiences.find((e) => e.id === idA);
+        const b = draft.experiences.find((e) => e.id === idB);
+        if (a && b) {
+          const tempOrder = a.sortOrder;
+          a.sortOrder = b.sortOrder;
+          b.sortOrder = tempOrder;
+          draft.experiences.sort((x, y) => y.sortOrder - x.sortOrder);
+        }
+      });
+    },
     async updateExperienceBullets(experienceId: string, bullets: string[]) {
       await applyUpdate(id, (draft) => {
         const item = draft.experiences.find((e) => e.id === experienceId);

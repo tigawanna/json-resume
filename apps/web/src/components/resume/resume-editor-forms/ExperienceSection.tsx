@@ -10,7 +10,7 @@ import { useAppForm } from "@/lib/tanstack/form";
 import { unwrapUnknownError } from "@/utils/errors";
 import { formOptions } from "@tanstack/react-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Library, Pencil, Plus, Trash2, X } from "lucide-react";
+import { ArrowDown, ArrowUp, Library, Pencil, Plus, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -20,7 +20,7 @@ interface ExperienceSectionProps {
 }
 
 export function ExperienceSection({ resumeId }: ExperienceSectionProps) {
-  const { resume, searches, createExperience } = useResumeWorkspace();
+  const { resume, searches, createExperience, reorderExperience } = useResumeWorkspace();
   const searchExperiences = searches?.experiences;
   const queryClient = useQueryClient();
 
@@ -53,16 +53,44 @@ export function ExperienceSection({ resumeId }: ExperienceSectionProps) {
     },
   });
 
+  const reorderMutation = useMutation({
+    mutationFn: ({ idA, idB }: { idA: string; idB: string }) => reorderExperience(idA, idB),
+    onError(err: unknown) {
+      toast.error("Failed to reorder experience", {
+        description: unwrapUnknownError(err).message,
+      });
+    },
+    meta: { invalidates: [["resumes"], ["experiences"]] },
+  });
+
   if (!resume) return null;
 
   return (
     <div className="flex flex-col gap-4" data-test="experience-section">
-      {resume.experiences.map((exp) => (
+      {resume.experiences.map((exp, index) => (
         <ExperienceCard
           key={exp.id}
           resumeId={resume.id}
           experience={exp}
           allExperiences={resume.experiences}
+          onMoveUp={
+            index > 0
+              ? () =>
+                  reorderMutation.mutate({
+                    idA: exp.id,
+                    idB: resume.experiences[index - 1].id,
+                  })
+              : undefined
+          }
+          onMoveDown={
+            index < resume.experiences.length - 1
+              ? () =>
+                  reorderMutation.mutate({
+                    idA: exp.id,
+                    idB: resume.experiences[index + 1].id,
+                  })
+              : undefined
+          }
         />
       ))}
 
@@ -108,9 +136,17 @@ interface ExperienceCardProps {
   resumeId: string;
   experience: ResumeDetailDTO["experiences"][number];
   allExperiences: ResumeDetailDTO["experiences"];
+  onMoveUp?: () => void;
+  onMoveDown?: () => void;
 }
 
-function ExperienceCard({ resumeId, experience, allExperiences }: ExperienceCardProps) {
+function ExperienceCard({
+  resumeId,
+  experience,
+  allExperiences,
+  onMoveUp,
+  onMoveDown,
+}: ExperienceCardProps) {
   const { deleteExperience, updateExperience, updateExperienceBullets, searches } =
     useResumeWorkspace();
   const searchExperienceBullets = searches?.experienceBullets;
@@ -183,6 +219,26 @@ function ExperienceCard({ resumeId, experience, allExperiences }: ExperienceCard
             {experience.role} at {experience.company}
           </CardTitle>
           <div className="flex gap-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-7"
+              onClick={onMoveUp}
+              disabled={!onMoveUp}
+              title="Move up"
+            >
+              <ArrowUp className="size-3.5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-7"
+              onClick={onMoveDown}
+              disabled={!onMoveDown}
+              title="Move down"
+            >
+              <ArrowDown className="size-3.5" />
+            </Button>
             <Button variant="ghost" size="icon" className="size-7" onClick={enterEdit}>
               <Pencil className="size-3.5" />
             </Button>

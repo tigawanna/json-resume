@@ -11,8 +11,8 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useDebouncedValue } from "@/hooks/use-debouncer";
 import { useQuery } from "@tanstack/react-query";
-import { Check, Loader2, Search } from "lucide-react";
-import { useState } from "react";
+import { AlertCircle, Check, Loader2, Search } from "lucide-react";
+import { useEffect, useState } from "react";
 
 type AppQueryKeyPrefix = (typeof queryKeyPrefixes)[keyof typeof queryKeyPrefixes];
 
@@ -56,10 +56,18 @@ export function PickFromExistingDialog<T>({
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const { debouncedValue: debouncedSearch } = useDebouncedValue(search, 300);
 
+  useEffect(() => {
+    if (!open) {
+      setSearch("");
+      setSelected(new Set());
+    }
+  }, [open]);
+
   const query = useQuery<T[]>({
     queryKey: getSearchQueryKey(debouncedSearch),
     queryFn: getSearchQueryFn(debouncedSearch),
     enabled: open,
+    staleTime: 0,
   });
 
   const rawData = query.data ?? [];
@@ -125,6 +133,16 @@ export function PickFromExistingDialog<T>({
           {query.isLoading ? (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="text-muted-foreground size-5 animate-spin" />
+            </div>
+          ) : query.isError ? (
+            <div className="flex flex-col items-center justify-center gap-2 py-8">
+              <AlertCircle className="text-destructive size-5" />
+              <p className="text-muted-foreground text-center text-sm">
+                Failed to load items. Please try again.
+              </p>
+              <Button variant="outline" size="sm" onClick={() => query.refetch()}>
+                Retry
+              </Button>
             </div>
           ) : items.length === 0 ? (
             <p className="text-muted-foreground py-8 text-center text-sm">

@@ -94,6 +94,7 @@ export interface ResumeWorkspaceAdapter {
   createExperience(values: ExperienceDraft): Promise<{ id: string }>;
   updateExperience(id: string, values: ExperienceDraft): Promise<void>;
   deleteExperience(id: string): Promise<void>;
+  reorderExperience(idA: string, idB: string): Promise<void>;
   updateExperienceBullets(experienceId: string, bullets: string[]): Promise<void>;
   createEducation(values: EducationDraft): Promise<{ id: string }>;
   updateEducation(id: string, values: EducationDraft): Promise<void>;
