@@ -33,7 +33,13 @@ import {
 import { useDebouncedValue } from "@/hooks/use-debouncer";
 import { authClient } from "@/lib/better-auth/client";
 import { unwrapUnknownError } from "@/utils/errors";
-import { queryOptions, useMutation, useQuery, useSuspenseQuery } from "@tanstack/react-query";
+import {
+  queryOptions,
+  useMutation,
+  useQuery,
+  useQueryClient,
+  useSuspenseQuery,
+} from "@tanstack/react-query";
 import {
   AlertCircle,
   Bookmark,
@@ -413,16 +419,21 @@ export function ReposPage() {
   );
 }
 
+type SavedProjectCacheEntry = { url: string; [key: string]: unknown };
+
 function RepoCard({ repo, isSaved }: { repo: GithubRepo; isSaved: boolean }) {
+  const queryClient = useQueryClient();
+  const repoUrl = repo.html_url || "";
+
   const saveMutation = useMutation({
     mutationFn: async () => {
       if (isSaved) {
-        await unsaveGithubProject({ data: { url: repo.html_url || "" } });
+        await unsaveGithubProject({ data: { url: repoUrl } });
       } else {
         await saveGithubProject({
           data: {
             name: repo.name || "",
-            url: repo.html_url || "",
+            url: repoUrl,
             homepageUrl: repo.homepage || "",
             description: repo.description || "",
             tech: repo.topics || [],
@@ -430,18 +441,53 @@ function RepoCard({ repo, isSaved }: { repo: GithubRepo; isSaved: boolean }) {
         });
       }
     },
-    onSuccess() {
-      toast.success(isSaved ? "Project removed" : "Project saved", {
-        description: isSaved ? "Removed from your shortlist" : "Added to your shortlist",
+    async onMutate() {
+      const wasAlreadySaved = isSaved;
+      const { queryKey } = savedProjectsQueryOptions;
+
+      await queryClient.cancelQueries({ queryKey });
+
+      const previous = queryClient.getQueryData(queryKey);
+
+      queryClient.setQueryData(queryKey, (old) => {
+        if (!old) return old;
+        if (wasAlreadySaved) {
+          return old.filter((p: SavedProjectCacheEntry) => p.url !== repoUrl);
+        }
+        return [
+          ...old,
+          {
+            id: `optimistic-${repo.id}`,
+            url: repoUrl,
+            name: repo.name || "",
+            homepageUrl: repo.homepage || "",
+            description: repo.description || "",
+            tech: JSON.stringify(repo.topics || []),
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+        ];
+      });
+
+      return { previous, wasAlreadySaved };
+    },
+    onSuccess(_data, _vars, context) {
+      toast.success(context?.wasAlreadySaved ? "Project removed" : "Project saved", {
+        description: context?.wasAlreadySaved
+          ? "Removed from your shortlist"
+          : "Added to your shortlist",
       });
     },
-    onError(err: unknown) {
+    onError(err: unknown, _vars, context) {
+      if (context?.previous !== undefined) {
+        queryClient.setQueryData(savedProjectsQueryOptions.queryKey, context.previous);
+      }
       toast.error("Failed to update project", {
         description: unwrapUnknownError(err).message,
       });
     },
-    meta: {
-      invalidates: [["saved-projects"]],
+    onSettled() {
+      void queryClient.invalidateQueries({ queryKey: savedProjectsQueryOptions.queryKey });
     },
   });
 
