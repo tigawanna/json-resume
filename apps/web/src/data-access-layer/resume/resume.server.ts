@@ -602,6 +602,38 @@ export async function deleteEducation(educationId: string): Promise<void> {
   await db.delete(resumeEducation).where(eq(resumeEducation.id, educationId));
 }
 
+export async function swapEducationSortOrder(
+  userId: string,
+  idA: string,
+  idB: string,
+): Promise<void> {
+  const rows = await db
+    .select({ id: resumeEducation.id, sortOrder: resumeEducation.sortOrder })
+    .from(resumeEducation)
+    .innerJoin(resume, eq(resumeEducation.resumeId, resume.id))
+    .where(
+      and(eq(resume.userId, userId), or(eq(resumeEducation.id, idA), eq(resumeEducation.id, idB))),
+    )
+    .limit(2);
+
+  if (rows.length !== 2) throw new Error("One or both education entries not found");
+
+  const [first, second] = rows as [
+    { id: string; sortOrder: number },
+    { id: string; sortOrder: number },
+  ];
+
+  await db
+    .update(resumeEducation)
+    .set({ sortOrder: second.sortOrder })
+    .where(eq(resumeEducation.id, first.id));
+
+  await db
+    .update(resumeEducation)
+    .set({ sortOrder: first.sortOrder })
+    .where(eq(resumeEducation.id, second.id));
+}
+
 // ─── Project CRUD ──────────────────────────────────────────
 
 export async function addProject(
@@ -655,6 +687,36 @@ export async function updateProject(
 
 export async function deleteProject(projectId: string): Promise<void> {
   await db.delete(resumeProject).where(eq(resumeProject.id, projectId));
+}
+
+export async function swapProjectSortOrder(
+  userId: string,
+  idA: string,
+  idB: string,
+): Promise<void> {
+  const rows = await db
+    .select({ id: resumeProject.id, sortOrder: resumeProject.sortOrder })
+    .from(resumeProject)
+    .innerJoin(resume, eq(resumeProject.resumeId, resume.id))
+    .where(and(eq(resume.userId, userId), or(eq(resumeProject.id, idA), eq(resumeProject.id, idB))))
+    .limit(2);
+
+  if (rows.length !== 2) throw new Error("One or both projects not found");
+
+  const [first, second] = rows as [
+    { id: string; sortOrder: number },
+    { id: string; sortOrder: number },
+  ];
+
+  await db
+    .update(resumeProject)
+    .set({ sortOrder: second.sortOrder })
+    .where(eq(resumeProject.id, first.id));
+
+  await db
+    .update(resumeProject)
+    .set({ sortOrder: first.sortOrder })
+    .where(eq(resumeProject.id, second.id));
 }
 
 // ─── Skill Group CRUD ──────────────────────────────────────
@@ -950,6 +1012,32 @@ export async function updateTalk(
 
 export async function deleteTalk(talkId: string): Promise<void> {
   await db.delete(resumeTalk).where(eq(resumeTalk.id, talkId));
+}
+
+export async function swapTalkSortOrder(userId: string, idA: string, idB: string): Promise<void> {
+  const rows = await db
+    .select({ id: resumeTalk.id, sortOrder: resumeTalk.sortOrder })
+    .from(resumeTalk)
+    .innerJoin(resume, eq(resumeTalk.resumeId, resume.id))
+    .where(and(eq(resume.userId, userId), or(eq(resumeTalk.id, idA), eq(resumeTalk.id, idB))))
+    .limit(2);
+
+  if (rows.length !== 2) throw new Error("One or both talks not found");
+
+  const [first, second] = rows as [
+    { id: string; sortOrder: number },
+    { id: string; sortOrder: number },
+  ];
+
+  await db
+    .update(resumeTalk)
+    .set({ sortOrder: second.sortOrder })
+    .where(eq(resumeTalk.id, first.id));
+
+  await db
+    .update(resumeTalk)
+    .set({ sortOrder: first.sortOrder })
+    .where(eq(resumeTalk.id, second.id));
 }
 
 // ─── Full update from ResumeDocumentV1 (replace-all) ───────

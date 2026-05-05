@@ -11,7 +11,7 @@ import { useAppForm } from "@/lib/tanstack/form";
 import { unwrapUnknownError } from "@/utils/errors";
 import { formOptions } from "@tanstack/react-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { ExternalLink, Library, Pencil, Plus, Trash2, X } from "lucide-react";
+import { ArrowDown, ArrowUp, ExternalLink, Library, Pencil, Plus, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -39,11 +39,21 @@ interface TalksSectionProps {
 }
 
 export function TalksSection({ resumeId }: TalksSectionProps) {
-  const { resume, searches, createTalk } = useResumeWorkspace();
+  const { resume, searches, createTalk, reorderTalk } = useResumeWorkspace();
   const searchTalks = searches?.talks;
   const queryClient = useQueryClient();
 
   const [pickOpen, setPickOpen] = useState(false);
+
+  const reorderMutation = useMutation({
+    mutationFn: ({ idA, idB }: { idA: string; idB: string }) => reorderTalk(idA, idB),
+    onError(err: unknown) {
+      toast.error("Failed to reorder talk", {
+        description: unwrapUnknownError(err).message,
+      });
+    },
+    meta: { invalidates: [["resumes"]] },
+  });
 
   const pickMutation = useMutation({
     mutationFn: async (rawItems: { title: string; event: string; date: string }[]) =>
@@ -72,8 +82,31 @@ export function TalksSection({ resumeId }: TalksSectionProps) {
   if (!resume) return null;
   return (
     <div className="flex flex-col gap-4" data-test="talks-section">
-      {resume.talks.map((talk) => (
-        <TalkCard key={talk.id} talk={talk} resumeId={resumeId} allTalks={resume.talks} />
+      {resume.talks.map((talk, index) => (
+        <TalkCard
+          key={talk.id}
+          talk={talk}
+          resumeId={resumeId}
+          allTalks={resume.talks}
+          onMoveUp={
+            index > 0
+              ? () =>
+                  reorderMutation.mutate({
+                    idA: talk.id,
+                    idB: resume.talks[index - 1].id,
+                  })
+              : undefined
+          }
+          onMoveDown={
+            index < resume.talks.length - 1
+              ? () =>
+                  reorderMutation.mutate({
+                    idA: talk.id,
+                    idB: resume.talks[index + 1].id,
+                  })
+              : undefined
+          }
+        />
       ))}
       <div className="flex gap-2">
         <AddTalkForm
@@ -117,9 +150,11 @@ interface TalkCardProps {
   talk: ResumeDetailDTO["talks"][number];
   resumeId: string;
   allTalks: ResumeDetailDTO["talks"];
+  onMoveUp?: () => void;
+  onMoveDown?: () => void;
 }
 
-function TalkCard({ talk, resumeId, allTalks }: TalkCardProps) {
+function TalkCard({ talk, resumeId, allTalks, onMoveUp, onMoveDown }: TalkCardProps) {
   const { updateTalk, deleteTalk } = useResumeWorkspace();
   const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState(talk.title);
@@ -177,6 +212,26 @@ function TalkCard({ talk, resumeId, allTalks }: TalkCardProps) {
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <CardTitle className="text-base">{talk.title}</CardTitle>
           <div className="flex gap-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-7"
+              onClick={onMoveUp}
+              disabled={!onMoveUp}
+              title="Move up"
+            >
+              <ArrowUp className="size-3.5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-7"
+              onClick={onMoveDown}
+              disabled={!onMoveDown}
+              title="Move down"
+            >
+              <ArrowDown className="size-3.5" />
+            </Button>
             <Button variant="ghost" size="icon" className="size-7" onClick={() => setEditing(true)}>
               <Pencil className="size-3.5" />
             </Button>

@@ -54,6 +54,9 @@ import {
   updateSummaryItem,
   updateTalk,
   updateVolunteer,
+  swapEducationSortOrder,
+  swapProjectSortOrder,
+  swapTalkSortOrder,
 } from "./resume.server";
 
 // ─── List & Detail ─────────────────────────────────────────
@@ -359,6 +362,14 @@ export const removeEducation = createServerFn({ method: "POST" })
     return { success: true };
   });
 
+export const reorderEducationFn = createServerFn({ method: "POST" })
+  .middleware([viewerMiddleware])
+  .inputValidator((input: { idA: string; idB: string }) => input)
+  .handler(async ({ context, data }) => {
+    await swapEducationSortOrder(context.viewer.user.id, data.idA, data.idB);
+    return { success: true };
+  });
+
 // ─── Projects ──────────────────────────────────────────────
 
 export const createProject = createServerFn({ method: "POST" })
@@ -404,6 +415,14 @@ export const removeProject = createServerFn({ method: "POST" })
   .inputValidator((input: { id: string }) => input)
   .handler(async ({ data }) => {
     await deleteProject(data.id);
+    return { success: true };
+  });
+
+export const reorderProjectFn = createServerFn({ method: "POST" })
+  .middleware([viewerMiddleware])
+  .inputValidator((input: { idA: string; idB: string }) => input)
+  .handler(async ({ context, data }) => {
+    await swapProjectSortOrder(context.viewer.user.id, data.idA, data.idB);
     return { success: true };
   });
 
@@ -654,6 +673,14 @@ export const removeTalk = createServerFn({ method: "POST" })
   .inputValidator((input: { id: string }) => input)
   .handler(async ({ data }) => {
     await deleteTalk(data.id);
+    return { success: true };
+  });
+
+export const reorderTalkFn = createServerFn({ method: "POST" })
+  .middleware([viewerMiddleware])
+  .inputValidator((input: { idA: string; idB: string }) => input)
+  .handler(async ({ context, data }) => {
+    await swapTalkSortOrder(context.viewer.user.id, data.idA, data.idB);
     return { success: true };
   });
 

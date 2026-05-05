@@ -12,7 +12,7 @@ import { useAppForm } from "@/lib/tanstack/form";
 import { unwrapUnknownError } from "@/utils/errors";
 import { formOptions } from "@tanstack/react-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Library, Pencil, Plus, Trash2, X } from "lucide-react";
+import { ArrowDown, ArrowUp, Library, Pencil, Plus, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -22,11 +22,21 @@ interface ProjectSectionProps {
 }
 
 export function ProjectSection({ resumeId }: ProjectSectionProps) {
-  const { resume, searches, createProject } = useResumeWorkspace();
+  const { resume, searches, createProject, reorderProject } = useResumeWorkspace();
   const searchProjects = searches?.projects;
   const queryClient = useQueryClient();
 
   const [pickOpen, setPickOpen] = useState(false);
+
+  const reorderMutation = useMutation({
+    mutationFn: ({ idA, idB }: { idA: string; idB: string }) => reorderProject(idA, idB),
+    onError(err: unknown) {
+      toast.error("Failed to reorder project", {
+        description: unwrapUnknownError(err).message,
+      });
+    },
+    meta: { invalidates: [["resumes"], ["resume-projects"]] },
+  });
 
   const pickMutation = useMutation({
     mutationFn: async (
@@ -76,12 +86,30 @@ export function ProjectSection({ resumeId }: ProjectSectionProps) {
 
   return (
     <div className="flex flex-col gap-4" data-test="project-section">
-      {resume.projects.map((project) => (
+      {resume.projects.map((project, index) => (
         <ProjectCard
           key={project.id}
           project={project}
           resumeId={resume.id}
           allProjects={resume.projects}
+          onMoveUp={
+            index > 0
+              ? () =>
+                  reorderMutation.mutate({
+                    idA: project.id,
+                    idB: resume.projects[index - 1].id,
+                  })
+              : undefined
+          }
+          onMoveDown={
+            index < resume.projects.length - 1
+              ? () =>
+                  reorderMutation.mutate({
+                    idA: project.id,
+                    idB: resume.projects[index + 1].id,
+                  })
+              : undefined
+          }
         />
       ))}
 
@@ -138,10 +166,14 @@ function ProjectCard({
   project,
   resumeId,
   allProjects,
+  onMoveUp,
+  onMoveDown,
 }: {
   project: ResumeDetailDTO["projects"][number];
   resumeId: string;
   allProjects: ResumeDetailDTO["projects"];
+  onMoveUp?: () => void;
+  onMoveDown?: () => void;
 }) {
   const { updateProject, deleteProject } = useResumeWorkspace();
   const [editing, setEditing] = useState(false);
@@ -203,6 +235,26 @@ function ProjectCard({
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <CardTitle className="text-base">{project.name}</CardTitle>
           <div className="flex gap-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-7"
+              onClick={onMoveUp}
+              disabled={!onMoveUp}
+              title="Move up"
+            >
+              <ArrowUp className="size-3.5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-7"
+              onClick={onMoveDown}
+              disabled={!onMoveDown}
+              title="Move down"
+            >
+              <ArrowDown className="size-3.5" />
+            </Button>
             <Button variant="ghost" size="icon" className="size-7" onClick={() => setEditing(true)}>
               <Pencil className="size-3.5" />
             </Button>

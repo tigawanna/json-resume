@@ -11,7 +11,7 @@ import { useAppForm } from "@/lib/tanstack/form";
 import { unwrapUnknownError } from "@/utils/errors";
 import { formOptions } from "@tanstack/react-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Library, Pencil, Plus, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, Library, Pencil, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -21,11 +21,21 @@ interface EducationSectionProps {
 }
 
 export function EducationSection({ resumeId }: EducationSectionProps) {
-  const { resume, searches, createEducation } = useResumeWorkspace();
+  const { resume, searches, createEducation, reorderEducation } = useResumeWorkspace();
   const searchEducation = searches?.education;
   const queryClient = useQueryClient();
 
   const [pickOpen, setPickOpen] = useState(false);
+
+  const reorderMutation = useMutation({
+    mutationFn: ({ idA, idB }: { idA: string; idB: string }) => reorderEducation(idA, idB),
+    onError(err: unknown) {
+      toast.error("Failed to reorder education", {
+        description: unwrapUnknownError(err).message,
+      });
+    },
+    meta: { invalidates: [["resumes"], ["education"]] },
+  });
 
   const pickMutation = useMutation({
     mutationFn: async (rawItems: { school: string; degree: string; field: string }[]) =>
@@ -59,12 +69,30 @@ export function EducationSection({ resumeId }: EducationSectionProps) {
 
   return (
     <div className="flex flex-col gap-4" data-test="education-section">
-      {resume.education.map((edu) => (
+      {resume.education.map((edu, index) => (
         <EducationCard
           key={edu.id}
           education={edu}
           resumeId={resume.id}
           allEducation={resume.education}
+          onMoveUp={
+            index > 0
+              ? () =>
+                  reorderMutation.mutate({
+                    idA: edu.id,
+                    idB: resume.education[index - 1].id,
+                  })
+              : undefined
+          }
+          onMoveDown={
+            index < resume.education.length - 1
+              ? () =>
+                  reorderMutation.mutate({
+                    idA: edu.id,
+                    idB: resume.education[index + 1].id,
+                  })
+              : undefined
+          }
         />
       ))}
 
@@ -110,10 +138,14 @@ function EducationCard({
   education,
   resumeId,
   allEducation,
+  onMoveUp,
+  onMoveDown,
 }: {
   education: ResumeDetailDTO["education"][number];
   resumeId: string;
   allEducation: ResumeDetailDTO["education"];
+  onMoveUp?: () => void;
+  onMoveDown?: () => void;
 }) {
   const { updateEducation, deleteEducation } = useResumeWorkspace();
   const [editing, setEditing] = useState(false);
@@ -161,6 +193,26 @@ function EducationCard({
             {education.field ? ` in ${education.field}` : ""}
           </CardTitle>
           <div className="flex gap-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-7"
+              onClick={onMoveUp}
+              disabled={!onMoveUp}
+              title="Move up"
+            >
+              <ArrowUp className="size-3.5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-7"
+              onClick={onMoveDown}
+              disabled={!onMoveDown}
+              title="Move down"
+            >
+              <ArrowDown className="size-3.5" />
+            </Button>
             <Button variant="ghost" size="icon" className="size-7" onClick={() => setEditing(true)}>
               <Pencil className="size-3.5" />
             </Button>

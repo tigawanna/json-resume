@@ -12,6 +12,9 @@ import {
   removeProject,
   removeTalk,
   replaceResumeDoc,
+  reorderEducationFn,
+  reorderProjectFn,
+  reorderTalkFn,
   searchEducation,
   searchExperienceBullets,
   searchExperiences,
@@ -220,6 +223,19 @@ export function createRemoteResumeWorkspace(resume: ResumeDetailDTO): ResumeWork
         education: resume.education.filter((item) => item.id !== id),
       });
     },
+    async reorderEducation(idA: string, idB: string) {
+      await reorderEducationFn({ data: { idA, idB } });
+      const education = [...resume.education];
+      const indexA = education.findIndex((e) => e.id === idA);
+      const indexB = education.findIndex((e) => e.id === idB);
+      if (indexA >= 0 && indexB >= 0) {
+        const tempOrder = education[indexA].sortOrder;
+        education[indexA] = { ...education[indexA], sortOrder: education[indexB].sortOrder };
+        education[indexB] = { ...education[indexB], sortOrder: tempOrder };
+        education.sort((a, b) => b.sortOrder - a.sortOrder);
+        writeResumeUpdate(resume.id, { education });
+      }
+    },
     async createProject(values: ProjectDraft) {
       const data = await createProject({
         data: { resumeId: resume.id, ...values, sortOrder: resume.projects.length },
@@ -263,6 +279,19 @@ export function createRemoteResumeWorkspace(resume: ResumeDetailDTO): ResumeWork
       writeResumeUpdate(resume.id, {
         projects: resume.projects.filter((item) => item.id !== id),
       });
+    },
+    async reorderProject(idA: string, idB: string) {
+      await reorderProjectFn({ data: { idA, idB } });
+      const projects = [...resume.projects];
+      const indexA = projects.findIndex((p) => p.id === idA);
+      const indexB = projects.findIndex((p) => p.id === idB);
+      if (indexA >= 0 && indexB >= 0) {
+        const tempOrder = projects[indexA].sortOrder;
+        projects[indexA] = { ...projects[indexA], sortOrder: projects[indexB].sortOrder };
+        projects[indexB] = { ...projects[indexB], sortOrder: tempOrder };
+        projects.sort((a, b) => b.sortOrder - a.sortOrder);
+        writeResumeUpdate(resume.id, { projects });
+      }
     },
     async createTalk(values: TalkDraft) {
       const data = await createTalk({
@@ -314,6 +343,19 @@ export function createRemoteResumeWorkspace(resume: ResumeDetailDTO): ResumeWork
       writeResumeUpdate(resume.id, {
         talks: resume.talks.filter((item) => item.id !== id),
       });
+    },
+    async reorderTalk(idA: string, idB: string) {
+      await reorderTalkFn({ data: { idA, idB } });
+      const talks = [...resume.talks];
+      const indexA = talks.findIndex((t) => t.id === idA);
+      const indexB = talks.findIndex((t) => t.id === idB);
+      if (indexA >= 0 && indexB >= 0) {
+        const tempOrder = talks[indexA].sortOrder;
+        talks[indexA] = { ...talks[indexA], sortOrder: talks[indexB].sortOrder };
+        talks[indexB] = { ...talks[indexB], sortOrder: tempOrder };
+        talks.sort((a, b) => b.sortOrder - a.sortOrder);
+        writeResumeUpdate(resume.id, { talks });
+      }
     },
     async replaceDocument(doc: ResumeDocumentV1) {
       await replaceResumeDoc({ data: { id: resume.id, doc } });

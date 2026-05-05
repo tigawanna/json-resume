@@ -99,11 +99,14 @@ export interface ResumeWorkspaceAdapter {
   createEducation(values: EducationDraft): Promise<{ id: string }>;
   updateEducation(id: string, values: EducationDraft): Promise<void>;
   deleteEducation(id: string): Promise<void>;
+  reorderEducation(idA: string, idB: string): Promise<void>;
   createProject(values: ProjectDraft): Promise<{ id: string }>;
   updateProject(id: string, values: ProjectDraft): Promise<void>;
   deleteProject(id: string): Promise<void>;
+  reorderProject(idA: string, idB: string): Promise<void>;
   createTalk(values: TalkDraft): Promise<{ id: string }>;
   updateTalk(id: string, values: TalkDraft): Promise<void>;
   deleteTalk(id: string): Promise<void>;
+  reorderTalk(idA: string, idB: string): Promise<void>;
   replaceDocument(doc: ResumeDocumentV1): Promise<void>;
 }
