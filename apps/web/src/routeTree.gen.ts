@@ -41,6 +41,12 @@ import { Route as DashboardContactsIndexRouteImport } from './routes/_dashboard/
 import { Route as DashboardCertificationsIndexRouteImport } from './routes/_dashboard/certifications/index'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as DashboardResumesResumeIdIndexRouteImport } from './routes/_dashboard/resumes/$resumeId/index'
+import { Route as ApiAgenticResumesListRouteImport } from './routes/api/agentic/resumes/list'
+import { Route as ApiAgenticResumesDocumentRouteImport } from './routes/api/agentic/resumes/document'
+import { Route as ApiAgenticResumesCreateFromDocumentRouteImport } from './routes/api/agentic/resumes/create-from-document'
+import { Route as ApiAgenticResumeBlocksSearchRouteImport } from './routes/api/agentic/resume-blocks/search'
+import { Route as ApiAgenticExperienceBulletsReplaceRouteImport } from './routes/api/agentic/experience-bullets/replace'
+import { Route as ApiAgenticExperienceBulletsAddRouteImport } from './routes/api/agentic/experience-bullets/add'
 
 const SearchRoute = SearchRouteImport.update({
   id: '/search',
@@ -209,6 +215,41 @@ const DashboardResumesResumeIdIndexRoute =
     path: '/resumes/$resumeId/',
     getParentRoute: () => DashboardLayoutRoute,
   } as any)
+const ApiAgenticResumesListRoute = ApiAgenticResumesListRouteImport.update({
+  id: '/api/agentic/resumes/list',
+  path: '/api/agentic/resumes/list',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAgenticResumesDocumentRoute =
+  ApiAgenticResumesDocumentRouteImport.update({
+    id: '/api/agentic/resumes/document',
+    path: '/api/agentic/resumes/document',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiAgenticResumesCreateFromDocumentRoute =
+  ApiAgenticResumesCreateFromDocumentRouteImport.update({
+    id: '/api/agentic/resumes/create-from-document',
+    path: '/api/agentic/resumes/create-from-document',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiAgenticResumeBlocksSearchRoute =
+  ApiAgenticResumeBlocksSearchRouteImport.update({
+    id: '/api/agentic/resume-blocks/search',
+    path: '/api/agentic/resume-blocks/search',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiAgenticExperienceBulletsReplaceRoute =
+  ApiAgenticExperienceBulletsReplaceRouteImport.update({
+    id: '/api/agentic/experience-bullets/replace',
+    path: '/api/agentic/experience-bullets/replace',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiAgenticExperienceBulletsAddRoute =
+  ApiAgenticExperienceBulletsAddRouteImport.update({
+    id: '/api/agentic/experience-bullets/add',
+    path: '/api/agentic/experience-bullets/add',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -240,6 +281,12 @@ export interface FileRoutesByFullPath {
   '/summaries/': typeof DashboardSummariesIndexRoute
   '/talks/': typeof DashboardTalksIndexRoute
   '/volunteers/': typeof DashboardVolunteersIndexRoute
+  '/api/agentic/experience-bullets/add': typeof ApiAgenticExperienceBulletsAddRoute
+  '/api/agentic/experience-bullets/replace': typeof ApiAgenticExperienceBulletsReplaceRoute
+  '/api/agentic/resume-blocks/search': typeof ApiAgenticResumeBlocksSearchRoute
+  '/api/agentic/resumes/create-from-document': typeof ApiAgenticResumesCreateFromDocumentRoute
+  '/api/agentic/resumes/document': typeof ApiAgenticResumesDocumentRoute
+  '/api/agentic/resumes/list': typeof ApiAgenticResumesListRoute
   '/resumes/$resumeId/': typeof DashboardResumesResumeIdIndexRoute
 }
 export interface FileRoutesByTo {
@@ -271,6 +318,12 @@ export interface FileRoutesByTo {
   '/summaries': typeof DashboardSummariesIndexRoute
   '/talks': typeof DashboardTalksIndexRoute
   '/volunteers': typeof DashboardVolunteersIndexRoute
+  '/api/agentic/experience-bullets/add': typeof ApiAgenticExperienceBulletsAddRoute
+  '/api/agentic/experience-bullets/replace': typeof ApiAgenticExperienceBulletsReplaceRoute
+  '/api/agentic/resume-blocks/search': typeof ApiAgenticResumeBlocksSearchRoute
+  '/api/agentic/resumes/create-from-document': typeof ApiAgenticResumesCreateFromDocumentRoute
+  '/api/agentic/resumes/document': typeof ApiAgenticResumesDocumentRoute
+  '/api/agentic/resumes/list': typeof ApiAgenticResumesListRoute
   '/resumes/$resumeId': typeof DashboardResumesResumeIdIndexRoute
 }
 export interface FileRoutesById {
@@ -306,6 +359,12 @@ export interface FileRoutesById {
   '/_dashboard/summaries/': typeof DashboardSummariesIndexRoute
   '/_dashboard/talks/': typeof DashboardTalksIndexRoute
   '/_dashboard/volunteers/': typeof DashboardVolunteersIndexRoute
+  '/api/agentic/experience-bullets/add': typeof ApiAgenticExperienceBulletsAddRoute
+  '/api/agentic/experience-bullets/replace': typeof ApiAgenticExperienceBulletsReplaceRoute
+  '/api/agentic/resume-blocks/search': typeof ApiAgenticResumeBlocksSearchRoute
+  '/api/agentic/resumes/create-from-document': typeof ApiAgenticResumesCreateFromDocumentRoute
+  '/api/agentic/resumes/document': typeof ApiAgenticResumesDocumentRoute
+  '/api/agentic/resumes/list': typeof ApiAgenticResumesListRoute
   '/_dashboard/resumes/$resumeId/': typeof DashboardResumesResumeIdIndexRoute
 }
 export interface FileRouteTypes {
@@ -340,6 +399,12 @@ export interface FileRouteTypes {
     | '/summaries/'
     | '/talks/'
     | '/volunteers/'
+    | '/api/agentic/experience-bullets/add'
+    | '/api/agentic/experience-bullets/replace'
+    | '/api/agentic/resume-blocks/search'
+    | '/api/agentic/resumes/create-from-document'
+    | '/api/agentic/resumes/document'
+    | '/api/agentic/resumes/list'
     | '/resumes/$resumeId/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -371,6 +436,12 @@ export interface FileRouteTypes {
     | '/summaries'
     | '/talks'
     | '/volunteers'
+    | '/api/agentic/experience-bullets/add'
+    | '/api/agentic/experience-bullets/replace'
+    | '/api/agentic/resume-blocks/search'
+    | '/api/agentic/resumes/create-from-document'
+    | '/api/agentic/resumes/document'
+    | '/api/agentic/resumes/list'
     | '/resumes/$resumeId'
   id:
     | '__root__'
@@ -405,6 +476,12 @@ export interface FileRouteTypes {
     | '/_dashboard/summaries/'
     | '/_dashboard/talks/'
     | '/_dashboard/volunteers/'
+    | '/api/agentic/experience-bullets/add'
+    | '/api/agentic/experience-bullets/replace'
+    | '/api/agentic/resume-blocks/search'
+    | '/api/agentic/resumes/create-from-document'
+    | '/api/agentic/resumes/document'
+    | '/api/agentic/resumes/list'
     | '/_dashboard/resumes/$resumeId/'
   fileRoutesById: FileRoutesById
 }
@@ -419,6 +496,12 @@ export interface RootRouteChildren {
   ApiMcpRoute: typeof ApiMcpRoute
   TestIndexRoute: typeof TestIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  ApiAgenticExperienceBulletsAddRoute: typeof ApiAgenticExperienceBulletsAddRoute
+  ApiAgenticExperienceBulletsReplaceRoute: typeof ApiAgenticExperienceBulletsReplaceRoute
+  ApiAgenticResumeBlocksSearchRoute: typeof ApiAgenticResumeBlocksSearchRoute
+  ApiAgenticResumesCreateFromDocumentRoute: typeof ApiAgenticResumesCreateFromDocumentRoute
+  ApiAgenticResumesDocumentRoute: typeof ApiAgenticResumesDocumentRoute
+  ApiAgenticResumesListRoute: typeof ApiAgenticResumesListRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -647,6 +730,48 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardResumesResumeIdIndexRouteImport
       parentRoute: typeof DashboardLayoutRoute
     }
+    '/api/agentic/resumes/list': {
+      id: '/api/agentic/resumes/list'
+      path: '/api/agentic/resumes/list'
+      fullPath: '/api/agentic/resumes/list'
+      preLoaderRoute: typeof ApiAgenticResumesListRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/agentic/resumes/document': {
+      id: '/api/agentic/resumes/document'
+      path: '/api/agentic/resumes/document'
+      fullPath: '/api/agentic/resumes/document'
+      preLoaderRoute: typeof ApiAgenticResumesDocumentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/agentic/resumes/create-from-document': {
+      id: '/api/agentic/resumes/create-from-document'
+      path: '/api/agentic/resumes/create-from-document'
+      fullPath: '/api/agentic/resumes/create-from-document'
+      preLoaderRoute: typeof ApiAgenticResumesCreateFromDocumentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/agentic/resume-blocks/search': {
+      id: '/api/agentic/resume-blocks/search'
+      path: '/api/agentic/resume-blocks/search'
+      fullPath: '/api/agentic/resume-blocks/search'
+      preLoaderRoute: typeof ApiAgenticResumeBlocksSearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/agentic/experience-bullets/replace': {
+      id: '/api/agentic/experience-bullets/replace'
+      path: '/api/agentic/experience-bullets/replace'
+      fullPath: '/api/agentic/experience-bullets/replace'
+      preLoaderRoute: typeof ApiAgenticExperienceBulletsReplaceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/agentic/experience-bullets/add': {
+      id: '/api/agentic/experience-bullets/add'
+      path: '/api/agentic/experience-bullets/add'
+      fullPath: '/api/agentic/experience-bullets/add'
+      preLoaderRoute: typeof ApiAgenticExperienceBulletsAddRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -737,6 +862,14 @@ const rootRouteChildren: RootRouteChildren = {
   ApiMcpRoute: ApiMcpRoute,
   TestIndexRoute: TestIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  ApiAgenticExperienceBulletsAddRoute: ApiAgenticExperienceBulletsAddRoute,
+  ApiAgenticExperienceBulletsReplaceRoute:
+    ApiAgenticExperienceBulletsReplaceRoute,
+  ApiAgenticResumeBlocksSearchRoute: ApiAgenticResumeBlocksSearchRoute,
+  ApiAgenticResumesCreateFromDocumentRoute:
+    ApiAgenticResumesCreateFromDocumentRoute,
+  ApiAgenticResumesDocumentRoute: ApiAgenticResumesDocumentRoute,
+  ApiAgenticResumesListRoute: ApiAgenticResumesListRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

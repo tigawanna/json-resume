@@ -2,7 +2,7 @@
 
 This folder is the shared server-only tool layer for agentic resume workflows.
 
-The current implementation exposes these Drizzle-backed tools through MCP:
+The current implementation exposes these Drizzle-backed tools through MCP and raw API routes:
 
 - `list_resumes`
 - `get_resume_document`
@@ -11,7 +11,7 @@ The current implementation exposes these Drizzle-backed tools through MCP:
 - `replace_experience_bullets`
 - `create_resume_from_document`
 
-Do not duplicate the query or mutation logic for future API or TanStack AI work. Add thin adapters that validate input, authenticate the caller, and call the functions in `resume-tools.server.ts`.
+Do not duplicate the query or mutation logic for future TanStack AI work. Add thin adapters that validate input, authenticate the caller, and call the functions in `resume-tools.server.ts`.
 
 ## Existing Files
 
@@ -24,27 +24,35 @@ Do not duplicate the query or mutation logic for future API or TanStack AI work.
 - `resume-mcp.server.ts`
   MCP-specific adapter. It registers the shared functions as MCP tools and returns `structuredContent`.
 
+- `resume-api.server.ts`
+  Raw API request helper. It handles API-key auth, JSON parsing, shared CORS headers, stable JSON responses, and `unknown` error handling.
+
 - `src/routes/api/mcp.ts`
   Streamable HTTP MCP endpoint protected by Better Auth MCP OAuth via `withMcpAuth`.
 
 - `src/lib/better-auth/api-key.server.ts`
-  Helper for future raw API routes. It accepts `x-api-key` or `Authorization: Bearer ...`, verifies via Better Auth API key plugin, and returns the user id.
+  Helper for raw API routes. It accepts `x-api-key` or `Authorization: Bearer ...`, verifies via Better Auth API key plugin, and returns the user id.
 
-## Raw API Layer Plan
+## Raw API Layer
 
-Create routes under:
-
-```txt
-apps/web/src/routes/api/agentic/
-```
-
-Recommended first route:
+Implemented routes:
 
 ```txt
-apps/web/src/routes/api/agentic/resume-tools/$tool.ts
+POST /api/agentic/resumes/list
+POST /api/agentic/resumes/document
+POST /api/agentic/resume-blocks/search
+POST /api/agentic/experience-bullets/add
+POST /api/agentic/experience-bullets/replace
+POST /api/agentic/resumes/create-from-document
 ```
 
-or explicit routes if you prefer clearer contracts:
+All routes also support:
+
+```txt
+OPTIONS
+```
+
+Route files:
 
 ```txt
 apps/web/src/routes/api/agentic/resumes/list.ts
@@ -55,17 +63,17 @@ apps/web/src/routes/api/agentic/experience-bullets/replace.ts
 apps/web/src/routes/api/agentic/resumes/create-from-document.ts
 ```
 
-Each route should:
+Each route:
 
-1. Import `authenticateApiKeyRequest` from `@/lib/better-auth/api-key.server`.
-2. Authenticate the request with a permission check.
-3. Parse JSON body as `unknown`.
-4. Validate with the matching schema from `resume-tool-schemas.ts`.
-5. Call the matching function from `resume-tools.server.ts`.
-6. Return `Response.json(result)`.
-7. Catch errors as `unknown`, unwrap only with safe helpers or `instanceof Error`.
+1. Calls `handleAgenticToolRequest` from `resume-api.server.ts`.
+2. Authenticates with Better Auth API keys.
+3. Parses JSON body as `unknown`.
+4. Validates with the matching schema from `resume-tool-schemas.ts`.
+5. Calls the matching function from `resume-tools.server.ts`.
+6. Returns JSON with CORS headers.
+7. Catches errors as `unknown`.
 
-Suggested permission shape:
+Permission shape:
 
 ```ts
 const resumeReadPermission = { resumes: ["read"] };
@@ -86,35 +94,13 @@ Use write permission for:
 
 Do not enable Better Auth `enableSessionForAPIKeys` unless deliberately changing the auth model. The helper already verifies API keys directly and avoids pretending API keys are cookie sessions.
 
-Example route shape:
+Example request:
 
-```ts
-import { searchResumeBlocksTool } from "@/features/agentic-tools/resume-tools.server";
-import { searchResumeBlocksToolInputSchema } from "@/features/agentic-tools/resume-tool-schemas";
-import { authenticateApiKeyRequest } from "@/lib/better-auth/api-key.server";
-import { createFileRoute } from "@tanstack/react-router";
-
-async function post(request: Request): Promise<Response> {
-  const auth = await authenticateApiKeyRequest(request, { resumes: ["read"] });
-  if (!auth) return Response.json({ error: "Unauthorized" }, { status: 401 });
-
-  try {
-    const raw: unknown = await request.json();
-    const input = searchResumeBlocksToolInputSchema.parse(raw);
-    return Response.json(await searchResumeBlocksTool({ userId: auth.userId }, input));
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Unknown error";
-    return Response.json({ error: message }, { status: 400 });
-  }
-}
-
-export const Route = createFileRoute("/api/agentic/resume-blocks/search")({
-  server: {
-    handlers: {
-      POST: ({ request }: { request: Request }) => post(request),
-    },
-  },
-});
+```bash
+curl -X POST "$APP_URL/api/agentic/resume-blocks/search" \
+  -H "content-type: application/json" \
+  -H "x-api-key: $AGENTIC_JSON_RESUME_API_KEY" \
+  --data '{"keyword":"react","limitPerType":5}'
 ```
 
 ## TanStack AI / OpenRouter Layer Plan
