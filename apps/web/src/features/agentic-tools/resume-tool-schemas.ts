@@ -10,7 +10,7 @@ export const resumeBlockTypeSchema = z.enum([
 ]);
 
 export const listResumesToolInputSchema = z.object({
-  keyword: z.string().trim().min(1).optional(),
+  keyword: z.string().trim().optional(),
   limit: z.coerce.number().int().min(1).max(50).default(20),
 });
 
@@ -20,7 +20,7 @@ export const getResumeDocumentToolInputSchema = z.object({
 
 export const searchResumeBlocksToolInputSchema = z.object({
   resumeId: z.string().trim().min(1).optional(),
-  keyword: z.string().trim().min(1).optional(),
+  keyword: z.string().trim().optional(),
   blockTypes: z.array(resumeBlockTypeSchema).min(1).optional(),
   limitPerType: z.coerce.number().int().min(1).max(20).default(8),
 });
