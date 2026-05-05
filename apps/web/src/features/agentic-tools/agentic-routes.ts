@@ -1,5 +1,6 @@
 export const agenticOpenApiBasePath = "/api/agentic";
 export const agenticOpenApiSpecPath = "/api/agentic/openapi/json";
+export const agenticOpenApiUiPath = "/api/agentic/openapi";
 export const agenticRpcBasePath = "/api/agentic/rpc";
 export const agenticMcpPath = "/api/mcp";
 
