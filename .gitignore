@@ -46,3 +46,4 @@ apps/site/*.db
 *.sqlite
 *.sqlite3
 *.tsbuildinfo
+apps/web/tsconfig.tsbuildinfo

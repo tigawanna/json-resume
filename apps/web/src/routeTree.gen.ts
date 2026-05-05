@@ -18,6 +18,7 @@ import { Route as TestIndexRouteImport } from './routes/test/index'
 import { Route as AuthIndexRouteImport } from './routes/auth/index'
 import { Route as AuthSignupRouteImport } from './routes/auth/signup'
 import { Route as AuthGithubRouteImport } from './routes/auth/github'
+import { Route as ApiMcpRouteImport } from './routes/api/mcp'
 import { Route as PublicPreviewRouteImport } from './routes/_public/preview'
 import { Route as DashboardDashboardRouteImport } from './routes/_dashboard/dashboard'
 import { Route as DotwellKnownOauthProtectedResourceRouteImport } from './routes/[.]well-known/oauth-protected-resource'
@@ -83,6 +84,11 @@ const AuthGithubRoute = AuthGithubRouteImport.update({
   id: '/github',
   path: '/github',
   getParentRoute: () => AuthLayoutRoute,
+} as any)
+const ApiMcpRoute = ApiMcpRouteImport.update({
+  id: '/api/mcp',
+  path: '/api/mcp',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const PublicPreviewRoute = PublicPreviewRouteImport.update({
   id: '/preview',
@@ -212,6 +218,7 @@ export interface FileRoutesByFullPath {
   '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRoute
   '/dashboard': typeof DashboardDashboardRoute
   '/preview': typeof PublicPreviewRoute
+  '/api/mcp': typeof ApiMcpRoute
   '/auth/github': typeof AuthGithubRoute
   '/auth/signup': typeof AuthSignupRoute
   '/auth/': typeof AuthIndexRoute
@@ -242,6 +249,7 @@ export interface FileRoutesByTo {
   '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRoute
   '/dashboard': typeof DashboardDashboardRoute
   '/preview': typeof PublicPreviewRoute
+  '/api/mcp': typeof ApiMcpRoute
   '/auth/github': typeof AuthGithubRoute
   '/auth/signup': typeof AuthSignupRoute
   '/auth': typeof AuthIndexRoute
@@ -276,6 +284,7 @@ export interface FileRoutesById {
   '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRoute
   '/_dashboard/dashboard': typeof DashboardDashboardRoute
   '/_public/preview': typeof PublicPreviewRoute
+  '/api/mcp': typeof ApiMcpRoute
   '/auth/github': typeof AuthGithubRoute
   '/auth/signup': typeof AuthSignupRoute
   '/auth/': typeof AuthIndexRoute
@@ -309,6 +318,7 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/dashboard'
     | '/preview'
+    | '/api/mcp'
     | '/auth/github'
     | '/auth/signup'
     | '/auth/'
@@ -339,6 +349,7 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/dashboard'
     | '/preview'
+    | '/api/mcp'
     | '/auth/github'
     | '/auth/signup'
     | '/auth'
@@ -372,6 +383,7 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/_dashboard/dashboard'
     | '/_public/preview'
+    | '/api/mcp'
     | '/auth/github'
     | '/auth/signup'
     | '/auth/'
@@ -404,6 +416,7 @@ export interface RootRouteChildren {
   SearchRoute: typeof SearchRoute
   DotwellKnownOauthAuthorizationServerRoute: typeof DotwellKnownOauthAuthorizationServerRoute
   DotwellKnownOauthProtectedResourceRoute: typeof DotwellKnownOauthProtectedResourceRoute
+  ApiMcpRoute: typeof ApiMcpRoute
   TestIndexRoute: typeof TestIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
@@ -472,6 +485,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/auth/github'
       preLoaderRoute: typeof AuthGithubRouteImport
       parentRoute: typeof AuthLayoutRoute
+    }
+    '/api/mcp': {
+      id: '/api/mcp'
+      path: '/api/mcp'
+      fullPath: '/api/mcp'
+      preLoaderRoute: typeof ApiMcpRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_public/preview': {
       id: '/_public/preview'
@@ -714,6 +734,7 @@ const rootRouteChildren: RootRouteChildren = {
     DotwellKnownOauthAuthorizationServerRoute,
   DotwellKnownOauthProtectedResourceRoute:
     DotwellKnownOauthProtectedResourceRoute,
+  ApiMcpRoute: ApiMcpRoute,
   TestIndexRoute: TestIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
 }
