@@ -7,8 +7,9 @@ import { unwrapUnknownError } from "@/utils/errors";
 import { useMutation } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { AlertCircle, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { toast } from "sonner";
+import { ApiKeysSection } from "./-components/ApiKeysSection";
 
 export const Route = createFileRoute("/_dashboard/settings/")({
   component: SettingsPage,
@@ -71,6 +72,11 @@ function SettingsPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* API Keys Section */}
+      <Suspense>
+        <ApiKeysSection />
+      </Suspense>
 
       {/* Danger Zone - Delete Account */}
       <Card className="border-destructive">
