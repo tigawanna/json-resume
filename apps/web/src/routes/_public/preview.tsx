@@ -205,7 +205,7 @@ function LocalWorkbench({ resumeId }: { resumeId: string }) {
           </TabsContent>
 
           <TabsContent value="json" forceMount className="mt-4 data-[state=inactive]:hidden">
-            <ResumeJsonTab resumeId={currentResume.id} />
+            <ResumeJsonTab />
           </TabsContent>
 
           <TabsContent value="prompt" className="mt-4">

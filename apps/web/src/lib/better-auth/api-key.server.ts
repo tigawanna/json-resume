@@ -10,11 +10,11 @@ export type ApiKeyAuthResult = {
   name: string | null;
 };
 
-function readApiKey(request: Request): string | null {
-  const explicitKey = request.headers.get("x-api-key")?.trim();
+export function readApiKeyFromHeaders(headers: Headers): string | null {
+  const explicitKey = headers.get("x-api-key")?.trim();
   if (explicitKey) return explicitKey;
 
-  const authorization = request.headers.get("authorization")?.trim();
+  const authorization = headers.get("authorization")?.trim();
   const bearerPrefix = "Bearer ";
   if (authorization?.startsWith(bearerPrefix)) {
     return authorization.slice(bearerPrefix.length).trim();
@@ -23,11 +23,15 @@ function readApiKey(request: Request): string | null {
   return null;
 }
 
-export async function authenticateApiKeyRequest(
-  request: Request,
+function readApiKey(request: Request): string | null {
+  return readApiKeyFromHeaders(request.headers);
+}
+
+export async function authenticateApiKeyHeaders(
+  headers: Headers,
   permissions?: ApiKeyPermissionCheck,
 ): Promise<ApiKeyAuthResult | null> {
-  const key = readApiKey(request);
+  const key = readApiKeyFromHeaders(headers);
   if (!key) return null;
 
   const result = await auth.api.verifyApiKey({
@@ -46,4 +50,13 @@ export async function authenticateApiKeyRequest(
     keyId: result.key.id,
     name: result.key.name,
   };
+}
+
+export async function authenticateApiKeyRequest(
+  request: Request,
+  permissions?: ApiKeyPermissionCheck,
+): Promise<ApiKeyAuthResult | null> {
+  if (!readApiKey(request)) return null;
+
+  return authenticateApiKeyHeaders(request.headers, permissions);
 }

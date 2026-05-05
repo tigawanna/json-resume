@@ -160,6 +160,18 @@ export function createLocalResumeWorkspace(resume: ResumeDetailDTO): ResumeWorks
         draft.education = draft.education.filter((e) => e.id !== eduId);
       });
     },
+    async reorderEducation(idA: string, idB: string) {
+      await applyUpdate(id, (draft) => {
+        const a = draft.education.find((item) => item.id === idA);
+        const b = draft.education.find((item) => item.id === idB);
+        if (a && b) {
+          const tempOrder = a.sortOrder;
+          a.sortOrder = b.sortOrder;
+          b.sortOrder = tempOrder;
+          draft.education.sort((x, y) => x.sortOrder - y.sortOrder);
+        }
+      });
+    },
     async createProject(values: ProjectDraft) {
       const newId = makeId();
       await applyUpdate(id, (draft) => {
@@ -193,6 +205,18 @@ export function createLocalResumeWorkspace(resume: ResumeDetailDTO): ResumeWorks
         draft.projects = draft.projects.filter((p) => p.id !== projId);
       });
     },
+    async reorderProject(idA: string, idB: string) {
+      await applyUpdate(id, (draft) => {
+        const a = draft.projects.find((item) => item.id === idA);
+        const b = draft.projects.find((item) => item.id === idB);
+        if (a && b) {
+          const tempOrder = a.sortOrder;
+          a.sortOrder = b.sortOrder;
+          b.sortOrder = tempOrder;
+          draft.projects.sort((x, y) => x.sortOrder - y.sortOrder);
+        }
+      });
+    },
     async createTalk(values: TalkDraft) {
       const newId = makeId();
       await applyUpdate(id, (draft) => {
@@ -224,6 +248,18 @@ export function createLocalResumeWorkspace(resume: ResumeDetailDTO): ResumeWorks
     async deleteTalk(talkId: string) {
       await applyUpdate(id, (draft) => {
         draft.talks = draft.talks.filter((t) => t.id !== talkId);
+      });
+    },
+    async reorderTalk(idA: string, idB: string) {
+      await applyUpdate(id, (draft) => {
+        const a = draft.talks.find((item) => item.id === idA);
+        const b = draft.talks.find((item) => item.id === idB);
+        if (a && b) {
+          const tempOrder = a.sortOrder;
+          a.sortOrder = b.sortOrder;
+          b.sortOrder = tempOrder;
+          draft.talks.sort((x, y) => x.sortOrder - y.sortOrder);
+        }
       });
     },
     async replaceDocument(doc: ResumeDocumentV1) {

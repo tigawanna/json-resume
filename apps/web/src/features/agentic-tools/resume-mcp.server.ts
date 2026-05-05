@@ -2,14 +2,7 @@ import "@tanstack/react-start/server-only";
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
-import {
-  addExperienceBulletTool,
-  createResumeFromDocumentTool,
-  getResumeDocumentTool,
-  listResumesTool,
-  replaceExperienceBulletsTool,
-  searchResumeBlocksTool,
-} from "./resume-tools.server";
+import { createResumeAgenticServerClient } from "./resume-orpc-client.server";
 import {
   addExperienceBulletToolInputSchema,
   createResumeFromDocumentToolInputSchema,
@@ -31,6 +24,7 @@ export function createResumeMcpServer(userId: string): McpServer {
     name: "agentic-json-resume",
     version: "0.1.0",
   });
+  const client = createResumeAgenticServerClient(userId);
 
   server.registerTool(
     "list_resumes",
@@ -40,7 +34,7 @@ export function createResumeMcpServer(userId: string): McpServer {
         "List the authenticated user's resumes. Use this first when the user did not provide a resume id.",
       inputSchema: listResumesToolInputSchema.shape,
     },
-    async (input) => jsonToolResult(await listResumesTool({ userId }, input)),
+    async (input) => jsonToolResult(await client.resumes.list(input)),
   );
 
   server.registerTool(
@@ -51,7 +45,7 @@ export function createResumeMcpServer(userId: string): McpServer {
         "Load one resume as the normalized ResumeDocumentV1 JSON used by the editor, renderer, and tailoring pipeline.",
       inputSchema: getResumeDocumentToolInputSchema.shape,
     },
-    async (input) => jsonToolResult(await getResumeDocumentTool({ userId }, input)),
+    async (input) => jsonToolResult(await client.resumes.document(input)),
   );
 
   server.registerTool(
@@ -62,7 +56,7 @@ export function createResumeMcpServer(userId: string): McpServer {
         "Search reusable resume blocks such as summaries, experience bullets, projects, and skills. Use this to gather relevant material for a job description.",
       inputSchema: searchResumeBlocksToolInputSchema.shape,
     },
-    async (input) => jsonToolResult(await searchResumeBlocksTool({ userId }, input)),
+    async (input) => jsonToolResult(await client.resumeBlocks.search(input)),
   );
 
   server.registerTool(
@@ -73,7 +67,7 @@ export function createResumeMcpServer(userId: string): McpServer {
         "Append or insert an honest tailored bullet under an existing experience owned by the authenticated user.",
       inputSchema: addExperienceBulletToolInputSchema.shape,
     },
-    async (input) => jsonToolResult(await addExperienceBulletTool({ userId }, input)),
+    async (input) => jsonToolResult(await client.experienceBullets.add(input)),
   );
 
   server.registerTool(
@@ -84,7 +78,7 @@ export function createResumeMcpServer(userId: string): McpServer {
         "Replace all bullets for an existing experience. Use this only when rewriting the complete bullet set for that role.",
       inputSchema: replaceExperienceBulletsToolInputSchema.shape,
     },
-    async (input) => jsonToolResult(await replaceExperienceBulletsTool({ userId }, input)),
+    async (input) => jsonToolResult(await client.experienceBullets.replace(input)),
   );
 
   server.registerTool(
@@ -95,7 +89,7 @@ export function createResumeMcpServer(userId: string): McpServer {
         "Create a new tailored resume from a complete ResumeDocumentV1 JSON document assembled from selected blocks.",
       inputSchema: createResumeFromDocumentToolInputSchema.shape,
     },
-    async (input) => jsonToolResult(await createResumeFromDocumentTool({ userId }, input)),
+    async (input) => jsonToolResult(await client.resumes.createFromDocument(input)),
   );
 
   return server;

@@ -2,7 +2,7 @@
 
 This folder is the shared server-only tool layer for agentic resume workflows.
 
-The current implementation exposes these Drizzle-backed tools through MCP and raw API routes:
+The current implementation exposes these Drizzle-backed tools through MCP, oRPC, OpenAPI-compatible HTTP routes, and the first TanStack AI chat workflow:
 
 - `list_resumes`
 - `get_resume_document`
@@ -11,31 +11,49 @@ The current implementation exposes these Drizzle-backed tools through MCP and ra
 - `replace_experience_bullets`
 - `create_resume_from_document`
 
-Do not duplicate the query or mutation logic for future TanStack AI work. Add thin adapters that validate input, authenticate the caller, and call the functions in `resume-tools.server.ts`.
+Do not duplicate the query or mutation logic for future work. Add thin adapters that validate input, authenticate the caller, and call the functions in `resume-tools.server.ts`, or go through the typed server-side oRPC client when you already have a trusted user id.
 
 ## Existing Files
 
 - `resume-tool-schemas.ts`
-  Shared Zod schemas and TypeScript input types. Use these schemas for MCP, raw API routes, and TanStack AI tool wrappers.
+  Shared Zod input and output schemas. Use these schemas for MCP, oRPC procedures, OpenAPI generation, and TanStack AI tool wrappers.
 
 - `resume-tools.server.ts`
   Server-only implementations. These functions take `{ userId }` plus a validated input object, enforce ownership where needed, and query/mutate Drizzle.
 
-- `resume-mcp.server.ts`
-  MCP-specific adapter. It registers the shared functions as MCP tools and returns `structuredContent`.
+- `resume-orpc.server.ts`
+  The shared oRPC router, auth middleware, RPC/OpenAPI handlers, OpenAPI generator, and internal typed server client factory.
 
-- `resume-api.server.ts`
-  Raw API request helper. It handles API-key auth, JSON parsing, shared CORS headers, stable JSON responses, and `unknown` error handling.
+- `resume-orpc-client.server.ts`
+  Tiny server-only re-export for consumers like MCP and AI orchestration.
+
+- `resume-mcp.server.ts`
+  MCP-specific adapter. It registers the shared functions as MCP tools and now calls the typed server-side oRPC client instead of bespoke glue.
+
+- `resume-agent.server.ts`
+  TanStack AI orchestration for the first in-app resume assistant. It uses OpenRouter plus server tools backed by the typed oRPC client.
 
 - `src/routes/api/mcp.ts`
   Streamable HTTP MCP endpoint protected by Better Auth MCP OAuth via `withMcpAuth`.
 
+- `src/routes/api/agentic/$.ts`
+  OpenAPI-compatible catch-all route for `/api/agentic/*`.
+
+- `src/routes/api/agentic/rpc/$.ts`
+  RPC protocol catch-all route for `/api/agentic/rpc/*`.
+
+- `src/routes/api/agentic/openapi.json.ts`
+  Generated OpenAPI spec endpoint.
+
+- `src/routes/api/ai/resume-tailor.ts`
+  Session-protected TanStack AI SSE route used by the resume workbench AI tab.
+
 - `src/lib/better-auth/api-key.server.ts`
-  Helper for raw API routes. It accepts `x-api-key` or `Authorization: Bearer ...`, verifies via Better Auth API key plugin, and returns the user id.
+  Helper for API-key auth. It accepts `x-api-key` or `Authorization: Bearer ...`, verifies via Better Auth API key plugin, and returns the user id.
 
-## Raw API Layer
+## oRPC API Layer
 
-Implemented routes:
+OpenAPI-compatible endpoints:
 
 ```txt
 POST /api/agentic/resumes/list
@@ -52,26 +70,28 @@ All routes also support:
 OPTIONS
 ```
 
-Route files:
+RPC endpoint for typed clients:
 
 ```txt
-apps/web/src/routes/api/agentic/resumes/list.ts
-apps/web/src/routes/api/agentic/resumes/document.ts
-apps/web/src/routes/api/agentic/resume-blocks/search.ts
-apps/web/src/routes/api/agentic/experience-bullets/add.ts
-apps/web/src/routes/api/agentic/experience-bullets/replace.ts
-apps/web/src/routes/api/agentic/resumes/create-from-document.ts
+POST /api/agentic/rpc
+POST /api/agentic/rpc/<procedure path>
 ```
 
-Each route:
+Spec endpoint:
 
-1. Calls `handleAgenticToolRequest` from `resume-api.server.ts`.
-2. Authenticates with Better Auth API keys.
-3. Parses JSON body as `unknown`.
-4. Validates with the matching schema from `resume-tool-schemas.ts`.
-5. Calls the matching function from `resume-tools.server.ts`.
-6. Returns JSON with CORS headers.
-7. Catches errors as `unknown`.
+```txt
+GET /api/agentic/openapi/json
+```
+
+Key behavior:
+
+1. `resume-orpc.server.ts` owns the auth middleware and procedure definitions.
+2. External callers authenticate with Better Auth API keys.
+3. Internal trusted callers like MCP and TanStack AI use `createResumeAgenticServerClient(userId)`.
+4. Input and output validation come from `resume-tool-schemas.ts`.
+5. The OpenAPI catch-all preserves the existing `/api/agentic/...` URLs.
+6. The RPC route is the preferred base for typed programmatic clients.
+7. Shared CORS headers are applied to both agentic HTTP routes and MCP.
 
 Permission shape:
 
@@ -92,7 +112,7 @@ Use write permission for:
 - replace experience bullets
 - create resume from document
 
-Do not enable Better Auth `enableSessionForAPIKeys` unless deliberately changing the auth model. The helper already verifies API keys directly and avoids pretending API keys are cookie sessions.
+Do not enable Better Auth `enableSessionForAPIKeys` unless deliberately changing the auth model. The helper verifies API keys directly and avoids pretending API keys are cookie sessions.
 
 Example request:
 
@@ -103,54 +123,36 @@ curl -X POST "$APP_URL/api/agentic/resume-blocks/search" \
   --data '{"keyword":"react","limitPerType":5}'
 ```
 
-## TanStack AI / OpenRouter Layer Plan
+## TanStack AI Layer
 
-Do this after the API routes, or in parallel if the API route contracts are stable.
+The first slice is implemented:
 
-Create a server-only module such as:
+- `resume-agent.server.ts` uses OpenRouter via TanStack AI.
+- `src/routes/api/ai/resume-tailor.ts` streams assistant responses over SSE.
+- `src/routes/_dashboard/resumes/$resumeId/-components/ResumeAiTab.tsx` adds the first in-app AI assistant tab.
 
-```txt
-apps/web/src/features/agentic-tools/resume-agent.server.ts
-```
+Current AI tools are optimized for the active resume rather than the raw public API shape:
 
-The agent module should not import MCP code. It should wrap `resume-tools.server.ts` directly.
+- `get_current_resume_document`
+- `search_current_resume_blocks`
+- `save_tailored_resume_draft`
 
-Inputs for the first agent workflow:
+These tools are backed by the typed server-side oRPC client, not raw fetches.
 
-```ts
-type TailorResumeInput = {
-  jobDescription: string;
-  baseResumeId?: string;
-  pastedResumeText?: string;
-  extraInstructions?: string;
-};
-```
+OpenRouter reads the API key from `src/lib/server-env.ts`. The key stays server-only.
 
-Expected workflow:
+The current assistant is intentionally conservative:
 
-1. If `baseResumeId` exists, call `getResumeDocumentTool`.
-2. Search relevant blocks with `searchResumeBlocksTool`, using keywords extracted from the job description.
-3. Let the model choose the most relevant summaries, bullets, skills, and projects.
-4. Ask the model to produce a complete `ResumeDocumentV1`.
-5. Validate the model output with `resumeDocumentV1Schema`.
-6. Either return the document for preview or call `createResumeFromDocumentTool` to persist it.
-
-Keep model/provider configuration isolated. A good future file split:
-
-```txt
-apps/web/src/features/agentic-tools/openrouter.server.ts
-apps/web/src/features/agentic-tools/resume-agent.server.ts
-apps/web/src/features/agentic-tools/resume-agent-schemas.ts
-```
-
-OpenRouter should read keys from server env only. Do not put the OpenRouter key in client env. Add env validation in `src/lib/server-env.ts` when implementation starts.
-
-The TanStack AI UI/chat can later call a server function or route that invokes `resume-agent.server.ts`. Keep that UI route thin; all agent orchestration should live in the server-only feature module.
+1. It can inspect the active resume and search reusable blocks.
+2. It should not invent work history or metrics.
+3. It only saves a new draft when the user explicitly asks.
+4. It is a first integration slice, not the final tailoring workflow.
 
 ## Important Constraints
 
 - Keep `resume-tools.server.ts` server-only.
 - Do not import `resume-tools.server.ts` into client components.
+- Prefer `createResumeAgenticServerClient(userId)` for trusted server-side consumers instead of bespoke wrappers.
 - Do not add `useMemo` or `useCallback`; this repo uses React Compiler.
 - Do not cast to `any`. If a third-party SDK forces awkward types, solve with concrete types or ask before using `any`.
 - Catch errors as `unknown`.

@@ -29,11 +29,11 @@
       "@types/react-dom": "^19.2.3"
     },
     "onlyBuiltDependencies": [
+      "@openrouter/sdk",
       "core-js",
       "es5-ext",
       "esbuild",
       "futurescript",
-      "onnxruntime-node",
       "protobufjs",
       "sharp",
       "workerd"

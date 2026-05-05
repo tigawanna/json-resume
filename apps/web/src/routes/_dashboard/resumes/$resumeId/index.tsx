@@ -34,12 +34,13 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { NewResumeButton } from "../-components/NewResumeButton";
+import { ResumeAiTab } from "./-components/ResumeAiTab";
 import { PromptTab } from "./-components/PromptTab";
 import { ResumeEditTab } from "./-components/ResumeEditTab";
 import { ResumePreviewTab } from "./-components/ResumePreviewTab";
 import { TemplatePicker } from "./-components/TemplatePicker";
 
-const tabsList = ["edit", "preview", "json", "prompt"] as const;
+const tabsList = ["edit", "preview", "json", "prompt", "ai"] as const;
 const tabSchema = z.enum(tabsList).default("edit").catch("edit");
 
 export const Route = createFileRoute("/_dashboard/resumes/$resumeId/")({
@@ -224,6 +225,7 @@ function ResumeWorkbench({ resumeId }: ResumeWorkbenchProps) {
             <TabsTrigger value="preview">Preview</TabsTrigger>
             <TabsTrigger value="json">JSON</TabsTrigger>
             <TabsTrigger value="prompt">LLM Prompt</TabsTrigger>
+            <TabsTrigger value="ai">AI Assistant</TabsTrigger>
           </TabsList>
 
           <TabsContent value="edit" forceMount className="mt-4 data-[state=inactive]:hidden">
@@ -244,6 +246,10 @@ function ResumeWorkbench({ resumeId }: ResumeWorkbenchProps) {
 
           <TabsContent value="prompt" className="mt-4">
             <PromptTab resumeId={resumeId} doc={doc} />
+          </TabsContent>
+
+          <TabsContent value="ai" className="mt-4">
+            <ResumeAiTab resumeId={resumeId} jobDescription={displayResume.jobDescription ?? ""} />
           </TabsContent>
         </Tabs>
 
