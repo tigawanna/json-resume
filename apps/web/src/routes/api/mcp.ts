@@ -1,7 +1,6 @@
 import { agenticCorsHeaders } from "@/features/agentic-tools/agentic-routes";
 import { createResumeMcpServer } from "@/features/agentic-tools/resume-mcp.server";
-import { serverEnv } from "@/lib/server-env";
-import { mcpHandler as oauthMcpHandler } from "@better-auth/oauth-provider";
+import { authenticateApiKeyRequest } from "@/lib/better-auth/api-key.server";
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
 import { createFileRoute } from "@tanstack/react-router";
 
@@ -17,34 +16,29 @@ function withCors(response: Response): Response {
   });
 }
 
-function getUserId(jwt: { sub?: unknown }): string {
-  if (typeof jwt.sub !== "string" || jwt.sub.length === 0) {
-    throw new Error("OAuth access token is missing a user subject");
-  }
-  return jwt.sub;
-}
-
-const authenticatedMcpHandler = oauthMcpHandler(
-  {
-    jwksUrl: `${serverEnv.FRONTEND_URL}/api/auth/jwks`,
-    verifyOptions: {
-      issuer: serverEnv.FRONTEND_URL,
-      audience: serverEnv.FRONTEND_URL,
-    },
-  },
-  async (request, jwt) => {
-    const transport = new WebStandardStreamableHTTPServerTransport({
-      enableJsonResponse: true,
-    });
-    const server = createResumeMcpServer(getUserId(jwt));
-
-    await server.connect(transport);
-    return transport.handleRequest(request);
-  },
-);
-
 async function mcpHandler(request: Request): Promise<Response> {
-  return withCors(await authenticatedMcpHandler(request));
+  const authResult = await authenticateApiKeyRequest(request, { resumes: ["read"] });
+
+  if (!authResult) {
+    return withCors(
+      new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: {
+          "Content-Type": "application/json",
+          "WWW-Authenticate": 'Bearer realm="api-key"',
+        },
+      }),
+    );
+  }
+
+  const transport = new WebStandardStreamableHTTPServerTransport({
+    enableJsonResponse: true,
+  });
+  const server = createResumeMcpServer(authResult.userId);
+
+  await server.connect(transport);
+  const response = await transport.handleRequest(request);
+  return withCors(response);
 }
 
 const optionsHandler = async () => new Response(null, { status: 204, headers: agenticCorsHeaders });

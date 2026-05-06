@@ -21,10 +21,6 @@ import { Route as AuthGithubRouteImport } from './routes/auth/github'
 import { Route as ApiMcpRouteImport } from './routes/api/mcp'
 import { Route as PublicPreviewRouteImport } from './routes/_public/preview'
 import { Route as DashboardDashboardRouteImport } from './routes/_dashboard/dashboard'
-import { Route as DotwellKnownOpenidConfigurationRouteImport } from './routes/[.]well-known/openid-configuration'
-import { Route as DotwellKnownOauthProtectedResourceRouteImport } from './routes/[.]well-known/oauth-protected-resource'
-import { Route as DotwellKnownOauthAuthorizationServerRouteImport } from './routes/[.]well-known/oauth-authorization-server'
-import { Route as OauthConsentIndexRouteImport } from './routes/oauth/consent/index'
 import { Route as DashboardVolunteersIndexRouteImport } from './routes/_dashboard/volunteers/index'
 import { Route as DashboardTalksIndexRouteImport } from './routes/_dashboard/talks/index'
 import { Route as DashboardSummariesIndexRouteImport } from './routes/_dashboard/summaries/index'
@@ -46,10 +42,8 @@ import { Route as ApiAiResumeTailorRouteImport } from './routes/api/ai/resume-ta
 import { Route as ApiAgenticOpenapiRouteImport } from './routes/api/agentic/openapi'
 import { Route as ApiAgenticSplatRouteImport } from './routes/api/agentic/$'
 import { Route as DashboardResumesResumeIdIndexRouteImport } from './routes/_dashboard/resumes/$resumeId/index'
-import { Route as ApiAuthDotwellKnownOpenidConfigurationRouteImport } from './routes/api/auth/[.]well-known/openid-configuration'
 import { Route as ApiAgenticRpcSplatRouteImport } from './routes/api/agentic/rpc/$'
 import { Route as ApiAgenticOpenapiJsonRouteImport } from './routes/api/agentic/openapi.json'
-import { Route as DotwellKnownOauthAuthorizationServerApiAuthRouteImport } from './routes/[.]well-known/oauth-authorization-server/api/auth'
 
 const SearchRoute = SearchRouteImport.update({
   id: '/search',
@@ -108,29 +102,6 @@ const DashboardDashboardRoute = DashboardDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
   getParentRoute: () => DashboardLayoutRoute,
-} as any)
-const DotwellKnownOpenidConfigurationRoute =
-  DotwellKnownOpenidConfigurationRouteImport.update({
-    id: '/.well-known/openid-configuration',
-    path: '/.well-known/openid-configuration',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const DotwellKnownOauthProtectedResourceRoute =
-  DotwellKnownOauthProtectedResourceRouteImport.update({
-    id: '/.well-known/oauth-protected-resource',
-    path: '/.well-known/oauth-protected-resource',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const DotwellKnownOauthAuthorizationServerRoute =
-  DotwellKnownOauthAuthorizationServerRouteImport.update({
-    id: '/.well-known/oauth-authorization-server',
-    path: '/.well-known/oauth-authorization-server',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const OauthConsentIndexRoute = OauthConsentIndexRouteImport.update({
-  id: '/oauth/consent/',
-  path: '/oauth/consent/',
-  getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardVolunteersIndexRoute =
   DashboardVolunteersIndexRouteImport.update({
@@ -244,12 +215,6 @@ const DashboardResumesResumeIdIndexRoute =
     path: '/resumes/$resumeId/',
     getParentRoute: () => DashboardLayoutRoute,
   } as any)
-const ApiAuthDotwellKnownOpenidConfigurationRoute =
-  ApiAuthDotwellKnownOpenidConfigurationRouteImport.update({
-    id: '/api/auth/.well-known/openid-configuration',
-    path: '/api/auth/.well-known/openid-configuration',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const ApiAgenticRpcSplatRoute = ApiAgenticRpcSplatRouteImport.update({
   id: '/api/agentic/rpc/$',
   path: '/api/agentic/rpc/$',
@@ -260,20 +225,11 @@ const ApiAgenticOpenapiJsonRoute = ApiAgenticOpenapiJsonRouteImport.update({
   path: '/json',
   getParentRoute: () => ApiAgenticOpenapiRoute,
 } as any)
-const DotwellKnownOauthAuthorizationServerApiAuthRoute =
-  DotwellKnownOauthAuthorizationServerApiAuthRouteImport.update({
-    id: '/api/auth',
-    path: '/api/auth',
-    getParentRoute: () => DotwellKnownOauthAuthorizationServerRoute,
-  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthLayoutRouteWithChildren
   '/search': typeof SearchRoute
-  '/.well-known/oauth-authorization-server': typeof DotwellKnownOauthAuthorizationServerRouteWithChildren
-  '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRoute
-  '/.well-known/openid-configuration': typeof DotwellKnownOpenidConfigurationRoute
   '/dashboard': typeof DashboardDashboardRoute
   '/preview': typeof PublicPreviewRoute
   '/api/mcp': typeof ApiMcpRoute
@@ -301,19 +257,13 @@ export interface FileRoutesByFullPath {
   '/summaries/': typeof DashboardSummariesIndexRoute
   '/talks/': typeof DashboardTalksIndexRoute
   '/volunteers/': typeof DashboardVolunteersIndexRoute
-  '/oauth/consent/': typeof OauthConsentIndexRoute
-  '/.well-known/oauth-authorization-server/api/auth': typeof DotwellKnownOauthAuthorizationServerApiAuthRoute
   '/api/agentic/openapi/json': typeof ApiAgenticOpenapiJsonRoute
   '/api/agentic/rpc/$': typeof ApiAgenticRpcSplatRoute
-  '/api/auth/.well-known/openid-configuration': typeof ApiAuthDotwellKnownOpenidConfigurationRoute
   '/resumes/$resumeId/': typeof DashboardResumesResumeIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/search': typeof SearchRoute
-  '/.well-known/oauth-authorization-server': typeof DotwellKnownOauthAuthorizationServerRouteWithChildren
-  '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRoute
-  '/.well-known/openid-configuration': typeof DotwellKnownOpenidConfigurationRoute
   '/dashboard': typeof DashboardDashboardRoute
   '/preview': typeof PublicPreviewRoute
   '/api/mcp': typeof ApiMcpRoute
@@ -341,11 +291,8 @@ export interface FileRoutesByTo {
   '/summaries': typeof DashboardSummariesIndexRoute
   '/talks': typeof DashboardTalksIndexRoute
   '/volunteers': typeof DashboardVolunteersIndexRoute
-  '/oauth/consent': typeof OauthConsentIndexRoute
-  '/.well-known/oauth-authorization-server/api/auth': typeof DotwellKnownOauthAuthorizationServerApiAuthRoute
   '/api/agentic/openapi/json': typeof ApiAgenticOpenapiJsonRoute
   '/api/agentic/rpc/$': typeof ApiAgenticRpcSplatRoute
-  '/api/auth/.well-known/openid-configuration': typeof ApiAuthDotwellKnownOpenidConfigurationRoute
   '/resumes/$resumeId': typeof DashboardResumesResumeIdIndexRoute
 }
 export interface FileRoutesById {
@@ -355,9 +302,6 @@ export interface FileRoutesById {
   '/_public': typeof PublicLayoutRouteWithChildren
   '/auth': typeof AuthLayoutRouteWithChildren
   '/search': typeof SearchRoute
-  '/.well-known/oauth-authorization-server': typeof DotwellKnownOauthAuthorizationServerRouteWithChildren
-  '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRoute
-  '/.well-known/openid-configuration': typeof DotwellKnownOpenidConfigurationRoute
   '/_dashboard/dashboard': typeof DashboardDashboardRoute
   '/_public/preview': typeof PublicPreviewRoute
   '/api/mcp': typeof ApiMcpRoute
@@ -385,11 +329,8 @@ export interface FileRoutesById {
   '/_dashboard/summaries/': typeof DashboardSummariesIndexRoute
   '/_dashboard/talks/': typeof DashboardTalksIndexRoute
   '/_dashboard/volunteers/': typeof DashboardVolunteersIndexRoute
-  '/oauth/consent/': typeof OauthConsentIndexRoute
-  '/.well-known/oauth-authorization-server/api/auth': typeof DotwellKnownOauthAuthorizationServerApiAuthRoute
   '/api/agentic/openapi/json': typeof ApiAgenticOpenapiJsonRoute
   '/api/agentic/rpc/$': typeof ApiAgenticRpcSplatRoute
-  '/api/auth/.well-known/openid-configuration': typeof ApiAuthDotwellKnownOpenidConfigurationRoute
   '/_dashboard/resumes/$resumeId/': typeof DashboardResumesResumeIdIndexRoute
 }
 export interface FileRouteTypes {
@@ -398,9 +339,6 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/search'
-    | '/.well-known/oauth-authorization-server'
-    | '/.well-known/oauth-protected-resource'
-    | '/.well-known/openid-configuration'
     | '/dashboard'
     | '/preview'
     | '/api/mcp'
@@ -428,19 +366,13 @@ export interface FileRouteTypes {
     | '/summaries/'
     | '/talks/'
     | '/volunteers/'
-    | '/oauth/consent/'
-    | '/.well-known/oauth-authorization-server/api/auth'
     | '/api/agentic/openapi/json'
     | '/api/agentic/rpc/$'
-    | '/api/auth/.well-known/openid-configuration'
     | '/resumes/$resumeId/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/search'
-    | '/.well-known/oauth-authorization-server'
-    | '/.well-known/oauth-protected-resource'
-    | '/.well-known/openid-configuration'
     | '/dashboard'
     | '/preview'
     | '/api/mcp'
@@ -468,11 +400,8 @@ export interface FileRouteTypes {
     | '/summaries'
     | '/talks'
     | '/volunteers'
-    | '/oauth/consent'
-    | '/.well-known/oauth-authorization-server/api/auth'
     | '/api/agentic/openapi/json'
     | '/api/agentic/rpc/$'
-    | '/api/auth/.well-known/openid-configuration'
     | '/resumes/$resumeId'
   id:
     | '__root__'
@@ -481,9 +410,6 @@ export interface FileRouteTypes {
     | '/_public'
     | '/auth'
     | '/search'
-    | '/.well-known/oauth-authorization-server'
-    | '/.well-known/oauth-protected-resource'
-    | '/.well-known/openid-configuration'
     | '/_dashboard/dashboard'
     | '/_public/preview'
     | '/api/mcp'
@@ -511,11 +437,8 @@ export interface FileRouteTypes {
     | '/_dashboard/summaries/'
     | '/_dashboard/talks/'
     | '/_dashboard/volunteers/'
-    | '/oauth/consent/'
-    | '/.well-known/oauth-authorization-server/api/auth'
     | '/api/agentic/openapi/json'
     | '/api/agentic/rpc/$'
-    | '/api/auth/.well-known/openid-configuration'
     | '/_dashboard/resumes/$resumeId/'
   fileRoutesById: FileRoutesById
 }
@@ -525,18 +448,13 @@ export interface RootRouteChildren {
   PublicLayoutRoute: typeof PublicLayoutRouteWithChildren
   AuthLayoutRoute: typeof AuthLayoutRouteWithChildren
   SearchRoute: typeof SearchRoute
-  DotwellKnownOauthAuthorizationServerRoute: typeof DotwellKnownOauthAuthorizationServerRouteWithChildren
-  DotwellKnownOauthProtectedResourceRoute: typeof DotwellKnownOauthProtectedResourceRoute
-  DotwellKnownOpenidConfigurationRoute: typeof DotwellKnownOpenidConfigurationRoute
   ApiMcpRoute: typeof ApiMcpRoute
   TestIndexRoute: typeof TestIndexRoute
   ApiAgenticSplatRoute: typeof ApiAgenticSplatRoute
   ApiAgenticOpenapiRoute: typeof ApiAgenticOpenapiRouteWithChildren
   ApiAiResumeTailorRoute: typeof ApiAiResumeTailorRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
-  OauthConsentIndexRoute: typeof OauthConsentIndexRoute
   ApiAgenticRpcSplatRoute: typeof ApiAgenticRpcSplatRoute
-  ApiAuthDotwellKnownOpenidConfigurationRoute: typeof ApiAuthDotwellKnownOpenidConfigurationRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -624,34 +542,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/dashboard'
       preLoaderRoute: typeof DashboardDashboardRouteImport
       parentRoute: typeof DashboardLayoutRoute
-    }
-    '/.well-known/openid-configuration': {
-      id: '/.well-known/openid-configuration'
-      path: '/.well-known/openid-configuration'
-      fullPath: '/.well-known/openid-configuration'
-      preLoaderRoute: typeof DotwellKnownOpenidConfigurationRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/.well-known/oauth-protected-resource': {
-      id: '/.well-known/oauth-protected-resource'
-      path: '/.well-known/oauth-protected-resource'
-      fullPath: '/.well-known/oauth-protected-resource'
-      preLoaderRoute: typeof DotwellKnownOauthProtectedResourceRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/.well-known/oauth-authorization-server': {
-      id: '/.well-known/oauth-authorization-server'
-      path: '/.well-known/oauth-authorization-server'
-      fullPath: '/.well-known/oauth-authorization-server'
-      preLoaderRoute: typeof DotwellKnownOauthAuthorizationServerRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/oauth/consent/': {
-      id: '/oauth/consent/'
-      path: '/oauth/consent'
-      fullPath: '/oauth/consent/'
-      preLoaderRoute: typeof OauthConsentIndexRouteImport
-      parentRoute: typeof rootRouteImport
     }
     '/_dashboard/volunteers/': {
       id: '/_dashboard/volunteers/'
@@ -800,13 +690,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardResumesResumeIdIndexRouteImport
       parentRoute: typeof DashboardLayoutRoute
     }
-    '/api/auth/.well-known/openid-configuration': {
-      id: '/api/auth/.well-known/openid-configuration'
-      path: '/api/auth/.well-known/openid-configuration'
-      fullPath: '/api/auth/.well-known/openid-configuration'
-      preLoaderRoute: typeof ApiAuthDotwellKnownOpenidConfigurationRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/agentic/rpc/$': {
       id: '/api/agentic/rpc/$'
       path: '/api/agentic/rpc/$'
@@ -820,13 +703,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/agentic/openapi/json'
       preLoaderRoute: typeof ApiAgenticOpenapiJsonRouteImport
       parentRoute: typeof ApiAgenticOpenapiRoute
-    }
-    '/.well-known/oauth-authorization-server/api/auth': {
-      id: '/.well-known/oauth-authorization-server/api/auth'
-      path: '/api/auth'
-      fullPath: '/.well-known/oauth-authorization-server/api/auth'
-      preLoaderRoute: typeof DotwellKnownOauthAuthorizationServerApiAuthRouteImport
-      parentRoute: typeof DotwellKnownOauthAuthorizationServerRoute
     }
   }
 }
@@ -905,21 +781,6 @@ const AuthLayoutRouteWithChildren = AuthLayoutRoute._addFileChildren(
   AuthLayoutRouteChildren,
 )
 
-interface DotwellKnownOauthAuthorizationServerRouteChildren {
-  DotwellKnownOauthAuthorizationServerApiAuthRoute: typeof DotwellKnownOauthAuthorizationServerApiAuthRoute
-}
-
-const DotwellKnownOauthAuthorizationServerRouteChildren: DotwellKnownOauthAuthorizationServerRouteChildren =
-  {
-    DotwellKnownOauthAuthorizationServerApiAuthRoute:
-      DotwellKnownOauthAuthorizationServerApiAuthRoute,
-  }
-
-const DotwellKnownOauthAuthorizationServerRouteWithChildren =
-  DotwellKnownOauthAuthorizationServerRoute._addFileChildren(
-    DotwellKnownOauthAuthorizationServerRouteChildren,
-  )
-
 interface ApiAgenticOpenapiRouteChildren {
   ApiAgenticOpenapiJsonRoute: typeof ApiAgenticOpenapiJsonRoute
 }
@@ -937,21 +798,13 @@ const rootRouteChildren: RootRouteChildren = {
   PublicLayoutRoute: PublicLayoutRouteWithChildren,
   AuthLayoutRoute: AuthLayoutRouteWithChildren,
   SearchRoute: SearchRoute,
-  DotwellKnownOauthAuthorizationServerRoute:
-    DotwellKnownOauthAuthorizationServerRouteWithChildren,
-  DotwellKnownOauthProtectedResourceRoute:
-    DotwellKnownOauthProtectedResourceRoute,
-  DotwellKnownOpenidConfigurationRoute: DotwellKnownOpenidConfigurationRoute,
   ApiMcpRoute: ApiMcpRoute,
   TestIndexRoute: TestIndexRoute,
   ApiAgenticSplatRoute: ApiAgenticSplatRoute,
   ApiAgenticOpenapiRoute: ApiAgenticOpenapiRouteWithChildren,
   ApiAiResumeTailorRoute: ApiAiResumeTailorRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
-  OauthConsentIndexRoute: OauthConsentIndexRoute,
   ApiAgenticRpcSplatRoute: ApiAgenticRpcSplatRoute,
-  ApiAuthDotwellKnownOpenidConfigurationRoute:
-    ApiAuthDotwellKnownOpenidConfigurationRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

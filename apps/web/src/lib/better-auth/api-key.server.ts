@@ -45,6 +45,8 @@ export async function authenticateApiKeyHeaders(
     return null;
   }
 
+  if (!result.key.referenceId) return null;
+
   return {
     userId: result.key.referenceId,
     keyId: result.key.id,
