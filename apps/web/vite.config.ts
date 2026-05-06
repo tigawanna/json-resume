@@ -8,6 +8,7 @@ import { nitro } from "nitro/vite";
 import tailwindcss from "@tailwindcss/vite";
 
 const config = defineConfig({
+  staged: { "*": "vp check --fix" },
   server: {
     host: "::",
   },

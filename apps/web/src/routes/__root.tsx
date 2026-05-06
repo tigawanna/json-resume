@@ -1,5 +1,7 @@
 import { viewerqueryOptions, type TViewer } from "@/data-access-layer/auth/viewer";
 import { HeadContent, Scripts, createRootRouteWithContext } from "@tanstack/react-router";
+import { createMiddleware } from "@tanstack/react-start";
+import { evlogErrorHandler } from "evlog/nitro/v3";
 
 import appCss from "../styles.css?url";
 
@@ -23,6 +25,9 @@ const searchparams = z.object({
 });
 
 export const Route = createRootRouteWithContext<MyRouterContext>()({
+  server: {
+    middleware: [createMiddleware().server(evlogErrorHandler)],
+  },
   beforeLoad: async ({ context }) => {
     const viewer = await context.queryClient.ensureQueryData(viewerqueryOptions);
     return { viewer: viewer.data };
