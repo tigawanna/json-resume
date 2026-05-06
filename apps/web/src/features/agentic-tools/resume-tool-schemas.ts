@@ -19,8 +19,14 @@ export const getResumeDocumentToolInputSchema = z.object({
 });
 
 export const searchResumeBlocksToolInputSchema = z.object({
-  resumeId: z.string().trim().min(1).optional(),
-  keyword: z.string().trim().optional(),
+  resumeId: z.preprocess(
+    (val) => (typeof val === "string" && val.trim() === "" ? undefined : val),
+    z.string().trim().min(1).optional(),
+  ),
+  keyword: z.preprocess(
+    (val) => (typeof val === "string" && val.trim() === "" ? undefined : val),
+    z.string().trim().optional(),
+  ),
   blockTypes: z.array(resumeBlockTypeSchema).min(1).optional(),
   limitPerType: z.coerce.number().int().min(1).max(20).default(8),
 });

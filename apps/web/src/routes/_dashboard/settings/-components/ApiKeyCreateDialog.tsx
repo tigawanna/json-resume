@@ -6,8 +6,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { createApiKeyFn } from "@/data-access-layer/api-keys/api-keys.functions";
 import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
-import { authClient } from "@/lib/better-auth/client";
 import { useAppForm } from "@/lib/tanstack/form";
 import { unwrapUnknownError } from "@/utils/errors";
 import { formOptions } from "@tanstack/react-form";
@@ -44,18 +44,10 @@ export function ApiKeyCreateDialog({ open, onOpenChange, onCreated }: ApiKeyCrea
 
   const mutation = useMutation({
     mutationFn: async (values: typeof createOpts.defaultValues) => {
-      const permissions: Record<string, string[]> =
-        values.permission === "write" ? { resumes: ["read", "write"] } : { resumes: ["read"] };
-
-      const { data, error } = await authClient.apiKey.create({
-        name: values.name,
-        permissions,
+      const result = await createApiKeyFn({
+        data: { name: values.name, permission: values.permission },
       });
-
-      if (error) throw new Error(error.message);
-      if (!data?.key) throw new Error("No key returned from server");
-
-      return data.key;
+      return result.key;
     },
     onSuccess(key) {
       void queryClient.invalidateQueries({ queryKey: [queryKeyPrefixes.apiKeys] });
