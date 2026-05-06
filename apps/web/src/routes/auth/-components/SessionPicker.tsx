@@ -26,6 +26,15 @@ function getInitials(name: string): string {
     .slice(0, 2);
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function getOAuthRedirectUrl(value: unknown): string | undefined {
+  if (!isRecord(value)) return undefined;
+  return typeof value.url === "string" ? value.url : undefined;
+}
+
 export function SessionPicker({ onUseAnotherAccount }: SessionPickerProps) {
   const router = useRouter();
   const qc = useQueryClient();
@@ -36,7 +45,13 @@ export function SessionPicker({ onUseAnotherAccount }: SessionPickerProps) {
 
   const handleSelectSession = (sessionToken: string) => {
     setActiveMutation.mutate(sessionToken, {
-      onSuccess: async () => {
+      onSuccess: async (data) => {
+        const oauthRedirectUrl = getOAuthRedirectUrl(data);
+        if (oauthRedirectUrl) {
+          window.location.href = oauthRedirectUrl;
+          return;
+        }
+
         toast.success("Welcome back");
         await router.invalidate();
         await qc.fetchQuery(viewerqueryOptions);

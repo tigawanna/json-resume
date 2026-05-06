@@ -23,4 +23,5 @@ export const queryKeyPrefixes = {
   experiments: "experiments",
   oneResume: "one-resume",
   githubRepos: "github-repos",
+  oauth2: "oauth2",
 } as const;

@@ -21,6 +21,26 @@ const formOpts = formOptions({
   } satisfies TViewerLoginPayload,
 });
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function getOAuthRedirectUrl(value: unknown): string | undefined {
+  if (!isRecord(value)) return undefined;
+  return typeof value.url === "string" ? value.url : undefined;
+}
+
+function getSignedInUserName(value: unknown): string {
+  if (!isRecord(value) || !isRecord(value.user)) return "there";
+  return typeof value.user.name === "string" ? value.user.name : "there";
+}
+
+function hasOAuthProviderQuery(): boolean {
+  if (typeof window === "undefined") return false;
+  const search = new URLSearchParams(window.location.search);
+  return search.has("client_id") && search.has("sig");
+}
+
 export function SigninComponent({ onBackToSessions }: SigninComponentProps) {
   const [showPassword, setShowPassword] = useState(false);
   const qc = useQueryClient();
@@ -46,8 +66,14 @@ export function SigninComponent({ onBackToSessions }: SigninComponentProps) {
       });
     },
     onSuccess: async (data) => {
+      const oauthRedirectUrl = getOAuthRedirectUrl(data);
+      if (oauthRedirectUrl) {
+        window.location.href = oauthRedirectUrl;
+        return;
+      }
+
       toast.success("Signed in", {
-        description: `Welcome back ${data.user.name}`,
+        description: `Welcome back ${getSignedInUserName(data)}`,
       });
       await router.invalidate();
       await qc.fetchQuery(viewerqueryOptions);
@@ -61,9 +87,10 @@ export function SigninComponent({ onBackToSessions }: SigninComponentProps) {
 
   const githubMutation = useMutation({
     mutationFn: async () => {
+      const socialCallbackURL = hasOAuthProviderQuery() ? undefined : postLoginDestination;
       await authClient.signIn.social({
         provider: "github",
-        callbackURL: postLoginDestination,
+        ...(socialCallbackURL ? { callbackURL: socialCallbackURL } : {}),
       });
     },
     onError: async (error: unknown) => {

@@ -80,6 +80,7 @@ export async function streamResumeAgentChat(input: {
       client.resumeBlocks.search({
         ...toolInput,
         resumeId: input.resumeId,
+        keyword: toolInput.keyword,
       }),
   );
 
