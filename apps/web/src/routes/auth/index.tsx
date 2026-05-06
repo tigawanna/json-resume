@@ -12,6 +12,7 @@ import { SigninComponent } from "./-components/SigninComponent";
 
 const searchparams = z.object({
   returnTo: z.string().default("/"),
+  callbackURL: z.string().optional(),
   useAnotherAccount: z.boolean().default(false).optional(),
 });
 export const Route = createFileRoute("/auth/")({

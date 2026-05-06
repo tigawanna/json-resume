@@ -29,7 +29,7 @@ function getInitials(name: string): string {
 export function SessionPicker({ onUseAnotherAccount }: SessionPickerProps) {
   const router = useRouter();
   const qc = useQueryClient();
-  const { returnTo } = Route.useSearch();
+  const { returnTo, callbackURL } = Route.useSearch();
   const navigate = useNavigate();
   const { data: sessions = [] } = useQuery(deviceSessionsQueryOptions);
   const setActiveMutation = useMutation(setActiveSessionMutationOptions);
@@ -40,7 +40,11 @@ export function SessionPicker({ onUseAnotherAccount }: SessionPickerProps) {
         toast.success("Welcome back");
         await router.invalidate();
         await qc.fetchQuery(viewerqueryOptions);
-        void navigate({ to: returnTo || "/dashboard" });
+        if (callbackURL) {
+          window.location.href = callbackURL;
+        } else {
+          void navigate({ to: returnTo || "/dashboard" });
+        }
       },
       onError: (error) => {
         toast.error("Failed to switch session", {

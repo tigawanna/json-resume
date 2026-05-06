@@ -25,8 +25,10 @@ export function SigninComponent({ onBackToSessions }: SigninComponentProps) {
   const [showPassword, setShowPassword] = useState(false);
   const qc = useQueryClient();
   const router = useRouter();
-  const { returnTo } = Route.useSearch();
+  const { returnTo, callbackURL } = Route.useSearch();
   const navigate = useNavigate({ from: "/auth/" });
+
+  const postLoginDestination = callbackURL || returnTo || "/";
 
   const mutation = useMutation({
     mutationFn: async (payload: TViewerLoginPayload) => {
@@ -49,7 +51,11 @@ export function SigninComponent({ onBackToSessions }: SigninComponentProps) {
       });
       await router.invalidate();
       await qc.fetchQuery(viewerqueryOptions);
-      void navigate({ to: returnTo || "/", search: { returnTo: returnTo || "/" } });
+      if (callbackURL) {
+        window.location.href = callbackURL;
+      } else {
+        void navigate({ to: returnTo || "/", search: { returnTo: returnTo || "/" } });
+      }
     },
   });
 
@@ -57,7 +63,7 @@ export function SigninComponent({ onBackToSessions }: SigninComponentProps) {
     mutationFn: async () => {
       await authClient.signIn.social({
         provider: "github",
-        callbackURL: returnTo || "/",
+        callbackURL: postLoginDestination,
       });
     },
     onError: async (error: unknown) => {
@@ -170,7 +176,7 @@ export function SigninComponent({ onBackToSessions }: SigninComponentProps) {
             <span className="text-muted-foreground">Don&apos;t have an account?</span>
             <Link
               to="/auth/signup"
-              search={{ returnTo }}
+              search={{ returnTo, callbackURL }}
               className="link link-primary font-semibold"
             >
               Sign up

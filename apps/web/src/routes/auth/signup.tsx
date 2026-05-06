@@ -7,6 +7,7 @@ import { SignupComponent } from "./-components/SignupComponent";
 
 const searchparams = z.object({
   returnTo: z.string().optional().catch("/"),
+  callbackURL: z.string().optional(),
 });
 export const Route = createFileRoute("/auth/signup")({
   component: SignupPage,
