@@ -10,6 +10,7 @@ import { AlertCircle, Trash2 } from "lucide-react";
 import { Suspense, useState } from "react";
 import { toast } from "sonner";
 import { ApiKeysSection } from "./-components/ApiKeysSection";
+import { McpConnectSection } from "./-components/McpConnectSection";
 
 export const Route = createFileRoute("/_dashboard/settings/")({
   component: SettingsPage,
@@ -73,12 +74,12 @@ function SettingsPage() {
         </CardContent>
       </Card>
 
-      {/* API Keys Section */}
+      <McpConnectSection />
+
       <Suspense>
         <ApiKeysSection />
       </Suspense>
 
-      {/* Danger Zone - Delete Account */}
       <Card className="border-destructive">
         <CardHeader>
           <div className="flex items-center gap-2">

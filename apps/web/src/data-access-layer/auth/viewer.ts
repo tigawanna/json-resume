@@ -5,7 +5,6 @@ import { safeStringToUrl } from "@/utils/url";
 import { queryOptions, useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { redirect } from "@tanstack/react-router";
 import { createMiddleware } from "@tanstack/react-start";
-import { getRequestHeaders } from "@tanstack/react-start/server";
 
 type ViewerUser = BetterAuthSession["user"];
 type ViewerSession = BetterAuthSession["session"];
@@ -53,8 +52,7 @@ export function useViewer() {
 }
 
 export const viewerMiddleware = createMiddleware().server(async ({ next, request }) => {
-  const headers = getRequestHeaders();
-  const session = await auth.api.getSession({ headers });
+  const session = await auth.api.getSession({ headers: request.headers });
   if (!session) {
     const returnTo = safeStringToUrl(request.url)?.pathname ?? "/";
     throw redirect({ to: "/auth", search: { returnTo } });
