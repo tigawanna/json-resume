@@ -13,6 +13,18 @@ import {
   addSummaryItem,
   addTalk,
   addVolunteer,
+  assertCertificationBelongsToUser,
+  assertContactBelongsToUser,
+  assertEducationBelongsToUser,
+  assertExperienceBelongsToUser,
+  assertLanguageBelongsToUser,
+  assertLinkBelongsToUser,
+  assertProjectBelongsToUser,
+  assertResumeBelongsToUser,
+  assertSkillGroupBelongsToUser,
+  assertSummaryBelongsToUser,
+  assertTalkBelongsToUser,
+  assertVolunteerBelongsToUser,
   batchUpdateSectionOrder,
   createResumeForUser,
   deleteCertification,
@@ -156,7 +168,8 @@ export const updateSectionOrder = createServerFn({ method: "POST" })
       sections: { key: string; enabled: boolean; sortOrder: number }[];
     }) => input,
   )
-  .handler(async ({ data }) => {
+  .handler(async ({ context, data }) => {
+    await assertResumeBelongsToUser(data.resumeId, context.viewer.user.id);
     await batchUpdateSectionOrder(data.resumeId, data.sections);
     return { success: true };
   });
@@ -169,7 +182,8 @@ export const updateContacts = createServerFn({ method: "POST" })
     (input: { resumeId: string; contacts: { type: string; value: string; label: string }[] }) =>
       input,
   )
-  .handler(async ({ data }) => {
+  .handler(async ({ context, data }) => {
+    await assertResumeBelongsToUser(data.resumeId, context.viewer.user.id);
     await setResumeContacts(data.resumeId, data.contacts);
     return { success: true };
   });
@@ -181,7 +195,8 @@ export const updateLinks = createServerFn({ method: "POST" })
   .inputValidator(
     (input: { resumeId: string; links: { label: string; url: string; icon?: string }[] }) => input,
   )
-  .handler(async ({ data }) => {
+  .handler(async ({ context, data }) => {
+    await assertResumeBelongsToUser(data.resumeId, context.viewer.user.id);
     await setResumeLinks(data.resumeId, data.links);
     return { success: true };
   });
@@ -192,8 +207,9 @@ export const createLink = createServerFn({ method: "POST" })
     (input: { resumeId: string; label: string; url: string; icon?: string; sortOrder: number }) =>
       input,
   )
-  .handler(async ({ data }) => {
+  .handler(async ({ context, data }) => {
     const { resumeId, ...rest } = data;
+    await assertResumeBelongsToUser(resumeId, context.viewer.user.id);
     const id = await addLink(resumeId, rest);
     return { id };
   });
@@ -204,8 +220,9 @@ export const editLink = createServerFn({ method: "POST" })
     (input: { id: string; label?: string; url?: string; icon?: string; sortOrder?: number }) =>
       input,
   )
-  .handler(async ({ data }) => {
+  .handler(async ({ context, data }) => {
     const { id, ...rest } = data;
+    await assertLinkBelongsToUser(id, context.viewer.user.id);
     await updateLink(id, rest);
     return { success: true };
   });
@@ -213,7 +230,8 @@ export const editLink = createServerFn({ method: "POST" })
 export const removeLink = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
   .inputValidator((input: { id: string }) => input)
-  .handler(async ({ data }) => {
+  .handler(async ({ context, data }) => {
+    await assertLinkBelongsToUser(data.id, context.viewer.user.id);
     await deleteLinkById(data.id);
     return { success: true };
   });
@@ -223,7 +241,8 @@ export const removeLink = createServerFn({ method: "POST" })
 export const updateSummary = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
   .inputValidator((input: { resumeId: string; text: string }) => input)
-  .handler(async ({ data }) => {
+  .handler(async ({ context, data }) => {
+    await assertResumeBelongsToUser(data.resumeId, context.viewer.user.id);
     await setResumeSummary(data.resumeId, data.text);
     return { success: true };
   });
@@ -231,8 +250,9 @@ export const updateSummary = createServerFn({ method: "POST" })
 export const createSummaryItem = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
   .inputValidator((input: { resumeId: string; text: string; sortOrder: number }) => input)
-  .handler(async ({ data }) => {
+  .handler(async ({ context, data }) => {
     const { resumeId, ...rest } = data;
+    await assertResumeBelongsToUser(resumeId, context.viewer.user.id);
     const id = await addSummaryItem(resumeId, rest);
     return { id };
   });
@@ -240,8 +260,9 @@ export const createSummaryItem = createServerFn({ method: "POST" })
 export const editSummaryItem = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
   .inputValidator((input: { id: string; text?: string; sortOrder?: number }) => input)
-  .handler(async ({ data }) => {
+  .handler(async ({ context, data }) => {
     const { id, ...rest } = data;
+    await assertSummaryBelongsToUser(id, context.viewer.user.id);
     await updateSummaryItem(id, rest);
     return { success: true };
   });
@@ -249,7 +270,8 @@ export const editSummaryItem = createServerFn({ method: "POST" })
 export const removeSummaryItem = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
   .inputValidator((input: { id: string }) => input)
-  .handler(async ({ data }) => {
+  .handler(async ({ context, data }) => {
+    await assertSummaryBelongsToUser(data.id, context.viewer.user.id);
     await deleteSummaryById(data.id);
     return { success: true };
   });
@@ -270,8 +292,9 @@ export const createExperience = createServerFn({ method: "POST" })
       bullets: string[];
     }) => input,
   )
-  .handler(async ({ data }) => {
+  .handler(async ({ context, data }) => {
     const { resumeId, ...rest } = data;
+    await assertResumeBelongsToUser(resumeId, context.viewer.user.id);
     const id = await addExperience(resumeId, rest);
     return { id };
   });
@@ -289,8 +312,9 @@ export const editExperience = createServerFn({ method: "POST" })
       sortOrder?: number;
     }) => input,
   )
-  .handler(async ({ data }) => {
+  .handler(async ({ context, data }) => {
     const { id, ...rest } = data;
+    await assertExperienceBelongsToUser(id, context.viewer.user.id);
     await updateExperience(id, rest);
     return { success: true };
   });
@@ -298,7 +322,8 @@ export const editExperience = createServerFn({ method: "POST" })
 export const removeExperience = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
   .inputValidator((input: { id: string }) => input)
-  .handler(async ({ data }) => {
+  .handler(async ({ context, data }) => {
+    await assertExperienceBelongsToUser(data.id, context.viewer.user.id);
     await deleteExperience(data.id);
     return { success: true };
   });
@@ -306,7 +331,8 @@ export const removeExperience = createServerFn({ method: "POST" })
 export const updateExperienceBullets = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
   .inputValidator((input: { experienceId: string; bullets: string[] }) => input)
-  .handler(async ({ data }) => {
+  .handler(async ({ context, data }) => {
+    await assertExperienceBelongsToUser(data.experienceId, context.viewer.user.id);
     await setExperienceBullets(data.experienceId, data.bullets);
     return { success: true };
   });
@@ -328,8 +354,9 @@ export const createEducation = createServerFn({ method: "POST" })
       bullets?: string[];
     }) => input,
   )
-  .handler(async ({ data }) => {
+  .handler(async ({ context, data }) => {
     const { resumeId, ...rest } = data;
+    await assertResumeBelongsToUser(resumeId, context.viewer.user.id);
     const id = await addEducation(resumeId, rest);
     return { id };
   });
@@ -348,8 +375,9 @@ export const editEducation = createServerFn({ method: "POST" })
       sortOrder?: number;
     }) => input,
   )
-  .handler(async ({ data }) => {
+  .handler(async ({ context, data }) => {
     const { id, ...rest } = data;
+    await assertEducationBelongsToUser(id, context.viewer.user.id);
     await updateEducation(id, rest);
     return { success: true };
   });
@@ -357,7 +385,8 @@ export const editEducation = createServerFn({ method: "POST" })
 export const removeEducation = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
   .inputValidator((input: { id: string }) => input)
-  .handler(async ({ data }) => {
+  .handler(async ({ context, data }) => {
+    await assertEducationBelongsToUser(data.id, context.viewer.user.id);
     await deleteEducation(data.id);
     return { success: true };
   });
@@ -385,8 +414,9 @@ export const createProject = createServerFn({ method: "POST" })
       sortOrder: number;
     }) => input,
   )
-  .handler(async ({ data }) => {
+  .handler(async ({ context, data }) => {
     const { resumeId, ...rest } = data;
+    await assertResumeBelongsToUser(resumeId, context.viewer.user.id);
     const id = await addProject(resumeId, rest);
     return { id };
   });
@@ -404,8 +434,9 @@ export const editProject = createServerFn({ method: "POST" })
       sortOrder?: number;
     }) => input,
   )
-  .handler(async ({ data }) => {
+  .handler(async ({ context, data }) => {
     const { id, ...rest } = data;
+    await assertProjectBelongsToUser(id, context.viewer.user.id);
     await updateProject(id, rest);
     return { success: true };
   });
@@ -413,7 +444,8 @@ export const editProject = createServerFn({ method: "POST" })
 export const removeProject = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
   .inputValidator((input: { id: string }) => input)
-  .handler(async ({ data }) => {
+  .handler(async ({ context, data }) => {
+    await assertProjectBelongsToUser(data.id, context.viewer.user.id);
     await deleteProject(data.id);
     return { success: true };
   });
@@ -433,7 +465,8 @@ export const updateSkillGroups = createServerFn({ method: "POST" })
   .inputValidator(
     (input: { resumeId: string; groups: { name: string; items: string[] }[] }) => input,
   )
-  .handler(async ({ data }) => {
+  .handler(async ({ context, data }) => {
+    await assertResumeBelongsToUser(data.resumeId, context.viewer.user.id);
     await setSkillGroups(data.resumeId, data.groups);
     return { success: true };
   });
@@ -443,8 +476,9 @@ export const editSkillGroup = createServerFn({ method: "POST" })
   .inputValidator(
     (input: { id: string; name?: string; skills?: string[]; sortOrder?: number }) => input,
   )
-  .handler(async ({ data }) => {
+  .handler(async ({ context, data }) => {
     const { id, ...rest } = data;
+    await assertSkillGroupBelongsToUser(id, context.viewer.user.id);
     await updateSkillGroup(id, rest);
     return { success: true };
   });
@@ -452,7 +486,8 @@ export const editSkillGroup = createServerFn({ method: "POST" })
 export const removeSkillGroup = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
   .inputValidator((input: { id: string }) => input)
-  .handler(async ({ data }) => {
+  .handler(async ({ context, data }) => {
+    await assertSkillGroupBelongsToUser(data.id, context.viewer.user.id);
     await deleteSkillGroupById(data.id);
     return { success: true };
   });
@@ -462,8 +497,9 @@ export const createSkillGroup = createServerFn({ method: "POST" })
   .inputValidator(
     (input: { resumeId: string; name: string; skills: string[]; sortOrder: number }) => input,
   )
-  .handler(async ({ data }) => {
+  .handler(async ({ context, data }) => {
     const { resumeId, ...rest } = data;
+    await assertResumeBelongsToUser(resumeId, context.viewer.user.id);
     const id = await addSkillGroup(resumeId, rest);
     return { id };
   });
@@ -482,8 +518,9 @@ export const editCertification = createServerFn({ method: "POST" })
       sortOrder?: number;
     }) => input,
   )
-  .handler(async ({ data }) => {
+  .handler(async ({ context, data }) => {
     const { id, ...rest } = data;
+    await assertCertificationBelongsToUser(id, context.viewer.user.id);
     await updateCertification(id, rest);
     return { success: true };
   });
@@ -491,7 +528,8 @@ export const editCertification = createServerFn({ method: "POST" })
 export const removeCertification = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
   .inputValidator((input: { id: string }) => input)
-  .handler(async ({ data }) => {
+  .handler(async ({ context, data }) => {
+    await assertCertificationBelongsToUser(data.id, context.viewer.user.id);
     await deleteCertification(data.id);
     return { success: true };
   });
@@ -508,8 +546,9 @@ export const createCertification = createServerFn({ method: "POST" })
       sortOrder: number;
     }) => input,
   )
-  .handler(async ({ data }) => {
+  .handler(async ({ context, data }) => {
     const { resumeId, ...rest } = data;
+    await assertResumeBelongsToUser(resumeId, context.viewer.user.id);
     const id = await addCertification(resumeId, rest);
     return { id };
   });
@@ -529,8 +568,9 @@ export const editVolunteer = createServerFn({ method: "POST" })
       sortOrder?: number;
     }) => input,
   )
-  .handler(async ({ data }) => {
+  .handler(async ({ context, data }) => {
     const { id, ...rest } = data;
+    await assertVolunteerBelongsToUser(id, context.viewer.user.id);
     await updateVolunteer(id, rest);
     return { success: true };
   });
@@ -538,7 +578,8 @@ export const editVolunteer = createServerFn({ method: "POST" })
 export const removeVolunteer = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
   .inputValidator((input: { id: string }) => input)
-  .handler(async ({ data }) => {
+  .handler(async ({ context, data }) => {
+    await assertVolunteerBelongsToUser(data.id, context.viewer.user.id);
     await deleteVolunteerById(data.id);
     return { success: true };
   });
@@ -556,8 +597,9 @@ export const createVolunteer = createServerFn({ method: "POST" })
       sortOrder: number;
     }) => input,
   )
-  .handler(async ({ data }) => {
+  .handler(async ({ context, data }) => {
     const { resumeId, ...rest } = data;
+    await assertResumeBelongsToUser(resumeId, context.viewer.user.id);
     const id = await addVolunteer(resumeId, rest);
     return { id };
   });
@@ -569,8 +611,9 @@ export const editLanguage = createServerFn({ method: "POST" })
   .inputValidator(
     (input: { id: string; name?: string; proficiency?: string; sortOrder?: number }) => input,
   )
-  .handler(async ({ data }) => {
+  .handler(async ({ context, data }) => {
     const { id, ...rest } = data;
+    await assertLanguageBelongsToUser(id, context.viewer.user.id);
     await updateLanguage(id, rest);
     return { success: true };
   });
@@ -578,7 +621,8 @@ export const editLanguage = createServerFn({ method: "POST" })
 export const removeLanguage = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
   .inputValidator((input: { id: string }) => input)
-  .handler(async ({ data }) => {
+  .handler(async ({ context, data }) => {
+    await assertLanguageBelongsToUser(data.id, context.viewer.user.id);
     await deleteLanguageById(data.id);
     return { success: true };
   });
@@ -588,8 +632,9 @@ export const createLanguage = createServerFn({ method: "POST" })
   .inputValidator(
     (input: { resumeId: string; name: string; proficiency?: string; sortOrder: number }) => input,
   )
-  .handler(async ({ data }) => {
+  .handler(async ({ context, data }) => {
     const { resumeId, ...rest } = data;
+    await assertResumeBelongsToUser(resumeId, context.viewer.user.id);
     const id = await addLanguage(resumeId, rest);
     return { id };
   });
@@ -602,8 +647,9 @@ export const editContact = createServerFn({ method: "POST" })
     (input: { id: string; type?: string; value?: string; label?: string; sortOrder?: number }) =>
       input,
   )
-  .handler(async ({ data }) => {
+  .handler(async ({ context, data }) => {
     const { id, ...rest } = data;
+    await assertContactBelongsToUser(id, context.viewer.user.id);
     await updateContact(id, rest);
     return { success: true };
   });
@@ -611,7 +657,8 @@ export const editContact = createServerFn({ method: "POST" })
 export const removeContact = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
   .inputValidator((input: { id: string }) => input)
-  .handler(async ({ data }) => {
+  .handler(async ({ context, data }) => {
+    await assertContactBelongsToUser(data.id, context.viewer.user.id);
     await deleteContactById(data.id);
     return { success: true };
   });
@@ -622,8 +669,9 @@ export const createContact = createServerFn({ method: "POST" })
     (input: { resumeId: string; type: string; value: string; label?: string; sortOrder: number }) =>
       input,
   )
-  .handler(async ({ data }) => {
+  .handler(async ({ context, data }) => {
     const { resumeId, ...rest } = data;
+    await assertResumeBelongsToUser(resumeId, context.viewer.user.id);
     const id = await addContact(resumeId, rest);
     return { id };
   });
@@ -643,8 +691,9 @@ export const createTalk = createServerFn({ method: "POST" })
       sortOrder: number;
     }) => input,
   )
-  .handler(async ({ data }) => {
+  .handler(async ({ context, data }) => {
     const { resumeId, ...rest } = data;
+    await assertResumeBelongsToUser(resumeId, context.viewer.user.id);
     const id = await addTalk(resumeId, rest);
     return { id };
   });
@@ -662,8 +711,9 @@ export const editTalk = createServerFn({ method: "POST" })
       sortOrder?: number;
     }) => input,
   )
-  .handler(async ({ data }) => {
+  .handler(async ({ context, data }) => {
     const { id, ...rest } = data;
+    await assertTalkBelongsToUser(id, context.viewer.user.id);
     await updateTalk(id, rest);
     return { success: true };
   });
@@ -671,7 +721,8 @@ export const editTalk = createServerFn({ method: "POST" })
 export const removeTalk = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
   .inputValidator((input: { id: string }) => input)
-  .handler(async ({ data }) => {
+  .handler(async ({ context, data }) => {
+    await assertTalkBelongsToUser(data.id, context.viewer.user.id);
     await deleteTalk(data.id);
     return { success: true };
   });

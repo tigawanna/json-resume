@@ -16,6 +16,10 @@ No vendor lock-in, no waiting for some background service, no proprietary format
 
 ---
 
+![json tab](https://github.com/tigawanna/json-resume/blob/dc7044922577fd5e0e125241885c476f7f3692e3/apps/web/docs/json_tab.png)
+
+![Ai chatbot tab](https://github.com/tigawanna/json-resume/raw/dc7044922577fd5e0e125241885c476f7f3692e3/apps/web/docs/ai_tab.png)
+
 ## Stack
 
 | Layer         | Choice                             |
@@ -49,7 +53,7 @@ The resume workbench has a built-in AI assistant that can analyze job fit, rewri
 1. Open any resume and go to the **AI** tab.
 2. Expand **AI Provider Settings**, paste your [OpenRouter API key](https://openrouter.ai/keys), and pick a model.
 3. Choose whether the key is stored in `localStorage` (persists across tabs) or `sessionStorage` (cleared on tab close).
-4. The key is sent directly to OpenRouter on each request and never saved on the server.
+4. For hosted OpenRouter chat, the key is sent to this app's server for the duration of each AI request, forwarded to OpenRouter, and never persisted server-side.
 
 **Local testing with LM Studio** — no key needed, just set two env vars:
 

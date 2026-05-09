@@ -12,8 +12,6 @@ import { serverEnv } from "@/lib/server-env";
 import { z } from "zod";
 import { createResumeAgenticServerClient } from "./resume-orpc-client.server";
 import {
-  createResumeFromDocumentToolInputSchema,
-  createResumeFromDocumentToolOutputSchema,
   getResumeDocumentToolOutputSchema,
   resumeBlockTypeSchema,
   searchResumeBlocksToolOutputSchema,
@@ -40,14 +38,6 @@ const searchCurrentResumeBlocksToolDefinition = toolDefinition({
   outputSchema: searchResumeBlocksToolOutputSchema,
 });
 
-const saveTailoredResumeDraftToolDefinition = toolDefinition({
-  name: "save_tailored_resume_draft",
-  description:
-    "Create a new saved resume draft from a complete ResumeDocumentV1. Use this only when the user explicitly asks to save or create a draft.",
-  inputSchema: createResumeFromDocumentToolInputSchema,
-  outputSchema: createResumeFromDocumentToolOutputSchema,
-});
-
 function buildSystemPrompt(resumeId: string, jobDescription: string | undefined): string {
   return [
     "You are an expert resume tailoring assistant for a developer-focused JSON resume editor.",
@@ -59,7 +49,7 @@ function buildSystemPrompt(resumeId: string, jobDescription: string | undefined)
     "- Ground your advice in the resume data you load with tools.",
     "- Never invent employers, titles, projects, dates, or metrics.",
     "- Use search_current_resume_blocks when you need relevant bullets or skills for a target role.",
-    "- Use save_tailored_resume_draft only after the user clearly asks to save a new draft.",
+    "- You cannot save drafts directly from chat. If the user wants to save, provide the draft content for review.",
     "- Keep responses practical and specific.",
     "- If you provide JSON, it must be valid ResumeDocumentV1 JSON with no markdown fences.",
   ].join("\n\n");
@@ -105,14 +95,10 @@ export async function streamResumeAgentChat(input: {
       }),
   );
 
-  const saveTailoredResumeDraft = saveTailoredResumeDraftToolDefinition.server(async (toolInput) =>
-    client.resumes.createFromDocument(toolInput),
-  );
-
   return chat({
     adapter: buildTextAdapter(input.apiKey, input.model),
     messages: input.messages as never,
     systemPrompts: [buildSystemPrompt(input.resumeId, input.jobDescription)],
-    tools: [getCurrentResumeDocument, searchCurrentResumeBlocks, saveTailoredResumeDraft],
+    tools: [getCurrentResumeDocument, searchCurrentResumeBlocks],
   });
 }

@@ -13,7 +13,7 @@
     "test": "echo 'Add test script here'"
   },
   "dependencies": {
-    "better-auth": "^1.6.2"
+    "better-auth": "^1.6.9"
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",

@@ -137,7 +137,6 @@ Current AI tools are optimized for the active resume rather than the raw public 
 
 - `get_current_resume_document`
 - `search_current_resume_blocks`
-- `save_tailored_resume_draft`
 
 These tools are backed by the typed server-side oRPC client, not raw fetches.
 

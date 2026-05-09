@@ -42,7 +42,9 @@ export const auth = betterAuth({
     apiKey({
       defaultPrefix: "ajr",
       rateLimit: {
-        enabled: false,
+        enabled: true,
+        timeWindow: 60 * 1000,
+        maxRequests: 120,
       },
     }),
   ],

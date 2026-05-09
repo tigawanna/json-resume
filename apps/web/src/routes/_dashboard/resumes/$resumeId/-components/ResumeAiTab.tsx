@@ -1,6 +1,5 @@
 import {
   useEffect,
-  useMemo,
   useRef,
   useState,
   type FormEvent,
@@ -75,11 +74,14 @@ function CreditsDisplay({ apiKey, sessionChars }: CreditsDisplayProps) {
   if (!data) return null;
 
   const remaining = data.remaining_credits_display ?? data.total_credits - data.total_usage;
+  const used = data.total_usage;
 
   return (
     <span className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
       <Coins className="size-3" />
       <span>{formatCreditAmount(remaining)} remaining</span>
+      <span className="text-primary/30">·</span>
+      <span>{formatCreditAmount(used)} used</span>
       {sessionChars > 0 && (
         <>
           <span className="text-primary/30">·</span>
@@ -283,16 +285,12 @@ export function ResumeAiTab({ resumeId, jobDescription }: ResumeAiTabProps) {
     ? (settings.model.split("/").pop() ?? settings.model)
     : null;
 
-  const sessionChars = useMemo(
-    () =>
-      messages.reduce((total, msg) => {
-        const textChars = msg.parts
-          .filter((p) => p.type === "text")
-          .reduce((sum, p) => sum + (p.type === "text" ? p.content.length : 0), 0);
-        return total + textChars;
-      }, 0),
-    [messages],
-  );
+  const sessionChars = messages.reduce((total, msg) => {
+    const textChars = msg.parts
+      .filter((part) => part.type === "text")
+      .reduce((sum, part) => sum + (part.type === "text" ? part.content.length : 0), 0);
+    return total + textChars;
+  }, 0);
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-4" data-test="resume-ai-tab">

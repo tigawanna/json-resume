@@ -42,6 +42,157 @@ function toListItem(row: typeof resume.$inferSelect): ResumeListItemDTO {
   };
 }
 
+export async function assertResumeBelongsToUser(resumeId: string, userId: string): Promise<void> {
+  const rows = await db
+    .select({ id: resume.id })
+    .from(resume)
+    .where(and(eq(resume.id, resumeId), eq(resume.userId, userId)))
+    .limit(1);
+
+  if (rows.length === 0) {
+    throw new Error("Resume not found");
+  }
+}
+
+export async function assertLinkBelongsToUser(linkId: string, userId: string): Promise<void> {
+  const rows = await db
+    .select({ id: resumeLink.id })
+    .from(resumeLink)
+    .innerJoin(resume, eq(resumeLink.resumeId, resume.id))
+    .where(and(eq(resumeLink.id, linkId), eq(resume.userId, userId)))
+    .limit(1);
+
+  if (rows.length === 0) throw new Error("Link not found");
+}
+
+export async function assertSummaryBelongsToUser(summaryId: string, userId: string): Promise<void> {
+  const rows = await db
+    .select({ id: resumeSummary.id })
+    .from(resumeSummary)
+    .innerJoin(resume, eq(resumeSummary.resumeId, resume.id))
+    .where(and(eq(resumeSummary.id, summaryId), eq(resume.userId, userId)))
+    .limit(1);
+
+  if (rows.length === 0) throw new Error("Summary not found");
+}
+
+export async function assertExperienceBelongsToUser(
+  experienceId: string,
+  userId: string,
+): Promise<void> {
+  const rows = await db
+    .select({ id: resumeExperience.id })
+    .from(resumeExperience)
+    .innerJoin(resume, eq(resumeExperience.resumeId, resume.id))
+    .where(and(eq(resumeExperience.id, experienceId), eq(resume.userId, userId)))
+    .limit(1);
+
+  if (rows.length === 0) throw new Error("Experience not found");
+}
+
+export async function assertEducationBelongsToUser(
+  educationId: string,
+  userId: string,
+): Promise<void> {
+  const rows = await db
+    .select({ id: resumeEducation.id })
+    .from(resumeEducation)
+    .innerJoin(resume, eq(resumeEducation.resumeId, resume.id))
+    .where(and(eq(resumeEducation.id, educationId), eq(resume.userId, userId)))
+    .limit(1);
+
+  if (rows.length === 0) throw new Error("Education not found");
+}
+
+export async function assertProjectBelongsToUser(projectId: string, userId: string): Promise<void> {
+  const rows = await db
+    .select({ id: resumeProject.id })
+    .from(resumeProject)
+    .innerJoin(resume, eq(resumeProject.resumeId, resume.id))
+    .where(and(eq(resumeProject.id, projectId), eq(resume.userId, userId)))
+    .limit(1);
+
+  if (rows.length === 0) throw new Error("Project not found");
+}
+
+export async function assertSkillGroupBelongsToUser(
+  groupId: string,
+  userId: string,
+): Promise<void> {
+  const rows = await db
+    .select({ id: resumeSkillGroup.id })
+    .from(resumeSkillGroup)
+    .innerJoin(resume, eq(resumeSkillGroup.resumeId, resume.id))
+    .where(and(eq(resumeSkillGroup.id, groupId), eq(resume.userId, userId)))
+    .limit(1);
+
+  if (rows.length === 0) throw new Error("Skill group not found");
+}
+
+export async function assertCertificationBelongsToUser(
+  certificationId: string,
+  userId: string,
+): Promise<void> {
+  const rows = await db
+    .select({ id: resumeCertification.id })
+    .from(resumeCertification)
+    .innerJoin(resume, eq(resumeCertification.resumeId, resume.id))
+    .where(and(eq(resumeCertification.id, certificationId), eq(resume.userId, userId)))
+    .limit(1);
+
+  if (rows.length === 0) throw new Error("Certification not found");
+}
+
+export async function assertVolunteerBelongsToUser(
+  volunteerId: string,
+  userId: string,
+): Promise<void> {
+  const rows = await db
+    .select({ id: resumeVolunteer.id })
+    .from(resumeVolunteer)
+    .innerJoin(resume, eq(resumeVolunteer.resumeId, resume.id))
+    .where(and(eq(resumeVolunteer.id, volunteerId), eq(resume.userId, userId)))
+    .limit(1);
+
+  if (rows.length === 0) throw new Error("Volunteer item not found");
+}
+
+export async function assertLanguageBelongsToUser(
+  languageId: string,
+  userId: string,
+): Promise<void> {
+  const rows = await db
+    .select({ id: resumeLanguage.id })
+    .from(resumeLanguage)
+    .innerJoin(resume, eq(resumeLanguage.resumeId, resume.id))
+    .where(and(eq(resumeLanguage.id, languageId), eq(resume.userId, userId)))
+    .limit(1);
+
+  if (rows.length === 0) throw new Error("Language not found");
+}
+
+export async function assertContactBelongsToUser(contactId: string, userId: string): Promise<void> {
+  const rows = await db
+    .select({ id: resumeContact.id })
+    .from(resumeContact)
+    .innerJoin(resume, eq(resumeContact.resumeId, resume.id))
+    .where(and(eq(resumeContact.id, contactId), eq(resume.userId, userId)))
+    .limit(1);
+
+  if (rows.length === 0) throw new Error("Contact not found");
+}
+
+export async function assertTalkBelongsToUser(talkId: string, userId: string): Promise<void> {
+  const rows = await db
+    .select({ id: resumeTalk.id })
+    .from(resumeTalk)
+    .innerJoin(resume, eq(resumeTalk.resumeId, resume.id))
+    .where(and(eq(resumeTalk.id, talkId), eq(resume.userId, userId)))
+    .limit(1);
+
+  if (rows.length === 0) throw new Error("Talk not found");
+}
+
 // ─── List ───────────────────────────────────────────────────
 
 export async function listResumesForUser({
@@ -1047,6 +1198,8 @@ export async function replaceResumeContent(
   userId: string,
   doc: ResumeDocumentV1,
 ): Promise<void> {
+  await assertResumeBelongsToUser(resumeId, userId);
+
   // Update resume metadata
   await updateResumeMetadata(resumeId, userId, {
     fullName: doc.header.fullName,
