@@ -1,7 +1,14 @@
 import "@tanstack/react-start/server-only";
 
-import { chat, toolDefinition, type ModelMessage, type StreamChunk } from "@tanstack/ai";
+import {
+  chat,
+  toolDefinition,
+  type ModelMessage,
+  type StreamChunk,
+  type AnyTextAdapter,
+} from "@tanstack/ai";
 import { createOpenRouterText } from "@tanstack/ai-openrouter";
+import type { OpenRouterModel } from "./openrouter-models";
 import { serverEnv } from "@/lib/server-env";
 import { z } from "zod";
 import { createResumeAgenticServerClient } from "./resume-orpc-client.server";
@@ -59,21 +66,17 @@ function buildSystemPrompt(resumeId: string, jobDescription: string | undefined)
   ].join("\n\n");
 }
 
-function buildTextAdapter() {
+function buildTextAdapter(apiKey: string, model: OpenRouterModel): AnyTextAdapter {
   if (serverEnv.LMSTUDIO_BASE_URL) {
-    const model = serverEnv.LMSTUDIO_MODEL ?? "gemma-3-12b-it";
-    return createOpenRouterText(model as never, "lm-studio", {
+    const lmModel = serverEnv.LMSTUDIO_MODEL ?? "gemma-3-12b-it";
+    return createOpenRouterText(lmModel as never, "lm-studio", {
       serverURL: serverEnv.LMSTUDIO_BASE_URL,
-    });
+    }) as unknown as AnyTextAdapter;
   }
 
-  if (!serverEnv.OPENROUTER_API_KEY) {
-    throw new Error("Either OPENROUTER_API_KEY or LMSTUDIO_BASE_URL must be configured");
-  }
-
-  return createOpenRouterText("deepseek/deepseek-chat-v3-0324", serverEnv.OPENROUTER_API_KEY, {
+  return createOpenRouterText(model as never, apiKey, {
     httpReferer: serverEnv.FRONTEND_URL,
-  });
+  }) as unknown as AnyTextAdapter;
 }
 
 export async function streamResumeAgentChat(input: {
@@ -81,6 +84,8 @@ export async function streamResumeAgentChat(input: {
   resumeId: string;
   messages: ModelMessage[];
   jobDescription?: string;
+  apiKey: string;
+  model: OpenRouterModel;
 }): Promise<AsyncIterable<StreamChunk>> {
   const client = createResumeAgenticServerClient(input.userId);
 
@@ -102,7 +107,7 @@ export async function streamResumeAgentChat(input: {
   );
 
   return chat({
-    adapter: buildTextAdapter(),
+    adapter: buildTextAdapter(input.apiKey, input.model),
     messages: input.messages as never,
     systemPrompts: [buildSystemPrompt(input.resumeId, input.jobDescription)],
     tools: [getCurrentResumeDocument, searchCurrentResumeBlocks, saveTailoredResumeDraft],

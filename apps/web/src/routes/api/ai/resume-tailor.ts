@@ -2,12 +2,15 @@ import { toServerSentEventsResponse, type ModelMessage } from "@tanstack/ai";
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { streamResumeAgentChat } from "@/features/agentic-tools/resume-agent.server";
+import type { OpenRouterModel } from "@/features/agentic-tools/openrouter-models";
 import { agenticCorsHeaders } from "@/features/agentic-tools/agentic-routes";
 import { auth } from "@/lib/auth";
 
 const resumeAiRequestDataSchema = z.object({
   resumeId: z.string().trim().min(1),
   jobDescription: z.string().optional(),
+  apiKey: z.string().trim().min(1),
+  model: z.string().trim().min(1),
 });
 
 function withCors(response: Response): Response {
@@ -59,6 +62,8 @@ export const Route = createFileRoute("/api/ai/resume-tailor")({
             resumeId: data.resumeId,
             jobDescription: data.jobDescription,
             messages: raw.messages as ModelMessage[],
+            apiKey: data.apiKey,
+            model: data.model as OpenRouterModel,
           });
 
           return withCors(toServerSentEventsResponse(stream));

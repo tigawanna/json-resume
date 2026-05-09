@@ -40,6 +40,28 @@ pnpm dev
 
 Use **`vp`** from the repo root for lint/format/test per `CLAUDE.md` (e.g. `vp check`).
 
+## AI Assistant
+
+The resume workbench has a built-in AI assistant that can analyze job fit, rewrite summaries, and plan tailored drafts.
+
+**No server-side API keys are stored.** You bring your own key:
+
+1. Open any resume and go to the **AI** tab.
+2. Expand **AI Provider Settings**, paste your [OpenRouter API key](https://openrouter.ai/keys), and pick a model.
+3. Choose whether the key is stored in `localStorage` (persists across tabs) or `sessionStorage` (cleared on tab close).
+4. The key is sent directly to OpenRouter on each request and never saved on the server.
+
+**Local testing with LM Studio** — no key needed, just set two env vars:
+
+```bash
+LMSTUDIO_BASE_URL=http://localhost:1234/v1
+LMSTUDIO_MODEL=gemma-3-12b-it   # match the identifier shown in LM Studio
+```
+
+When `LMSTUDIO_BASE_URL` is set, the server ignores any key sent by the client and routes all requests to LM Studio instead.
+
+See `apps/web/src/features/agentic-tools/README.md` for the full AI layer reference.
+
 ## Docs
 
 - `VISION.md` — product problem, JSON+LLM loop, future “agentic” direction.

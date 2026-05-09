@@ -19,7 +19,6 @@ const envSchema = z.object({
   GITHUB_CLIENT_ID: z.string(),
   GITHUB_CLIENT_SECRET: z.string(),
   FRONTEND_URL: z.url(),
-  OPENROUTER_API_KEY: z.string().optional(),
   LMSTUDIO_BASE_URL: z.url().optional(),
   LMSTUDIO_MODEL: z.string().optional(),
 });

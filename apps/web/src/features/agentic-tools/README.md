@@ -127,9 +127,11 @@ curl -X POST "$APP_URL/api/agentic/resume-blocks/search" \
 
 The first slice is implemented:
 
-- `resume-agent.server.ts` uses OpenRouter via TanStack AI.
-- `src/routes/api/ai/resume-tailor.ts` streams assistant responses over SSE.
-- `src/routes/_dashboard/resumes/$resumeId/-components/ResumeAiTab.tsx` adds the first in-app AI assistant tab.
+- `resume-agent.server.ts` — TanStack AI orchestration; builds the adapter and defines the tool loop.
+- `openrouter-models.ts` — full `OPENROUTER_MODELS` runtime array + derived `OpenRouterModel` type. The `@tanstack/ai-openrouter` package ships the model list only in TypeScript source (not in the compiled dist), so this file is the runtime source of truth.
+- `AiSettingsPanel.tsx` — collapsible settings card rendered inside the AI tab. Houses the API key input, searchable model combobox, and storage type toggle.
+- `src/routes/api/ai/resume-tailor.ts` — session-protected SSE route; extracts `apiKey` and `model` from the request body and forwards them to `streamResumeAgentChat`.
+- `src/routes/_dashboard/resumes/$resumeId/-components/ResumeAiTab.tsx` — uses `useAiSettings` to read credentials from the browser, passes them in the `useChat` body on every request.
 
 Current AI tools are optimized for the active resume rather than the raw public API shape:
 
@@ -139,7 +141,56 @@ Current AI tools are optimized for the active resume rather than the raw public 
 
 These tools are backed by the typed server-side oRPC client, not raw fetches.
 
-OpenRouter reads the API key from `src/lib/server-env.ts`. The key stays server-only.
+### API Key Architecture
+
+**No API keys are stored on the server.** The flow is:
+
+```
+Browser (AiSettingsPanel)
+  → localStorage / sessionStorage  (key + model stored here)
+  → useAiSettings hook              (reads storage on mount)
+  → useChat body { apiKey, model }  (sent with every POST)
+  → /api/ai/resume-tailor           (extracts from body, validates with Zod)
+  → streamResumeAgentChat           (passes to buildTextAdapter)
+  → OpenRouter API                  (key used here, never persisted)
+```
+
+Storage preference (`local` vs `session`) is always kept in `localStorage` so the app knows where to look on the next mount. The credentials themselves (`apiKey` + `model`) live in whichever storage the user chose.
+
+Relevant files:
+
+| File                           | Responsibility                                               |
+| ------------------------------ | ------------------------------------------------------------ |
+| `src/types/ai-settings.ts`     | `AiSettings`, `AiCredentials`, `AiStorageType` types         |
+| `src/hooks/use-ai-settings.ts` | read/write/clear credentials; handles storage-type migration |
+| `AiSettingsPanel.tsx`          | UI: key input, model combobox, storage toggle                |
+
+### Switching Models
+
+The `AiSettingsPanel` combobox lists every model in `openrouter-models.ts`. The default is `deepseek/deepseek-chat-v3-0324` — cheap and capable for resume tailoring. Any model in the list can be selected; the string is passed verbatim to OpenRouter.
+
+To add a newly released model: append its OpenRouter model id to `OPENROUTER_MODELS` in `openrouter-models.ts`. The `OpenRouterModel` type is derived from that array so no other changes are needed.
+
+### Local Development with LM Studio
+
+LM Studio exposes an OpenAI-compatible REST API. The server adapter can point to it instead of OpenRouter when two env vars are present:
+
+```bash
+LMSTUDIO_BASE_URL=http://localhost:1234/v1
+LMSTUDIO_MODEL=gemma-3-12b-it
+```
+
+Steps:
+
+1. Download [LM Studio](https://lmstudio.ai) and load a model (e.g. `google/gemma-3-12b-it`).
+2. Start the local server in LM Studio (default port `1234`).
+3. Copy the model identifier shown in LM Studio — it must match `LMSTUDIO_MODEL` exactly.
+4. Set the two env vars and restart the dev server.
+5. When `LMSTUDIO_BASE_URL` is set, the server ignores the `apiKey` and `model` sent by the client entirely and routes all requests to LM Studio using a dummy key.
+
+`LMSTUDIO_MODEL` defaults to `"gemma-3-12b-it"` if omitted.
+
+The adapter reuse works because the `@openrouter/sdk` `SDKOptions` accepts a `serverURL` override, and LM Studio's API is OpenAI-compatible.
 
 The current assistant is intentionally conservative:
 
