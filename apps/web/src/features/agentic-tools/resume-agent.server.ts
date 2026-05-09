@@ -59,16 +59,29 @@ function buildSystemPrompt(resumeId: string, jobDescription: string | undefined)
   ].join("\n\n");
 }
 
+function buildTextAdapter() {
+  if (serverEnv.LMSTUDIO_BASE_URL) {
+    const model = serverEnv.LMSTUDIO_MODEL ?? "gemma-3-12b-it";
+    return createOpenRouterText(model as never, "lm-studio", {
+      serverURL: serverEnv.LMSTUDIO_BASE_URL,
+    });
+  }
+
+  if (!serverEnv.OPENROUTER_API_KEY) {
+    throw new Error("Either OPENROUTER_API_KEY or LMSTUDIO_BASE_URL must be configured");
+  }
+
+  return createOpenRouterText("deepseek/deepseek-chat-v3-0324", serverEnv.OPENROUTER_API_KEY, {
+    httpReferer: serverEnv.FRONTEND_URL,
+  });
+}
+
 export async function streamResumeAgentChat(input: {
   userId: string;
   resumeId: string;
   messages: ModelMessage[];
   jobDescription?: string;
 }): Promise<AsyncIterable<StreamChunk>> {
-  if (!serverEnv.OPENROUTER_API_KEY) {
-    throw new Error("OPENROUTER_API_KEY is not configured on the server");
-  }
-
   const client = createResumeAgenticServerClient(input.userId);
 
   const getCurrentResumeDocument = getCurrentResumeDocumentToolDefinition.server(async () =>
@@ -89,9 +102,7 @@ export async function streamResumeAgentChat(input: {
   );
 
   return chat({
-    adapter: createOpenRouterText("openai/gpt-5", serverEnv.OPENROUTER_API_KEY, {
-      httpReferer: serverEnv.FRONTEND_URL,
-    }),
+    adapter: buildTextAdapter(),
     messages: input.messages as never,
     systemPrompts: [buildSystemPrompt(input.resumeId, input.jobDescription)],
     tools: [getCurrentResumeDocument, searchCurrentResumeBlocks, saveTailoredResumeDraft],
