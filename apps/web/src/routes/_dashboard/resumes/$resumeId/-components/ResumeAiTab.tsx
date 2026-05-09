@@ -113,9 +113,9 @@ export function ResumeAiTab({ resumeId, jobDescription }: ResumeAiTabProps) {
         </CardContent>
       </Card>
 
-      <Card className="min-h-[26rem]">
+      <Card className="min-h-104">
         <CardContent className="flex h-full flex-col gap-4 p-4">
-          <div className="flex min-h-[18rem] flex-col gap-3">
+          <div className="flex min-h-72 flex-col gap-3">
             {messages.length === 0 ? (
               <div className="text-muted-foreground flex h-full flex-1 items-center justify-center rounded-lg border border-dashed px-6 py-10 text-center text-sm">
                 Start with one of the prompts above or ask for a specific tailoring task.
@@ -180,7 +180,6 @@ export function ResumeAiTab({ resumeId, jobDescription }: ResumeAiTabProps) {
               ))
             )}
           </div>
-
           {error ? (
             <p className="text-destructive text-sm" data-test="resume-ai-error">
               {error.message}
