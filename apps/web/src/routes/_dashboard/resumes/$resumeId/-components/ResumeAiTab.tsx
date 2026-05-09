@@ -1,4 +1,12 @@
-import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type FormEvent,
+  type KeyboardEvent,
+  type ReactNode,
+} from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
@@ -18,6 +26,7 @@ import {
   Coins,
   ChevronsUpDown,
   FileSearch,
+  Hash,
   LoaderCircle,
   MessageSquareText,
   Search,
@@ -32,7 +41,28 @@ interface ResumeAiTabProps {
 
 const isLocalMode = import.meta.env.VITE_AI_LOCAL_MODE === "true";
 
-function CreditsDisplay({ apiKey }: { apiKey: string }) {
+function formatCreditAmount(amount: number) {
+  return amount.toLocaleString("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 4,
+  });
+}
+
+function formatTokenCount(chars: number): string {
+  const tokens = Math.round(chars / 4);
+  if (tokens >= 1_000_000) return `~${(tokens / 1_000_000).toFixed(1)}M`;
+  if (tokens >= 1_000) return `~${(tokens / 1_000).toFixed(1)}k`;
+  return `~${tokens}`;
+}
+
+interface CreditsDisplayProps {
+  apiKey: string;
+  sessionChars: number;
+}
+
+function CreditsDisplay({ apiKey, sessionChars }: CreditsDisplayProps) {
   const { data, isLoading, isError, error } = useOpenRouterCredits(apiKey);
 
   if (isLoading) return <span className="text-xs text-muted-foreground">Checking credits…</span>;
@@ -45,17 +75,18 @@ function CreditsDisplay({ apiKey }: { apiKey: string }) {
   if (!data) return null;
 
   const remaining = data.remaining_credits_display ?? data.total_credits - data.total_usage;
-  const formatted = remaining.toLocaleString("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 4,
-  });
 
   return (
-    <span className="flex items-center gap-1 rounded-full bg-[color-mix(in_oklch,var(--color-primary)_16%,transparent)] px-2.5 py-1 text-xs text-muted-foreground">
+    <span className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
       <Coins className="size-3" />
-      {formatted} remaining
+      <span>{formatCreditAmount(remaining)} remaining</span>
+      {sessionChars > 0 && (
+        <>
+          <span className="text-primary/30">·</span>
+          <Hash className="size-3" />
+          <span>{formatTokenCount(sessionChars)} tokens this session</span>
+        </>
+      )}
     </span>
   );
 }
@@ -225,12 +256,22 @@ export function ResumeAiTab({ resumeId, jobDescription }: ResumeAiTabProps) {
     endOfMessagesRef.current?.scrollIntoView({ block: "end" });
   }, [messages.length, isLoading]);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  async function submitMessage() {
     const trimmed = input.trim();
     if (!trimmed || isLoading || !isReady) return;
     await sendMessage(trimmed);
     setInput("");
+  }
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    await submitMessage();
+  }
+
+  function handleComposerKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
+    if (event.key !== "Enter" || event.shiftKey || event.nativeEvent.isComposing) return;
+    event.preventDefault();
+    void submitMessage();
   }
 
   async function sendStarter(message: string) {
@@ -241,6 +282,17 @@ export function ResumeAiTab({ resumeId, jobDescription }: ResumeAiTabProps) {
   const activeModelLabel = settings?.model
     ? (settings.model.split("/").pop() ?? settings.model)
     : null;
+
+  const sessionChars = useMemo(
+    () =>
+      messages.reduce((total, msg) => {
+        const textChars = msg.parts
+          .filter((p) => p.type === "text")
+          .reduce((sum, p) => sum + (p.type === "text" ? p.content.length : 0), 0);
+        return total + textChars;
+      }, 0),
+    [messages],
+  );
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-4" data-test="resume-ai-tab">
@@ -500,6 +552,7 @@ export function ResumeAiTab({ resumeId, jobDescription }: ResumeAiTabProps) {
               <Textarea
                 value={input}
                 onChange={(event) => setInput(event.target.value)}
+                onKeyDown={handleComposerKeyDown}
                 placeholder={
                   isReady
                     ? "Ask for a fit analysis, a rewritten summary, better bullets, or a tailored draft..."
@@ -527,7 +580,9 @@ export function ResumeAiTab({ resumeId, jobDescription }: ResumeAiTabProps) {
                   {activeModelLabel && !isLocalMode && settings?.apiKey && (
                     <span className="text-primary/30">·</span>
                   )}
-                  {settings?.apiKey && <CreditsDisplay apiKey={settings.apiKey} />}
+                  {settings?.apiKey && (
+                    <CreditsDisplay apiKey={settings.apiKey} sessionChars={sessionChars} />
+                  )}
                 </div>
               ) : (
                 <div />
