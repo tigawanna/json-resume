@@ -17,7 +17,7 @@ function withCors(response: Response): Response {
 }
 
 async function mcpHandler(request: Request): Promise<Response> {
-  const authResult = await authenticateApiKeyRequest(request, { resumes: ["read"] });
+  const authResult = await authenticateApiKeyRequest(request, { resumes: ["read", "write"] });
 
   if (!authResult) {
     return withCors(

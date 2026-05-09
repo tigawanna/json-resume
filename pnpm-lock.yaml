@@ -13,7 +13,7 @@ catalogs:
       specifier: latest
       version: 0.1.20
     vitest:
-      specifier: npm:@voidzero-dev/vite-plus-test@latest
+      specifier: npm:@voidzero-dev/vite-plus-test@^0.1.20
       version: 0.1.20
 
 overrides:

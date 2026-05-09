@@ -2,6 +2,11 @@ packages:
   - apps/*
   - packages/*
 
+catalog:
+  vite: npm:@voidzero-dev/vite-plus-core@latest
+  vite-plus: latest
+  vitest: npm:@voidzero-dev/vite-plus-test@^0.1.20
+
 onlyBuiltDependencies:
   - core-js
   - es5-ext
@@ -10,13 +15,11 @@ onlyBuiltDependencies:
   - protobufjs
   - sharp
   - workerd
-catalog:
-  vite: npm:@voidzero-dev/vite-plus-core@latest
-  vitest: npm:@voidzero-dev/vite-plus-test@latest
-  vite-plus: latest
+
 overrides:
   vite: "catalog:"
   vitest: "catalog:"
+
 peerDependencyRules:
   allowAny:
     - vite

@@ -22,7 +22,7 @@ const resumeAiCorsHeaders = {
 
 function isAllowedOrigin(request: Request): boolean {
   const origin = request.headers.get("origin");
-  return !origin || origin === serverEnv.FRONTEND_URL;
+  return origin === serverEnv.FRONTEND_URL;
 }
 
 function withCors(response: Response): Response {
