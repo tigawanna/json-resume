@@ -2,7 +2,6 @@ import { toServerSentEventsResponse, type ModelMessage } from "@tanstack/ai";
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { streamResumeAgentChat } from "@/features/agentic-tools/resume-agent.server";
-import type { OpenRouterModel } from "@/features/agentic-tools/openrouter-models";
 import { agenticCorsHeaders } from "@/features/agentic-tools/agentic-routes";
 import { auth } from "@/lib/auth";
 
@@ -63,7 +62,7 @@ export const Route = createFileRoute("/api/ai/resume-tailor")({
             jobDescription: data.jobDescription,
             messages: raw.messages as ModelMessage[],
             apiKey: data.apiKey,
-            model: data.model as OpenRouterModel | undefined,
+            model: data.model,
           });
 
           return withCors(toServerSentEventsResponse(stream));

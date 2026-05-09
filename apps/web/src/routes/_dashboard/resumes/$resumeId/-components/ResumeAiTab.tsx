@@ -1,11 +1,25 @@
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { AiSettingsPanel } from "@/features/agentic-tools/AiSettingsPanel";
+import { AiProviderModal } from "@/features/agentic-tools/AiProviderModal";
 import { useAiSettings } from "@/hooks/use-ai-settings";
+import {
+  useOpenRouterCredits,
+  openRouterCreditsQueryOptions,
+} from "@/hooks/use-openrouter-credits";
 import { fetchServerSentEvents, useChat } from "@tanstack/ai-react";
-import { Bot, LoaderCircle, Search, Sparkles, WandSparkles } from "lucide-react";
-import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import {
+  Bot,
+  Coins,
+  ChevronsUpDown,
+  LoaderCircle,
+  Search,
+  Sparkles,
+  WandSparkles,
+} from "lucide-react";
 
 interface ResumeAiTabProps {
   resumeId: string;
@@ -14,9 +28,39 @@ interface ResumeAiTabProps {
 
 const isLocalMode = import.meta.env.VITE_AI_LOCAL_MODE === "true";
 
+function CreditsDisplay({ apiKey }: { apiKey: string }) {
+  const { data, isLoading, isError, error } = useOpenRouterCredits(apiKey);
+
+  if (isLoading) return <span className="text-xs text-muted-foreground">Checking credits…</span>;
+
+  if (isError) {
+    const message = error instanceof Error ? error.message : "Failed to load credits";
+    return <span className="text-xs text-destructive">{message}</span>;
+  }
+
+  if (!data) return null;
+
+  const remaining = data.remaining_credits_display ?? data.total_credits - data.total_usage;
+  const formatted = remaining.toLocaleString("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 4,
+  });
+
+  return (
+    <span className="flex items-center gap-1 text-xs text-muted-foreground">
+      <Coins className="size-3" />
+      {formatted} remaining
+    </span>
+  );
+}
+
 export function ResumeAiTab({ resumeId, jobDescription }: ResumeAiTabProps) {
   const [input, setInput] = useState("");
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const { settings, saveSettings, clearSettings } = useAiSettings();
+  const queryClient = useQueryClient();
 
   const isReady = isLocalMode || !!settings;
 
@@ -30,37 +74,53 @@ export function ResumeAiTab({ resumeId, jobDescription }: ResumeAiTabProps) {
     },
   });
 
+  const wasLoading = useRef(false);
+  useEffect(() => {
+    if (wasLoading.current && !isLoading && settings?.apiKey) {
+      void queryClient.invalidateQueries({
+        queryKey: openRouterCreditsQueryOptions(settings.apiKey).queryKey,
+      });
+    }
+    wasLoading.current = isLoading;
+  }, [isLoading, settings?.apiKey, queryClient]);
+
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-
     const trimmed = input.trim();
-    if (!trimmed || isLoading || !isReady) {
-      return;
-    }
-
+    if (!trimmed || isLoading || !isReady) return;
     await sendMessage(trimmed);
     setInput("");
   }
 
   async function sendStarter(message: string) {
-    if (isLoading || !isReady) {
-      return;
-    }
-
+    if (isLoading || !isReady) return;
     await sendMessage(message);
   }
+
+  const activeModelLabel = settings?.model
+    ? (settings.model.split("/").pop() ?? settings.model)
+    : null;
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-4" data-test="resume-ai-tab">
       {isLocalMode ? (
-        <div className="flex items-center gap-2 rounded-lg border px-4 py-3 text-sm text-muted-foreground">
+        <div className="flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm text-muted-foreground">
           <span className="rounded-full bg-green-500/15 px-2 py-0.5 text-xs font-medium text-green-700 dark:text-green-400">
             Local mode
           </span>
           Using LM Studio — no API key required.
         </div>
       ) : (
-        <AiSettingsPanel settings={settings} onSave={saveSettings} onClear={clearSettings} />
+        <>
+          <AiSettingsPanel settings={settings} onOpenSettings={() => setSettingsOpen(true)} />
+          <AiProviderModal
+            open={settingsOpen}
+            onOpenChange={setSettingsOpen}
+            settings={settings}
+            onSave={saveSettings}
+            onClear={clearSettings}
+          />
+        </>
       )}
 
       <Card>
@@ -165,7 +225,6 @@ export function ResumeAiTab({ resumeId, jobDescription }: ResumeAiTabProps) {
                           </p>
                         );
                       }
-
                       if (part.type === "thinking") {
                         return (
                           <p key={index} className="text-xs italic text-muted-foreground">
@@ -173,7 +232,6 @@ export function ResumeAiTab({ resumeId, jobDescription }: ResumeAiTabProps) {
                           </p>
                         );
                       }
-
                       if (part.type === "tool-call") {
                         return (
                           <div
@@ -184,7 +242,6 @@ export function ResumeAiTab({ resumeId, jobDescription }: ResumeAiTabProps) {
                           </div>
                         );
                       }
-
                       if (part.type === "tool-result") {
                         return (
                           <div
@@ -195,7 +252,6 @@ export function ResumeAiTab({ resumeId, jobDescription }: ResumeAiTabProps) {
                           </div>
                         );
                       }
-
                       return null;
                     })}
                   </div>
@@ -203,6 +259,7 @@ export function ResumeAiTab({ resumeId, jobDescription }: ResumeAiTabProps) {
               ))
             )}
           </div>
+
           {error ? (
             <p className="text-destructive text-sm" data-test="resume-ai-error">
               {error.message}
@@ -223,10 +280,19 @@ export function ResumeAiTab({ resumeId, jobDescription }: ResumeAiTabProps) {
               data-test="resume-ai-input"
             />
             <div className="flex items-center justify-between gap-3">
-              <p className="text-muted-foreground text-xs">
-                The assistant can inspect the current resume and reuse existing blocks. It should
-                not invent experience.
-              </p>
+              <div className="flex flex-col gap-0.5">
+                {activeModelLabel && !isLocalMode ? (
+                  <button
+                    type="button"
+                    onClick={() => setSettingsOpen(true)}
+                    className="flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    <ChevronsUpDown className="size-3" />
+                    {activeModelLabel}
+                  </button>
+                ) : null}
+                {settings?.apiKey && <CreditsDisplay apiKey={settings.apiKey} />}
+              </div>
               <Button
                 type="submit"
                 disabled={!input.trim() || isLoading || !isReady}

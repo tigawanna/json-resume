@@ -8,7 +8,6 @@ import {
   type AnyTextAdapter,
 } from "@tanstack/ai";
 import { createOpenRouterText } from "@tanstack/ai-openrouter";
-import type { OpenRouterModel } from "./openrouter-models";
 import { serverEnv } from "@/lib/server-env";
 import { z } from "zod";
 import { createResumeAgenticServerClient } from "./resume-orpc-client.server";
@@ -66,10 +65,7 @@ function buildSystemPrompt(resumeId: string, jobDescription: string | undefined)
   ].join("\n\n");
 }
 
-function buildTextAdapter(
-  apiKey: string | undefined,
-  model: OpenRouterModel | undefined,
-): AnyTextAdapter {
+function buildTextAdapter(apiKey: string | undefined, model: string | undefined): AnyTextAdapter {
   if (serverEnv.LMSTUDIO_BASE_URL) {
     const lmModel = serverEnv.LMSTUDIO_MODEL ?? "gemma-3-12b-it";
     return createOpenRouterText(lmModel as never, "lm-studio", {
@@ -92,7 +88,7 @@ export async function streamResumeAgentChat(input: {
   messages: ModelMessage[];
   jobDescription?: string;
   apiKey?: string;
-  model?: OpenRouterModel;
+  model?: string;
 }): Promise<AsyncIterable<StreamChunk>> {
   const client = createResumeAgenticServerClient(input.userId);
 

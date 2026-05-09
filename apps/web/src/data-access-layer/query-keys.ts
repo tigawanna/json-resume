@@ -23,4 +23,6 @@ export const queryKeyPrefixes = {
   experiments: "experiments",
   oneResume: "one-resume",
   githubRepos: "github-repos",
+  openrouterModels: "openrouter-models",
+  openrouterCredits: "openrouter-credits",
 } as const;
