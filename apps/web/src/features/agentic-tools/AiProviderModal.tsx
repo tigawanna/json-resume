@@ -1,15 +1,17 @@
 import { useState } from "react";
-import { Eye, EyeOff, KeyRound } from "lucide-react";
+import { Database, Eye, EyeOff, KeyRound, ShieldCheck, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
 import { ModelPicker } from "./ModelPicker";
 import type { AiSettings, AiStorageType } from "@/types/ai-settings";
 
@@ -60,14 +62,38 @@ export function AiProviderModal({
 
   return (
     <Dialog open={open} onOpenChange={handleOpen}>
-      <DialogContent className="flex max-h-[90vh] flex-col gap-0 overflow-hidden p-0 sm:max-w-lg">
-        <DialogHeader className="border-b px-6 py-4">
-          <DialogTitle className="text-base">AI Provider Settings</DialogTitle>
+      <DialogContent className="flex max-h-[92vh] flex-col gap-0 overflow-hidden border-0 bg-[color-mix(in_oklch,var(--color-base-200)_92%,var(--color-base-content)_8%)] p-0 shadow-[0_28px_90px_color-mix(in_oklch,var(--color-base-content)_22%,transparent)] ring-1 ring-[color-mix(in_oklch,var(--color-base-content)_12%,transparent)] sm:max-w-2xl">
+        <DialogHeader className="border-b border-[color-mix(in_oklch,var(--color-base-content)_10%,transparent)] px-6 py-5">
+          <div className="flex items-start gap-3 pr-8">
+            <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
+              <Sparkles className="size-5" />
+            </div>
+            <div className="min-w-0">
+              <DialogTitle className="text-base">AI Provider Settings</DialogTitle>
+              <DialogDescription className="mt-1 leading-6">
+                Connect OpenRouter, choose how the key is stored, and pick the model that powers
+                resume tailoring.
+              </DialogDescription>
+            </div>
+          </div>
         </DialogHeader>
 
-        <div className="flex flex-col gap-5 overflow-y-auto px-6 py-5">
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="modal-api-key">OpenRouter API Key</Label>
+        <div className="flex flex-col gap-4 overflow-y-auto px-6 py-5">
+          <section className="rounded-2xl bg-base-100/65 p-4 ring-1 ring-[color-mix(in_oklch,var(--color-base-content)_10%,transparent)]">
+            <div className="mb-3 flex items-start justify-between gap-3">
+              <div>
+                <Label htmlFor="modal-api-key" className="text-sm font-semibold">
+                  OpenRouter API Key
+                </Label>
+                <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                  Stored in this browser and sent only when a chat request is made.
+                </p>
+              </div>
+              <span className="flex items-center gap-1.5 rounded-full bg-[color-mix(in_oklch,var(--color-primary)_10%,transparent)] px-2.5 py-1 text-xs text-muted-foreground">
+                <ShieldCheck className="size-3.5 text-primary" />
+                Browser only
+              </span>
+            </div>
             <div className="relative">
               <Input
                 id="modal-api-key"
@@ -75,34 +101,41 @@ export function AiProviderModal({
                 value={apiKey}
                 onChange={(e) => setApiKey(e.target.value)}
                 placeholder="sk-or-v1-..."
-                className="pr-9"
+                className="h-12 rounded-xl border-0 bg-base-200 pr-11 shadow-none ring-1 ring-[color-mix(in_oklch,var(--color-base-content)_10%,transparent)] focus-visible:ring-primary/35"
                 autoComplete="off"
               />
               <button
                 type="button"
                 onClick={() => setShowKey((v) => !v)}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                className="absolute top-1/2 right-3 flex size-8 -translate-y-1/2 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-[color-mix(in_oklch,var(--color-base-content)_8%,transparent)] hover:text-foreground"
                 aria-label={showKey ? "Hide key" : "Show key"}
               >
                 {showKey ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
               </button>
             </div>
-            <p className="text-xs text-muted-foreground">
-              Stored only in your browser, sent directly to OpenRouter.{" "}
+            <p className="mt-2 text-xs text-muted-foreground">
               <a
                 href="https://openrouter.ai/keys"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="underline underline-offset-2"
+                className="font-medium text-primary underline-offset-2 hover:underline"
               >
                 Get a key
               </a>
             </p>
-          </div>
+          </section>
 
-          <div className="flex flex-col gap-1.5">
-            <Label>Key storage</Label>
-            <div className="grid grid-cols-2 gap-2">
+          <section className="rounded-2xl bg-base-100/65 p-4 ring-1 ring-[color-mix(in_oklch,var(--color-base-content)_10%,transparent)]">
+            <div className="mb-3 flex items-center gap-2">
+              <div className="flex size-8 items-center justify-center rounded-lg bg-[color-mix(in_oklch,var(--color-primary)_12%,transparent)] text-primary">
+                <Database className="size-4" />
+              </div>
+              <div>
+                <Label className="text-sm font-semibold">Key storage</Label>
+                <p className="text-xs text-muted-foreground">Choose the persistence scope.</p>
+              </div>
+            </div>
+            <div className="grid gap-2 sm:grid-cols-2">
               {(
                 [
                   { value: "local", label: "Local storage", hint: "Persists across tabs" },
@@ -113,28 +146,40 @@ export function AiProviderModal({
                   key={value}
                   type="button"
                   onClick={() => setStorageType(value)}
-                  className={`rounded-md border px-3 py-2 text-left text-sm transition-colors ${
+                  className={cn(
+                    "rounded-xl px-3 py-3 text-left text-sm transition-colors ring-1",
                     storageType === value
-                      ? "border-primary bg-primary/5 font-medium text-primary"
-                      : "text-muted-foreground hover:bg-muted/40"
-                  }`}
+                      ? "bg-[color-mix(in_oklch,var(--color-primary)_13%,transparent)] font-medium text-primary ring-[color-mix(in_oklch,var(--color-primary)_28%,transparent)]"
+                      : "bg-base-200/75 text-muted-foreground ring-[color-mix(in_oklch,var(--color-base-content)_9%,transparent)] hover:bg-[color-mix(in_oklch,var(--color-primary)_8%,transparent)] hover:text-foreground",
+                  )}
                 >
                   {label}
                   <span className="block text-xs font-normal opacity-70">{hint}</span>
                 </button>
               ))}
             </div>
-          </div>
+          </section>
 
-          <div className="flex flex-col gap-1.5">
-            <Label>Model</Label>
+          <section className="rounded-2xl bg-base-100/65 p-4 ring-1 ring-[color-mix(in_oklch,var(--color-base-content)_10%,transparent)]">
+            <div className="mb-3">
+              <Label className="text-sm font-semibold">Model</Label>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Pick a model for chat responses and resume edits.
+              </p>
+            </div>
             <ModelPicker value={model} onChange={setModel} />
-          </div>
+          </section>
         </div>
 
-        <DialogFooter className="border-t px-6 py-4">
+        <DialogFooter className="border-t border-[color-mix(in_oklch,var(--color-base-content)_10%,transparent)] bg-base-100/55 px-6 py-4">
           {settings && (
-            <Button type="button" variant="ghost" size="sm" onClick={handleClear}>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={handleClear}
+              className="rounded-xl"
+            >
               Clear
             </Button>
           )}
@@ -143,7 +188,7 @@ export function AiProviderModal({
             onClick={handleSave}
             disabled={!apiKey.trim() || !model}
             size="sm"
-            className="gap-2"
+            className="gap-2 rounded-xl"
           >
             <KeyRound className="size-3.5" />
             Save

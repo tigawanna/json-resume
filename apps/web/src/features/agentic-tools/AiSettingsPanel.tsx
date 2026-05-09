@@ -9,13 +9,13 @@ interface AiSettingsPanelProps {
 
 export function AiSettingsPanel({ settings, onOpenSettings }: AiSettingsPanelProps) {
   return (
-    <div className="flex items-center justify-between rounded-lg border px-4 py-2.5">
+    <div className="flex items-center justify-between rounded-xl bg-[color-mix(in_oklch,var(--color-base-200)_84%,var(--color-base-content)_8%)] px-4 py-2.5 ring-1 ring-[color-mix(in_oklch,var(--color-base-content)_10%,transparent)]">
       <div className="flex items-center gap-2 text-sm">
         <Settings className="size-4 text-muted-foreground" />
         {settings ? (
           <>
             <span className="text-muted-foreground">Provider</span>
-            <span className="rounded-full bg-green-500/15 px-2 py-0.5 text-xs font-medium text-green-700 dark:text-green-400">
+            <span className="rounded-full bg-success/15 px-2 py-0.5 text-xs font-medium text-success">
               Configured
             </span>
             <span className="hidden text-xs text-muted-foreground sm:inline">
@@ -35,7 +35,7 @@ export function AiSettingsPanel({ settings, onOpenSettings }: AiSettingsPanelPro
         variant="ghost"
         size="sm"
         onClick={onOpenSettings}
-        className="gap-1.5 text-xs"
+        className="gap-1.5 rounded-lg text-xs"
       >
         <KeyRound className="size-3.5" />
         {settings ? "Change" : "Configure"}
