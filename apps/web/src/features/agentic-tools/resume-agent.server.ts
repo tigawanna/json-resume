@@ -66,12 +66,19 @@ function buildSystemPrompt(resumeId: string, jobDescription: string | undefined)
   ].join("\n\n");
 }
 
-function buildTextAdapter(apiKey: string, model: OpenRouterModel): AnyTextAdapter {
+function buildTextAdapter(
+  apiKey: string | undefined,
+  model: OpenRouterModel | undefined,
+): AnyTextAdapter {
   if (serverEnv.LMSTUDIO_BASE_URL) {
     const lmModel = serverEnv.LMSTUDIO_MODEL ?? "gemma-3-12b-it";
     return createOpenRouterText(lmModel as never, "lm-studio", {
       serverURL: serverEnv.LMSTUDIO_BASE_URL,
     }) as unknown as AnyTextAdapter;
+  }
+
+  if (!apiKey || !model) {
+    throw new Error("apiKey and model are required when not using a local LM Studio server");
   }
 
   return createOpenRouterText(model as never, apiKey, {
@@ -84,8 +91,8 @@ export async function streamResumeAgentChat(input: {
   resumeId: string;
   messages: ModelMessage[];
   jobDescription?: string;
-  apiKey: string;
-  model: OpenRouterModel;
+  apiKey?: string;
+  model?: OpenRouterModel;
 }): Promise<AsyncIterable<StreamChunk>> {
   const client = createResumeAgenticServerClient(input.userId);
 

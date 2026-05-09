@@ -12,17 +12,21 @@ interface ResumeAiTabProps {
   jobDescription: string;
 }
 
+const isLocalMode = import.meta.env.VITE_AI_LOCAL_MODE === "true";
+
 export function ResumeAiTab({ resumeId, jobDescription }: ResumeAiTabProps) {
   const [input, setInput] = useState("");
   const { settings, saveSettings, clearSettings } = useAiSettings();
+
+  const isReady = isLocalMode || !!settings;
 
   const { messages, sendMessage, clear, isLoading, error } = useChat({
     connection: fetchServerSentEvents("/api/ai/resume-tailor"),
     body: {
       resumeId,
       jobDescription,
-      apiKey: settings?.apiKey ?? "",
-      model: settings?.model ?? "",
+      apiKey: settings?.apiKey,
+      model: settings?.model,
     },
   });
 
@@ -30,7 +34,7 @@ export function ResumeAiTab({ resumeId, jobDescription }: ResumeAiTabProps) {
     event.preventDefault();
 
     const trimmed = input.trim();
-    if (!trimmed || isLoading || !settings) {
+    if (!trimmed || isLoading || !isReady) {
       return;
     }
 
@@ -39,7 +43,7 @@ export function ResumeAiTab({ resumeId, jobDescription }: ResumeAiTabProps) {
   }
 
   async function sendStarter(message: string) {
-    if (isLoading || !settings) {
+    if (isLoading || !isReady) {
       return;
     }
 
@@ -48,7 +52,16 @@ export function ResumeAiTab({ resumeId, jobDescription }: ResumeAiTabProps) {
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-4" data-test="resume-ai-tab">
-      <AiSettingsPanel settings={settings} onSave={saveSettings} onClear={clearSettings} />
+      {isLocalMode ? (
+        <div className="flex items-center gap-2 rounded-lg border px-4 py-3 text-sm text-muted-foreground">
+          <span className="rounded-full bg-green-500/15 px-2 py-0.5 text-xs font-medium text-green-700 dark:text-green-400">
+            Local mode
+          </span>
+          Using LM Studio — no API key required.
+        </div>
+      ) : (
+        <AiSettingsPanel settings={settings} onSave={saveSettings} onClear={clearSettings} />
+      )}
 
       <Card>
         <CardHeader>
@@ -67,7 +80,7 @@ export function ResumeAiTab({ resumeId, jobDescription }: ResumeAiTabProps) {
             type="button"
             variant="outline"
             size="sm"
-            disabled={!jobDescription.trim() || isLoading || !settings}
+            disabled={!jobDescription.trim() || isLoading || !isReady}
             onClick={() =>
               sendStarter(
                 "Use the saved job description and tell me how well this resume matches it, including the biggest gaps.",
@@ -82,7 +95,7 @@ export function ResumeAiTab({ resumeId, jobDescription }: ResumeAiTabProps) {
             type="button"
             variant="outline"
             size="sm"
-            disabled={isLoading || !settings}
+            disabled={isLoading || !isReady}
             onClick={() =>
               sendStarter(
                 "Load the current resume and draft a sharper professional summary targeted at senior full-stack roles.",
@@ -97,7 +110,7 @@ export function ResumeAiTab({ resumeId, jobDescription }: ResumeAiTabProps) {
             type="button"
             variant="outline"
             size="sm"
-            disabled={isLoading || !settings}
+            disabled={isLoading || !isReady}
             onClick={() =>
               sendStarter(
                 "Load the current resume, search for the strongest relevant blocks, and propose a tailored draft plan before writing any JSON.",
@@ -126,7 +139,7 @@ export function ResumeAiTab({ resumeId, jobDescription }: ResumeAiTabProps) {
           <div className="flex min-h-72 flex-col gap-3">
             {messages.length === 0 ? (
               <div className="text-muted-foreground flex h-full flex-1 items-center justify-center rounded-lg border border-dashed px-6 py-10 text-center text-sm">
-                {settings
+                {isReady
                   ? "Start with one of the prompts above or ask for a specific tailoring task."
                   : "Configure your OpenRouter API key above to start chatting."}
               </div>
@@ -201,12 +214,12 @@ export function ResumeAiTab({ resumeId, jobDescription }: ResumeAiTabProps) {
               value={input}
               onChange={(event) => setInput(event.target.value)}
               placeholder={
-                settings
+                isReady
                   ? "Ask for a fit analysis, a rewritten summary, better bullets, or a tailored draft..."
                   : "Configure your API key above to start chatting..."
               }
               rows={4}
-              disabled={isLoading || !settings}
+              disabled={isLoading || !isReady}
               data-test="resume-ai-input"
             />
             <div className="flex items-center justify-between gap-3">
@@ -216,7 +229,7 @@ export function ResumeAiTab({ resumeId, jobDescription }: ResumeAiTabProps) {
               </p>
               <Button
                 type="submit"
-                disabled={!input.trim() || isLoading || !settings}
+                disabled={!input.trim() || isLoading || !isReady}
                 className="min-w-32"
                 data-test="resume-ai-submit"
               >

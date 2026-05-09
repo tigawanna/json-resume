@@ -9,8 +9,8 @@ import { auth } from "@/lib/auth";
 const resumeAiRequestDataSchema = z.object({
   resumeId: z.string().trim().min(1),
   jobDescription: z.string().optional(),
-  apiKey: z.string().trim().min(1),
-  model: z.string().trim().min(1),
+  apiKey: z.string().trim().optional(),
+  model: z.string().trim().optional(),
 });
 
 function withCors(response: Response): Response {
@@ -63,7 +63,7 @@ export const Route = createFileRoute("/api/ai/resume-tailor")({
             jobDescription: data.jobDescription,
             messages: raw.messages as ModelMessage[],
             apiKey: data.apiKey,
-            model: data.model as OpenRouterModel,
+            model: data.model as OpenRouterModel | undefined,
           });
 
           return withCors(toServerSentEventsResponse(stream));
