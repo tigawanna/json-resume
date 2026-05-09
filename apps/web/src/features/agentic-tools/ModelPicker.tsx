@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { ArrowUpDown, Loader2, TriangleAlert } from "lucide-react";
+import { ArrowUpDown, Gift, Loader2, TriangleAlert } from "lucide-react";
 import { useOpenRouterModels } from "@/hooks/use-openrouter-models";
 import { formatModelPrice } from "@/services/openrouter/openrouter.api";
 import { Input } from "@/components/ui/input";
@@ -18,21 +18,27 @@ function promptPrice(model: OpenRouterModelData): number {
 export function ModelPicker({ value, onChange }: ModelPickerProps) {
   const [search, setSearch] = useState("");
   const [sortCheapest, setSortCheapest] = useState(false);
+  const [freeOnly, setFreeOnly] = useState(false);
   const { data: models, isLoading, isError } = useOpenRouterModels();
 
   const filtered = useMemo(() => {
     if (!models) return [];
     const term = search.toLowerCase();
-    const list = term
+    let list = term
       ? models.filter(
           (m) => m.id.toLowerCase().includes(term) || m.name.toLowerCase().includes(term),
         )
       : models;
+    if (freeOnly) {
+      list = list.filter(
+        (m) => Number(m.pricing.prompt) === 0 && Number(m.pricing.completion) === 0,
+      );
+    }
     if (sortCheapest) {
       return [...list].sort((a, b) => promptPrice(a) - promptPrice(b));
     }
     return list;
-  }, [models, search, sortCheapest]);
+  }, [models, search, sortCheapest, freeOnly]);
 
   if (isLoading) {
     return (
@@ -63,13 +69,23 @@ export function ModelPicker({ value, onChange }: ModelPickerProps) {
         />
         <Button
           type="button"
+          variant={freeOnly ? "default" : "outline"}
+          size="sm"
+          onClick={() => setFreeOnly((v) => !v)}
+          className="shrink-0 gap-1.5"
+        >
+          <Gift className="size-3.5" />
+          Free
+        </Button>
+        <Button
+          type="button"
           variant={sortCheapest ? "default" : "outline"}
           size="sm"
           onClick={() => setSortCheapest((v) => !v)}
           className="shrink-0 gap-1.5"
         >
           <ArrowUpDown className="size-3.5" />
-          Cheapest first
+          Cheapest
         </Button>
       </div>
 
