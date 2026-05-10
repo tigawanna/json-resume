@@ -5,10 +5,14 @@ import {
   createResumeFromDocumentToolInputSchema,
   createResumeFromDocumentToolOutputSchema,
   getResumeDocumentToolOutputSchema,
+  navigateToResumeToolInputSchema,
+  navigateToResumeToolOutputSchema,
   refreshResumePreviewToolInputSchema,
   refreshResumePreviewToolOutputSchema,
   resumeBlockTypeSchema,
   searchResumeBlocksToolOutputSchema,
+  updateCurrentResumeDocumentToolInputSchema,
+  updateResumeDocumentToolOutputSchema,
 } from "./resume-tool-schemas";
 import { z } from "zod";
 
@@ -55,4 +59,20 @@ export const refreshResumePreviewToolDefinition = toolDefinition({
     "Refresh the client-side resume data after a resume tool writes to the database so the user can preview the latest state.",
   inputSchema: refreshResumePreviewToolInputSchema,
   outputSchema: refreshResumePreviewToolOutputSchema,
+});
+
+export const navigateToResumeToolDefinition = toolDefinition({
+  name: "navigate_to_resume",
+  description:
+    "Navigate the user to a resume after a successful clone, fork, or new draft creation so they can see the resume being worked on.",
+  inputSchema: navigateToResumeToolInputSchema,
+  outputSchema: navigateToResumeToolOutputSchema,
+});
+
+export const updateCurrentResumeDocumentToolDefinition = toolDefinition({
+  name: "update_current_resume_document",
+  description:
+    "Replace the content of the current working resume with an updated ResumeDocumentV1. Always call get_current_resume_document first, apply your edits to the returned document, then call this tool. Follow with refresh_resume_preview so the user sees the changes.",
+  inputSchema: updateCurrentResumeDocumentToolInputSchema,
+  outputSchema: updateResumeDocumentToolOutputSchema,
 });

@@ -62,7 +62,27 @@ export const cloneCurrentResumeToolInputSchema = z.object({
   jobDescription: z.string().trim().max(20_000).optional(),
 });
 
+export const updateCurrentResumeDocumentToolInputSchema = z.object({
+  document: resumeDocumentV1Schema,
+});
+
+export const updateResumeDocumentToolInputSchema = z.object({
+  resumeId: z.string().trim().min(1),
+  document: resumeDocumentV1Schema,
+});
+
+export const updateResumeDocumentToolOutputSchema = z.object({
+  resumeId: z.string(),
+  updatedAt: z.string(),
+});
+
 export const refreshResumePreviewToolInputSchema = z.object({
+  reason: z.string().trim().max(240).optional(),
+});
+
+export const navigateToResumeToolInputSchema = z.object({
+  resumeId: z.string().trim().min(1),
+  tab: z.enum(["edit", "preview", "json", "prompt", "ai"]).default("preview"),
   reason: z.string().trim().max(240).optional(),
 });
 
@@ -176,6 +196,12 @@ export const refreshResumePreviewToolOutputSchema = z.object({
   resumeId: z.string(),
 });
 
+export const navigateToResumeToolOutputSchema = z.object({
+  navigated: z.boolean(),
+  resumeId: z.string(),
+  tab: z.enum(["edit", "preview", "json", "prompt", "ai"]),
+});
+
 export type ResumeBlockType = z.infer<typeof resumeBlockTypeSchema>;
 export type ListResumesToolInput = z.infer<typeof listResumesToolInputSchema>;
 export type GetResumeDocumentToolInput = z.infer<typeof getResumeDocumentToolInputSchema>;
@@ -200,3 +226,8 @@ export type CreateResumeFromDocumentToolOutput = z.infer<
   typeof createResumeFromDocumentToolOutputSchema
 >;
 export type CloneResumeToolOutput = z.infer<typeof cloneResumeToolOutputSchema>;
+export type UpdateCurrentResumeDocumentToolInput = z.infer<
+  typeof updateCurrentResumeDocumentToolInputSchema
+>;
+export type UpdateResumeDocumentToolInput = z.infer<typeof updateResumeDocumentToolInputSchema>;
+export type UpdateResumeDocumentToolOutput = z.infer<typeof updateResumeDocumentToolOutputSchema>;

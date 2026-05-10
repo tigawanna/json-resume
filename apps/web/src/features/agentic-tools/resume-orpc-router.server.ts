@@ -15,6 +15,8 @@ import {
   replaceExperienceBulletsToolOutputSchema,
   searchResumeBlocksToolInputSchema,
   searchResumeBlocksToolOutputSchema,
+  updateResumeDocumentToolInputSchema,
+  updateResumeDocumentToolOutputSchema,
 } from "./resume-tool-schemas";
 import {
   addExperienceBulletTool,
@@ -24,6 +26,7 @@ import {
   listResumesTool,
   replaceExperienceBulletsTool,
   searchResumeBlocksTool,
+  updateResumeDocumentTool,
 } from "./resume-tools.server";
 import { resumeReadProcedure, resumeWriteProcedure } from "./resume-orpc-base.server";
 
@@ -118,6 +121,22 @@ const createResumeFromDocumentProcedure = resumeWriteProcedure
     createResumeFromDocumentTool({ userId: context.userId }, input),
   );
 
+const updateResumeDocumentProcedure = resumeWriteProcedure
+  .route({
+    method: "POST",
+    path: "/resumes/update-document",
+    summary: "Update a resume document",
+    description:
+      "Replace all content of an owned resume from a complete ResumeDocumentV1 document.",
+    tags: ["Agentic Resumes"],
+    successStatus: 200,
+  })
+  .input(updateResumeDocumentToolInputSchema)
+  .output(updateResumeDocumentToolOutputSchema)
+  .handler(async ({ context, input }) =>
+    updateResumeDocumentTool({ userId: context.userId }, input),
+  );
+
 const cloneResumeProcedure = resumeWriteProcedure
   .route({
     method: "POST",
@@ -141,6 +160,7 @@ export const resumeAgenticRouter = {
     document: getResumeDocumentProcedure,
     createFromDocument: createResumeFromDocumentProcedure,
     clone: cloneResumeProcedure,
+    updateDocument: updateResumeDocumentProcedure,
   },
   resumeBlocks: {
     search: searchResumeBlocksProcedure,

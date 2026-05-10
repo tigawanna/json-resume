@@ -8,8 +8,10 @@ import {
   cloneCurrentResumeToolDefinition,
   createResumeFromDocumentToolDefinition,
   getCurrentResumeDocumentToolDefinition,
+  navigateToResumeToolDefinition,
   refreshResumePreviewToolDefinition,
   searchCurrentResumeBlocksToolDefinition,
+  updateCurrentResumeDocumentToolDefinition,
 } from "./resume-chat-tool-definitions";
 
 function buildSystemPrompt(resumeId: string, jobDescription: string | undefined): string {
@@ -25,6 +27,8 @@ function buildSystemPrompt(resumeId: string, jobDescription: string | undefined)
     "- Use search_current_resume_blocks when you need relevant bullets or skills for a target role.",
     "- Prefer clone_current_resume before creating a tailored variant so the original resume remains intact.",
     "- You may create a new draft with clone_current_resume or create_resume_from_document when the user asks you to save a tailored draft.",
+    "- After a successful clone_current_resume or create_resume_from_document call, call navigate_to_resume with the returned resumeId so the user sees the new working draft.",
+    "- Use update_current_resume_document to apply targeted edits directly to the current resume. Always call get_current_resume_document first to load the full document, make your changes to the returned document, then pass the complete updated document to update_current_resume_document.",
     "- After any tool creates or updates resume data, call refresh_resume_preview so the user's preview reloads.",
     "- Keep responses practical and specific.",
     "- If you provide JSON, it must be valid ResumeDocumentV1 JSON with no markdown fences.",
@@ -84,6 +88,14 @@ export async function streamResumeAgentChat(input: {
     client.resumes.createFromDocument(toolInput),
   );
 
+  const updateCurrentResumeDocument = updateCurrentResumeDocumentToolDefinition.server(
+    (toolInput) =>
+      client.resumes.updateDocument({
+        resumeId: input.resumeId,
+        document: toolInput.document,
+      }),
+  );
+
   return chat({
     adapter: buildTextAdapter(input.apiKey, input.model),
     messages: input.messages as never,
@@ -93,7 +105,9 @@ export async function streamResumeAgentChat(input: {
       searchCurrentResumeBlocks,
       cloneCurrentResume,
       createResumeFromDocument,
+      updateCurrentResumeDocument,
       refreshResumePreviewToolDefinition,
+      navigateToResumeToolDefinition,
     ],
   });
 }

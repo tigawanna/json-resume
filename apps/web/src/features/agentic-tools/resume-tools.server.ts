@@ -4,6 +4,7 @@ import { resumeDetailToDocument } from "@/data-access-layer/resume/resume-conver
 import {
   createResumeForUser,
   getResumeDetail,
+  replaceResumeContent,
   setExperienceBullets,
 } from "@/data-access-layer/resume/resume.server";
 import { db } from "@/lib/drizzle/client";
@@ -25,6 +26,7 @@ import {
   listResumesToolInputSchema,
   replaceExperienceBulletsToolInputSchema,
   searchResumeBlocksToolInputSchema,
+  updateResumeDocumentToolInputSchema,
   type AddExperienceBulletToolInput,
   type CloneResumeToolInput,
   type CreateResumeFromDocumentToolInput,
@@ -33,6 +35,7 @@ import {
   type ReplaceExperienceBulletsToolInput,
   type ResumeBlockType,
   type SearchResumeBlocksToolInput,
+  type UpdateResumeDocumentToolInput,
 } from "./resume-tool-schemas";
 
 type ToolContext = {
@@ -447,6 +450,18 @@ export async function createResumeFromDocumentTool(
   });
 
   return { resumeId };
+}
+
+export async function updateResumeDocumentTool(
+  ctx: ToolContext,
+  input: UpdateResumeDocumentToolInput,
+) {
+  const data = updateResumeDocumentToolInputSchema.parse(input);
+  await replaceResumeContent(data.resumeId, ctx.userId, data.document);
+  return {
+    resumeId: data.resumeId,
+    updatedAt: new Date().toISOString(),
+  };
 }
 
 export async function cloneResumeTool(ctx: ToolContext, input: CloneResumeToolInput) {

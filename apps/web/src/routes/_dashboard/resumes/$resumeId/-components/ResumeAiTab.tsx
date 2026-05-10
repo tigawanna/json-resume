@@ -30,7 +30,10 @@ import {
   resumeCollection,
   resumesCollection,
 } from "@/data-access-layer/resume/resumes-query-collection";
-import { refreshResumePreviewToolDefinition } from "@/features/agentic-tools/resume-chat-tool-definitions";
+import {
+  navigateToResumeToolDefinition,
+  refreshResumePreviewToolDefinition,
+} from "@/features/agentic-tools/resume-chat-tool-definitions";
 import { AiSettingsPanel } from "@/features/agentic-tools/AiSettingsPanel";
 import { AiProviderModal } from "@/features/agentic-tools/AiProviderModal";
 import { useAiSettings } from "@/hooks/use-ai-settings";
@@ -525,6 +528,30 @@ export function ResumeAiTab({ resumeId, jobDescription }: ResumeAiTabProps) {
         ]);
 
         return { refreshed: true, resumeId };
+      }),
+      navigateToResumeToolDefinition.client(async (toolInput) => {
+        const tab = toolInput.tab ?? "preview";
+        await Promise.all([
+          queryClient.invalidateQueries({
+            queryKey: resumeDetailQueryOptions(toolInput.resumeId).queryKey,
+          }),
+          queryClient.invalidateQueries({ queryKey: ["resumes"] }),
+          resumeCollection.utils.refetch(),
+          resumesCollection.utils.refetch(),
+        ]);
+
+        await router.navigate({
+          to: "/resumes/$resumeId",
+          params: { resumeId: toolInput.resumeId },
+          search: { tab },
+        });
+        await router.invalidate();
+
+        return {
+          navigated: true,
+          resumeId: toolInput.resumeId,
+          tab,
+        };
       }),
     ],
     body: {
