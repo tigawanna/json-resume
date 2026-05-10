@@ -15,6 +15,13 @@
       "when": 1778085387923,
       "tag": "0001_amusing_wrecker",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1778396087814,
+      "tag": "0002_sleepy_lady_ursula",
+      "breakpoints": true
     }
   ]
 }

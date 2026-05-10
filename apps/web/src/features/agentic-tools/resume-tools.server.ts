@@ -19,12 +19,14 @@ import {
 import { and, asc, desc, eq, gte, like, or, sql } from "drizzle-orm";
 import {
   addExperienceBulletToolInputSchema,
+  cloneResumeToolInputSchema,
   createResumeFromDocumentToolInputSchema,
   getResumeDocumentToolInputSchema,
   listResumesToolInputSchema,
   replaceExperienceBulletsToolInputSchema,
   searchResumeBlocksToolInputSchema,
   type AddExperienceBulletToolInput,
+  type CloneResumeToolInput,
   type CreateResumeFromDocumentToolInput,
   type GetResumeDocumentToolInput,
   type ListResumesToolInput,
@@ -445,4 +447,27 @@ export async function createResumeFromDocumentTool(
   });
 
   return { resumeId };
+}
+
+export async function cloneResumeTool(ctx: ToolContext, input: CloneResumeToolInput) {
+  const data = cloneResumeToolInputSchema.parse(input);
+  const detail = await getResumeDetail(data.sourceResumeId, ctx.userId);
+
+  if (!detail) {
+    throw new Error("Source resume not found");
+  }
+
+  const name = data.name ?? `${detail.name} Copy`;
+  const resumeId = await createResumeForUser(ctx.userId, {
+    name,
+    description: data.description ?? detail.description,
+    jobDescription: data.jobDescription ?? detail.jobDescription,
+    doc: resumeDetailToDocument(detail),
+  });
+
+  return {
+    sourceResumeId: data.sourceResumeId,
+    resumeId,
+    name,
+  };
 }

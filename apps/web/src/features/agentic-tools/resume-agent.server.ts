@@ -1,42 +1,16 @@
 import "@tanstack/react-start/server-only";
 
-import {
-  chat,
-  toolDefinition,
-  type ModelMessage,
-  type StreamChunk,
-  type AnyTextAdapter,
-} from "@tanstack/ai";
+import { chat, type ModelMessage, type StreamChunk, type AnyTextAdapter } from "@tanstack/ai";
 import { createOpenRouterText } from "@tanstack/ai-openrouter";
 import { serverEnv } from "@/lib/server-env";
-import { z } from "zod";
 import { createResumeAgenticServerClient } from "./resume-orpc-client.server";
 import {
-  getResumeDocumentToolOutputSchema,
-  resumeBlockTypeSchema,
-  searchResumeBlocksToolOutputSchema,
-} from "./resume-tool-schemas";
-
-const searchCurrentResumeBlocksInputSchema = z.object({
-  keyword: z.string().trim().min(1).optional(),
-  blockTypes: z.array(resumeBlockTypeSchema).min(1).optional(),
-  limitPerType: z.coerce.number().int().min(1).max(20).default(8),
-});
-
-const getCurrentResumeDocumentToolDefinition = toolDefinition({
-  name: "get_current_resume_document",
-  description:
-    "Load the current working resume as structured ResumeDocumentV1 JSON before tailoring or giving specific rewrite advice.",
-  outputSchema: getResumeDocumentToolOutputSchema,
-});
-
-const searchCurrentResumeBlocksToolDefinition = toolDefinition({
-  name: "search_current_resume_blocks",
-  description:
-    "Search summaries, experience bullets, projects, and skills from the current resume using keywords from the target role.",
-  inputSchema: searchCurrentResumeBlocksInputSchema,
-  outputSchema: searchResumeBlocksToolOutputSchema,
-});
+  cloneCurrentResumeToolDefinition,
+  createResumeFromDocumentToolDefinition,
+  getCurrentResumeDocumentToolDefinition,
+  refreshResumePreviewToolDefinition,
+  searchCurrentResumeBlocksToolDefinition,
+} from "./resume-chat-tool-definitions";
 
 function buildSystemPrompt(resumeId: string, jobDescription: string | undefined): string {
   return [
@@ -49,7 +23,9 @@ function buildSystemPrompt(resumeId: string, jobDescription: string | undefined)
     "- Ground your advice in the resume data you load with tools.",
     "- Never invent employers, titles, projects, dates, or metrics.",
     "- Use search_current_resume_blocks when you need relevant bullets or skills for a target role.",
-    "- You cannot save drafts directly from chat. If the user wants to save, provide the draft content for review.",
+    "- Prefer clone_current_resume before creating a tailored variant so the original resume remains intact.",
+    "- You may create a new draft with clone_current_resume or create_resume_from_document when the user asks you to save a tailored draft.",
+    "- After any tool creates or updates resume data, call refresh_resume_preview so the user's preview reloads.",
     "- Keep responses practical and specific.",
     "- If you provide JSON, it must be valid ResumeDocumentV1 JSON with no markdown fences.",
   ].join("\n\n");
@@ -95,10 +71,29 @@ export async function streamResumeAgentChat(input: {
       }),
   );
 
+  const cloneCurrentResume = cloneCurrentResumeToolDefinition.server((toolInput) =>
+    client.resumes.clone({
+      sourceResumeId: input.resumeId,
+      name: toolInput.name,
+      description: toolInput.description,
+      jobDescription: toolInput.jobDescription,
+    }),
+  );
+
+  const createResumeFromDocument = createResumeFromDocumentToolDefinition.server((toolInput) =>
+    client.resumes.createFromDocument(toolInput),
+  );
+
   return chat({
     adapter: buildTextAdapter(input.apiKey, input.model),
     messages: input.messages as never,
     systemPrompts: [buildSystemPrompt(input.resumeId, input.jobDescription)],
-    tools: [getCurrentResumeDocument, searchCurrentResumeBlocks],
+    tools: [
+      getCurrentResumeDocument,
+      searchCurrentResumeBlocks,
+      cloneCurrentResume,
+      createResumeFromDocument,
+      refreshResumePreviewToolDefinition,
+    ],
   });
 }

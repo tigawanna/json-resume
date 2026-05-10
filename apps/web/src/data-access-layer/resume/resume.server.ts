@@ -21,7 +21,7 @@ import {
   resumeVolunteer,
 } from "@/lib/drizzle/scheam";
 import { savedProject } from "@/lib/drizzle/scheam/saved-project-schema";
-import { and, asc, desc, eq, gt, like, lt, or } from "drizzle-orm";
+import { and, asc, desc, eq, gt, inArray, isNull, like, lt, or } from "drizzle-orm";
 import { DEFAULT_PAGE_SIZE } from "../pagination.types";
 import type { PaginatedResult } from "../pagination.types";
 import { documentToInsertData } from "./resume-converters";
@@ -557,6 +557,52 @@ export async function updateLink(
 
   if (Object.keys(updates).length > 0) {
     await db.update(resumeLink).set(updates).where(eq(resumeLink.id, linkId));
+  }
+}
+
+export async function updateDuplicateLinksForUser(
+  linkId: string,
+  userId: string,
+  input: { label?: string; url?: string; icon?: string; sortOrder?: number },
+): Promise<void> {
+  const row = await db
+    .select({
+      label: resumeLink.label,
+      url: resumeLink.url,
+      icon: resumeLink.icon,
+    })
+    .from(resumeLink)
+    .innerJoin(resume, eq(resumeLink.resumeId, resume.id))
+    .where(and(eq(resumeLink.id, linkId), eq(resume.userId, userId)))
+    .limit(1);
+
+  if (!row[0]) throw new Error("Link not found");
+
+  const target = row[0];
+  const duplicateRows = await db
+    .select({ id: resumeLink.id })
+    .from(resumeLink)
+    .innerJoin(resume, eq(resumeLink.resumeId, resume.id))
+    .where(
+      and(
+        eq(resume.userId, userId),
+        eq(resumeLink.label, target.label),
+        eq(resumeLink.url, target.url),
+        target.icon === null ? isNull(resumeLink.icon) : eq(resumeLink.icon, target.icon),
+      ),
+    );
+
+  const duplicateIds = duplicateRows.map((duplicate) => duplicate.id);
+  if (duplicateIds.length === 0) return;
+
+  const updates: Record<string, unknown> = {};
+  if (input.label !== undefined) updates.label = input.label;
+  if (input.url !== undefined) updates.url = input.url;
+  if (input.icon !== undefined) updates.icon = input.icon;
+  if (input.sortOrder !== undefined) updates.sortOrder = input.sortOrder;
+
+  if (Object.keys(updates).length > 0) {
+    await db.update(resumeLink).set(updates).where(inArray(resumeLink.id, duplicateIds));
   }
 }
 
@@ -1103,6 +1149,52 @@ export async function updateContact(
 
   if (Object.keys(updates).length > 0) {
     await db.update(resumeContact).set(updates).where(eq(resumeContact.id, contactId));
+  }
+}
+
+export async function updateDuplicateContactsForUser(
+  contactId: string,
+  userId: string,
+  input: { type?: string; value?: string; label?: string; sortOrder?: number },
+): Promise<void> {
+  const row = await db
+    .select({
+      type: resumeContact.type,
+      value: resumeContact.value,
+      label: resumeContact.label,
+    })
+    .from(resumeContact)
+    .innerJoin(resume, eq(resumeContact.resumeId, resume.id))
+    .where(and(eq(resumeContact.id, contactId), eq(resume.userId, userId)))
+    .limit(1);
+
+  if (!row[0]) throw new Error("Contact not found");
+
+  const target = row[0];
+  const duplicateRows = await db
+    .select({ id: resumeContact.id })
+    .from(resumeContact)
+    .innerJoin(resume, eq(resumeContact.resumeId, resume.id))
+    .where(
+      and(
+        eq(resume.userId, userId),
+        eq(resumeContact.type, target.type),
+        eq(resumeContact.value, target.value),
+        eq(resumeContact.label, target.label),
+      ),
+    );
+
+  const duplicateIds = duplicateRows.map((duplicate) => duplicate.id);
+  if (duplicateIds.length === 0) return;
+
+  const updates: Record<string, unknown> = {};
+  if (input.type !== undefined) updates.type = input.type;
+  if (input.value !== undefined) updates.value = input.value;
+  if (input.label !== undefined) updates.label = input.label;
+  if (input.sortOrder !== undefined) updates.sortOrder = input.sortOrder;
+
+  if (Object.keys(updates).length > 0) {
+    await db.update(resumeContact).set(updates).where(inArray(resumeContact.id, duplicateIds));
   }
 }
 

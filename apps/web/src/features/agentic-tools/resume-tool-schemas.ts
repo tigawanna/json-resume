@@ -49,6 +49,23 @@ export const createResumeFromDocumentToolInputSchema = z.object({
   document: resumeDocumentV1Schema,
 });
 
+export const cloneResumeToolInputSchema = z.object({
+  sourceResumeId: z.string().trim().min(1),
+  name: z.string().trim().min(1).max(120).optional(),
+  description: z.string().trim().max(800).optional(),
+  jobDescription: z.string().trim().max(20_000).optional(),
+});
+
+export const cloneCurrentResumeToolInputSchema = z.object({
+  name: z.string().trim().min(1).max(120).optional(),
+  description: z.string().trim().max(800).optional(),
+  jobDescription: z.string().trim().max(20_000).optional(),
+});
+
+export const refreshResumePreviewToolInputSchema = z.object({
+  reason: z.string().trim().max(240).optional(),
+});
+
 export const resumeListItemSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -148,6 +165,17 @@ export const createResumeFromDocumentToolOutputSchema = z.object({
   resumeId: z.string(),
 });
 
+export const cloneResumeToolOutputSchema = z.object({
+  sourceResumeId: z.string(),
+  resumeId: z.string(),
+  name: z.string(),
+});
+
+export const refreshResumePreviewToolOutputSchema = z.object({
+  refreshed: z.boolean(),
+  resumeId: z.string(),
+});
+
 export type ResumeBlockType = z.infer<typeof resumeBlockTypeSchema>;
 export type ListResumesToolInput = z.infer<typeof listResumesToolInputSchema>;
 export type GetResumeDocumentToolInput = z.infer<typeof getResumeDocumentToolInputSchema>;
@@ -159,6 +187,7 @@ export type ReplaceExperienceBulletsToolInput = z.infer<
 export type CreateResumeFromDocumentToolInput = z.infer<
   typeof createResumeFromDocumentToolInputSchema
 >;
+export type CloneResumeToolInput = z.infer<typeof cloneResumeToolInputSchema>;
 export type ListResumesToolOutput = z.infer<typeof listResumesToolOutputSchema>;
 export type GetResumeDocumentToolOutput = z.infer<typeof getResumeDocumentToolOutputSchema>;
 export type ResumeSearchBlockSchema = z.infer<typeof resumeSearchBlockSchema>;
@@ -170,3 +199,4 @@ export type ReplaceExperienceBulletsToolOutput = z.infer<
 export type CreateResumeFromDocumentToolOutput = z.infer<
   typeof createResumeFromDocumentToolOutputSchema
 >;
+export type CloneResumeToolOutput = z.infer<typeof cloneResumeToolOutputSchema>;

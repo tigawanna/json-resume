@@ -2,10 +2,72 @@ import "@tanstack/react-start/server-only";
 
 import { db } from "@/lib/drizzle/client";
 import { resume, resumeLink } from "@/lib/drizzle/scheam";
-import { and, asc, desc, eq, gt, like, lt, or } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, isNull, like, or } from "drizzle-orm";
 import { DEFAULT_PAGE_SIZE } from "../../pagination.types";
 import type { PaginatedResult } from "../../pagination.types";
 import type { LinkListItemDTO } from "./link.types";
+
+type LinkRow = {
+  id: string;
+  resumeId: string;
+  resumeName: string;
+  label: string;
+  url: string;
+  icon: string | null;
+  sortOrder: number;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+function normalizeLinkIdentity(row: Pick<LinkRow, "label" | "url" | "icon">): string {
+  return [
+    row.label.trim().toLowerCase(),
+    row.url.trim().toLowerCase(),
+    row.icon?.trim() ?? "",
+  ].join("\u001f");
+}
+
+function groupLinkRows(rows: LinkRow[]): LinkListItemDTO[] {
+  const grouped = new Map<string, LinkRow & { resumeIds: string[]; resumeNames: string[] }>();
+
+  for (const row of rows) {
+    const key = normalizeLinkIdentity(row);
+    const current = grouped.get(key);
+    if (!current) {
+      grouped.set(key, { ...row, resumeIds: [row.resumeId], resumeNames: [row.resumeName] });
+      continue;
+    }
+
+    if (!current.resumeIds.includes(row.resumeId)) {
+      current.resumeIds.push(row.resumeId);
+      current.resumeNames.push(row.resumeName);
+    }
+
+    if (row.updatedAt > current.updatedAt) {
+      current.id = row.id;
+      current.resumeId = row.resumeId;
+      current.resumeName = row.resumeName;
+      current.sortOrder = row.sortOrder;
+      current.createdAt = row.createdAt;
+      current.updatedAt = row.updatedAt;
+    }
+  }
+
+  return Array.from(grouped.values()).map((r) => ({
+    id: r.id,
+    resumeId: r.resumeId,
+    resumeName: r.resumeName,
+    resumeIds: r.resumeIds,
+    resumeNames: r.resumeNames,
+    usageCount: r.resumeIds.length,
+    label: r.label,
+    url: r.url,
+    icon: r.icon,
+    sortOrder: r.sortOrder,
+    createdAt: r.createdAt.toISOString(),
+    updatedAt: r.updatedAt.toISOString(),
+  }));
+}
 
 export async function listLinksForUserPaginated(
   userId: string,
@@ -25,12 +87,6 @@ export async function listLinksForUserPaginated(
     );
   }
 
-  if (opts?.cursor) {
-    conditions.push(
-      direction === "before" ? lt(resumeLink.id, opts.cursor) : gt(resumeLink.id, opts.cursor),
-    );
-  }
-
   const rows = await db
     .select({
       id: resumeLink.id,
@@ -46,20 +102,20 @@ export async function listLinksForUserPaginated(
     .from(resumeLink)
     .innerJoin(resume, eq(resumeLink.resumeId, resume.id))
     .where(and(...conditions))
-    .orderBy(direction === "before" ? desc(resumeLink.id) : asc(resumeLink.id))
-    .limit(DEFAULT_PAGE_SIZE + 1);
+    .orderBy(direction === "before" ? desc(resumeLink.id) : asc(resumeLink.id));
 
-  const hasMore = rows.length > DEFAULT_PAGE_SIZE;
+  const groupedRows = groupLinkRows(rows);
+  const cursor = opts?.cursor;
+  const filteredRows = cursor
+    ? groupedRows.filter((item) => (direction === "before" ? item.id < cursor : item.id > cursor))
+    : groupedRows;
+  const hasMore = filteredRows.length > DEFAULT_PAGE_SIZE;
   const orderedRows =
     direction === "before"
-      ? rows.slice(0, DEFAULT_PAGE_SIZE).reverse()
-      : rows.slice(0, DEFAULT_PAGE_SIZE);
+      ? filteredRows.slice(0, DEFAULT_PAGE_SIZE).reverse()
+      : filteredRows.slice(0, DEFAULT_PAGE_SIZE);
 
-  const items = orderedRows.map((r) => ({
-    ...r,
-    createdAt: r.createdAt.toISOString(),
-    updatedAt: r.updatedAt.toISOString(),
-  }));
+  const items = orderedRows;
 
   let nextCursor: string | undefined;
   let previousCursor: string | undefined;
@@ -108,20 +164,36 @@ export async function listLinksForUser(
     .where(and(...conditions))
     .orderBy(desc(resumeLink.updatedAt));
 
-  return rows.map((r) => ({
-    ...r,
-    createdAt: r.createdAt.toISOString(),
-    updatedAt: r.updatedAt.toISOString(),
-  }));
+  return groupLinkRows(rows);
 }
 
 export async function deleteLinkForUser(linkId: string, userId: string): Promise<void> {
   const row = await db
-    .select({ id: resumeLink.id })
+    .select({ label: resumeLink.label, url: resumeLink.url, icon: resumeLink.icon })
     .from(resumeLink)
     .innerJoin(resume, eq(resumeLink.resumeId, resume.id))
     .where(and(eq(resumeLink.id, linkId), eq(resume.userId, userId)))
     .limit(1);
   if (row.length === 0) throw new Error("Link not found");
-  await db.delete(resumeLink).where(eq(resumeLink.id, linkId));
+
+  const target = row[0]!;
+  const duplicateRows = await db
+    .select({ id: resumeLink.id })
+    .from(resumeLink)
+    .innerJoin(resume, eq(resumeLink.resumeId, resume.id))
+    .where(
+      and(
+        eq(resume.userId, userId),
+        eq(resumeLink.label, target.label),
+        eq(resumeLink.url, target.url),
+        target.icon === null ? isNull(resumeLink.icon) : eq(resumeLink.icon, target.icon),
+      ),
+    );
+
+  await db.delete(resumeLink).where(
+    inArray(
+      resumeLink.id,
+      duplicateRows.map((duplicate) => duplicate.id),
+    ),
+  );
 }

@@ -9,6 +9,28 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  clearLocalResumeAiChat,
+  persistLocalResumeAiChat,
+  resumeAiChatCollection,
+} from "@/data-access-layer/resume/ai-chat/ai-chat.collection";
+import {
+  clearResumeAiChat,
+  saveResumeAiChat,
+} from "@/data-access-layer/resume/ai-chat/ai-chat.functions";
+import { resumeAiChatQueryOptions } from "@/data-access-layer/resume/ai-chat/ai-chat.query-options";
+import type {
+  JsonValue,
+  ResumeAiChatDTO,
+  ResumeAiChatMessage,
+  ResumeAiChatMessagePart,
+} from "@/data-access-layer/resume/ai-chat/ai-chat.types";
+import { resumeDetailQueryOptions } from "@/data-access-layer/resume/resume-query-options";
+import {
+  resumeCollection,
+  resumesCollection,
+} from "@/data-access-layer/resume/resumes-query-collection";
+import { refreshResumePreviewToolDefinition } from "@/features/agentic-tools/resume-chat-tool-definitions";
 import { AiSettingsPanel } from "@/features/agentic-tools/AiSettingsPanel";
 import { AiProviderModal } from "@/features/agentic-tools/AiProviderModal";
 import { useAiSettings } from "@/hooks/use-ai-settings";
@@ -17,8 +39,10 @@ import {
   openRouterCreditsQueryOptions,
 } from "@/hooks/use-openrouter-credits";
 import { cn } from "@/lib/utils";
-import { fetchServerSentEvents, useChat } from "@tanstack/ai-react";
-import { useQueryClient } from "@tanstack/react-query";
+import { eq, useLiveQuery } from "@tanstack/react-db";
+import { fetchServerSentEvents, useChat, type UIMessage } from "@tanstack/ai-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "@tanstack/react-router";
 import {
   ArrowUp,
   Bot,
@@ -28,8 +52,11 @@ import {
   Hash,
   LoaderCircle,
   MessageSquareText,
+  PencilLine,
+  RefreshCcw,
   Search,
   Sparkles,
+  Square,
   WandSparkles,
 } from "lucide-react";
 
@@ -111,17 +138,111 @@ function ChatAvatar({ role }: { role: "assistant" | "user" }) {
   );
 }
 
+function renderInlineMarkdown(text: string, role: "assistant" | "user", keyPrefix: string) {
+  const nodes: ReactNode[] = [];
+  const pattern = /(\*\*[^*]+\*\*|`[^`]+`|\[[^\]]+\]\([^)]+\))/g;
+  let lastIndex = 0;
+  let matchIndex = 0;
+
+  for (const match of text.matchAll(pattern)) {
+    if (match.index === undefined) continue;
+    if (match.index > lastIndex) {
+      nodes.push(text.slice(lastIndex, match.index));
+    }
+
+    const token = match[0];
+    const key = `${keyPrefix}-inline-${matchIndex}`;
+
+    if (token.startsWith("**") && token.endsWith("**")) {
+      nodes.push(
+        <strong key={key} className="font-semibold">
+          {token.slice(2, -2)}
+        </strong>,
+      );
+    } else if (token.startsWith("`") && token.endsWith("`")) {
+      nodes.push(
+        <code
+          key={key}
+          className={cn(
+            "rounded px-1.5 py-0.5 text-[0.82em]",
+            role === "user"
+              ? "bg-primary-foreground/15 text-primary-foreground"
+              : "bg-[color-mix(in_oklch,var(--color-base-content)_8%,transparent)] text-foreground",
+          )}
+        >
+          {token.slice(1, -1)}
+        </code>,
+      );
+    } else {
+      const linkMatch = token.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
+      if (linkMatch) {
+        nodes.push(
+          <a
+            key={key}
+            href={linkMatch[2]}
+            target="_blank"
+            rel="noreferrer"
+            className={cn(
+              "font-medium underline underline-offset-2",
+              role === "user" ? "text-primary-foreground" : "text-primary",
+            )}
+          >
+            {linkMatch[1]}
+          </a>,
+        );
+      }
+    }
+
+    lastIndex = match.index + token.length;
+    matchIndex += 1;
+  }
+
+  if (lastIndex < text.length) {
+    nodes.push(text.slice(lastIndex));
+  }
+
+  return nodes.length > 0 ? nodes : text;
+}
+
 function ChatText({ content, role }: { content: string; role: "assistant" | "user" }) {
   const nodes: ReactNode[] = [];
   const lines = content.split("\n");
+  let codeFence: { language: string; lines: string[] } | null = null;
 
-  lines.forEach((line, index) => {
+  for (const [index, line] of lines.entries()) {
     const trimmed = line.trim();
     const key = `${index}-${trimmed.slice(0, 20)}`;
 
+    if (trimmed.startsWith("```")) {
+      if (codeFence) {
+        nodes.push(
+          <pre
+            key={`${key}-code`}
+            className="my-2 max-w-full overflow-x-auto rounded-lg bg-[color-mix(in_oklch,var(--color-base-content)_9%,transparent)] px-3 py-2 text-xs leading-5 text-foreground"
+          >
+            {codeFence.language && (
+              <span className="mb-2 block text-[0.68rem] uppercase text-muted-foreground">
+                {codeFence.language}
+              </span>
+            )}
+            <code>{codeFence.lines.join("\n")}</code>
+          </pre>,
+        );
+        codeFence = null;
+      } else {
+        codeFence = { language: trimmed.slice(3).trim(), lines: [] };
+      }
+      continue;
+    }
+
+    if (codeFence) {
+      codeFence.lines.push(line);
+      continue;
+    }
+
     if (!trimmed) {
       nodes.push(<div key={key} className="h-1" />);
-      return;
+      continue;
     }
 
     if (trimmed === "---") {
@@ -131,34 +252,34 @@ function ChatText({ content, role }: { content: string; role: "assistant" | "use
           className="my-3 h-px bg-[color-mix(in_oklch,currentColor_18%,transparent)]"
         />,
       );
-      return;
+      continue;
     }
 
     if (trimmed.startsWith("### ")) {
       nodes.push(
         <h4 key={key} className="pt-2 text-sm font-semibold">
-          {trimmed.slice(4)}
+          {renderInlineMarkdown(trimmed.slice(4), role, key)}
         </h4>,
       );
-      return;
+      continue;
     }
 
     if (trimmed.startsWith("## ")) {
       nodes.push(
         <h3 key={key} className="pt-2 text-base font-semibold">
-          {trimmed.slice(3)}
+          {renderInlineMarkdown(trimmed.slice(3), role, key)}
         </h3>,
       );
-      return;
+      continue;
     }
 
     if (trimmed.startsWith("# ")) {
       nodes.push(
         <h2 key={key} className="pt-2 text-base font-semibold">
-          {trimmed.slice(2)}
+          {renderInlineMarkdown(trimmed.slice(2), role, key)}
         </h2>,
       );
-      return;
+      continue;
     }
 
     if (trimmed.startsWith(">")) {
@@ -167,20 +288,20 @@ function ChatText({ content, role }: { content: string; role: "assistant" | "use
           key={key}
           className="rounded-md border-l-2 border-[color-mix(in_oklch,currentColor_42%,transparent)] bg-[color-mix(in_oklch,currentColor_7%,transparent)] px-3 py-2"
         >
-          {trimmed.replace(/^>\s?/, "")}
+          {renderInlineMarkdown(trimmed.replace(/^>\s?/, ""), role, key)}
         </blockquote>,
       );
-      return;
+      continue;
     }
 
     if (/^[-*]\s+/.test(trimmed)) {
       nodes.push(
         <div key={key} className="grid grid-cols-[0.75rem_1fr] gap-2">
           <span className="mt-[0.6rem] size-1.5 rounded-full bg-current opacity-45" />
-          <span>{trimmed.replace(/^[-*]\s+/, "")}</span>
+          <span>{renderInlineMarkdown(trimmed.replace(/^[-*]\s+/, ""), role, key)}</span>
         </div>,
       );
-      return;
+      continue;
     }
 
     if (/^\d+\.\s+/.test(trimmed)) {
@@ -188,10 +309,10 @@ function ChatText({ content, role }: { content: string; role: "assistant" | "use
       nodes.push(
         <div key={key} className="grid grid-cols-[1.5rem_1fr] gap-2">
           <span className="text-xs font-semibold opacity-55">{marker}</span>
-          <span>{trimmed.replace(/^\d+\.\s+/, "")}</span>
+          <span>{renderInlineMarkdown(trimmed.replace(/^\d+\.\s+/, ""), role, key)}</span>
         </div>,
       );
-      return;
+      continue;
     }
 
     if (trimmed.startsWith("|") && trimmed.endsWith("|")) {
@@ -203,15 +324,31 @@ function ChatText({ content, role }: { content: string; role: "assistant" | "use
           {trimmed}
         </pre>,
       );
-      return;
+      continue;
     }
 
     nodes.push(
       <p key={key} className="whitespace-pre-wrap">
-        {trimmed}
+        {renderInlineMarkdown(trimmed, role, key)}
       </p>,
     );
-  });
+  }
+
+  if (codeFence) {
+    nodes.push(
+      <pre
+        key="open-code-fence"
+        className="my-2 max-w-full overflow-x-auto rounded-lg bg-[color-mix(in_oklch,var(--color-base-content)_9%,transparent)] px-3 py-2 text-xs leading-5 text-foreground"
+      >
+        {codeFence.language && (
+          <span className="mb-2 block text-[0.68rem] uppercase text-muted-foreground">
+            {codeFence.language}
+          </span>
+        )}
+        <code>{codeFence.lines.join("\n")}</code>
+      </pre>,
+    );
+  }
 
   return (
     <div
@@ -225,17 +362,171 @@ function ChatText({ content, role }: { content: string; role: "assistant" | "use
   );
 }
 
+function getMessageText(message: UIMessage): string {
+  return message.parts
+    .filter((part) => part.type === "text")
+    .map((part) => part.content)
+    .join("\n")
+    .trim();
+}
+
+function getChatStatusLabel(status: string, isLoading: boolean, sessionGenerating: boolean) {
+  if (status === "submitted") return "Request sent";
+  if (status === "streaming") return "Streaming response";
+  if (sessionGenerating) return "Generating";
+  if (isLoading) return "Working";
+  if (status === "error") return "Needs attention";
+  return "Ready";
+}
+
+function toJsonValue(value: unknown): JsonValue | undefined {
+  if (
+    value === null ||
+    typeof value === "string" ||
+    typeof value === "number" ||
+    typeof value === "boolean"
+  ) {
+    return value;
+  }
+
+  if (Array.isArray(value)) {
+    const items: JsonValue[] = [];
+    for (const item of value) {
+      const parsed = toJsonValue(item);
+      if (parsed !== undefined) items.push(parsed);
+    }
+    return items;
+  }
+
+  if (typeof value === "object") {
+    const record: { [key: string]: JsonValue } = {};
+    for (const [key, item] of Object.entries(value)) {
+      const parsed = toJsonValue(item);
+      if (parsed !== undefined) record[key] = parsed;
+    }
+    return record;
+  }
+
+  return undefined;
+}
+
+function toStoredMessages(messages: UIMessage[]): ResumeAiChatMessage[] {
+  return messages.map((message) => ({
+    id: message.id,
+    role: message.role,
+    parts: message.parts
+      .map((part): ResumeAiChatMessagePart | null => {
+        if (part.type === "text") {
+          return { type: "text", content: part.content };
+        }
+
+        if (part.type === "thinking") {
+          return { type: "thinking", content: part.content };
+        }
+
+        if (part.type === "tool-call") {
+          const output = toJsonValue(part.output);
+          return {
+            type: "tool-call",
+            id: part.id,
+            name: part.name,
+            arguments: part.arguments,
+            state: part.state,
+            ...(part.approval === undefined ? {} : { approval: part.approval }),
+            ...(output === undefined ? {} : { output }),
+          };
+        }
+
+        if (part.type === "tool-result") {
+          return {
+            type: "tool-result",
+            toolCallId: part.toolCallId,
+            content: part.content,
+            state: part.state,
+            ...(part.error === undefined ? {} : { error: part.error }),
+          };
+        }
+
+        return null;
+      })
+      .filter((part): part is ResumeAiChatMessagePart => part !== null),
+  }));
+}
+
+function toUiMessages(messages: ResumeAiChatMessage[]): UIMessage[] {
+  return messages.map((message) => ({
+    id: message.id,
+    role: message.role,
+    parts: message.parts.map((part) => ({ ...part })),
+  }));
+}
+
 export function ResumeAiTab({ resumeId, jobDescription }: ResumeAiTabProps) {
   const [input, setInput] = useState("");
   const [settingsOpen, setSettingsOpen] = useState(false);
   const { settings, saveSettings, clearSettings } = useAiSettings();
   const queryClient = useQueryClient();
+  const router = useRouter();
   const endOfMessagesRef = useRef<HTMLDivElement>(null);
+  const composerRef = useRef<HTMLTextAreaElement>(null);
+  const lastSavedSignatureRef = useRef("");
+  const hydratedHistoryRef = useRef<string | null>(null);
 
   const isReady = isLocalMode || !!settings;
 
-  const { messages, sendMessage, clear, isLoading, error } = useChat({
+  const { data: localChats } = useLiveQuery(
+    (q) =>
+      q.from({ chat: resumeAiChatCollection }).where(({ chat }) => eq(chat.resumeId, resumeId)),
+    [resumeId],
+  );
+  const localChat = localChats[0];
+  const historyQuery = useQuery(resumeAiChatQueryOptions(resumeId));
+
+  const saveChatMutation = useMutation({
+    mutationFn: async (messagesToSave: ResumeAiChatDTO["messages"]) =>
+      saveResumeAiChat({ data: { resumeId, messages: messagesToSave } }),
+    onSuccess(chat) {
+      void persistLocalResumeAiChat(chat);
+      void queryClient.invalidateQueries({ queryKey: resumeAiChatQueryOptions(resumeId).queryKey });
+    },
+  });
+
+  const clearChatMutation = useMutation({
+    mutationFn: async () => clearResumeAiChat({ data: { resumeId } }),
+    onSuccess() {
+      void clearLocalResumeAiChat(resumeId);
+      void queryClient.invalidateQueries({ queryKey: resumeAiChatQueryOptions(resumeId).queryKey });
+    },
+  });
+
+  const {
+    messages,
+    sendMessage,
+    clear,
+    isLoading,
+    error,
+    status,
+    sessionGenerating,
+    stop,
+    reload,
+    setMessages,
+  } = useChat({
+    id: `resume-ai-chat-${resumeId}`,
+    initialMessages: toUiMessages(localChat?.messages ?? historyQuery.data?.messages ?? []),
     connection: fetchServerSentEvents("/api/ai/resume-tailor"),
+    tools: [
+      refreshResumePreviewToolDefinition.client(async () => {
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: resumeDetailQueryOptions(resumeId).queryKey }),
+          queryClient.invalidateQueries({ queryKey: ["resumes"] }),
+          resumeCollection.utils.refetch(),
+          resumesCollection.utils.refetch(),
+          router.invalidate(),
+        ]);
+
+        return { refreshed: true, resumeId };
+      }),
+    ],
     body: {
       resumeId,
       jobDescription,
@@ -255,8 +546,35 @@ export function ResumeAiTab({ resumeId, jobDescription }: ResumeAiTabProps) {
   }, [isLoading, settings?.apiKey, queryClient]);
 
   useEffect(() => {
+    const serverChat = historyQuery.data;
+    if (!serverChat || hydratedHistoryRef.current === serverChat.updatedAt) return;
+    hydratedHistoryRef.current = serverChat.updatedAt;
+    void persistLocalResumeAiChat(serverChat);
+
+    if (messages.length === 0 && serverChat.messages.length > 0) {
+      setMessages(toUiMessages(serverChat.messages));
+      lastSavedSignatureRef.current = JSON.stringify(serverChat.messages);
+    }
+  }, [historyQuery.data, messages.length, setMessages]);
+
+  useEffect(() => {
+    if (messages.length > 0 || !localChat || localChat.messages.length === 0) return;
+    setMessages(toUiMessages(localChat.messages));
+    lastSavedSignatureRef.current = JSON.stringify(localChat.messages);
+  }, [localChat, messages.length, setMessages]);
+
+  useEffect(() => {
+    if (isLoading || messages.length === 0) return;
+    const storedMessages = toStoredMessages(messages);
+    const signature = JSON.stringify(storedMessages);
+    if (signature === lastSavedSignatureRef.current) return;
+    lastSavedSignatureRef.current = signature;
+    void saveChatMutation.mutateAsync(storedMessages);
+  }, [isLoading, messages, saveChatMutation]);
+
+  useEffect(() => {
     endOfMessagesRef.current?.scrollIntoView({ block: "end" });
-  }, [messages.length, isLoading]);
+  }, [messages.length, isLoading, status]);
 
   async function submitMessage() {
     const trimmed = input.trim();
@@ -279,6 +597,27 @@ export function ResumeAiTab({ resumeId, jobDescription }: ResumeAiTabProps) {
   async function sendStarter(message: string) {
     if (isLoading || !isReady) return;
     await sendMessage(message);
+  }
+
+  async function clearConversation() {
+    clear();
+    setInput("");
+    lastSavedSignatureRef.current = "";
+    hydratedHistoryRef.current = null;
+    await clearChatMutation.mutateAsync();
+  }
+
+  function editPastPrompt(message: UIMessage) {
+    const text = getMessageText(message);
+    if (!text) return;
+    setInput(text);
+    window.setTimeout(() => composerRef.current?.focus(), 0);
+  }
+
+  async function resendPastPrompt(message: UIMessage) {
+    const text = getMessageText(message);
+    if (!text || isLoading || !isReady) return;
+    await sendMessage(text);
   }
 
   const activeModelLabel = settings?.model
@@ -403,12 +742,12 @@ export function ResumeAiTab({ resumeId, jobDescription }: ResumeAiTabProps) {
           <Button
             type="button"
             variant="ghost"
-            disabled={isLoading || messages.length === 0}
-            onClick={clear}
+            disabled={isLoading || messages.length === 0 || clearChatMutation.isPending}
+            onClick={() => void clearConversation()}
             className="h-auto rounded-xl px-4 text-muted-foreground hover:text-foreground"
             data-test="resume-ai-clear"
           >
-            Clear chat
+            {clearChatMutation.isPending ? "Clearing..." : "Clear chat"}
           </Button>
         </CardContent>
       </Card>
@@ -429,12 +768,43 @@ export function ResumeAiTab({ resumeId, jobDescription }: ResumeAiTabProps) {
                 </p>
               </div>
             </div>
-            {isLoading ? (
+            <div className="flex items-center gap-2">
+              {messages.length > 0 && !isLoading ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => void reload()}
+                  disabled={!isReady}
+                  className="h-8 gap-1.5 rounded-lg text-xs"
+                  data-test="resume-ai-regenerate"
+                >
+                  <RefreshCcw className="size-3.5" />
+                  Regenerate
+                </Button>
+              ) : null}
+              {isLoading ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={stop}
+                  className="h-8 gap-1.5 rounded-lg text-xs text-muted-foreground"
+                  data-test="resume-ai-stop"
+                >
+                  <Square className="size-3.5 fill-current" />
+                  Stop
+                </Button>
+              ) : null}
               <div className="flex items-center gap-2 rounded-full bg-[color-mix(in_oklch,var(--color-primary)_10%,transparent)] px-3 py-1 text-xs text-muted-foreground">
-                <LoaderCircle className="size-3 animate-spin text-primary" />
-                Thinking
+                {isLoading || sessionGenerating ? (
+                  <LoaderCircle className="size-3 animate-spin text-primary" />
+                ) : (
+                  <span className="size-2 rounded-full bg-primary" />
+                )}
+                {getChatStatusLabel(status, isLoading, sessionGenerating)}
               </div>
-            ) : null}
+            </div>
           </div>
 
           <div className="flex min-h-96 flex-col gap-5 overflow-hidden px-4 py-5 sm:px-5">
@@ -473,14 +843,46 @@ export function ResumeAiTab({ resumeId, jobDescription }: ResumeAiTabProps) {
                           : "rounded-tl-md bg-base-100 text-foreground ring-[color-mix(in_oklch,var(--color-base-content)_9%,transparent)]",
                       )}
                     >
-                      <p
-                        className={cn(
-                          "mb-2 text-[0.68rem] font-semibold uppercase tracking-[0.16em]",
-                          role === "user" ? "text-primary-foreground/70" : "text-muted-foreground",
-                        )}
-                      >
-                        {role === "assistant" ? "Assistant" : "You"}
-                      </p>
+                      <div className="mb-2 flex items-center justify-between gap-3">
+                        <p
+                          className={cn(
+                            "text-[0.68rem] font-semibold uppercase tracking-[0.16em]",
+                            role === "user"
+                              ? "text-primary-foreground/70"
+                              : "text-muted-foreground",
+                          )}
+                        >
+                          {role === "assistant" ? "Assistant" : "You"}
+                        </p>
+                        {role === "user" ? (
+                          <div className="flex items-center gap-1">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              disabled={isLoading || !isReady}
+                              onClick={() => editPastPrompt(message)}
+                              className="size-7 rounded-lg text-primary-foreground/75 hover:bg-primary-foreground/10 hover:text-primary-foreground"
+                              data-test="resume-ai-edit-past-prompt"
+                              title="Edit prompt"
+                            >
+                              <PencilLine className="size-3.5" />
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              disabled={isLoading || !isReady}
+                              onClick={() => void resendPastPrompt(message)}
+                              className="size-7 rounded-lg text-primary-foreground/75 hover:bg-primary-foreground/10 hover:text-primary-foreground"
+                              data-test="resume-ai-resend-past-prompt"
+                              title="Resend prompt"
+                            >
+                              <RefreshCcw className="size-3.5" />
+                            </Button>
+                          </div>
+                        ) : null}
+                      </div>
                       <div className="flex flex-col gap-2">
                         {message.parts.map((part, index) => {
                           if (part.type === "text") {
@@ -548,6 +950,7 @@ export function ResumeAiTab({ resumeId, jobDescription }: ResumeAiTabProps) {
           >
             <div className="rounded-2xl bg-base-200 shadow-inner ring-1 ring-[color-mix(in_oklch,var(--color-base-content)_10%,transparent)]">
               <Textarea
+                ref={composerRef}
                 value={input}
                 onChange={(event) => setInput(event.target.value)}
                 onKeyDown={handleComposerKeyDown}
@@ -580,6 +983,12 @@ export function ResumeAiTab({ resumeId, jobDescription }: ResumeAiTabProps) {
                   )}
                   {settings?.apiKey && (
                     <CreditsDisplay apiKey={settings.apiKey} sessionChars={sessionChars} />
+                  )}
+                  {saveChatMutation.isPending && (
+                    <>
+                      <span className="text-primary/30">·</span>
+                      <span>Saving history</span>
+                    </>
                   )}
                 </div>
               ) : (

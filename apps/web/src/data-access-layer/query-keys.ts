@@ -13,6 +13,7 @@ export const queryKeyPrefixes = {
   contacts: "contacts",
   links: "links",
   summaries: "summaries",
+  resumeAiChat: "resume-ai-chat",
   deviceSessions: "deviceSessions",
   ghAccessToken: "ghAccessToken",
   github: "github",

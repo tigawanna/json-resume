@@ -1,4 +1,5 @@
 export * from "./resume";
+export * from "./resume-ai-chat";
 export * from "./resume-certification";
 export * from "./resume-contact";
 export * from "./resume-education";

@@ -29,8 +29,10 @@ export function ContactListCard({ contact, onDelete }: ContactListCardProps) {
                 {contact.type}
                 {contact.label ? ` · ${contact.label}` : ""}
               </CardDescription>
-              <Badge variant="outline" className="mt-2 max-w-48 truncate text-xs">
-                {contact.resumeName}
+              <Badge variant="outline" className="mt-2 max-w-56 truncate text-xs">
+                {contact.usageCount === 1
+                  ? contact.resumeName
+                  : `${contact.usageCount} resumes: ${contact.resumeNames.join(", ")}`}
               </Badge>
             </div>
           </div>

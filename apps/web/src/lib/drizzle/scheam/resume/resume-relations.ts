@@ -1,6 +1,7 @@
 import { relations } from "drizzle-orm";
 import { user } from "../auth-schema";
 import { resume, resumeSection } from "./resume";
+import { resumeAiChat } from "./resume-ai-chat";
 import { resumeCertification } from "./resume-certification";
 import { resumeContact } from "./resume-contact";
 import { resumeEducation, resumeEducationBullet } from "./resume-education";
@@ -27,10 +28,16 @@ export const resumeRelations = relations(resume, ({ one, many }) => ({
   certifications: many(resumeCertification),
   volunteers: many(resumeVolunteer),
   languages: many(resumeLanguage),
+  aiChats: many(resumeAiChat),
 }));
 
 export const resumeSectionRelations = relations(resumeSection, ({ one }) => ({
   resume: one(resume, { fields: [resumeSection.resumeId], references: [resume.id] }),
+}));
+
+export const resumeAiChatRelations = relations(resumeAiChat, ({ one }) => ({
+  user: one(user, { fields: [resumeAiChat.userId], references: [user.id] }),
+  resume: one(resume, { fields: [resumeAiChat.resumeId], references: [resume.id] }),
 }));
 
 export const resumeContactRelations = relations(resumeContact, ({ one }) => ({

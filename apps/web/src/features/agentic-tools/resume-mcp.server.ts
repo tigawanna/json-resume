@@ -5,6 +5,7 @@ import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { createResumeAgenticServerClient } from "./resume-orpc-client.server";
 import {
   addExperienceBulletToolInputSchema,
+  cloneResumeToolInputSchema,
   createResumeFromDocumentToolInputSchema,
   getResumeDocumentToolInputSchema,
   listResumesToolInputSchema,
@@ -90,6 +91,17 @@ export function createResumeMcpServer(userId: string): McpServer {
       inputSchema: createResumeFromDocumentToolInputSchema.shape,
     },
     async (input) => jsonToolResult(await client.resumes.createFromDocument(input)),
+  );
+
+  server.registerTool(
+    "clone_resume",
+    {
+      title: "Clone Resume",
+      description:
+        "Clone an owned resume into a new draft, optionally overriding the new draft's metadata.",
+      inputSchema: cloneResumeToolInputSchema.shape,
+    },
+    async (input) => jsonToolResult(await client.resumes.clone(input)),
   );
 
   return server;

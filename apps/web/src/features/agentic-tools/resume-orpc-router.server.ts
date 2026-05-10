@@ -3,6 +3,8 @@ import "@tanstack/react-start/server-only";
 import {
   addExperienceBulletToolInputSchema,
   addExperienceBulletToolOutputSchema,
+  cloneResumeToolInputSchema,
+  cloneResumeToolOutputSchema,
   createResumeFromDocumentToolInputSchema,
   createResumeFromDocumentToolOutputSchema,
   getResumeDocumentToolInputSchema,
@@ -16,6 +18,7 @@ import {
 } from "./resume-tool-schemas";
 import {
   addExperienceBulletTool,
+  cloneResumeTool,
   createResumeFromDocumentTool,
   getResumeDocumentTool,
   listResumesTool,
@@ -115,6 +118,19 @@ const createResumeFromDocumentProcedure = resumeWriteProcedure
     createResumeFromDocumentTool({ userId: context.userId }, input),
   );
 
+const cloneResumeProcedure = resumeWriteProcedure
+  .route({
+    method: "POST",
+    path: "/resumes/clone",
+    summary: "Clone a resume",
+    description: "Clone an owned resume into a new draft, optionally overriding metadata.",
+    tags: ["Agentic Resumes"],
+    successStatus: 200,
+  })
+  .input(cloneResumeToolInputSchema)
+  .output(cloneResumeToolOutputSchema)
+  .handler(async ({ context, input }) => cloneResumeTool({ userId: context.userId }, input));
+
 // ─── Router ───────────────────────────────────────────────────────────────────
 // Grouped by domain so the server client (createRouterClient) surfaces a typed,
 // namespaced API: client.resumes.list(), client.experienceBullets.add(), etc.
@@ -124,6 +140,7 @@ export const resumeAgenticRouter = {
     list: listResumesProcedure,
     document: getResumeDocumentProcedure,
     createFromDocument: createResumeFromDocumentProcedure,
+    clone: cloneResumeProcedure,
   },
   resumeBlocks: {
     search: searchResumeBlocksProcedure,

@@ -55,11 +55,11 @@ import {
   setResumeSummary,
   setSkillGroups,
   updateCertification,
-  updateContact,
+  updateDuplicateContactsForUser,
+  updateDuplicateLinksForUser,
   updateEducation,
   updateExperience,
   updateLanguage,
-  updateLink,
   updateProject,
   updateResumeMetadata,
   updateSkillGroup,
@@ -223,7 +223,7 @@ export const editLink = createServerFn({ method: "POST" })
   .handler(async ({ context, data }) => {
     const { id, ...rest } = data;
     await assertLinkBelongsToUser(id, context.viewer.user.id);
-    await updateLink(id, rest);
+    await updateDuplicateLinksForUser(id, context.viewer.user.id, rest);
     return { success: true };
   });
 
@@ -650,7 +650,7 @@ export const editContact = createServerFn({ method: "POST" })
   .handler(async ({ context, data }) => {
     const { id, ...rest } = data;
     await assertContactBelongsToUser(id, context.viewer.user.id);
-    await updateContact(id, rest);
+    await updateDuplicateContactsForUser(id, context.viewer.user.id, rest);
     return { success: true };
   });
 
