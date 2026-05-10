@@ -781,61 +781,37 @@ export function ResumeAiTab({ resumeId, jobDescription }: ResumeAiTabProps) {
 
       <Card className="min-h-120 overflow-hidden border-0 bg-[color-mix(in_oklch,var(--color-base-200)_86%,var(--color-base-content)_14%)] shadow-[0_24px_80px_color-mix(in_oklch,var(--color-base-content)_10%,transparent)] ring-1 ring-[color-mix(in_oklch,var(--color-base-content)_10%,transparent)]">
         <CardContent className="flex h-full flex-col gap-0 p-0">
-          <div className="flex items-center justify-between gap-3 border-b border-[color-mix(in_oklch,var(--color-base-content)_10%,transparent)] px-4 py-3 sm:px-5">
-            <div className="flex items-center gap-2">
-              <div className="flex size-8 items-center justify-center rounded-lg bg-[color-mix(in_oklch,var(--color-primary)_14%,transparent)] text-primary">
-                <FileSearch className="size-4" />
-              </div>
-              <div>
-                <p className="text-sm font-semibold">Conversation</p>
-                <p className="text-xs text-muted-foreground">
-                  {messages.length === 0
-                    ? "No messages yet"
-                    : `${messages.length} message${messages.length === 1 ? "" : "s"}`}
-                </p>
-              </div>
+          <div className="flex items-center gap-3 border-b border-[color-mix(in_oklch,var(--color-base-content)_10%,transparent)] px-4 py-3 sm:px-5">
+            <div className="flex size-8 items-center justify-center rounded-lg bg-[color-mix(in_oklch,var(--color-primary)_14%,transparent)] text-primary">
+              <FileSearch className="size-4" />
             </div>
-            <div className="flex items-center gap-2">
-              {messages.length > 0 && !isLoading ? (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => void reload()}
-                  disabled={!isReady}
-                  className="h-8 gap-1.5 rounded-lg text-xs"
-                  data-test="resume-ai-regenerate"
-                >
-                  <RefreshCcw className="size-3.5" />
-                  Regenerate
-                </Button>
-              ) : null}
-              {isLoading ? (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={stop}
-                  className="h-8 gap-1.5 rounded-lg text-xs text-muted-foreground"
-                  data-test="resume-ai-stop"
-                >
-                  <Square className="size-3.5 fill-current" />
-                  Stop
-                </Button>
-              ) : null}
-              <div className="flex items-center gap-2 rounded-full bg-[color-mix(in_oklch,var(--color-primary)_10%,transparent)] px-3 py-1 text-xs text-muted-foreground">
-                {isLoading || sessionGenerating ? (
-                  <LoaderCircle className="size-3 animate-spin text-primary" />
-                ) : (
-                  <span className="size-2 rounded-full bg-primary" />
-                )}
-                {getChatStatusLabel(status, isLoading, sessionGenerating)}
-              </div>
+            <div>
+              <p className="text-sm font-semibold">Conversation</p>
+              <p className="text-xs text-muted-foreground">
+                {messages.length === 0
+                  ? "No messages yet"
+                  : `${messages.length} message${messages.length === 1 ? "" : "s"}`}
+              </p>
             </div>
           </div>
 
           <div className="flex min-h-96 flex-col gap-5 overflow-hidden px-4 py-5 sm:px-5">
-            {messages.length === 0 ? (
+            {messages.length === 0 && historyQuery.isPending ? (
+              <div className="flex h-full flex-1 flex-col gap-4 rounded-2xl bg-base-100/55 px-6 py-8 ring-1 ring-dashed ring-[color-mix(in_oklch,var(--color-base-content)_14%,transparent)]">
+                {[80, 60, 95, 50].map((width) => (
+                  <div key={width} className="flex items-start gap-3">
+                    <div className="size-9 shrink-0 animate-pulse rounded-full bg-[color-mix(in_oklch,var(--color-base-content)_10%,transparent)]" />
+                    <div className="flex flex-1 flex-col gap-2 pt-1">
+                      <div
+                        className="h-3 animate-pulse rounded-full bg-[color-mix(in_oklch,var(--color-base-content)_10%,transparent)]"
+                        style={{ width: `${width}%` }}
+                      />
+                      <div className="h-3 w-1/2 animate-pulse rounded-full bg-[color-mix(in_oklch,var(--color-base-content)_7%,transparent)]" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : messages.length === 0 ? (
               <div className="flex h-full flex-1 flex-col items-center justify-center rounded-2xl bg-base-100/55 px-6 py-12 text-center ring-1 ring-dashed ring-[color-mix(in_oklch,var(--color-base-content)_14%,transparent)]">
                 <div className="mb-4 flex size-12 items-center justify-center rounded-2xl bg-[color-mix(in_oklch,var(--color-primary)_13%,transparent)] text-primary">
                   <Sparkles className="size-5" />
@@ -993,52 +969,89 @@ export function ResumeAiTab({ resumeId, jobDescription }: ResumeAiTabProps) {
               />
             </div>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              {(activeModelLabel && !isLocalMode) || settings?.apiKey ? (
-                <div className="flex flex-wrap items-center gap-2 rounded-full bg-[color-mix(in_oklch,var(--color-primary)_7%,transparent)] px-2 py-1 ring-1 ring-[color-mix(in_oklch,var(--color-primary)_18%,transparent)]">
-                  {activeModelLabel && !isLocalMode && (
-                    <button
-                      type="button"
-                      onClick={() => setSettingsOpen(true)}
-                      className="flex items-center gap-1.5 rounded-full px-2 py-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
-                    >
-                      <ChevronsUpDown className="size-3 text-primary/60" />
-                      {activeModelLabel}
-                    </button>
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="flex items-center gap-2 rounded-full bg-[color-mix(in_oklch,var(--color-primary)_10%,transparent)] px-3 py-1 text-xs text-muted-foreground">
+                  {isLoading || sessionGenerating ? (
+                    <LoaderCircle className="size-3 animate-spin text-primary" />
+                  ) : (
+                    <span className="size-2 rounded-full bg-primary" />
                   )}
-                  {activeModelLabel && !isLocalMode && settings?.apiKey && (
-                    <span className="text-primary/30">·</span>
-                  )}
-                  {settings?.apiKey && (
-                    <CreditsDisplay apiKey={settings.apiKey} sessionChars={sessionChars} />
-                  )}
-                  {saveChatMutation.isPending && (
-                    <>
+                  {getChatStatusLabel(status, isLoading, sessionGenerating)}
+                </div>
+                {((activeModelLabel && !isLocalMode) || settings?.apiKey) && (
+                  <div className="flex flex-wrap items-center gap-2 rounded-full bg-[color-mix(in_oklch,var(--color-primary)_7%,transparent)] px-2 py-1 ring-1 ring-[color-mix(in_oklch,var(--color-primary)_18%,transparent)]">
+                    {activeModelLabel && !isLocalMode && (
+                      <button
+                        type="button"
+                        onClick={() => setSettingsOpen(true)}
+                        className="flex items-center gap-1.5 rounded-full px-2 py-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
+                      >
+                        <ChevronsUpDown className="size-3 text-primary/60" />
+                        {activeModelLabel}
+                      </button>
+                    )}
+                    {activeModelLabel && !isLocalMode && settings?.apiKey && (
                       <span className="text-primary/30">·</span>
-                      <span>Saving history</span>
+                    )}
+                    {settings?.apiKey && (
+                      <CreditsDisplay apiKey={settings.apiKey} sessionChars={sessionChars} />
+                    )}
+                    {saveChatMutation.isPending && (
+                      <>
+                        <span className="text-primary/30">·</span>
+                        <span>Saving history</span>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                {messages.length > 0 && !isLoading && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => void reload()}
+                    disabled={!isReady}
+                    className="h-9 gap-1.5 rounded-xl text-xs"
+                    data-test="resume-ai-regenerate"
+                  >
+                    <RefreshCcw className="size-3.5" />
+                    Regenerate
+                  </Button>
+                )}
+                {isLoading && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={stop}
+                    className="h-9 gap-1.5 rounded-xl text-xs text-muted-foreground"
+                    data-test="resume-ai-stop"
+                  >
+                    <Square className="size-3.5 fill-current" />
+                    Stop
+                  </Button>
+                )}
+                <Button
+                  type="submit"
+                  disabled={!input.trim() || isLoading || !isReady}
+                  className="min-w-32 rounded-xl"
+                  data-test="resume-ai-submit"
+                >
+                  {isLoading ? (
+                    <>
+                      <LoaderCircle className="mr-2 size-4 animate-spin" />
+                      Working...
+                    </>
+                  ) : (
+                    <>
+                      Send
+                      <ArrowUp className="size-4" />
                     </>
                   )}
-                </div>
-              ) : (
-                <div />
-              )}
-              <Button
-                type="submit"
-                disabled={!input.trim() || isLoading || !isReady}
-                className="min-w-32 rounded-xl"
-                data-test="resume-ai-submit"
-              >
-                {isLoading ? (
-                  <>
-                    <LoaderCircle className="mr-2 size-4 animate-spin" />
-                    Working...
-                  </>
-                ) : (
-                  <>
-                    Send
-                    <ArrowUp className="size-4" />
-                  </>
-                )}
-              </Button>
+                </Button>
+              </div>
             </div>
           </form>
         </CardContent>

@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/empty";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { resumeDetailToDocument } from "@/data-access-layer/resume/resume-converters";
+import { resumeAiChatQueryOptions } from "@/data-access-layer/resume/ai-chat/ai-chat.query-options";
 import { resumeDetailQueryOptions } from "@/data-access-layer/resume/resume-query-options";
 import { replaceResumeDoc } from "@/data-access-layer/resume/resume.functions";
 import type { ResumeDetailDTO } from "@/data-access-layer/resume/resume.types";
@@ -45,8 +46,15 @@ const tabSchema = z.enum(tabsList).default("edit").catch("edit");
 
 export const Route = createFileRoute("/_dashboard/resumes/$resumeId/")({
   component: RouteComponent,
-  loader: ({ context, params }) =>
-    context.queryClient.ensureQueryData(resumeDetailQueryOptions(params.resumeId)),
+  loader: async ({ context, params }) => {
+    const [resume] = await Promise.all([
+      context.queryClient.ensureQueryData(resumeDetailQueryOptions(params.resumeId)),
+      context.queryClient
+        .ensureQueryData(resumeAiChatQueryOptions(params.resumeId))
+        .catch(() => null),
+    ]);
+    return resume;
+  },
   head: () => ({
     meta: [{ title: "Edit Resume", description: "Resume workbench" }],
   }),
