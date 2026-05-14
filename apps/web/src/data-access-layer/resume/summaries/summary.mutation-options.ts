@@ -6,7 +6,10 @@ import { deleteSummaryFn } from "./summary.functions";
 
 export const deleteSummaryMutationOptions = mutationOptions({
   mutationFn: async (summaryId: string) => deleteSummaryFn({ data: { id: summaryId } }),
-  onSuccess() {
+  onSuccess(_, __, ___, ctx) {
+    ctx.client.invalidateQueries({
+      queryKey: [queryKeyPrefixes.summaries, queryKeyPrefixes.resumes],
+    });
     toast.success("Summary deleted");
   },
   onError(err: unknown) {
@@ -14,5 +17,4 @@ export const deleteSummaryMutationOptions = mutationOptions({
       description: unwrapUnknownError(err).message,
     });
   },
-  meta: { invalidates: [[queryKeyPrefixes.summaries], [queryKeyPrefixes.resumes]] },
 });

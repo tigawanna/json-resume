@@ -6,7 +6,10 @@ import { deleteExperienceFn } from "./experience.functions";
 
 export const deleteExperienceMutationOptions = mutationOptions({
   mutationFn: async (experienceId: string) => deleteExperienceFn({ data: { id: experienceId } }),
-  onSuccess() {
+  onSuccess(_, __, ___, ctx) {
+    ctx.client.invalidateQueries({
+      queryKey: [queryKeyPrefixes.experiences, queryKeyPrefixes.resumes],
+    });
     toast.success("Experience deleted");
   },
   onError(err: unknown) {
@@ -14,5 +17,4 @@ export const deleteExperienceMutationOptions = mutationOptions({
       description: unwrapUnknownError(err).message,
     });
   },
-  meta: { invalidates: [[queryKeyPrefixes.experiences], [queryKeyPrefixes.resumes]] },
 });

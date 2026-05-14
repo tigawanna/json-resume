@@ -6,7 +6,10 @@ import { deleteVolunteerFn } from "./volunteer.functions";
 
 export const deleteVolunteerMutationOptions = mutationOptions({
   mutationFn: async (volunteerId: string) => deleteVolunteerFn({ data: { id: volunteerId } }),
-  onSuccess() {
+  onSuccess(_, __, ___, ctx) {
+    ctx.client.invalidateQueries({
+      queryKey: [queryKeyPrefixes.volunteers, queryKeyPrefixes.resumes],
+    });
     toast.success("Volunteer entry deleted");
   },
   onError(err: unknown) {
@@ -14,5 +17,4 @@ export const deleteVolunteerMutationOptions = mutationOptions({
       description: unwrapUnknownError(err).message,
     });
   },
-  meta: { invalidates: [[queryKeyPrefixes.volunteers], [queryKeyPrefixes.resumes]] },
 });

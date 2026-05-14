@@ -6,7 +6,10 @@ import { deleteContactFn } from "./contact.functions";
 
 export const deleteContactMutationOptions = mutationOptions({
   mutationFn: async (contactId: string) => deleteContactFn({ data: { id: contactId } }),
-  onSuccess() {
+  onSuccess(_, __, ___, ctx) {
+    ctx.client.invalidateQueries({
+      queryKey: [queryKeyPrefixes.contacts, queryKeyPrefixes.resumes],
+    });
     toast.success("Contact deleted");
   },
   onError(err: unknown) {
@@ -14,5 +17,4 @@ export const deleteContactMutationOptions = mutationOptions({
       description: unwrapUnknownError(err).message,
     });
   },
-  meta: { invalidates: [[queryKeyPrefixes.contacts], [queryKeyPrefixes.resumes]] },
 });

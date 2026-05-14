@@ -6,7 +6,10 @@ import { deleteTalkFn } from "./talk.functions";
 
 export const deleteTalkMutationOptions = mutationOptions({
   mutationFn: async (talkId: string) => deleteTalkFn({ data: { id: talkId } }),
-  onSuccess() {
+  onSuccess(_, __, ___, ctx) {
+    ctx.client.invalidateQueries({
+      queryKey: [queryKeyPrefixes.talks, queryKeyPrefixes.resumes],
+    });
     toast.success("Talk deleted");
   },
   onError(err: unknown) {
@@ -14,5 +17,4 @@ export const deleteTalkMutationOptions = mutationOptions({
       description: unwrapUnknownError(err).message,
     });
   },
-  meta: { invalidates: [[queryKeyPrefixes.talks], [queryKeyPrefixes.resumes]] },
 });

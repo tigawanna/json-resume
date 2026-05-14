@@ -6,15 +6,15 @@ import { deleteEducationFn } from "./education.functions";
 
 export const deleteEducationMutationOptions = mutationOptions({
   mutationFn: async (educationId: string) => deleteEducationFn({ data: { id: educationId } }),
-  onSuccess() {
+  onSuccess(_, __, ___, ctx) {
     toast.success("Education deleted");
+    ctx.client.invalidateQueries({
+      queryKey: [queryKeyPrefixes.education, queryKeyPrefixes.resumes],
+    });
   },
   onError(err: unknown) {
     toast.error("Failed to delete education", {
       description: unwrapUnknownError(err).message,
     });
-  },
-  meta: {
-    invalidates: [[queryKeyPrefixes.education], [queryKeyPrefixes.resumes]],
   },
 });

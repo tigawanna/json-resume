@@ -6,7 +6,10 @@ import { deleteSkillGroupFn } from "./skill-group.functions";
 
 export const deleteSkillGroupMutationOptions = mutationOptions({
   mutationFn: async (groupId: string) => deleteSkillGroupFn({ data: { id: groupId } }),
-  onSuccess() {
+  onSuccess(_, __, ___, ctx) {
+    ctx.client.invalidateQueries({
+      queryKey: [queryKeyPrefixes.skillGroups, queryKeyPrefixes.resumes],
+    });
     toast.success("Skill group deleted");
   },
   onError(err: unknown) {
@@ -14,5 +17,4 @@ export const deleteSkillGroupMutationOptions = mutationOptions({
       description: unwrapUnknownError(err).message,
     });
   },
-  meta: { invalidates: [[queryKeyPrefixes.skillGroups], [queryKeyPrefixes.resumes]] },
 });

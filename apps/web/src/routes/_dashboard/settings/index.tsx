@@ -10,7 +10,6 @@ import { AlertCircle, Trash2 } from "lucide-react";
 import { Suspense, useState } from "react";
 import { toast } from "sonner";
 import { ApiKeysSection } from "./-components/ApiKeysSection";
-import { McpConnectSection } from "./-components/McpConnectSection";
 
 export const Route = createFileRoute("/_dashboard/settings/")({
   component: SettingsPage,
@@ -74,7 +73,7 @@ function SettingsPage() {
         </CardContent>
       </Card>
 
-      <McpConnectSection />
+      {/* <McpConnectSection /> */}
 
       <Suspense>
         <ApiKeysSection />
