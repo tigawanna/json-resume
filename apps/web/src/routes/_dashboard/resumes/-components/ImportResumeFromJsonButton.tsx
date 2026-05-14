@@ -59,7 +59,11 @@ export function ImportResumeFromJsonButton() {
             spellCheck={false}
             className="border-input min-h-48 w-full rounded-md border bg-transparent px-3 py-2 font-mono text-sm outline-none"
           />
-          {error && <p className="text-destructive text-xs">{error}</p>}
+          {error && (
+            <div className="bg-destructive/10 border-destructive/30 max-h-32 overflow-y-auto rounded-md border p-2">
+              <p className="text-destructive break-all text-xs">{error}</p>
+            </div>
+          )}
           <DialogFooter>
             <DialogClose asChild>
               <Button variant="ghost">Cancel</Button>
