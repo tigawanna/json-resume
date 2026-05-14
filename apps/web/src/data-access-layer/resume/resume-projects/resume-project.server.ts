@@ -1,7 +1,7 @@
 import "@tanstack/react-start/server-only";
 
 import { db } from "@/lib/drizzle/client";
-import { resume, resumeProject } from "@/lib/drizzle/scheam";
+import { resume, resumeProject, resumeProjectItem } from "@/lib/drizzle/scheam";
 import { and, asc, desc, eq, gt, like, lt, or } from "drizzle-orm";
 import { DEFAULT_PAGE_SIZE } from "../../pagination.types";
 import type { PaginatedResult } from "../../pagination.types";
@@ -12,7 +12,7 @@ export async function listResumeProjectsForUserPaginated(
   opts?: { keyword?: string; cursor?: string; direction?: "after" | "before" },
 ): Promise<PaginatedResult<ResumeProjectListItemDTO>> {
   const direction = opts?.direction ?? "after";
-  const conditions = [eq(resume.userId, userId)];
+  const conditions = [eq(resumeProject.userId, userId)];
 
   if (opts?.keyword) {
     const pattern = `%${opts.keyword}%`;
@@ -36,7 +36,7 @@ export async function listResumeProjectsForUserPaginated(
   const rows = await db
     .select({
       id: resumeProject.id,
-      resumeId: resumeProject.resumeId,
+      resumeId: resumeProjectItem.resumeId,
       resumeName: resume.name,
       name: resumeProject.name,
       url: resumeProject.url,
@@ -48,7 +48,8 @@ export async function listResumeProjectsForUserPaginated(
       updatedAt: resumeProject.updatedAt,
     })
     .from(resumeProject)
-    .innerJoin(resume, eq(resumeProject.resumeId, resume.id))
+    .leftJoin(resumeProjectItem, eq(resumeProjectItem.projectId, resumeProject.id))
+    .leftJoin(resume, eq(resumeProjectItem.resumeId, resume.id))
     .where(and(...conditions))
     .orderBy(direction === "before" ? desc(resumeProject.id) : asc(resumeProject.id))
     .limit(DEFAULT_PAGE_SIZE + 1);
@@ -61,6 +62,8 @@ export async function listResumeProjectsForUserPaginated(
 
   const items = orderedRows.map((r) => ({
     ...r,
+    resumeId: r.resumeId ?? "",
+    resumeName: r.resumeName ?? "Reusable item",
     createdAt: r.createdAt.toISOString(),
     updatedAt: r.updatedAt.toISOString(),
   }));
@@ -83,7 +86,7 @@ export async function listResumeProjectsForUser(
   userId: string,
   keyword?: string,
 ): Promise<ResumeProjectListItemDTO[]> {
-  const conditions = [eq(resume.userId, userId)];
+  const conditions = [eq(resumeProject.userId, userId)];
   if (keyword) {
     const pattern = `%${keyword}%`;
     conditions.push(
@@ -98,7 +101,7 @@ export async function listResumeProjectsForUser(
   const rows = await db
     .select({
       id: resumeProject.id,
-      resumeId: resumeProject.resumeId,
+      resumeId: resumeProjectItem.resumeId,
       resumeName: resume.name,
       name: resumeProject.name,
       url: resumeProject.url,
@@ -110,12 +113,15 @@ export async function listResumeProjectsForUser(
       updatedAt: resumeProject.updatedAt,
     })
     .from(resumeProject)
-    .innerJoin(resume, eq(resumeProject.resumeId, resume.id))
+    .leftJoin(resumeProjectItem, eq(resumeProjectItem.projectId, resumeProject.id))
+    .leftJoin(resume, eq(resumeProjectItem.resumeId, resume.id))
     .where(and(...conditions))
     .orderBy(desc(resumeProject.updatedAt));
 
   return rows.map((r) => ({
     ...r,
+    resumeId: r.resumeId ?? "",
+    resumeName: r.resumeName ?? "Reusable item",
     createdAt: r.createdAt.toISOString(),
     updatedAt: r.updatedAt.toISOString(),
   }));
@@ -125,8 +131,7 @@ export async function deleteResumeProjectForUser(projectId: string, userId: stri
   const row = await db
     .select({ id: resumeProject.id })
     .from(resumeProject)
-    .innerJoin(resume, eq(resumeProject.resumeId, resume.id))
-    .where(and(eq(resumeProject.id, projectId), eq(resume.userId, userId)))
+    .where(and(eq(resumeProject.id, projectId), eq(resumeProject.userId, userId)))
     .limit(1);
   if (row.length === 0) throw new Error("Project not found");
   await db.delete(resumeProject).where(eq(resumeProject.id, projectId));

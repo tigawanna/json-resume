@@ -145,7 +145,7 @@ export interface ResumeImportData {
  * Convert a ResumeDocumentV1 into the insert-ready rows for all tables.
  * Each row gets a fresh UUID. Returns arrays ready for batch insert.
  */
-export function documentToInsertData(resumeId: string, doc: ResumeDocumentV1) {
+export function documentToInsertData(resumeId: string, userId: string, doc: ResumeDocumentV1) {
   const sectionEnabled = (key: SectionKey): boolean => {
     switch (key) {
       case "header":
@@ -178,49 +178,63 @@ export function documentToInsertData(resumeId: string, doc: ResumeDocumentV1) {
 
   const contacts: {
     id: string;
-    resumeId: string;
+    userId: string;
     type: string;
     value: string;
     label: string;
     sortOrder: number;
   }[] = [];
+  const contactItems: { resumeId: string; contactId: string; sortOrder: number }[] = [];
   if (doc.header.email) {
+    const id = crypto.randomUUID();
     contacts.push({
-      id: crypto.randomUUID(),
-      resumeId,
+      id,
+      userId,
       type: "email",
       value: doc.header.email,
       label: "Email",
       sortOrder: 0,
     });
+    contactItems.push({ resumeId, contactId: id, sortOrder: 0 });
   }
   if (doc.header.location) {
+    const id = crypto.randomUUID();
     contacts.push({
-      id: crypto.randomUUID(),
-      resumeId,
+      id,
+      userId,
       type: "location",
       value: doc.header.location,
       label: "Location",
       sortOrder: 1,
     });
+    contactItems.push({ resumeId, contactId: id, sortOrder: 1 });
   }
 
-  const links = doc.header.links.map((l, i) => ({
-    id: crypto.randomUUID(),
-    resumeId,
-    label: l.label,
-    url: l.url,
-    icon: null,
-    sortOrder: i,
-  }));
+  const links = doc.header.links.map((l, i) => {
+    const id = crypto.randomUUID();
+    return {
+      id,
+      userId,
+      label: l.label,
+      url: l.url,
+      icon: null,
+      sortOrder: i,
+    };
+  });
+  const linkItems = links.map((l) => ({ resumeId, linkId: l.id, sortOrder: l.sortOrder }));
 
   const summaries = doc.summary.text.trim()
-    ? [{ id: crypto.randomUUID(), resumeId, text: doc.summary.text, sortOrder: 0 }]
+    ? [{ id: crypto.randomUUID(), userId, text: doc.summary.text, sortOrder: 0 }]
     : [];
+  const summaryItems = summaries.map((s) => ({
+    resumeId,
+    summaryId: s.id,
+    sortOrder: s.sortOrder,
+  }));
 
   const experiences: {
     id: string;
-    resumeId: string;
+    userId: string;
     company: string;
     role: string;
     startDate: string;
@@ -228,6 +242,7 @@ export function documentToInsertData(resumeId: string, doc: ResumeDocumentV1) {
     location: string;
     sortOrder: number;
   }[] = [];
+  const experienceItems: { resumeId: string; experienceId: string; sortOrder: number }[] = [];
   const experienceBullets: { id: string; experienceId: string; text: string; sortOrder: number }[] =
     [];
 
@@ -236,7 +251,7 @@ export function documentToInsertData(resumeId: string, doc: ResumeDocumentV1) {
     const exId = crypto.randomUUID();
     experiences.push({
       id: exId,
-      resumeId,
+      userId,
       company: ex.company,
       role: ex.role,
       startDate: ex.start,
@@ -244,6 +259,7 @@ export function documentToInsertData(resumeId: string, doc: ResumeDocumentV1) {
       location: ex.location ?? "",
       sortOrder: i,
     });
+    experienceItems.push({ resumeId, experienceId: exId, sortOrder: i });
     for (let bi = 0; bi < ex.bullets.length; bi++) {
       experienceBullets.push({
         id: crypto.randomUUID(),
@@ -256,7 +272,7 @@ export function documentToInsertData(resumeId: string, doc: ResumeDocumentV1) {
 
   const educationRows: {
     id: string;
-    resumeId: string;
+    userId: string;
     school: string;
     degree: string;
     field: string;
@@ -265,6 +281,7 @@ export function documentToInsertData(resumeId: string, doc: ResumeDocumentV1) {
     description: string;
     sortOrder: number;
   }[] = [];
+  const educationItems: { resumeId: string; educationId: string; sortOrder: number }[] = [];
   const educationBullets: { id: string; educationId: string; text: string; sortOrder: number }[] =
     [];
 
@@ -273,7 +290,7 @@ export function documentToInsertData(resumeId: string, doc: ResumeDocumentV1) {
     const edId = crypto.randomUUID();
     educationRows.push({
       id: edId,
-      resumeId,
+      userId,
       school: ed.school,
       degree: ed.degree,
       field: ed.field ?? "",
@@ -282,6 +299,7 @@ export function documentToInsertData(resumeId: string, doc: ResumeDocumentV1) {
       description: "",
       sortOrder: i,
     });
+    educationItems.push({ resumeId, educationId: edId, sortOrder: i });
     if (ed.bullets) {
       for (let bi = 0; bi < ed.bullets.length; bi++) {
         educationBullets.push({
@@ -294,25 +312,31 @@ export function documentToInsertData(resumeId: string, doc: ResumeDocumentV1) {
     }
   }
 
-  const projects = doc.projects.items.map((p, i) => ({
-    id: crypto.randomUUID(),
-    resumeId,
-    name: p.name,
-    url: p.url,
-    homepageUrl: p.homepageUrl ?? "",
-    description: p.description,
-    tech: JSON.stringify(p.tech),
-    sortOrder: i,
-  }));
+  const projects = doc.projects.items.map((p, i) => {
+    const id = crypto.randomUUID();
+    return {
+      id,
+      userId,
+      name: p.name,
+      url: p.url,
+      homepageUrl: p.homepageUrl ?? "",
+      description: p.description,
+      tech: JSON.stringify(p.tech),
+      sortOrder: i,
+    };
+  });
+  const projectItems = projects.map((p) => ({ resumeId, projectId: p.id, sortOrder: p.sortOrder }));
 
-  const skillGroups: { id: string; resumeId: string; name: string; sortOrder: number }[] = [];
+  const skillGroups: { id: string; userId: string; name: string; sortOrder: number }[] = [];
+  const skillGroupItems: { resumeId: string; groupId: string; sortOrder: number }[] = [];
   const skills: { id: string; groupId: string; name: string; level: null; sortOrder: number }[] =
     [];
 
   for (let gi = 0; gi < doc.skills.groups.length; gi++) {
     const g = doc.skills.groups[gi]!;
     const gId = crypto.randomUUID();
-    skillGroups.push({ id: gId, resumeId, name: g.name, sortOrder: gi });
+    skillGroups.push({ id: gId, userId, name: g.name, sortOrder: gi });
+    skillGroupItems.push({ resumeId, groupId: gId, sortOrder: gi });
     for (let si = 0; si < g.items.length; si++) {
       skills.push({
         id: crypto.randomUUID(),
@@ -324,16 +348,20 @@ export function documentToInsertData(resumeId: string, doc: ResumeDocumentV1) {
     }
   }
 
-  const talks = doc.talks.items.map((t, i) => ({
-    id: crypto.randomUUID(),
-    resumeId,
-    title: t.title,
-    event: t.event,
-    date: t.date,
-    description: "",
-    links: JSON.stringify(t.links),
-    sortOrder: i,
-  }));
+  const talks = doc.talks.items.map((t, i) => {
+    const id = crypto.randomUUID();
+    return {
+      id,
+      userId,
+      title: t.title,
+      event: t.event,
+      date: t.date,
+      description: "",
+      links: JSON.stringify(t.links),
+      sortOrder: i,
+    };
+  });
+  const talkItems = talks.map((t) => ({ resumeId, talkId: t.id, sortOrder: t.sortOrder }));
 
   return {
     resume: {
@@ -344,15 +372,23 @@ export function documentToInsertData(resumeId: string, doc: ResumeDocumentV1) {
     },
     sections,
     contacts,
+    contactItems,
     links,
+    linkItems,
     summaries,
+    summaryItems,
     experiences,
+    experienceItems,
     experienceBullets,
     education: educationRows,
+    educationItems,
     educationBullets,
     projects,
+    projectItems,
     skillGroups,
+    skillGroupItems,
     skills,
     talks,
+    talkItems,
   };
 }

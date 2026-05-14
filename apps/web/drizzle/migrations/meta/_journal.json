@@ -22,6 +22,13 @@
       "when": 1778396087814,
       "tag": "0002_sleepy_lady_ursula",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1778734863206,
+      "tag": "0003_clever_magdalene",
+      "breakpoints": true
     }
   ]
 }

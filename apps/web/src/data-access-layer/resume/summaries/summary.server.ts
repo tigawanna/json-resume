@@ -1,7 +1,7 @@
 import "@tanstack/react-start/server-only";
 
 import { db } from "@/lib/drizzle/client";
-import { resume, resumeSummary } from "@/lib/drizzle/scheam";
+import { resume, resumeSummary, resumeSummaryItem } from "@/lib/drizzle/scheam";
 import { and, asc, desc, eq, gt, like, lt } from "drizzle-orm";
 import { DEFAULT_PAGE_SIZE } from "../../pagination.types";
 import type { PaginatedResult } from "../../pagination.types";
@@ -12,7 +12,7 @@ export async function listSummariesForUserPaginated(
   opts?: { keyword?: string; cursor?: string; direction?: "after" | "before" },
 ): Promise<PaginatedResult<SummaryListItemDTO>> {
   const direction = opts?.direction ?? "after";
-  const conditions = [eq(resume.userId, userId)];
+  const conditions = [eq(resumeSummary.userId, userId)];
 
   if (opts?.keyword) {
     const pattern = `%${opts.keyword}%`;
@@ -30,7 +30,7 @@ export async function listSummariesForUserPaginated(
   const rows = await db
     .select({
       id: resumeSummary.id,
-      resumeId: resumeSummary.resumeId,
+      resumeId: resumeSummaryItem.resumeId,
       resumeName: resume.name,
       text: resumeSummary.text,
       sortOrder: resumeSummary.sortOrder,
@@ -38,7 +38,8 @@ export async function listSummariesForUserPaginated(
       updatedAt: resumeSummary.updatedAt,
     })
     .from(resumeSummary)
-    .innerJoin(resume, eq(resumeSummary.resumeId, resume.id))
+    .leftJoin(resumeSummaryItem, eq(resumeSummaryItem.summaryId, resumeSummary.id))
+    .leftJoin(resume, eq(resumeSummaryItem.resumeId, resume.id))
     .where(and(...conditions))
     .orderBy(direction === "before" ? desc(resumeSummary.id) : asc(resumeSummary.id))
     .limit(DEFAULT_PAGE_SIZE + 1);
@@ -51,6 +52,8 @@ export async function listSummariesForUserPaginated(
 
   const items = orderedRows.map((r) => ({
     ...r,
+    resumeId: r.resumeId ?? "",
+    resumeName: r.resumeName ?? "Reusable item",
     createdAt: r.createdAt.toISOString(),
     updatedAt: r.updatedAt.toISOString(),
   }));
@@ -73,7 +76,7 @@ export async function listSummariesForUser(
   userId: string,
   keyword?: string,
 ): Promise<SummaryListItemDTO[]> {
-  const conditions = [eq(resume.userId, userId)];
+  const conditions = [eq(resumeSummary.userId, userId)];
   if (keyword) {
     const pattern = `%${keyword}%`;
     conditions.push(like(resumeSummary.text, pattern));
@@ -82,7 +85,7 @@ export async function listSummariesForUser(
   const rows = await db
     .select({
       id: resumeSummary.id,
-      resumeId: resumeSummary.resumeId,
+      resumeId: resumeSummaryItem.resumeId,
       resumeName: resume.name,
       text: resumeSummary.text,
       sortOrder: resumeSummary.sortOrder,
@@ -90,12 +93,15 @@ export async function listSummariesForUser(
       updatedAt: resumeSummary.updatedAt,
     })
     .from(resumeSummary)
-    .innerJoin(resume, eq(resumeSummary.resumeId, resume.id))
+    .leftJoin(resumeSummaryItem, eq(resumeSummaryItem.summaryId, resumeSummary.id))
+    .leftJoin(resume, eq(resumeSummaryItem.resumeId, resume.id))
     .where(and(...conditions))
     .orderBy(desc(resumeSummary.updatedAt));
 
   return rows.map((r) => ({
     ...r,
+    resumeId: r.resumeId ?? "",
+    resumeName: r.resumeName ?? "Reusable item",
     createdAt: r.createdAt.toISOString(),
     updatedAt: r.updatedAt.toISOString(),
   }));
@@ -105,8 +111,7 @@ export async function deleteSummaryForUser(summaryId: string, userId: string): P
   const row = await db
     .select({ id: resumeSummary.id })
     .from(resumeSummary)
-    .innerJoin(resume, eq(resumeSummary.resumeId, resume.id))
-    .where(and(eq(resumeSummary.id, summaryId), eq(resume.userId, userId)))
+    .where(and(eq(resumeSummary.id, summaryId), eq(resumeSummary.userId, userId)))
     .limit(1);
   if (row.length === 0) throw new Error("Summary not found");
   await db.delete(resumeSummary).where(eq(resumeSummary.id, summaryId));

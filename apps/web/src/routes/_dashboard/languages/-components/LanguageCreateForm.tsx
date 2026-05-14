@@ -1,4 +1,3 @@
-import { ResumePickerField } from "@/components/custom-ui/ResumePickerField";
 import { Button } from "@/components/ui/button";
 import {
   Combobox,
@@ -73,20 +72,6 @@ export function LanguageCreateForm({ onSuccess }: LanguageCreateFormProps) {
       className="flex flex-col gap-3"
     >
       <form.AppField
-        name="resumeId"
-        validators={{
-          onChange: ({ value }) => (!value ? "Resume is required" : undefined),
-        }}
-      >
-        {(field) => (
-          <ResumePickerField
-            value={field.state.value}
-            onChange={field.handleChange}
-            error={field.state.meta.errors?.[0]?.toString()}
-          />
-        )}
-      </form.AppField>
-      <form.AppField
         name="name"
         validators={{
           onChange: ({ value }) => (!value?.trim() ? "Language name is required" : undefined),
@@ -132,7 +117,7 @@ export function LanguageCreateForm({ onSuccess }: LanguageCreateFormProps) {
       </form.AppField>
       <form.Subscribe selector={(s) => s.values}>
         {(values) => {
-          const hasRequired = Boolean(values.resumeId && values.name.trim());
+          const hasRequired = Boolean(values.name.trim());
           return (
             <DialogFooter>
               <Button

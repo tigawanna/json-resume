@@ -1,4 +1,3 @@
-import { ResumePickerField } from "@/components/custom-ui/ResumePickerField";
 import { Button } from "@/components/ui/button";
 import {
   Combobox,
@@ -74,20 +73,6 @@ export function ContactCreateForm({ onSuccess }: ContactCreateFormProps) {
       className="flex flex-col gap-3"
     >
       <form.AppField
-        name="resumeId"
-        validators={{
-          onChange: ({ value }) => (!value ? "Resume is required" : undefined),
-        }}
-      >
-        {(field) => (
-          <ResumePickerField
-            value={field.state.value}
-            onChange={field.handleChange}
-            error={field.state.meta.errors?.[0]?.toString()}
-          />
-        )}
-      </form.AppField>
-      <form.AppField
         name="type"
         validators={{
           onChange: ({ value }) => (!value?.trim() ? "Type is required" : undefined),
@@ -151,7 +136,7 @@ export function ContactCreateForm({ onSuccess }: ContactCreateFormProps) {
       </form.AppField>
       <form.Subscribe selector={(s) => s.values}>
         {(values) => {
-          const hasRequired = Boolean(values.resumeId && values.type.trim() && values.value.trim());
+          const hasRequired = Boolean(values.type.trim() && values.value.trim());
           return (
             <DialogFooter>
               <Button

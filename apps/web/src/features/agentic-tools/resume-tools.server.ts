@@ -12,10 +12,14 @@ import {
   resume,
   resumeExperience,
   resumeExperienceBullet,
+  resumeExperienceItem,
   resumeProject,
+  resumeProjectItem,
   resumeSkill,
   resumeSkillGroup,
+  resumeSkillGroupItem,
   resumeSummary,
+  resumeSummaryItem,
 } from "@/lib/drizzle/scheam";
 import { and, asc, desc, eq, gte, like, or, sql } from "drizzle-orm";
 import {
@@ -120,8 +124,7 @@ async function assertUserOwnsExperience(userId: string, experienceId: string): P
   const rows = await db
     .select({ id: resumeExperience.id })
     .from(resumeExperience)
-    .innerJoin(resume, eq(resumeExperience.resumeId, resume.id))
-    .where(and(eq(resumeExperience.id, experienceId), eq(resume.userId, userId)))
+    .where(and(eq(resumeExperience.id, experienceId), eq(resumeExperience.userId, userId)))
     .limit(1);
 
   if (rows.length === 0) {
@@ -193,22 +196,28 @@ export async function searchResumeBlocksTool(ctx: ToolContext, input: SearchResu
   const data = searchResumeBlocksToolInputSchema.parse(input);
   const blockTypes = data.blockTypes ?? defaultBlockTypes;
   const pattern = keywordPattern(data.keyword);
-  const resumeScope = data.resumeId ? eq(resume.id, data.resumeId) : undefined;
+  const summaryScope = data.resumeId ? eq(resumeSummaryItem.resumeId, data.resumeId) : undefined;
+  const experienceScope = data.resumeId
+    ? eq(resumeExperienceItem.resumeId, data.resumeId)
+    : undefined;
+  const projectScope = data.resumeId ? eq(resumeProjectItem.resumeId, data.resumeId) : undefined;
+  const skillScope = data.resumeId ? eq(resumeSkillGroupItem.resumeId, data.resumeId) : undefined;
 
   const summariesPromise = blockTypes.includes("summary")
     ? db
         .select({
           id: resumeSummary.id,
-          resumeId: resume.id,
+          resumeId: resumeSummaryItem.resumeId,
           resumeName: resume.name,
           text: resumeSummary.text,
         })
         .from(resumeSummary)
-        .innerJoin(resume, eq(resumeSummary.resumeId, resume.id))
+        .leftJoin(resumeSummaryItem, eq(resumeSummaryItem.summaryId, resumeSummary.id))
+        .leftJoin(resume, eq(resumeSummaryItem.resumeId, resume.id))
         .where(
           and(
-            eq(resume.userId, ctx.userId),
-            resumeScope,
+            eq(resumeSummary.userId, ctx.userId),
+            summaryScope,
             pattern ? like(resumeSummary.text, pattern) : undefined,
           ),
         )
@@ -220,7 +229,7 @@ export async function searchResumeBlocksTool(ctx: ToolContext, input: SearchResu
     ? db
         .select({
           id: resumeExperience.id,
-          resumeId: resume.id,
+          resumeId: resumeExperienceItem.resumeId,
           resumeName: resume.name,
           company: resumeExperience.company,
           role: resumeExperience.role,
@@ -229,11 +238,12 @@ export async function searchResumeBlocksTool(ctx: ToolContext, input: SearchResu
           location: resumeExperience.location,
         })
         .from(resumeExperience)
-        .innerJoin(resume, eq(resumeExperience.resumeId, resume.id))
+        .leftJoin(resumeExperienceItem, eq(resumeExperienceItem.experienceId, resumeExperience.id))
+        .leftJoin(resume, eq(resumeExperienceItem.resumeId, resume.id))
         .where(
           and(
-            eq(resume.userId, ctx.userId),
-            resumeScope,
+            eq(resumeExperience.userId, ctx.userId),
+            experienceScope,
             pattern
               ? or(
                   like(resumeExperience.company, pattern),
@@ -252,7 +262,7 @@ export async function searchResumeBlocksTool(ctx: ToolContext, input: SearchResu
         .select({
           id: resumeExperienceBullet.id,
           experienceId: resumeExperience.id,
-          resumeId: resume.id,
+          resumeId: resumeExperienceItem.resumeId,
           resumeName: resume.name,
           company: resumeExperience.company,
           role: resumeExperience.role,
@@ -261,11 +271,12 @@ export async function searchResumeBlocksTool(ctx: ToolContext, input: SearchResu
         })
         .from(resumeExperienceBullet)
         .innerJoin(resumeExperience, eq(resumeExperienceBullet.experienceId, resumeExperience.id))
-        .innerJoin(resume, eq(resumeExperience.resumeId, resume.id))
+        .leftJoin(resumeExperienceItem, eq(resumeExperienceItem.experienceId, resumeExperience.id))
+        .leftJoin(resume, eq(resumeExperienceItem.resumeId, resume.id))
         .where(
           and(
-            eq(resume.userId, ctx.userId),
-            resumeScope,
+            eq(resumeExperience.userId, ctx.userId),
+            experienceScope,
             pattern
               ? or(
                   like(resumeExperienceBullet.text, pattern),
@@ -283,7 +294,7 @@ export async function searchResumeBlocksTool(ctx: ToolContext, input: SearchResu
     ? db
         .select({
           id: resumeProject.id,
-          resumeId: resume.id,
+          resumeId: resumeProjectItem.resumeId,
           resumeName: resume.name,
           name: resumeProject.name,
           description: resumeProject.description,
@@ -292,11 +303,12 @@ export async function searchResumeBlocksTool(ctx: ToolContext, input: SearchResu
           homepageUrl: resumeProject.homepageUrl,
         })
         .from(resumeProject)
-        .innerJoin(resume, eq(resumeProject.resumeId, resume.id))
+        .leftJoin(resumeProjectItem, eq(resumeProjectItem.projectId, resumeProject.id))
+        .leftJoin(resume, eq(resumeProjectItem.resumeId, resume.id))
         .where(
           and(
-            eq(resume.userId, ctx.userId),
-            resumeScope,
+            eq(resumeProject.userId, ctx.userId),
+            projectScope,
             pattern
               ? or(
                   like(resumeProject.name, pattern),
@@ -315,18 +327,19 @@ export async function searchResumeBlocksTool(ctx: ToolContext, input: SearchResu
         .select({
           id: resumeSkill.id,
           groupId: resumeSkillGroup.id,
-          resumeId: resume.id,
+          resumeId: resumeSkillGroupItem.resumeId,
           resumeName: resume.name,
           groupName: resumeSkillGroup.name,
           name: resumeSkill.name,
         })
         .from(resumeSkill)
         .innerJoin(resumeSkillGroup, eq(resumeSkill.groupId, resumeSkillGroup.id))
-        .innerJoin(resume, eq(resumeSkillGroup.resumeId, resume.id))
+        .leftJoin(resumeSkillGroupItem, eq(resumeSkillGroupItem.groupId, resumeSkillGroup.id))
+        .leftJoin(resume, eq(resumeSkillGroupItem.resumeId, resume.id))
         .where(
           and(
-            eq(resume.userId, ctx.userId),
-            resumeScope,
+            eq(resumeSkillGroup.userId, ctx.userId),
+            skillScope,
             pattern
               ? or(like(resumeSkill.name, pattern), like(resumeSkillGroup.name, pattern))
               : undefined,
@@ -344,16 +357,24 @@ export async function searchResumeBlocksTool(ctx: ToolContext, input: SearchResu
     skillsPromise,
   ]);
 
+  const withResumeLabel = <T extends { resumeId: string | null; resumeName: string | null }>(
+    row: T,
+  ) => ({
+    ...row,
+    resumeId: row.resumeId ?? "",
+    resumeName: row.resumeName ?? "Reusable item",
+  });
+
   const blocks: ResumeSearchBlock[] = [
-    ...summaries.map((row) => ({ type: "summary" as const, ...row })),
-    ...experiences.map((row) => ({ type: "experience" as const, ...row })),
-    ...bullets.map((row) => ({ type: "experience_bullet" as const, ...row })),
+    ...summaries.map((row) => ({ type: "summary" as const, ...withResumeLabel(row) })),
+    ...experiences.map((row) => ({ type: "experience" as const, ...withResumeLabel(row) })),
+    ...bullets.map((row) => ({ type: "experience_bullet" as const, ...withResumeLabel(row) })),
     ...projects.map((row) => ({
       type: "project" as const,
-      ...row,
+      ...withResumeLabel(row),
       tech: parseJsonStringArray(row.tech),
     })),
-    ...skills.map((row) => ({ type: "skill" as const, ...row })),
+    ...skills.map((row) => ({ type: "skill" as const, ...withResumeLabel(row) })),
   ];
 
   return { blocks };

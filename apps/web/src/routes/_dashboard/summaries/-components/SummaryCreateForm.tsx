@@ -1,4 +1,3 @@
-import { ResumePickerField } from "@/components/custom-ui/ResumePickerField";
 import { Button } from "@/components/ui/button";
 import { DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
@@ -55,20 +54,6 @@ export function SummaryCreateForm({ onSuccess }: SummaryCreateFormProps) {
       className="flex flex-col gap-3"
     >
       <form.AppField
-        name="resumeId"
-        validators={{
-          onChange: ({ value }) => (!value ? "Resume is required" : undefined),
-        }}
-      >
-        {(field) => (
-          <ResumePickerField
-            value={field.state.value}
-            onChange={field.handleChange}
-            error={field.state.meta.errors?.[0]?.toString()}
-          />
-        )}
-      </form.AppField>
-      <form.AppField
         name="text"
         validators={{
           onChange: ({ value }) => (!value?.trim() ? "Summary text is required" : undefined),
@@ -88,7 +73,7 @@ export function SummaryCreateForm({ onSuccess }: SummaryCreateFormProps) {
       </form.AppField>
       <form.Subscribe selector={(s) => s.values}>
         {(values) => {
-          const hasRequired = Boolean(values.resumeId && values.text.trim());
+          const hasRequired = Boolean(values.text.trim());
           return (
             <DialogFooter>
               <Button

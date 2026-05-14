@@ -1,4 +1,3 @@
-import { ResumePickerField } from "@/components/custom-ui/ResumePickerField";
 import { Button } from "@/components/ui/button";
 import { DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -72,20 +71,6 @@ export function VolunteerCreateForm({ onSuccess }: VolunteerCreateFormProps) {
       }}
       className="flex flex-col gap-3"
     >
-      <form.AppField
-        name="resumeId"
-        validators={{
-          onChange: ({ value }) => (!value ? "Resume is required" : undefined),
-        }}
-      >
-        {(field) => (
-          <ResumePickerField
-            value={field.state.value}
-            onChange={field.handleChange}
-            error={field.state.meta.errors?.[0]?.toString()}
-          />
-        )}
-      </form.AppField>
       <div className="grid gap-3 sm:grid-cols-2">
         <form.AppField
           name="organization"
@@ -158,7 +143,7 @@ export function VolunteerCreateForm({ onSuccess }: VolunteerCreateFormProps) {
       </form.AppField>
       <form.Subscribe selector={(s) => s.values}>
         {(values) => {
-          const hasRequired = Boolean(values.resumeId && values.organization.trim());
+          const hasRequired = Boolean(values.organization.trim());
           return (
             <DialogFooter>
               <Button

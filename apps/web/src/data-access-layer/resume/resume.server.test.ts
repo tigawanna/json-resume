@@ -2,7 +2,7 @@
 
 import { createClient, type Client } from "@libsql/client";
 import { sql } from "drizzle-orm";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { mkdtempSync, readdirSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
@@ -18,7 +18,9 @@ let resumeDal: typeof import("./resume.server");
 
 async function runMigrations(client: Client): Promise<void> {
   const migrationDir = new URL("../../../drizzle/migrations/", import.meta.url);
-  const migrationFiles = ["0000_cuddly_princess_powerful.sql", "0001_amusing_wrecker.sql"];
+  const migrationFiles = readdirSync(migrationDir)
+    .filter((file) => file.endsWith(".sql"))
+    .sort();
 
   for (const file of migrationFiles) {
     const migration = readFileSync(new URL(file, migrationDir), "utf8");
@@ -51,12 +53,22 @@ async function createResume(input: { id: string; userId: string; name: string })
   });
 }
 
-async function createLink(input: { id: string; resumeId: string; label: string }): Promise<void> {
+async function createLink(input: {
+  id: string;
+  userId: string;
+  resumeId: string;
+  label: string;
+}): Promise<void> {
   await db.insert(schema.resumeLink).values({
     id: input.id,
-    resumeId: input.resumeId,
+    userId: input.userId,
     label: input.label,
     url: `https://example.com/${input.id}`,
+    sortOrder: 0,
+  });
+  await db.insert(schema.resumeLinkItem).values({
+    resumeId: input.resumeId,
+    linkId: input.id,
     sortOrder: 0,
   });
 }
@@ -128,6 +140,7 @@ describe("resume data access ownership", () => {
     });
     await createLink({
       id: "child-link-b",
+      userId: "child-user-b",
       resumeId: "child-resume-b",
       label: "Private Link",
     });
@@ -165,6 +178,7 @@ describe("resume data access ownership", () => {
     });
     await createLink({
       id: "replace-owner-link",
+      userId: "replace-owner",
       resumeId: "replace-owner-resume",
       label: "Keep Link",
     });

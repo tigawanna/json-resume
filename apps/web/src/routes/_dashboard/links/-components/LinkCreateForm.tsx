@@ -1,4 +1,3 @@
-import { ResumePickerField } from "@/components/custom-ui/ResumePickerField";
 import { Button } from "@/components/ui/button";
 import { DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -61,20 +60,6 @@ export function LinkCreateForm({ onSuccess }: LinkCreateFormProps) {
       className="flex flex-col gap-3"
     >
       <form.AppField
-        name="resumeId"
-        validators={{
-          onChange: ({ value }) => (!value ? "Resume is required" : undefined),
-        }}
-      >
-        {(field) => (
-          <ResumePickerField
-            value={field.state.value}
-            onChange={field.handleChange}
-            error={field.state.meta.errors?.[0]?.toString()}
-          />
-        )}
-      </form.AppField>
-      <form.AppField
         name="label"
         validators={{
           onChange: ({ value }) => (!value?.trim() ? "Label is required" : undefined),
@@ -124,7 +109,7 @@ export function LinkCreateForm({ onSuccess }: LinkCreateFormProps) {
       </form.AppField>
       <form.Subscribe selector={(s) => s.values}>
         {(values) => {
-          const hasRequired = Boolean(values.resumeId && values.label.trim() && values.url.trim());
+          const hasRequired = Boolean(values.label.trim() && values.url.trim());
           return (
             <DialogFooter>
               <Button

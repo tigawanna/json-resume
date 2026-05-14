@@ -1,7 +1,7 @@
 import "@tanstack/react-start/server-only";
 
 import { db } from "@/lib/drizzle/client";
-import { resume, resumeLink } from "@/lib/drizzle/scheam";
+import { resume, resumeLink, resumeLinkItem } from "@/lib/drizzle/scheam";
 import { and, asc, desc, eq, inArray, isNull, like, or } from "drizzle-orm";
 import { DEFAULT_PAGE_SIZE } from "../../pagination.types";
 import type { PaginatedResult } from "../../pagination.types";
@@ -74,7 +74,7 @@ export async function listLinksForUserPaginated(
   opts?: { keyword?: string; cursor?: string; direction?: "after" | "before" },
 ): Promise<PaginatedResult<LinkListItemDTO>> {
   const direction = opts?.direction ?? "after";
-  const conditions = [eq(resume.userId, userId)];
+  const conditions = [eq(resumeLink.userId, userId)];
 
   if (opts?.keyword) {
     const pattern = `%${opts.keyword}%`;
@@ -90,7 +90,7 @@ export async function listLinksForUserPaginated(
   const rows = await db
     .select({
       id: resumeLink.id,
-      resumeId: resumeLink.resumeId,
+      resumeId: resumeLinkItem.resumeId,
       resumeName: resume.name,
       label: resumeLink.label,
       url: resumeLink.url,
@@ -100,11 +100,18 @@ export async function listLinksForUserPaginated(
       updatedAt: resumeLink.updatedAt,
     })
     .from(resumeLink)
-    .innerJoin(resume, eq(resumeLink.resumeId, resume.id))
+    .leftJoin(resumeLinkItem, eq(resumeLinkItem.linkId, resumeLink.id))
+    .leftJoin(resume, eq(resumeLinkItem.resumeId, resume.id))
     .where(and(...conditions))
     .orderBy(direction === "before" ? desc(resumeLink.id) : asc(resumeLink.id));
 
-  const groupedRows = groupLinkRows(rows);
+  const groupedRows = groupLinkRows(
+    rows.map((r) => ({
+      ...r,
+      resumeId: r.resumeId ?? "",
+      resumeName: r.resumeName ?? "Reusable item",
+    })),
+  );
   const cursor = opts?.cursor;
   const filteredRows = cursor
     ? groupedRows.filter((item) => (direction === "before" ? item.id < cursor : item.id > cursor))
@@ -135,7 +142,7 @@ export async function listLinksForUser(
   userId: string,
   keyword?: string,
 ): Promise<LinkListItemDTO[]> {
-  const conditions = [eq(resume.userId, userId)];
+  const conditions = [eq(resumeLink.userId, userId)];
   if (keyword) {
     const pattern = `%${keyword}%`;
     conditions.push(
@@ -150,7 +157,7 @@ export async function listLinksForUser(
   const rows = await db
     .select({
       id: resumeLink.id,
-      resumeId: resumeLink.resumeId,
+      resumeId: resumeLinkItem.resumeId,
       resumeName: resume.name,
       label: resumeLink.label,
       url: resumeLink.url,
@@ -160,19 +167,25 @@ export async function listLinksForUser(
       updatedAt: resumeLink.updatedAt,
     })
     .from(resumeLink)
-    .innerJoin(resume, eq(resumeLink.resumeId, resume.id))
+    .leftJoin(resumeLinkItem, eq(resumeLinkItem.linkId, resumeLink.id))
+    .leftJoin(resume, eq(resumeLinkItem.resumeId, resume.id))
     .where(and(...conditions))
     .orderBy(desc(resumeLink.updatedAt));
 
-  return groupLinkRows(rows);
+  return groupLinkRows(
+    rows.map((r) => ({
+      ...r,
+      resumeId: r.resumeId ?? "",
+      resumeName: r.resumeName ?? "Reusable item",
+    })),
+  );
 }
 
 export async function deleteLinkForUser(linkId: string, userId: string): Promise<void> {
   const row = await db
     .select({ label: resumeLink.label, url: resumeLink.url, icon: resumeLink.icon })
     .from(resumeLink)
-    .innerJoin(resume, eq(resumeLink.resumeId, resume.id))
-    .where(and(eq(resumeLink.id, linkId), eq(resume.userId, userId)))
+    .where(and(eq(resumeLink.id, linkId), eq(resumeLink.userId, userId)))
     .limit(1);
   if (row.length === 0) throw new Error("Link not found");
 
@@ -180,10 +193,9 @@ export async function deleteLinkForUser(linkId: string, userId: string): Promise
   const duplicateRows = await db
     .select({ id: resumeLink.id })
     .from(resumeLink)
-    .innerJoin(resume, eq(resumeLink.resumeId, resume.id))
     .where(
       and(
-        eq(resume.userId, userId),
+        eq(resumeLink.userId, userId),
         eq(resumeLink.label, target.label),
         eq(resumeLink.url, target.url),
         target.icon === null ? isNull(resumeLink.icon) : eq(resumeLink.icon, target.icon),

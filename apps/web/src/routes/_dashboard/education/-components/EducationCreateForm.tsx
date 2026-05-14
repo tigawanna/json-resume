@@ -1,4 +1,3 @@
-import { ResumePickerField } from "@/components/custom-ui/ResumePickerField";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -79,20 +78,6 @@ export function EducationCreateForm({ onSuccess }: EducationCreateFormProps) {
       }}
       className="flex flex-col gap-3"
     >
-      <form.AppField
-        name="resumeId"
-        validators={{
-          onChange: ({ value }) => (!value ? "Resume is required" : undefined),
-        }}
-      >
-        {(field) => (
-          <ResumePickerField
-            value={field.state.value}
-            onChange={field.handleChange}
-            error={field.state.meta.errors?.[0]?.toString()}
-          />
-        )}
-      </form.AppField>
       <div className="grid gap-3 sm:grid-cols-2">
         <form.AppField
           name="school"
@@ -169,9 +154,7 @@ export function EducationCreateForm({ onSuccess }: EducationCreateFormProps) {
       </div>
       <form.Subscribe selector={(s) => s.values}>
         {(values) => {
-          const hasRequired = Boolean(
-            values.resumeId && values.school.trim() && values.degree.trim(),
-          );
+          const hasRequired = Boolean(values.school.trim() && values.degree.trim());
           return (
             <DialogFooter>
               <Button

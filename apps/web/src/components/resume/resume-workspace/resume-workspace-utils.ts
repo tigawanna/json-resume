@@ -25,7 +25,7 @@ export function resumeDocumentToDetail({
   createdAt: string;
   doc: ResumeDocumentV1;
 }): ResumeDetailDTO {
-  const data = documentToInsertData(id, doc);
+  const data = documentToInsertData(id, userId, doc);
   const updatedAt = nowIso();
 
   return {
@@ -40,23 +40,35 @@ export function resumeDocumentToDetail({
     createdAt,
     updatedAt,
     sections: data.sections,
-    contacts: data.contacts,
-    links: data.links,
-    summaries: data.summaries,
-    experiences: data.experiences.map((experience) => ({
+    contacts: data.contacts.map(({ userId: _userId, ...contact }) => ({
+      ...contact,
+      resumeId: id,
+    })),
+    links: data.links.map(({ userId: _userId, ...link }) => ({ ...link, resumeId: id })),
+    summaries: data.summaries.map(({ userId: _userId, ...summary }) => ({
+      ...summary,
+      resumeId: id,
+    })),
+    experiences: data.experiences.map(({ userId: _userId, ...experience }) => ({
       ...experience,
+      resumeId: id,
       bullets: data.experienceBullets.filter((bullet) => bullet.experienceId === experience.id),
     })),
-    education: data.education.map((education) => ({
+    education: data.education.map(({ userId: _userId, ...education }) => ({
       ...education,
+      resumeId: id,
       bullets: data.educationBullets.filter((bullet) => bullet.educationId === education.id),
     })),
-    projects: data.projects,
-    skillGroups: data.skillGroups.map((group) => ({
+    projects: data.projects.map(({ userId: _userId, ...project }) => ({
+      ...project,
+      resumeId: id,
+    })),
+    skillGroups: data.skillGroups.map(({ userId: _userId, ...group }) => ({
       ...group,
+      resumeId: id,
       skills: data.skills.filter((skill) => skill.groupId === group.id),
     })),
-    talks: data.talks,
+    talks: data.talks.map(({ userId: _userId, ...talk }) => ({ ...talk, resumeId: id })),
     certifications: [],
     volunteers: [],
     languages: [],

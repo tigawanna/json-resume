@@ -1,7 +1,7 @@
 import "@tanstack/react-start/server-only";
 
 import { db } from "@/lib/drizzle/client";
-import { resume, resumeSkill, resumeSkillGroup } from "@/lib/drizzle/scheam";
+import { resume, resumeSkill, resumeSkillGroup, resumeSkillGroupItem } from "@/lib/drizzle/scheam";
 import { and, asc, desc, eq, gt, like, lt, or } from "drizzle-orm";
 import { DEFAULT_PAGE_SIZE, type PaginatedResult } from "../../pagination.types";
 import type { SkillGroupListItemDTO } from "./skill-group.types";
@@ -10,7 +10,7 @@ export async function listSkillGroupsForUser(
   userId: string,
   keyword?: string,
 ): Promise<SkillGroupListItemDTO[]> {
-  const conditions = [eq(resume.userId, userId)];
+  const conditions = [eq(resumeSkillGroup.userId, userId)];
   if (keyword) {
     const pattern = `%${keyword}%`;
     conditions.push(or(like(resumeSkillGroup.name, pattern))!);
@@ -19,7 +19,7 @@ export async function listSkillGroupsForUser(
   const groups = await db
     .select({
       id: resumeSkillGroup.id,
-      resumeId: resumeSkillGroup.resumeId,
+      resumeId: resumeSkillGroupItem.resumeId,
       resumeName: resume.name,
       name: resumeSkillGroup.name,
       sortOrder: resumeSkillGroup.sortOrder,
@@ -27,7 +27,8 @@ export async function listSkillGroupsForUser(
       updatedAt: resumeSkillGroup.updatedAt,
     })
     .from(resumeSkillGroup)
-    .innerJoin(resume, eq(resumeSkillGroup.resumeId, resume.id))
+    .leftJoin(resumeSkillGroupItem, eq(resumeSkillGroupItem.groupId, resumeSkillGroup.id))
+    .leftJoin(resume, eq(resumeSkillGroupItem.resumeId, resume.id))
     .where(and(...conditions))
     .orderBy(desc(resumeSkillGroup.updatedAt));
 
@@ -40,6 +41,8 @@ export async function listSkillGroupsForUser(
       .orderBy(asc(resumeSkill.sortOrder));
     result.push({
       ...g,
+      resumeId: g.resumeId ?? "",
+      resumeName: g.resumeName ?? "Reusable item",
       skills: JSON.stringify(skills.map((s) => s.name)),
       createdAt: g.createdAt.toISOString(),
       updatedAt: g.updatedAt.toISOString(),
@@ -53,7 +56,7 @@ export async function listSkillGroupsForUserPaginated(
   opts?: { keyword?: string; cursor?: string; direction?: "after" | "before" },
 ): Promise<PaginatedResult<SkillGroupListItemDTO>> {
   const direction = opts?.direction ?? "after";
-  const conditions = [eq(resume.userId, userId)];
+  const conditions = [eq(resumeSkillGroup.userId, userId)];
 
   if (opts?.keyword) {
     const pattern = `%${opts.keyword}%`;
@@ -71,7 +74,7 @@ export async function listSkillGroupsForUserPaginated(
   const groups = await db
     .select({
       id: resumeSkillGroup.id,
-      resumeId: resumeSkillGroup.resumeId,
+      resumeId: resumeSkillGroupItem.resumeId,
       resumeName: resume.name,
       name: resumeSkillGroup.name,
       sortOrder: resumeSkillGroup.sortOrder,
@@ -79,7 +82,8 @@ export async function listSkillGroupsForUserPaginated(
       updatedAt: resumeSkillGroup.updatedAt,
     })
     .from(resumeSkillGroup)
-    .innerJoin(resume, eq(resumeSkillGroup.resumeId, resume.id))
+    .leftJoin(resumeSkillGroupItem, eq(resumeSkillGroupItem.groupId, resumeSkillGroup.id))
+    .leftJoin(resume, eq(resumeSkillGroupItem.resumeId, resume.id))
     .where(and(...conditions))
     .orderBy(direction === "before" ? desc(resumeSkillGroup.id) : asc(resumeSkillGroup.id))
     .limit(DEFAULT_PAGE_SIZE + 1);
@@ -99,6 +103,8 @@ export async function listSkillGroupsForUserPaginated(
       .orderBy(asc(resumeSkill.sortOrder));
     items.push({
       ...g,
+      resumeId: g.resumeId ?? "",
+      resumeName: g.resumeName ?? "Reusable item",
       skills: JSON.stringify(skills.map((s) => s.name)),
       createdAt: g.createdAt.toISOString(),
       updatedAt: g.updatedAt.toISOString(),
@@ -123,8 +129,7 @@ export async function deleteSkillGroupForUser(groupId: string, userId: string): 
   const row = await db
     .select({ id: resumeSkillGroup.id })
     .from(resumeSkillGroup)
-    .innerJoin(resume, eq(resumeSkillGroup.resumeId, resume.id))
-    .where(and(eq(resumeSkillGroup.id, groupId), eq(resume.userId, userId)))
+    .where(and(eq(resumeSkillGroup.id, groupId), eq(resumeSkillGroup.userId, userId)))
     .limit(1);
   if (row.length === 0) throw new Error("Skill group not found");
   await db.delete(resumeSkillGroup).where(eq(resumeSkillGroup.id, groupId));

@@ -1,7 +1,7 @@
 import "@tanstack/react-start/server-only";
 
 import { db } from "@/lib/drizzle/client";
-import { resume, resumeEducation } from "@/lib/drizzle/scheam";
+import { resume, resumeEducation, resumeEducationItem } from "@/lib/drizzle/scheam";
 import { and, asc, desc, eq, gt, like, lt, or } from "drizzle-orm";
 import { DEFAULT_PAGE_SIZE } from "../../pagination.types";
 import type { EducationListItemDTO, PaginatedResult } from "./education.types";
@@ -11,7 +11,7 @@ export async function listEducationForUserPaginated(
   opts?: { keyword?: string; cursor?: string; direction?: "after" | "before" },
 ): Promise<PaginatedResult<EducationListItemDTO>> {
   const direction = opts?.direction ?? "after";
-  const conditions = [eq(resume.userId, userId)];
+  const conditions = [eq(resumeEducation.userId, userId)];
 
   if (opts?.keyword) {
     const pattern = `%${opts.keyword}%`;
@@ -36,7 +36,7 @@ export async function listEducationForUserPaginated(
   const rows = await db
     .select({
       id: resumeEducation.id,
-      resumeId: resumeEducation.resumeId,
+      resumeId: resumeEducationItem.resumeId,
       resumeName: resume.name,
       school: resumeEducation.school,
       degree: resumeEducation.degree,
@@ -49,7 +49,8 @@ export async function listEducationForUserPaginated(
       updatedAt: resumeEducation.updatedAt,
     })
     .from(resumeEducation)
-    .innerJoin(resume, eq(resumeEducation.resumeId, resume.id))
+    .leftJoin(resumeEducationItem, eq(resumeEducationItem.educationId, resumeEducation.id))
+    .leftJoin(resume, eq(resumeEducationItem.resumeId, resume.id))
     .where(and(...conditions))
     .orderBy(direction === "before" ? desc(resumeEducation.id) : asc(resumeEducation.id))
     .limit(DEFAULT_PAGE_SIZE + 1);
@@ -62,6 +63,8 @@ export async function listEducationForUserPaginated(
 
   const items = orderedRows.map((r) => ({
     ...r,
+    resumeId: r.resumeId ?? "",
+    resumeName: r.resumeName ?? "Reusable item",
     createdAt: r.createdAt.toISOString(),
     updatedAt: r.updatedAt.toISOString(),
   }));
@@ -87,8 +90,7 @@ export async function deleteEducationForUser(educationId: string, userId: string
   const row = await db
     .select({ id: resumeEducation.id })
     .from(resumeEducation)
-    .innerJoin(resume, eq(resumeEducation.resumeId, resume.id))
-    .where(and(eq(resumeEducation.id, educationId), eq(resume.userId, userId)))
+    .where(and(eq(resumeEducation.id, educationId), eq(resumeEducation.userId, userId)))
     .limit(1);
   if (row.length === 0) throw new Error("Education not found");
   await db.delete(resumeEducation).where(eq(resumeEducation.id, educationId));

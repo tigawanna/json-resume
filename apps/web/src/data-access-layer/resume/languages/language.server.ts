@@ -1,7 +1,7 @@
 import "@tanstack/react-start/server-only";
 
 import { db } from "@/lib/drizzle/client";
-import { resume, resumeLanguage } from "@/lib/drizzle/scheam";
+import { resume, resumeLanguage, resumeLanguageItem } from "@/lib/drizzle/scheam";
 import { and, asc, desc, eq, gt, like, lt, or } from "drizzle-orm";
 import { DEFAULT_PAGE_SIZE } from "../../pagination.types";
 import type { PaginatedResult } from "../../pagination.types";
@@ -12,7 +12,7 @@ export async function listLanguagesForUserPaginated(
   opts?: { keyword?: string; cursor?: string; direction?: "after" | "before" },
 ): Promise<PaginatedResult<LanguageListItemDTO>> {
   const direction = opts?.direction ?? "after";
-  const conditions = [eq(resume.userId, userId)];
+  const conditions = [eq(resumeLanguage.userId, userId)];
 
   if (opts?.keyword) {
     const pattern = `%${opts.keyword}%`;
@@ -32,7 +32,7 @@ export async function listLanguagesForUserPaginated(
   const rows = await db
     .select({
       id: resumeLanguage.id,
-      resumeId: resumeLanguage.resumeId,
+      resumeId: resumeLanguageItem.resumeId,
       resumeName: resume.name,
       name: resumeLanguage.name,
       proficiency: resumeLanguage.proficiency,
@@ -41,7 +41,8 @@ export async function listLanguagesForUserPaginated(
       updatedAt: resumeLanguage.updatedAt,
     })
     .from(resumeLanguage)
-    .innerJoin(resume, eq(resumeLanguage.resumeId, resume.id))
+    .leftJoin(resumeLanguageItem, eq(resumeLanguageItem.languageId, resumeLanguage.id))
+    .leftJoin(resume, eq(resumeLanguageItem.resumeId, resume.id))
     .where(and(...conditions))
     .orderBy(direction === "before" ? desc(resumeLanguage.id) : asc(resumeLanguage.id))
     .limit(DEFAULT_PAGE_SIZE + 1);
@@ -54,6 +55,8 @@ export async function listLanguagesForUserPaginated(
 
   const items = orderedRows.map((r) => ({
     ...r,
+    resumeId: r.resumeId ?? "",
+    resumeName: r.resumeName ?? "Reusable item",
     createdAt: r.createdAt.toISOString(),
     updatedAt: r.updatedAt.toISOString(),
   }));
@@ -76,7 +79,7 @@ export async function listLanguagesForUser(
   userId: string,
   keyword?: string,
 ): Promise<LanguageListItemDTO[]> {
-  const conditions = [eq(resume.userId, userId)];
+  const conditions = [eq(resumeLanguage.userId, userId)];
   if (keyword) {
     const pattern = `%${keyword}%`;
     conditions.push(
@@ -87,7 +90,7 @@ export async function listLanguagesForUser(
   const rows = await db
     .select({
       id: resumeLanguage.id,
-      resumeId: resumeLanguage.resumeId,
+      resumeId: resumeLanguageItem.resumeId,
       resumeName: resume.name,
       name: resumeLanguage.name,
       proficiency: resumeLanguage.proficiency,
@@ -96,12 +99,15 @@ export async function listLanguagesForUser(
       updatedAt: resumeLanguage.updatedAt,
     })
     .from(resumeLanguage)
-    .innerJoin(resume, eq(resumeLanguage.resumeId, resume.id))
+    .leftJoin(resumeLanguageItem, eq(resumeLanguageItem.languageId, resumeLanguage.id))
+    .leftJoin(resume, eq(resumeLanguageItem.resumeId, resume.id))
     .where(and(...conditions))
     .orderBy(desc(resumeLanguage.updatedAt));
 
   return rows.map((r) => ({
     ...r,
+    resumeId: r.resumeId ?? "",
+    resumeName: r.resumeName ?? "Reusable item",
     createdAt: r.createdAt.toISOString(),
     updatedAt: r.updatedAt.toISOString(),
   }));
@@ -111,8 +117,7 @@ export async function deleteLanguageForUser(languageId: string, userId: string):
   const row = await db
     .select({ id: resumeLanguage.id })
     .from(resumeLanguage)
-    .innerJoin(resume, eq(resumeLanguage.resumeId, resume.id))
-    .where(and(eq(resumeLanguage.id, languageId), eq(resume.userId, userId)))
+    .where(and(eq(resumeLanguage.id, languageId), eq(resumeLanguage.userId, userId)))
     .limit(1);
   if (row.length === 0) throw new Error("Language not found");
   await db.delete(resumeLanguage).where(eq(resumeLanguage.id, languageId));

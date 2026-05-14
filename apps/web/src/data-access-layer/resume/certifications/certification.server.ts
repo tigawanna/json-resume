@@ -1,7 +1,7 @@
 import "@tanstack/react-start/server-only";
 
 import { db } from "@/lib/drizzle/client";
-import { resume, resumeCertification } from "@/lib/drizzle/scheam";
+import { resume, resumeCertification, resumeCertificationItem } from "@/lib/drizzle/scheam";
 import { and, asc, desc, eq, gt, like, lt, or } from "drizzle-orm";
 import { DEFAULT_PAGE_SIZE } from "../../pagination.types";
 import type { PaginatedResult } from "../../pagination.types";
@@ -12,7 +12,7 @@ export async function listCertificationsForUserPaginated(
   opts?: { keyword?: string; cursor?: string; direction?: "after" | "before" },
 ): Promise<PaginatedResult<CertificationListItemDTO>> {
   const direction = opts?.direction ?? "after";
-  const conditions = [eq(resume.userId, userId)];
+  const conditions = [eq(resumeCertification.userId, userId)];
 
   if (opts?.keyword) {
     const pattern = `%${opts.keyword}%`;
@@ -32,7 +32,7 @@ export async function listCertificationsForUserPaginated(
   const rows = await db
     .select({
       id: resumeCertification.id,
-      resumeId: resumeCertification.resumeId,
+      resumeId: resumeCertificationItem.resumeId,
       resumeName: resume.name,
       name: resumeCertification.name,
       issuer: resumeCertification.issuer,
@@ -43,7 +43,11 @@ export async function listCertificationsForUserPaginated(
       updatedAt: resumeCertification.updatedAt,
     })
     .from(resumeCertification)
-    .innerJoin(resume, eq(resumeCertification.resumeId, resume.id))
+    .leftJoin(
+      resumeCertificationItem,
+      eq(resumeCertificationItem.certificationId, resumeCertification.id),
+    )
+    .leftJoin(resume, eq(resumeCertificationItem.resumeId, resume.id))
     .where(and(...conditions))
     .orderBy(direction === "before" ? desc(resumeCertification.id) : asc(resumeCertification.id))
     .limit(DEFAULT_PAGE_SIZE + 1);
@@ -56,6 +60,8 @@ export async function listCertificationsForUserPaginated(
 
   const items = orderedRows.map((r) => ({
     ...r,
+    resumeId: r.resumeId ?? "",
+    resumeName: r.resumeName ?? "Reusable item",
     createdAt: r.createdAt.toISOString(),
     updatedAt: r.updatedAt.toISOString(),
   }));
@@ -78,8 +84,7 @@ export async function deleteCertificationForUser(certId: string, userId: string)
   const row = await db
     .select({ id: resumeCertification.id })
     .from(resumeCertification)
-    .innerJoin(resume, eq(resumeCertification.resumeId, resume.id))
-    .where(and(eq(resumeCertification.id, certId), eq(resume.userId, userId)))
+    .where(and(eq(resumeCertification.id, certId), eq(resumeCertification.userId, userId)))
     .limit(1);
   if (row.length === 0) throw new Error("Certification not found");
   await db.delete(resumeCertification).where(eq(resumeCertification.id, certId));

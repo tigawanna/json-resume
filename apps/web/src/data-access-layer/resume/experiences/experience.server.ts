@@ -1,7 +1,7 @@
 import "@tanstack/react-start/server-only";
 
 import { db } from "@/lib/drizzle/client";
-import { resume, resumeExperience } from "@/lib/drizzle/scheam";
+import { resume, resumeExperience, resumeExperienceItem } from "@/lib/drizzle/scheam";
 import { and, asc, desc, eq, gt, like, lt, or } from "drizzle-orm";
 import { DEFAULT_PAGE_SIZE } from "../../pagination.types";
 import type { PaginatedResult } from "../../pagination.types";
@@ -28,7 +28,7 @@ export async function listExperiencesForUserPaginated(
   opts?: { keyword?: string; cursor?: string; direction?: "after" | "before" },
 ): Promise<PaginatedResult<ExperienceListItemDTO>> {
   const direction = opts?.direction ?? "after";
-  const conditions = [eq(resume.userId, userId)];
+  const conditions = [eq(resumeExperience.userId, userId)];
 
   if (opts?.keyword) {
     const pattern = `%${opts.keyword}%`;
@@ -69,7 +69,7 @@ export async function listExperiencesForUserPaginated(
   const rows = await db
     .select({
       id: resumeExperience.id,
-      resumeId: resumeExperience.resumeId,
+      resumeId: resumeExperienceItem.resumeId,
       resumeName: resume.name,
       company: resumeExperience.company,
       role: resumeExperience.role,
@@ -81,7 +81,8 @@ export async function listExperiencesForUserPaginated(
       updatedAt: resumeExperience.updatedAt,
     })
     .from(resumeExperience)
-    .innerJoin(resume, eq(resumeExperience.resumeId, resume.id))
+    .leftJoin(resumeExperienceItem, eq(resumeExperienceItem.experienceId, resumeExperience.id))
+    .leftJoin(resume, eq(resumeExperienceItem.resumeId, resume.id))
     .where(and(...conditions))
     .orderBy(
       ...(direction === "before"
@@ -98,6 +99,8 @@ export async function listExperiencesForUserPaginated(
 
   const items = orderedRows.map((r) => ({
     ...r,
+    resumeId: r.resumeId ?? "",
+    resumeName: r.resumeName ?? "Reusable item",
     createdAt: r.createdAt.toISOString(),
     updatedAt: r.updatedAt.toISOString(),
   }));
@@ -131,7 +134,7 @@ export async function listExperiencesForUser(
   userId: string,
   keyword?: string,
 ): Promise<ExperienceListItemDTO[]> {
-  const conditions = [eq(resume.userId, userId)];
+  const conditions = [eq(resumeExperience.userId, userId)];
   if (keyword) {
     const pattern = `%${keyword}%`;
     conditions.push(
@@ -146,7 +149,7 @@ export async function listExperiencesForUser(
   const rows = await db
     .select({
       id: resumeExperience.id,
-      resumeId: resumeExperience.resumeId,
+      resumeId: resumeExperienceItem.resumeId,
       resumeName: resume.name,
       company: resumeExperience.company,
       role: resumeExperience.role,
@@ -158,12 +161,15 @@ export async function listExperiencesForUser(
       updatedAt: resumeExperience.updatedAt,
     })
     .from(resumeExperience)
-    .innerJoin(resume, eq(resumeExperience.resumeId, resume.id))
+    .leftJoin(resumeExperienceItem, eq(resumeExperienceItem.experienceId, resumeExperience.id))
+    .leftJoin(resume, eq(resumeExperienceItem.resumeId, resume.id))
     .where(and(...conditions))
     .orderBy(desc(resumeExperience.sortOrder), desc(resumeExperience.id));
 
   return rows.map((r) => ({
     ...r,
+    resumeId: r.resumeId ?? "",
+    resumeName: r.resumeName ?? "Reusable item",
     createdAt: r.createdAt.toISOString(),
     updatedAt: r.updatedAt.toISOString(),
   }));
@@ -173,8 +179,7 @@ export async function deleteExperienceForUser(experienceId: string, userId: stri
   const row = await db
     .select({ id: resumeExperience.id })
     .from(resumeExperience)
-    .innerJoin(resume, eq(resumeExperience.resumeId, resume.id))
-    .where(and(eq(resumeExperience.id, experienceId), eq(resume.userId, userId)))
+    .where(and(eq(resumeExperience.id, experienceId), eq(resumeExperience.userId, userId)))
     .limit(1);
   if (row.length === 0) throw new Error("Experience not found");
   await db.delete(resumeExperience).where(eq(resumeExperience.id, experienceId));
@@ -188,10 +193,9 @@ export async function swapExperienceSortOrder(
   const rows = await db
     .select({ id: resumeExperience.id, sortOrder: resumeExperience.sortOrder })
     .from(resumeExperience)
-    .innerJoin(resume, eq(resumeExperience.resumeId, resume.id))
     .where(
       and(
-        eq(resume.userId, userId),
+        eq(resumeExperience.userId, userId),
         or(eq(resumeExperience.id, idA), eq(resumeExperience.id, idB)),
       ),
     )

@@ -1,7 +1,7 @@
 import "@tanstack/react-start/server-only";
 
 import { db } from "@/lib/drizzle/client";
-import { resume, resumeTalk } from "@/lib/drizzle/scheam";
+import { resume, resumeTalk, resumeTalkItem } from "@/lib/drizzle/scheam";
 import { and, asc, desc, eq, gt, like, lt, or } from "drizzle-orm";
 import { DEFAULT_PAGE_SIZE } from "../../pagination.types";
 import type { PaginatedResult } from "../../pagination.types";
@@ -12,7 +12,7 @@ export async function listTalksForUserPaginated(
   opts?: { keyword?: string; cursor?: string; direction?: "after" | "before" },
 ): Promise<PaginatedResult<TalkListItemDTO>> {
   const direction = opts?.direction ?? "after";
-  const conditions = [eq(resume.userId, userId)];
+  const conditions = [eq(resumeTalk.userId, userId)];
 
   if (opts?.keyword) {
     const pattern = `%${opts.keyword}%`;
@@ -34,7 +34,7 @@ export async function listTalksForUserPaginated(
   const rows = await db
     .select({
       id: resumeTalk.id,
-      resumeId: resumeTalk.resumeId,
+      resumeId: resumeTalkItem.resumeId,
       resumeName: resume.name,
       title: resumeTalk.title,
       event: resumeTalk.event,
@@ -46,7 +46,8 @@ export async function listTalksForUserPaginated(
       updatedAt: resumeTalk.updatedAt,
     })
     .from(resumeTalk)
-    .innerJoin(resume, eq(resumeTalk.resumeId, resume.id))
+    .leftJoin(resumeTalkItem, eq(resumeTalkItem.talkId, resumeTalk.id))
+    .leftJoin(resume, eq(resumeTalkItem.resumeId, resume.id))
     .where(and(...conditions))
     .orderBy(direction === "before" ? desc(resumeTalk.id) : asc(resumeTalk.id))
     .limit(DEFAULT_PAGE_SIZE + 1);
@@ -59,6 +60,8 @@ export async function listTalksForUserPaginated(
 
   const items = orderedRows.map((r) => ({
     ...r,
+    resumeId: r.resumeId ?? "",
+    resumeName: r.resumeName ?? "Reusable item",
     createdAt: r.createdAt.toISOString(),
     updatedAt: r.updatedAt.toISOString(),
   }));
@@ -81,8 +84,7 @@ export async function deleteTalkForUser(talkId: string, userId: string): Promise
   const row = await db
     .select({ id: resumeTalk.id })
     .from(resumeTalk)
-    .innerJoin(resume, eq(resumeTalk.resumeId, resume.id))
-    .where(and(eq(resumeTalk.id, talkId), eq(resume.userId, userId)))
+    .where(and(eq(resumeTalk.id, talkId), eq(resumeTalk.userId, userId)))
     .limit(1);
   if (row.length === 0) throw new Error("Talk not found");
   await db.delete(resumeTalk).where(eq(resumeTalk.id, talkId));

@@ -5,20 +5,31 @@ import { db } from "@/lib/drizzle/client";
 import {
   resume,
   resumeCertification,
+  resumeCertificationItem,
   resumeContact,
+  resumeContactItem,
   resumeEducation,
   resumeEducationBullet,
+  resumeEducationItem,
   resumeExperience,
   resumeExperienceBullet,
+  resumeExperienceItem,
   resumeLanguage,
+  resumeLanguageItem,
   resumeLink,
+  resumeLinkItem,
   resumeProject,
+  resumeProjectItem,
   resumeSection,
   resumeSkill,
   resumeSkillGroup,
+  resumeSkillGroupItem,
   resumeSummary,
+  resumeSummaryItem,
   resumeTalk,
+  resumeTalkItem,
   resumeVolunteer,
+  resumeVolunteerItem,
 } from "@/lib/drizzle/scheam";
 import { savedProject } from "@/lib/drizzle/scheam/saved-project-schema";
 import { and, asc, desc, eq, gt, inArray, isNull, like, lt, or } from "drizzle-orm";
@@ -58,8 +69,7 @@ export async function assertLinkBelongsToUser(linkId: string, userId: string): P
   const rows = await db
     .select({ id: resumeLink.id })
     .from(resumeLink)
-    .innerJoin(resume, eq(resumeLink.resumeId, resume.id))
-    .where(and(eq(resumeLink.id, linkId), eq(resume.userId, userId)))
+    .where(and(eq(resumeLink.id, linkId), eq(resumeLink.userId, userId)))
     .limit(1);
 
   if (rows.length === 0) throw new Error("Link not found");
@@ -69,8 +79,7 @@ export async function assertSummaryBelongsToUser(summaryId: string, userId: stri
   const rows = await db
     .select({ id: resumeSummary.id })
     .from(resumeSummary)
-    .innerJoin(resume, eq(resumeSummary.resumeId, resume.id))
-    .where(and(eq(resumeSummary.id, summaryId), eq(resume.userId, userId)))
+    .where(and(eq(resumeSummary.id, summaryId), eq(resumeSummary.userId, userId)))
     .limit(1);
 
   if (rows.length === 0) throw new Error("Summary not found");
@@ -83,8 +92,7 @@ export async function assertExperienceBelongsToUser(
   const rows = await db
     .select({ id: resumeExperience.id })
     .from(resumeExperience)
-    .innerJoin(resume, eq(resumeExperience.resumeId, resume.id))
-    .where(and(eq(resumeExperience.id, experienceId), eq(resume.userId, userId)))
+    .where(and(eq(resumeExperience.id, experienceId), eq(resumeExperience.userId, userId)))
     .limit(1);
 
   if (rows.length === 0) throw new Error("Experience not found");
@@ -97,8 +105,7 @@ export async function assertEducationBelongsToUser(
   const rows = await db
     .select({ id: resumeEducation.id })
     .from(resumeEducation)
-    .innerJoin(resume, eq(resumeEducation.resumeId, resume.id))
-    .where(and(eq(resumeEducation.id, educationId), eq(resume.userId, userId)))
+    .where(and(eq(resumeEducation.id, educationId), eq(resumeEducation.userId, userId)))
     .limit(1);
 
   if (rows.length === 0) throw new Error("Education not found");
@@ -108,8 +115,7 @@ export async function assertProjectBelongsToUser(projectId: string, userId: stri
   const rows = await db
     .select({ id: resumeProject.id })
     .from(resumeProject)
-    .innerJoin(resume, eq(resumeProject.resumeId, resume.id))
-    .where(and(eq(resumeProject.id, projectId), eq(resume.userId, userId)))
+    .where(and(eq(resumeProject.id, projectId), eq(resumeProject.userId, userId)))
     .limit(1);
 
   if (rows.length === 0) throw new Error("Project not found");
@@ -122,8 +128,7 @@ export async function assertSkillGroupBelongsToUser(
   const rows = await db
     .select({ id: resumeSkillGroup.id })
     .from(resumeSkillGroup)
-    .innerJoin(resume, eq(resumeSkillGroup.resumeId, resume.id))
-    .where(and(eq(resumeSkillGroup.id, groupId), eq(resume.userId, userId)))
+    .where(and(eq(resumeSkillGroup.id, groupId), eq(resumeSkillGroup.userId, userId)))
     .limit(1);
 
   if (rows.length === 0) throw new Error("Skill group not found");
@@ -136,8 +141,7 @@ export async function assertCertificationBelongsToUser(
   const rows = await db
     .select({ id: resumeCertification.id })
     .from(resumeCertification)
-    .innerJoin(resume, eq(resumeCertification.resumeId, resume.id))
-    .where(and(eq(resumeCertification.id, certificationId), eq(resume.userId, userId)))
+    .where(and(eq(resumeCertification.id, certificationId), eq(resumeCertification.userId, userId)))
     .limit(1);
 
   if (rows.length === 0) throw new Error("Certification not found");
@@ -150,8 +154,7 @@ export async function assertVolunteerBelongsToUser(
   const rows = await db
     .select({ id: resumeVolunteer.id })
     .from(resumeVolunteer)
-    .innerJoin(resume, eq(resumeVolunteer.resumeId, resume.id))
-    .where(and(eq(resumeVolunteer.id, volunteerId), eq(resume.userId, userId)))
+    .where(and(eq(resumeVolunteer.id, volunteerId), eq(resumeVolunteer.userId, userId)))
     .limit(1);
 
   if (rows.length === 0) throw new Error("Volunteer item not found");
@@ -164,8 +167,7 @@ export async function assertLanguageBelongsToUser(
   const rows = await db
     .select({ id: resumeLanguage.id })
     .from(resumeLanguage)
-    .innerJoin(resume, eq(resumeLanguage.resumeId, resume.id))
-    .where(and(eq(resumeLanguage.id, languageId), eq(resume.userId, userId)))
+    .where(and(eq(resumeLanguage.id, languageId), eq(resumeLanguage.userId, userId)))
     .limit(1);
 
   if (rows.length === 0) throw new Error("Language not found");
@@ -175,8 +177,7 @@ export async function assertContactBelongsToUser(contactId: string, userId: stri
   const rows = await db
     .select({ id: resumeContact.id })
     .from(resumeContact)
-    .innerJoin(resume, eq(resumeContact.resumeId, resume.id))
-    .where(and(eq(resumeContact.id, contactId), eq(resume.userId, userId)))
+    .where(and(eq(resumeContact.id, contactId), eq(resumeContact.userId, userId)))
     .limit(1);
 
   if (rows.length === 0) throw new Error("Contact not found");
@@ -186,8 +187,7 @@ export async function assertTalkBelongsToUser(talkId: string, userId: string): P
   const rows = await db
     .select({ id: resumeTalk.id })
     .from(resumeTalk)
-    .innerJoin(resume, eq(resumeTalk.resumeId, resume.id))
-    .where(and(eq(resumeTalk.id, talkId), eq(resume.userId, userId)))
+    .where(and(eq(resumeTalk.id, talkId), eq(resumeTalk.userId, userId)))
     .limit(1);
 
   if (rows.length === 0) throw new Error("Talk not found");
@@ -289,38 +289,224 @@ export async function getResumeDetail(
 ): Promise<ResumeDetailDTO | null> {
   const row = await db.query.resume.findFirst({
     where: and(eq(resume.id, resumeId), eq(resume.userId, userId)),
-    with: {
-      sections: { orderBy: [asc(resumeSection.sortOrder)] },
-      contacts: { orderBy: [asc(resumeContact.sortOrder)] },
-      links: { orderBy: [asc(resumeLink.sortOrder)] },
-      summaries: { orderBy: [asc(resumeSummary.sortOrder)] },
-      experiences: {
-        orderBy: [desc(resumeExperience.sortOrder), desc(resumeExperience.id)],
-        with: {
-          bullets: { orderBy: [asc(resumeExperienceBullet.sortOrder)] },
-        },
-      },
-      education: {
-        orderBy: [asc(resumeEducation.sortOrder)],
-        with: {
-          bullets: { orderBy: [asc(resumeEducationBullet.sortOrder)] },
-        },
-      },
-      projects: { orderBy: [asc(resumeProject.sortOrder)] },
-      skillGroups: {
-        orderBy: [asc(resumeSkillGroup.sortOrder)],
-        with: {
-          skills: { orderBy: [asc(resumeSkill.sortOrder)] },
-        },
-      },
-      talks: { orderBy: [asc(resumeTalk.sortOrder)] },
-      certifications: { orderBy: [asc(resumeCertification.sortOrder)] },
-      volunteers: { orderBy: [asc(resumeVolunteer.sortOrder)] },
-      languages: { orderBy: [asc(resumeLanguage.sortOrder)] },
-    },
   });
 
   if (!row) return null;
+
+  const sections = await db.query.resumeSection.findMany({
+    where: eq(resumeSection.resumeId, resumeId),
+    orderBy: [asc(resumeSection.sortOrder)],
+  });
+
+  const contacts = await db
+    .select({
+      id: resumeContact.id,
+      resumeId: resumeContactItem.resumeId,
+      type: resumeContact.type,
+      value: resumeContact.value,
+      label: resumeContact.label,
+      sortOrder: resumeContactItem.sortOrder,
+    })
+    .from(resumeContactItem)
+    .innerJoin(resumeContact, eq(resumeContactItem.contactId, resumeContact.id))
+    .where(eq(resumeContactItem.resumeId, resumeId))
+    .orderBy(asc(resumeContactItem.sortOrder));
+
+  const links = await db
+    .select({
+      id: resumeLink.id,
+      resumeId: resumeLinkItem.resumeId,
+      label: resumeLink.label,
+      url: resumeLink.url,
+      icon: resumeLink.icon,
+      sortOrder: resumeLinkItem.sortOrder,
+    })
+    .from(resumeLinkItem)
+    .innerJoin(resumeLink, eq(resumeLinkItem.linkId, resumeLink.id))
+    .where(eq(resumeLinkItem.resumeId, resumeId))
+    .orderBy(asc(resumeLinkItem.sortOrder));
+
+  const summaries = await db
+    .select({
+      id: resumeSummary.id,
+      resumeId: resumeSummaryItem.resumeId,
+      text: resumeSummary.text,
+      sortOrder: resumeSummaryItem.sortOrder,
+    })
+    .from(resumeSummaryItem)
+    .innerJoin(resumeSummary, eq(resumeSummaryItem.summaryId, resumeSummary.id))
+    .where(eq(resumeSummaryItem.resumeId, resumeId))
+    .orderBy(asc(resumeSummaryItem.sortOrder));
+
+  const experienceRows = await db
+    .select({
+      id: resumeExperience.id,
+      resumeId: resumeExperienceItem.resumeId,
+      company: resumeExperience.company,
+      role: resumeExperience.role,
+      startDate: resumeExperience.startDate,
+      endDate: resumeExperience.endDate,
+      location: resumeExperience.location,
+      sortOrder: resumeExperienceItem.sortOrder,
+    })
+    .from(resumeExperienceItem)
+    .innerJoin(resumeExperience, eq(resumeExperienceItem.experienceId, resumeExperience.id))
+    .where(eq(resumeExperienceItem.resumeId, resumeId))
+    .orderBy(asc(resumeExperienceItem.sortOrder), asc(resumeExperience.id));
+
+  const experiences: ResumeDetailDTO["experiences"] = [];
+  for (const ex of experienceRows) {
+    const bullets = await db
+      .select({
+        id: resumeExperienceBullet.id,
+        experienceId: resumeExperienceBullet.experienceId,
+        text: resumeExperienceBullet.text,
+        sortOrder: resumeExperienceBullet.sortOrder,
+      })
+      .from(resumeExperienceBullet)
+      .where(eq(resumeExperienceBullet.experienceId, ex.id))
+      .orderBy(asc(resumeExperienceBullet.sortOrder));
+    experiences.push({ ...ex, bullets });
+  }
+
+  const educationRows = await db
+    .select({
+      id: resumeEducation.id,
+      resumeId: resumeEducationItem.resumeId,
+      school: resumeEducation.school,
+      degree: resumeEducation.degree,
+      field: resumeEducation.field,
+      startDate: resumeEducation.startDate,
+      endDate: resumeEducation.endDate,
+      description: resumeEducation.description,
+      sortOrder: resumeEducationItem.sortOrder,
+    })
+    .from(resumeEducationItem)
+    .innerJoin(resumeEducation, eq(resumeEducationItem.educationId, resumeEducation.id))
+    .where(eq(resumeEducationItem.resumeId, resumeId))
+    .orderBy(asc(resumeEducationItem.sortOrder), asc(resumeEducation.id));
+
+  const education: ResumeDetailDTO["education"] = [];
+  for (const ed of educationRows) {
+    const bullets = await db
+      .select({
+        id: resumeEducationBullet.id,
+        educationId: resumeEducationBullet.educationId,
+        text: resumeEducationBullet.text,
+        sortOrder: resumeEducationBullet.sortOrder,
+      })
+      .from(resumeEducationBullet)
+      .where(eq(resumeEducationBullet.educationId, ed.id))
+      .orderBy(asc(resumeEducationBullet.sortOrder));
+    education.push({ ...ed, bullets });
+  }
+
+  const projects = await db
+    .select({
+      id: resumeProject.id,
+      resumeId: resumeProjectItem.resumeId,
+      name: resumeProject.name,
+      url: resumeProject.url,
+      homepageUrl: resumeProject.homepageUrl,
+      description: resumeProject.description,
+      tech: resumeProject.tech,
+      sortOrder: resumeProjectItem.sortOrder,
+    })
+    .from(resumeProjectItem)
+    .innerJoin(resumeProject, eq(resumeProjectItem.projectId, resumeProject.id))
+    .where(eq(resumeProjectItem.resumeId, resumeId))
+    .orderBy(asc(resumeProjectItem.sortOrder), asc(resumeProject.id));
+
+  const skillGroupRows = await db
+    .select({
+      id: resumeSkillGroup.id,
+      resumeId: resumeSkillGroupItem.resumeId,
+      name: resumeSkillGroup.name,
+      sortOrder: resumeSkillGroupItem.sortOrder,
+    })
+    .from(resumeSkillGroupItem)
+    .innerJoin(resumeSkillGroup, eq(resumeSkillGroupItem.groupId, resumeSkillGroup.id))
+    .where(eq(resumeSkillGroupItem.resumeId, resumeId))
+    .orderBy(asc(resumeSkillGroupItem.sortOrder), asc(resumeSkillGroup.id));
+
+  const skillGroups: ResumeDetailDTO["skillGroups"] = [];
+  for (const group of skillGroupRows) {
+    const skills = await db
+      .select({
+        id: resumeSkill.id,
+        groupId: resumeSkill.groupId,
+        name: resumeSkill.name,
+        level: resumeSkill.level,
+        sortOrder: resumeSkill.sortOrder,
+      })
+      .from(resumeSkill)
+      .where(eq(resumeSkill.groupId, group.id))
+      .orderBy(asc(resumeSkill.sortOrder));
+    skillGroups.push({ ...group, skills });
+  }
+
+  const talks = await db
+    .select({
+      id: resumeTalk.id,
+      resumeId: resumeTalkItem.resumeId,
+      title: resumeTalk.title,
+      event: resumeTalk.event,
+      date: resumeTalk.date,
+      description: resumeTalk.description,
+      links: resumeTalk.links,
+      sortOrder: resumeTalkItem.sortOrder,
+    })
+    .from(resumeTalkItem)
+    .innerJoin(resumeTalk, eq(resumeTalkItem.talkId, resumeTalk.id))
+    .where(eq(resumeTalkItem.resumeId, resumeId))
+    .orderBy(asc(resumeTalkItem.sortOrder), asc(resumeTalk.id));
+
+  const certifications = await db
+    .select({
+      id: resumeCertification.id,
+      resumeId: resumeCertificationItem.resumeId,
+      name: resumeCertification.name,
+      issuer: resumeCertification.issuer,
+      date: resumeCertification.date,
+      url: resumeCertification.url,
+      sortOrder: resumeCertificationItem.sortOrder,
+    })
+    .from(resumeCertificationItem)
+    .innerJoin(
+      resumeCertification,
+      eq(resumeCertificationItem.certificationId, resumeCertification.id),
+    )
+    .where(eq(resumeCertificationItem.resumeId, resumeId))
+    .orderBy(asc(resumeCertificationItem.sortOrder), asc(resumeCertification.id));
+
+  const volunteers = await db
+    .select({
+      id: resumeVolunteer.id,
+      resumeId: resumeVolunteerItem.resumeId,
+      organization: resumeVolunteer.organization,
+      role: resumeVolunteer.role,
+      startDate: resumeVolunteer.startDate,
+      endDate: resumeVolunteer.endDate,
+      description: resumeVolunteer.description,
+      sortOrder: resumeVolunteerItem.sortOrder,
+    })
+    .from(resumeVolunteerItem)
+    .innerJoin(resumeVolunteer, eq(resumeVolunteerItem.volunteerId, resumeVolunteer.id))
+    .where(eq(resumeVolunteerItem.resumeId, resumeId))
+    .orderBy(asc(resumeVolunteerItem.sortOrder), asc(resumeVolunteer.id));
+
+  const languages = await db
+    .select({
+      id: resumeLanguage.id,
+      resumeId: resumeLanguageItem.resumeId,
+      name: resumeLanguage.name,
+      proficiency: resumeLanguage.proficiency,
+      sortOrder: resumeLanguageItem.sortOrder,
+    })
+    .from(resumeLanguageItem)
+    .innerJoin(resumeLanguage, eq(resumeLanguageItem.languageId, resumeLanguage.id))
+    .where(eq(resumeLanguageItem.resumeId, resumeId))
+    .orderBy(asc(resumeLanguageItem.sortOrder), asc(resumeLanguage.id));
 
   return {
     id: row.id,
@@ -333,18 +519,18 @@ export async function getResumeDetail(
     templateId: row.templateId as TemplateId,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
-    sections: row.sections,
-    contacts: row.contacts,
-    links: row.links,
-    summaries: row.summaries,
-    experiences: row.experiences,
-    education: row.education,
-    projects: row.projects,
-    skillGroups: row.skillGroups,
-    talks: row.talks,
-    certifications: row.certifications,
-    volunteers: row.volunteers,
-    languages: row.languages,
+    sections,
+    contacts,
+    links,
+    summaries,
+    experiences,
+    education,
+    projects,
+    skillGroups,
+    talks,
+    certifications,
+    volunteers,
+    languages,
   };
 }
 
@@ -360,7 +546,7 @@ export async function createResumeForUser(
   },
 ): Promise<string> {
   const resumeId = crypto.randomUUID();
-  const data = documentToInsertData(resumeId, input.doc);
+  const data = documentToInsertData(resumeId, userId, input.doc);
 
   await db.insert(resume).values({
     id: resumeId,
@@ -379,14 +565,26 @@ export async function createResumeForUser(
   if (data.contacts.length > 0) {
     await db.insert(resumeContact).values(data.contacts);
   }
+  if (data.contactItems.length > 0) {
+    await db.insert(resumeContactItem).values(data.contactItems);
+  }
   if (data.links.length > 0) {
     await db.insert(resumeLink).values(data.links);
+  }
+  if (data.linkItems.length > 0) {
+    await db.insert(resumeLinkItem).values(data.linkItems);
   }
   if (data.summaries.length > 0) {
     await db.insert(resumeSummary).values(data.summaries);
   }
+  if (data.summaryItems.length > 0) {
+    await db.insert(resumeSummaryItem).values(data.summaryItems);
+  }
   if (data.experiences.length > 0) {
     await db.insert(resumeExperience).values(data.experiences);
+  }
+  if (data.experienceItems.length > 0) {
+    await db.insert(resumeExperienceItem).values(data.experienceItems);
   }
   if (data.experienceBullets.length > 0) {
     await db.insert(resumeExperienceBullet).values(data.experienceBullets);
@@ -394,20 +592,32 @@ export async function createResumeForUser(
   if (data.education.length > 0) {
     await db.insert(resumeEducation).values(data.education);
   }
+  if (data.educationItems.length > 0) {
+    await db.insert(resumeEducationItem).values(data.educationItems);
+  }
   if (data.educationBullets.length > 0) {
     await db.insert(resumeEducationBullet).values(data.educationBullets);
   }
   if (data.projects.length > 0) {
     await db.insert(resumeProject).values(data.projects);
   }
+  if (data.projectItems.length > 0) {
+    await db.insert(resumeProjectItem).values(data.projectItems);
+  }
   if (data.skillGroups.length > 0) {
     await db.insert(resumeSkillGroup).values(data.skillGroups);
+  }
+  if (data.skillGroupItems.length > 0) {
+    await db.insert(resumeSkillGroupItem).values(data.skillGroupItems);
   }
   if (data.skills.length > 0) {
     await db.insert(resumeSkill).values(data.skills);
   }
   if (data.talks.length > 0) {
     await db.insert(resumeTalk).values(data.talks);
+  }
+  if (data.talkItems.length > 0) {
+    await db.insert(resumeTalkItem).values(data.talkItems);
   }
 
   return resumeId;
@@ -493,19 +703,22 @@ export async function batchUpdateSectionOrder(
 
 export async function setResumeContacts(
   resumeId: string,
+  userId: string,
   contacts: { type: string; value: string; label: string }[],
 ): Promise<void> {
-  await db.delete(resumeContact).where(eq(resumeContact.resumeId, resumeId));
-  if (contacts.length > 0) {
-    await db.insert(resumeContact).values(
-      contacts.map((c, i) => ({
-        resumeId,
-        type: c.type,
-        value: c.value,
-        label: c.label,
-        sortOrder: i,
-      })),
-    );
+  await db.delete(resumeContactItem).where(eq(resumeContactItem.resumeId, resumeId));
+  for (let i = 0; i < contacts.length; i++) {
+    const c = contacts[i]!;
+    const id = crypto.randomUUID();
+    await db.insert(resumeContact).values({
+      id,
+      userId,
+      type: c.type,
+      value: c.value,
+      label: c.label,
+      sortOrder: i,
+    });
+    await db.insert(resumeContactItem).values({ resumeId, contactId: id, sortOrder: i });
   }
 }
 
@@ -513,35 +726,42 @@ export async function setResumeContacts(
 
 export async function setResumeLinks(
   resumeId: string,
+  userId: string,
   links: { label: string; url: string; icon?: string }[],
 ): Promise<void> {
-  await db.delete(resumeLink).where(eq(resumeLink.resumeId, resumeId));
-  if (links.length > 0) {
-    await db.insert(resumeLink).values(
-      links.map((l, i) => ({
-        resumeId,
-        label: l.label,
-        url: l.url,
-        icon: l.icon ?? null,
-        sortOrder: i,
-      })),
-    );
+  await db.delete(resumeLinkItem).where(eq(resumeLinkItem.resumeId, resumeId));
+  for (let i = 0; i < links.length; i++) {
+    const l = links[i]!;
+    const id = crypto.randomUUID();
+    await db.insert(resumeLink).values({
+      id,
+      userId,
+      label: l.label,
+      url: l.url,
+      icon: l.icon ?? null,
+      sortOrder: i,
+    });
+    await db.insert(resumeLinkItem).values({ resumeId, linkId: id, sortOrder: i });
   }
 }
 
 export async function addLink(
-  resumeId: string,
+  userId: string,
+  resumeId: string | undefined,
   input: { label: string; url: string; icon?: string; sortOrder: number },
 ): Promise<string> {
   const id = crypto.randomUUID();
   await db.insert(resumeLink).values({
     id,
-    resumeId,
+    userId,
     label: input.label,
     url: input.url,
     icon: input.icon ?? null,
     sortOrder: input.sortOrder,
   });
+  if (resumeId) {
+    await db.insert(resumeLinkItem).values({ resumeId, linkId: id, sortOrder: input.sortOrder });
+  }
   return id;
 }
 
@@ -572,8 +792,7 @@ export async function updateDuplicateLinksForUser(
       icon: resumeLink.icon,
     })
     .from(resumeLink)
-    .innerJoin(resume, eq(resumeLink.resumeId, resume.id))
-    .where(and(eq(resumeLink.id, linkId), eq(resume.userId, userId)))
+    .where(and(eq(resumeLink.id, linkId), eq(resumeLink.userId, userId)))
     .limit(1);
 
   if (!row[0]) throw new Error("Link not found");
@@ -582,10 +801,9 @@ export async function updateDuplicateLinksForUser(
   const duplicateRows = await db
     .select({ id: resumeLink.id })
     .from(resumeLink)
-    .innerJoin(resume, eq(resumeLink.resumeId, resume.id))
     .where(
       and(
-        eq(resume.userId, userId),
+        eq(resumeLink.userId, userId),
         eq(resumeLink.label, target.label),
         eq(resumeLink.url, target.url),
         target.icon === null ? isNull(resumeLink.icon) : eq(resumeLink.icon, target.icon),
@@ -612,24 +830,36 @@ export async function deleteLinkById(linkId: string): Promise<void> {
 
 // ─── Summary CRUD ──────────────────────────────────────────
 
-export async function setResumeSummary(resumeId: string, text: string): Promise<void> {
-  await db.delete(resumeSummary).where(eq(resumeSummary.resumeId, resumeId));
+export async function setResumeSummary(
+  resumeId: string,
+  userId: string,
+  text: string,
+): Promise<void> {
+  await db.delete(resumeSummaryItem).where(eq(resumeSummaryItem.resumeId, resumeId));
   if (text.trim()) {
-    await db.insert(resumeSummary).values({ resumeId, text, sortOrder: 0 });
+    const id = crypto.randomUUID();
+    await db.insert(resumeSummary).values({ id, userId, text, sortOrder: 0 });
+    await db.insert(resumeSummaryItem).values({ resumeId, summaryId: id, sortOrder: 0 });
   }
 }
 
 export async function addSummaryItem(
-  resumeId: string,
+  userId: string,
+  resumeId: string | undefined,
   input: { text: string; sortOrder: number },
 ): Promise<string> {
   const id = crypto.randomUUID();
   await db.insert(resumeSummary).values({
     id,
-    resumeId,
+    userId,
     text: input.text,
     sortOrder: input.sortOrder,
   });
+  if (resumeId) {
+    await db
+      .insert(resumeSummaryItem)
+      .values({ resumeId, summaryId: id, sortOrder: input.sortOrder });
+  }
   return id;
 }
 
@@ -653,7 +883,8 @@ export async function deleteSummaryById(summaryId: string): Promise<void> {
 // ─── Experience CRUD ───────────────────────────────────────
 
 export async function addExperience(
-  resumeId: string,
+  userId: string,
+  resumeId: string | undefined,
   input: {
     company: string;
     role: string;
@@ -667,7 +898,7 @@ export async function addExperience(
   const id = crypto.randomUUID();
   await db.insert(resumeExperience).values({
     id,
-    resumeId,
+    userId,
     company: input.company,
     role: input.role,
     startDate: input.startDate,
@@ -675,6 +906,11 @@ export async function addExperience(
     location: input.location ?? "",
     sortOrder: input.sortOrder,
   });
+  if (resumeId) {
+    await db
+      .insert(resumeExperienceItem)
+      .values({ resumeId, experienceId: id, sortOrder: input.sortOrder });
+  }
   if (input.bullets.length > 0) {
     await db.insert(resumeExperienceBullet).values(
       input.bullets.map((text, i) => ({
@@ -733,7 +969,8 @@ export async function setExperienceBullets(experienceId: string, bullets: string
 // ─── Education CRUD ────────────────────────────────────────
 
 export async function addEducation(
-  resumeId: string,
+  userId: string,
+  resumeId: string | undefined,
   input: {
     school: string;
     degree: string;
@@ -748,7 +985,7 @@ export async function addEducation(
   const id = crypto.randomUUID();
   await db.insert(resumeEducation).values({
     id,
-    resumeId,
+    userId,
     school: input.school,
     degree: input.degree,
     field: input.field ?? "",
@@ -757,6 +994,11 @@ export async function addEducation(
     description: input.description ?? "",
     sortOrder: input.sortOrder,
   });
+  if (resumeId) {
+    await db
+      .insert(resumeEducationItem)
+      .values({ resumeId, educationId: id, sortOrder: input.sortOrder });
+  }
   if (input.bullets && input.bullets.length > 0) {
     await db.insert(resumeEducationBullet).values(
       input.bullets.map((text, i) => ({
@@ -805,11 +1047,14 @@ export async function swapEducationSortOrder(
   idB: string,
 ): Promise<void> {
   const rows = await db
-    .select({ id: resumeEducation.id, sortOrder: resumeEducation.sortOrder })
-    .from(resumeEducation)
-    .innerJoin(resume, eq(resumeEducation.resumeId, resume.id))
+    .select({ id: resumeEducationItem.educationId, sortOrder: resumeEducationItem.sortOrder })
+    .from(resumeEducationItem)
+    .innerJoin(resume, eq(resumeEducationItem.resumeId, resume.id))
     .where(
-      and(eq(resume.userId, userId), or(eq(resumeEducation.id, idA), eq(resumeEducation.id, idB))),
+      and(
+        eq(resume.userId, userId),
+        or(eq(resumeEducationItem.educationId, idA), eq(resumeEducationItem.educationId, idB)),
+      ),
     )
     .limit(2);
 
@@ -821,20 +1066,21 @@ export async function swapEducationSortOrder(
   ];
 
   await db
-    .update(resumeEducation)
+    .update(resumeEducationItem)
     .set({ sortOrder: second.sortOrder })
-    .where(eq(resumeEducation.id, first.id));
+    .where(eq(resumeEducationItem.educationId, first.id));
 
   await db
-    .update(resumeEducation)
+    .update(resumeEducationItem)
     .set({ sortOrder: first.sortOrder })
-    .where(eq(resumeEducation.id, second.id));
+    .where(eq(resumeEducationItem.educationId, second.id));
 }
 
 // ─── Project CRUD ──────────────────────────────────────────
 
 export async function addProject(
-  resumeId: string,
+  userId: string,
+  resumeId: string | undefined,
   input: {
     name: string;
     url?: string;
@@ -847,7 +1093,7 @@ export async function addProject(
   const id = crypto.randomUUID();
   await db.insert(resumeProject).values({
     id,
-    resumeId,
+    userId,
     name: input.name,
     url: input.url ?? "",
     homepageUrl: input.homepageUrl ?? "",
@@ -855,6 +1101,11 @@ export async function addProject(
     tech: JSON.stringify(input.tech),
     sortOrder: input.sortOrder,
   });
+  if (resumeId) {
+    await db
+      .insert(resumeProjectItem)
+      .values({ resumeId, projectId: id, sortOrder: input.sortOrder });
+  }
   return id;
 }
 
@@ -892,10 +1143,15 @@ export async function swapProjectSortOrder(
   idB: string,
 ): Promise<void> {
   const rows = await db
-    .select({ id: resumeProject.id, sortOrder: resumeProject.sortOrder })
-    .from(resumeProject)
-    .innerJoin(resume, eq(resumeProject.resumeId, resume.id))
-    .where(and(eq(resume.userId, userId), or(eq(resumeProject.id, idA), eq(resumeProject.id, idB))))
+    .select({ id: resumeProjectItem.projectId, sortOrder: resumeProjectItem.sortOrder })
+    .from(resumeProjectItem)
+    .innerJoin(resume, eq(resumeProjectItem.resumeId, resume.id))
+    .where(
+      and(
+        eq(resume.userId, userId),
+        or(eq(resumeProjectItem.projectId, idA), eq(resumeProjectItem.projectId, idB)),
+      ),
+    )
     .limit(2);
 
   if (rows.length !== 2) throw new Error("One or both projects not found");
@@ -906,33 +1162,34 @@ export async function swapProjectSortOrder(
   ];
 
   await db
-    .update(resumeProject)
+    .update(resumeProjectItem)
     .set({ sortOrder: second.sortOrder })
-    .where(eq(resumeProject.id, first.id));
+    .where(eq(resumeProjectItem.projectId, first.id));
 
   await db
-    .update(resumeProject)
+    .update(resumeProjectItem)
     .set({ sortOrder: first.sortOrder })
-    .where(eq(resumeProject.id, second.id));
+    .where(eq(resumeProjectItem.projectId, second.id));
 }
 
 // ─── Skill Group CRUD ──────────────────────────────────────
 
 export async function setSkillGroups(
   resumeId: string,
+  userId: string,
   groups: { name: string; items: string[] }[],
 ): Promise<void> {
-  // Delete all existing groups (cascade deletes skills)
-  await db.delete(resumeSkillGroup).where(eq(resumeSkillGroup.resumeId, resumeId));
+  await db.delete(resumeSkillGroupItem).where(eq(resumeSkillGroupItem.resumeId, resumeId));
   for (let gi = 0; gi < groups.length; gi++) {
     const g = groups[gi]!;
     const groupId = crypto.randomUUID();
     await db.insert(resumeSkillGroup).values({
       id: groupId,
-      resumeId,
+      userId,
       name: g.name,
       sortOrder: gi,
     });
+    await db.insert(resumeSkillGroupItem).values({ resumeId, groupId, sortOrder: gi });
     if (g.items.length > 0) {
       await db.insert(resumeSkill).values(
         g.items.map((name, si) => ({
@@ -947,16 +1204,20 @@ export async function setSkillGroups(
 }
 
 export async function addSkillGroup(
-  resumeId: string,
+  userId: string,
+  resumeId: string | undefined,
   input: { name: string; skills: string[]; sortOrder: number },
 ): Promise<string> {
   const groupId = crypto.randomUUID();
   await db.insert(resumeSkillGroup).values({
     id: groupId,
-    resumeId,
+    userId,
     name: input.name,
     sortOrder: input.sortOrder,
   });
+  if (resumeId) {
+    await db.insert(resumeSkillGroupItem).values({ resumeId, groupId, sortOrder: input.sortOrder });
+  }
   if (input.skills.length > 0) {
     await db
       .insert(resumeSkill)
@@ -993,19 +1254,25 @@ export async function deleteSkillGroupById(groupId: string): Promise<void> {
 // ─── Certification CRUD ────────────────────────────────────
 
 export async function addCertification(
-  resumeId: string,
+  userId: string,
+  resumeId: string | undefined,
   input: { name: string; issuer?: string; date?: string; url?: string; sortOrder: number },
 ): Promise<string> {
   const id = crypto.randomUUID();
   await db.insert(resumeCertification).values({
     id,
-    resumeId,
+    userId,
     name: input.name,
     issuer: input.issuer ?? "",
     date: input.date ?? "",
     url: input.url ?? "",
     sortOrder: input.sortOrder,
   });
+  if (resumeId) {
+    await db
+      .insert(resumeCertificationItem)
+      .values({ resumeId, certificationId: id, sortOrder: input.sortOrder });
+  }
   return id;
 }
 
@@ -1032,7 +1299,8 @@ export async function deleteCertification(certId: string): Promise<void> {
 // ─── Volunteer CRUD ────────────────────────────────────────
 
 export async function addVolunteer(
-  resumeId: string,
+  userId: string,
+  resumeId: string | undefined,
   input: {
     organization: string;
     role?: string;
@@ -1045,7 +1313,7 @@ export async function addVolunteer(
   const id = crypto.randomUUID();
   await db.insert(resumeVolunteer).values({
     id,
-    resumeId,
+    userId,
     organization: input.organization,
     role: input.role ?? "",
     startDate: input.startDate ?? "",
@@ -1053,6 +1321,11 @@ export async function addVolunteer(
     description: input.description ?? "",
     sortOrder: input.sortOrder,
   });
+  if (resumeId) {
+    await db
+      .insert(resumeVolunteerItem)
+      .values({ resumeId, volunteerId: id, sortOrder: input.sortOrder });
+  }
   return id;
 }
 
@@ -1087,17 +1360,23 @@ export async function deleteVolunteerById(volunteerId: string): Promise<void> {
 // ─── Language CRUD ─────────────────────────────────────────
 
 export async function addLanguage(
-  resumeId: string,
+  userId: string,
+  resumeId: string | undefined,
   input: { name: string; proficiency?: string; sortOrder: number },
 ): Promise<string> {
   const id = crypto.randomUUID();
   await db.insert(resumeLanguage).values({
     id,
-    resumeId,
+    userId,
     name: input.name,
     proficiency: input.proficiency ?? "",
     sortOrder: input.sortOrder,
   });
+  if (resumeId) {
+    await db
+      .insert(resumeLanguageItem)
+      .values({ resumeId, languageId: id, sortOrder: input.sortOrder });
+  }
   return id;
 }
 
@@ -1122,18 +1401,24 @@ export async function deleteLanguageById(languageId: string): Promise<void> {
 // ─── Contact CRUD ──────────────────────────────────────────
 
 export async function addContact(
-  resumeId: string,
+  userId: string,
+  resumeId: string | undefined,
   input: { type: string; value: string; label?: string; sortOrder: number },
 ): Promise<string> {
   const id = crypto.randomUUID();
   await db.insert(resumeContact).values({
     id,
-    resumeId,
+    userId,
     type: input.type,
     value: input.value,
     label: input.label ?? "",
     sortOrder: input.sortOrder,
   });
+  if (resumeId) {
+    await db
+      .insert(resumeContactItem)
+      .values({ resumeId, contactId: id, sortOrder: input.sortOrder });
+  }
   return id;
 }
 
@@ -1164,8 +1449,7 @@ export async function updateDuplicateContactsForUser(
       label: resumeContact.label,
     })
     .from(resumeContact)
-    .innerJoin(resume, eq(resumeContact.resumeId, resume.id))
-    .where(and(eq(resumeContact.id, contactId), eq(resume.userId, userId)))
+    .where(and(eq(resumeContact.id, contactId), eq(resumeContact.userId, userId)))
     .limit(1);
 
   if (!row[0]) throw new Error("Contact not found");
@@ -1174,10 +1458,9 @@ export async function updateDuplicateContactsForUser(
   const duplicateRows = await db
     .select({ id: resumeContact.id })
     .from(resumeContact)
-    .innerJoin(resume, eq(resumeContact.resumeId, resume.id))
     .where(
       and(
-        eq(resume.userId, userId),
+        eq(resumeContact.userId, userId),
         eq(resumeContact.type, target.type),
         eq(resumeContact.value, target.value),
         eq(resumeContact.label, target.label),
@@ -1205,7 +1488,8 @@ export async function deleteContactById(contactId: string): Promise<void> {
 // ─── Talk CRUD ─────────────────────────────────────────────
 
 export async function addTalk(
-  resumeId: string,
+  userId: string,
+  resumeId: string | undefined,
   input: {
     title: string;
     event?: string;
@@ -1218,7 +1502,7 @@ export async function addTalk(
   const id = crypto.randomUUID();
   await db.insert(resumeTalk).values({
     id,
-    resumeId,
+    userId,
     title: input.title,
     event: input.event ?? "",
     date: input.date ?? "",
@@ -1226,6 +1510,9 @@ export async function addTalk(
     links: JSON.stringify(input.links ?? []),
     sortOrder: input.sortOrder,
   });
+  if (resumeId) {
+    await db.insert(resumeTalkItem).values({ resumeId, talkId: id, sortOrder: input.sortOrder });
+  }
   return id;
 }
 
@@ -1259,10 +1546,15 @@ export async function deleteTalk(talkId: string): Promise<void> {
 
 export async function swapTalkSortOrder(userId: string, idA: string, idB: string): Promise<void> {
   const rows = await db
-    .select({ id: resumeTalk.id, sortOrder: resumeTalk.sortOrder })
-    .from(resumeTalk)
-    .innerJoin(resume, eq(resumeTalk.resumeId, resume.id))
-    .where(and(eq(resume.userId, userId), or(eq(resumeTalk.id, idA), eq(resumeTalk.id, idB))))
+    .select({ id: resumeTalkItem.talkId, sortOrder: resumeTalkItem.sortOrder })
+    .from(resumeTalkItem)
+    .innerJoin(resume, eq(resumeTalkItem.resumeId, resume.id))
+    .where(
+      and(
+        eq(resume.userId, userId),
+        or(eq(resumeTalkItem.talkId, idA), eq(resumeTalkItem.talkId, idB)),
+      ),
+    )
     .limit(2);
 
   if (rows.length !== 2) throw new Error("One or both talks not found");
@@ -1273,14 +1565,14 @@ export async function swapTalkSortOrder(userId: string, idA: string, idB: string
   ];
 
   await db
-    .update(resumeTalk)
+    .update(resumeTalkItem)
     .set({ sortOrder: second.sortOrder })
-    .where(eq(resumeTalk.id, first.id));
+    .where(eq(resumeTalkItem.talkId, first.id));
 
   await db
-    .update(resumeTalk)
+    .update(resumeTalkItem)
     .set({ sortOrder: first.sortOrder })
-    .where(eq(resumeTalk.id, second.id));
+    .where(eq(resumeTalkItem.talkId, second.id));
 }
 
 // ─── Full update from ResumeDocumentV1 (replace-all) ───────
@@ -1301,32 +1593,43 @@ export async function replaceResumeContent(
 
   // Delete all child rows (cascade takes care of nested children)
   await db.delete(resumeSection).where(eq(resumeSection.resumeId, resumeId));
-  await db.delete(resumeContact).where(eq(resumeContact.resumeId, resumeId));
-  await db.delete(resumeLink).where(eq(resumeLink.resumeId, resumeId));
-  await db.delete(resumeSummary).where(eq(resumeSummary.resumeId, resumeId));
-  await db.delete(resumeExperience).where(eq(resumeExperience.resumeId, resumeId));
-  await db.delete(resumeEducation).where(eq(resumeEducation.resumeId, resumeId));
-  await db.delete(resumeProject).where(eq(resumeProject.resumeId, resumeId));
-  await db.delete(resumeSkillGroup).where(eq(resumeSkillGroup.resumeId, resumeId));
-  await db.delete(resumeTalk).where(eq(resumeTalk.resumeId, resumeId));
+  await db.delete(resumeContactItem).where(eq(resumeContactItem.resumeId, resumeId));
+  await db.delete(resumeLinkItem).where(eq(resumeLinkItem.resumeId, resumeId));
+  await db.delete(resumeSummaryItem).where(eq(resumeSummaryItem.resumeId, resumeId));
+  await db.delete(resumeExperienceItem).where(eq(resumeExperienceItem.resumeId, resumeId));
+  await db.delete(resumeEducationItem).where(eq(resumeEducationItem.resumeId, resumeId));
+  await db.delete(resumeProjectItem).where(eq(resumeProjectItem.resumeId, resumeId));
+  await db.delete(resumeSkillGroupItem).where(eq(resumeSkillGroupItem.resumeId, resumeId));
+  await db.delete(resumeTalkItem).where(eq(resumeTalkItem.resumeId, resumeId));
 
   // Re-insert from doc
-  const data = documentToInsertData(resumeId, doc);
+  const data = documentToInsertData(resumeId, userId, doc);
 
   if (data.sections.length > 0) await db.insert(resumeSection).values(data.sections);
   if (data.contacts.length > 0) await db.insert(resumeContact).values(data.contacts);
+  if (data.contactItems.length > 0) await db.insert(resumeContactItem).values(data.contactItems);
   if (data.links.length > 0) await db.insert(resumeLink).values(data.links);
+  if (data.linkItems.length > 0) await db.insert(resumeLinkItem).values(data.linkItems);
   if (data.summaries.length > 0) await db.insert(resumeSummary).values(data.summaries);
+  if (data.summaryItems.length > 0) await db.insert(resumeSummaryItem).values(data.summaryItems);
   if (data.experiences.length > 0) await db.insert(resumeExperience).values(data.experiences);
+  if (data.experienceItems.length > 0)
+    await db.insert(resumeExperienceItem).values(data.experienceItems);
   if (data.experienceBullets.length > 0)
     await db.insert(resumeExperienceBullet).values(data.experienceBullets);
   if (data.education.length > 0) await db.insert(resumeEducation).values(data.education);
+  if (data.educationItems.length > 0)
+    await db.insert(resumeEducationItem).values(data.educationItems);
   if (data.educationBullets.length > 0)
     await db.insert(resumeEducationBullet).values(data.educationBullets);
   if (data.projects.length > 0) await db.insert(resumeProject).values(data.projects);
+  if (data.projectItems.length > 0) await db.insert(resumeProjectItem).values(data.projectItems);
   if (data.skillGroups.length > 0) await db.insert(resumeSkillGroup).values(data.skillGroups);
+  if (data.skillGroupItems.length > 0)
+    await db.insert(resumeSkillGroupItem).values(data.skillGroupItems);
   if (data.skills.length > 0) await db.insert(resumeSkill).values(data.skills);
   if (data.talks.length > 0) await db.insert(resumeTalk).values(data.talks);
+  if (data.talkItems.length > 0) await db.insert(resumeTalkItem).values(data.talkItems);
 }
 
 // ─── Search existing items across all user's resumes ───────
@@ -1336,22 +1639,10 @@ export async function searchUserExperienceBullets(
   userId: string,
   query: string,
 ): Promise<{ id: string; text: string; company: string; role: string }[]> {
-  const userResumes = await db
-    .select({ id: resume.id })
-    .from(resume)
-    .where(eq(resume.userId, userId));
-
-  if (userResumes.length === 0) return [];
-  const resumeIds = userResumes.map((r) => r.id);
-
   const experiences = await db
     .select()
     .from(resumeExperience)
-    .where(
-      resumeIds.length === 1
-        ? eq(resumeExperience.resumeId, resumeIds[0]!)
-        : eq(resumeExperience.resumeId, resumeIds[0]!), // Simplified for single-resume case
-    );
+    .where(eq(resumeExperience.userId, userId));
 
   const bullets = [];
   for (const exp of experiences) {
@@ -1385,7 +1676,7 @@ export async function searchUserExperiences(
     role: string;
     startDate: string;
     endDate: string;
-    resumeId: string;
+    resumeId: string | null;
   }[]
 > {
   const rows = await db
@@ -1395,12 +1686,11 @@ export async function searchUserExperiences(
       role: resumeExperience.role,
       startDate: resumeExperience.startDate,
       endDate: resumeExperience.endDate,
-      resumeId: resumeExperience.resumeId,
-      userId: resume.userId,
+      resumeId: resumeExperienceItem.resumeId,
     })
     .from(resumeExperience)
-    .innerJoin(resume, eq(resumeExperience.resumeId, resume.id))
-    .where(eq(resume.userId, userId));
+    .leftJoin(resumeExperienceItem, eq(resumeExperienceItem.experienceId, resumeExperience.id))
+    .where(eq(resumeExperience.userId, userId));
 
   if (!query) return rows;
   const q = query.toLowerCase();
@@ -1433,8 +1723,7 @@ export async function searchUserProjects(
         tech: resumeProject.tech,
       })
       .from(resumeProject)
-      .innerJoin(resume, eq(resumeProject.resumeId, resume.id))
-      .where(eq(resume.userId, userId)),
+      .where(eq(resumeProject.userId, userId)),
     db
       .select({
         id: savedProject.id,
@@ -1486,8 +1775,7 @@ export async function searchUserEducation(
       endDate: resumeEducation.endDate,
     })
     .from(resumeEducation)
-    .innerJoin(resume, eq(resumeEducation.resumeId, resume.id))
-    .where(eq(resume.userId, userId));
+    .where(eq(resumeEducation.userId, userId));
 
   if (!query) return rows;
   const q = query.toLowerCase();
@@ -1508,8 +1796,7 @@ export async function searchUserSkills(
     })
     .from(resumeSkill)
     .innerJoin(resumeSkillGroup, eq(resumeSkill.groupId, resumeSkillGroup.id))
-    .innerJoin(resume, eq(resumeSkillGroup.resumeId, resume.id))
-    .where(eq(resume.userId, userId));
+    .where(eq(resumeSkillGroup.userId, userId));
 
   if (!query) return rows;
   const q = query.toLowerCase();
@@ -1528,8 +1815,7 @@ export async function searchUserTalks(
       date: resumeTalk.date,
     })
     .from(resumeTalk)
-    .innerJoin(resume, eq(resumeTalk.resumeId, resume.id))
-    .where(eq(resume.userId, userId));
+    .where(eq(resumeTalk.userId, userId));
 
   if (!query) return rows;
   const q = query.toLowerCase();

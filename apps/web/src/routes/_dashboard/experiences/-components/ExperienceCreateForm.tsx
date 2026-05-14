@@ -1,4 +1,3 @@
-import { ResumePickerField } from "@/components/custom-ui/ResumePickerField";
 import { Button } from "@/components/ui/button";
 import { DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -73,20 +72,6 @@ export function ExperienceCreateForm({ onSuccess }: ExperienceCreateFormProps) {
       }}
       className="flex flex-col gap-3"
     >
-      <form.AppField
-        name="resumeId"
-        validators={{
-          onChange: ({ value }) => (!value ? "Resume is required" : undefined),
-        }}
-      >
-        {(field) => (
-          <ResumePickerField
-            value={field.state.value}
-            onChange={field.handleChange}
-            error={field.state.meta.errors?.[0]?.toString()}
-          />
-        )}
-      </form.AppField>
       <div className="grid gap-3 sm:grid-cols-2">
         <form.AppField
           name="role"
@@ -189,9 +174,7 @@ export function ExperienceCreateForm({ onSuccess }: ExperienceCreateFormProps) {
 
       <form.Subscribe selector={(s) => s.values}>
         {(values) => {
-          const hasRequired = Boolean(
-            values.resumeId && values.role.trim() && values.company.trim(),
-          );
+          const hasRequired = Boolean(values.role.trim() && values.company.trim());
           return (
             <DialogFooter>
               <Button

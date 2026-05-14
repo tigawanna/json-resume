@@ -1,7 +1,7 @@
 import "@tanstack/react-start/server-only";
 
 import { db } from "@/lib/drizzle/client";
-import { resume, resumeContact } from "@/lib/drizzle/scheam";
+import { resume, resumeContact, resumeContactItem } from "@/lib/drizzle/scheam";
 import { and, asc, desc, eq, inArray, like, or } from "drizzle-orm";
 import { DEFAULT_PAGE_SIZE } from "../../pagination.types";
 import type { PaginatedResult } from "../../pagination.types";
@@ -72,7 +72,7 @@ export async function listContactsForUserPaginated(
   opts?: { keyword?: string; cursor?: string; direction?: "after" | "before" },
 ): Promise<PaginatedResult<ContactListItemDTO>> {
   const direction = opts?.direction ?? "after";
-  const conditions = [eq(resume.userId, userId)];
+  const conditions = [eq(resumeContact.userId, userId)];
 
   if (opts?.keyword) {
     const pattern = `%${opts.keyword}%`;
@@ -88,7 +88,7 @@ export async function listContactsForUserPaginated(
   const rows = await db
     .select({
       id: resumeContact.id,
-      resumeId: resumeContact.resumeId,
+      resumeId: resumeContactItem.resumeId,
       resumeName: resume.name,
       type: resumeContact.type,
       value: resumeContact.value,
@@ -98,11 +98,18 @@ export async function listContactsForUserPaginated(
       updatedAt: resumeContact.updatedAt,
     })
     .from(resumeContact)
-    .innerJoin(resume, eq(resumeContact.resumeId, resume.id))
+    .leftJoin(resumeContactItem, eq(resumeContactItem.contactId, resumeContact.id))
+    .leftJoin(resume, eq(resumeContactItem.resumeId, resume.id))
     .where(and(...conditions))
     .orderBy(direction === "before" ? desc(resumeContact.id) : asc(resumeContact.id));
 
-  const groupedRows = groupContactRows(rows);
+  const groupedRows = groupContactRows(
+    rows.map((r) => ({
+      ...r,
+      resumeId: r.resumeId ?? "",
+      resumeName: r.resumeName ?? "Reusable item",
+    })),
+  );
   const cursor = opts?.cursor;
   const filteredRows = cursor
     ? groupedRows.filter((item) => (direction === "before" ? item.id < cursor : item.id > cursor))
@@ -133,7 +140,7 @@ export async function listContactsForUser(
   userId: string,
   keyword?: string,
 ): Promise<ContactListItemDTO[]> {
-  const conditions = [eq(resume.userId, userId)];
+  const conditions = [eq(resumeContact.userId, userId)];
   if (keyword) {
     const pattern = `%${keyword}%`;
     conditions.push(
@@ -148,7 +155,7 @@ export async function listContactsForUser(
   const rows = await db
     .select({
       id: resumeContact.id,
-      resumeId: resumeContact.resumeId,
+      resumeId: resumeContactItem.resumeId,
       resumeName: resume.name,
       type: resumeContact.type,
       value: resumeContact.value,
@@ -158,19 +165,25 @@ export async function listContactsForUser(
       updatedAt: resumeContact.updatedAt,
     })
     .from(resumeContact)
-    .innerJoin(resume, eq(resumeContact.resumeId, resume.id))
+    .leftJoin(resumeContactItem, eq(resumeContactItem.contactId, resumeContact.id))
+    .leftJoin(resume, eq(resumeContactItem.resumeId, resume.id))
     .where(and(...conditions))
     .orderBy(desc(resumeContact.updatedAt));
 
-  return groupContactRows(rows);
+  return groupContactRows(
+    rows.map((r) => ({
+      ...r,
+      resumeId: r.resumeId ?? "",
+      resumeName: r.resumeName ?? "Reusable item",
+    })),
+  );
 }
 
 export async function deleteContactForUser(contactId: string, userId: string): Promise<void> {
   const row = await db
     .select({ type: resumeContact.type, value: resumeContact.value, label: resumeContact.label })
     .from(resumeContact)
-    .innerJoin(resume, eq(resumeContact.resumeId, resume.id))
-    .where(and(eq(resumeContact.id, contactId), eq(resume.userId, userId)))
+    .where(and(eq(resumeContact.id, contactId), eq(resumeContact.userId, userId)))
     .limit(1);
   if (row.length === 0) throw new Error("Contact not found");
 
@@ -178,10 +191,9 @@ export async function deleteContactForUser(contactId: string, userId: string): P
   const duplicateRows = await db
     .select({ id: resumeContact.id })
     .from(resumeContact)
-    .innerJoin(resume, eq(resumeContact.resumeId, resume.id))
     .where(
       and(
-        eq(resume.userId, userId),
+        eq(resumeContact.userId, userId),
         eq(resumeContact.type, target.type),
         eq(resumeContact.value, target.value),
         eq(resumeContact.label, target.label),
