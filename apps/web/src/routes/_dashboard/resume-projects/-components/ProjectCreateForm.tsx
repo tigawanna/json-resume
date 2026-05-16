@@ -1,5 +1,11 @@
 import { Button } from "@/components/ui/button";
-import { DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -150,5 +156,22 @@ export function ProjectCreateForm({ onSuccess }: ProjectCreateFormProps) {
         }}
       </form.Subscribe>
     </form>
+  );
+}
+
+interface ProjectCreateFormDialogProps {
+  open: boolean;
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+}
+export function ProjectCreateFormDialog({ open, setOpen }: ProjectCreateFormDialogProps) {
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>New Project</DialogTitle>
+        </DialogHeader>
+        <ProjectCreateForm onSuccess={() => setOpen(false)} />
+      </DialogContent>
+    </Dialog>
   );
 }

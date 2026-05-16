@@ -1,5 +1,11 @@
 import { Button } from "@/components/ui/button";
-import { DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -141,5 +147,22 @@ export function TalkCreateForm({ onSuccess }: TalkCreateFormProps) {
         }}
       </form.Subscribe>
     </form>
+  );
+}
+
+interface TalkCreateFormDialogProps {
+  open: boolean;
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+}
+export function TalkCreateFormDialog({ open, setOpen }: TalkCreateFormDialogProps) {
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>New Talk</DialogTitle>
+        </DialogHeader>
+        <TalkCreateForm onSuccess={() => setOpen(false)} />
+      </DialogContent>
+    </Dialog>
   );
 }

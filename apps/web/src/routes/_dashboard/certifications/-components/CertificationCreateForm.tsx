@@ -1,5 +1,11 @@
 import { Button } from "@/components/ui/button";
-import { DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
@@ -141,5 +147,25 @@ export function CertificationCreateForm({ onSuccess }: CertificationCreateFormPr
         }}
       </form.Subscribe>
     </form>
+  );
+}
+
+interface CertificationCreateFormDialogProps {
+  open: boolean;
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+}
+export function CertificationCreateFormDialog({
+  open,
+  setOpen,
+}: CertificationCreateFormDialogProps) {
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>New Certification</DialogTitle>
+        </DialogHeader>
+        <CertificationCreateForm onSuccess={() => setOpen(false)} />
+      </DialogContent>
+    </Dialog>
   );
 }

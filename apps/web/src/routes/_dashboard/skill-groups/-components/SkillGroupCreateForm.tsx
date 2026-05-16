@@ -1,5 +1,11 @@
 import { Button } from "@/components/ui/button";
-import { DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
@@ -147,5 +153,22 @@ export function SkillGroupCreateForm({ onSuccess }: SkillGroupCreateFormProps) {
         }}
       </form.Subscribe>
     </form>
+  );
+}
+
+interface SkillGroupCreateFormDialogProps {
+  open: boolean;
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+}
+export function SkillGroupCreateFormDialog({ open, setOpen }: SkillGroupCreateFormDialogProps) {
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>New Skill Group</DialogTitle>
+        </DialogHeader>
+        <SkillGroupCreateForm onSuccess={() => setOpen(false)} />
+      </DialogContent>
+    </Dialog>
   );
 }

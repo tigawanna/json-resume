@@ -1,5 +1,11 @@
 import { Button } from "@/components/ui/button";
-import { DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
@@ -95,5 +101,22 @@ export function SummaryCreateForm({ onSuccess }: SummaryCreateFormProps) {
         }}
       </form.Subscribe>
     </form>
+  );
+}
+
+interface SummaryCreateFormDialogProps {
+  open: boolean;
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+}
+export function SummaryCreateFormDialog({ open, setOpen }: SummaryCreateFormDialogProps) {
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>New Summary</DialogTitle>
+        </DialogHeader>
+        <SummaryCreateForm onSuccess={() => setOpen(false)} />
+      </DialogContent>
+    </Dialog>
   );
 }

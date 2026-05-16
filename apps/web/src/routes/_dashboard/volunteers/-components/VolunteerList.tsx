@@ -1,21 +1,41 @@
 import Nprogress from "@/components/navigation/nprogress/Nprogress";
+import { Button } from "@/components/ui/button";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
 import { listVolunteers } from "@/data-access-layer/resume/volunteers/volunteer.functions";
 import { deleteVolunteerMutationOptions } from "@/data-access-layer/resume/volunteers/volunteer.mutation-options";
 import { RouterPendingComponent } from "@/lib/tanstack/router/RouterPendingComponent";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Heart } from "lucide-react";
+import { Heart, Loader2, Plus } from "lucide-react";
+import { useState, useTransition } from "react";
 import { Route } from "..";
+import { VolunteerCreateFormDialog } from "./VolunteerCreateForm";
 import { VolunteerListCard } from "./VolunteerListCard";
 
 export function VolunteerList() {
   const { sq, cursor, dir } = Route.useSearch();
+  const [createOpen, setCreateOpen] = useState(false);
+  const [isCreateOpenPending, startCreateOpenTransition] = useTransition();
+  const navigate = Route.useNavigate();
   const { data, isLoading, isRefetching } = useQuery({
     queryKey: [queryKeyPrefixes.volunteers, "page", cursor, dir ?? "after", sq],
     queryFn: () => listVolunteers({ data: { cursor, direction: dir, keyword: sq } }),
     placeholderData: (prevData) => prevData,
   });
   const deleteMutation = useMutation(deleteVolunteerMutationOptions);
+
+  function openCreateDialog() {
+    startCreateOpenTransition(() => {
+      setCreateOpen(true);
+    });
+  }
 
   if (isLoading) {
     return (
@@ -28,12 +48,46 @@ export function VolunteerList() {
   if (!data || data.items.length === 0) {
     return (
       <div className="flex w-full flex-col gap-6" data-test="volunteer-list-page">
-        <div className="flex flex-col items-center justify-center gap-4 py-20 min-h-[min(380px,50dvh)]">
-          <Heart className="text-muted-foreground size-12" />
-          <p className="text-muted-foreground text-sm">
-            No volunteer entries found. Add volunteer experience to your resumes first.
-          </p>
-        </div>
+        <Empty>
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <Heart className="text-muted-foreground size-12" />
+            </EmptyMedia>
+            <EmptyTitle>No Volunteer Entries Yet</EmptyTitle>
+            <EmptyDescription>
+              You haven&apos;t added any volunteer experiences yet. Get started by adding your first
+              volunteer entry.
+            </EmptyDescription>
+          </EmptyHeader>
+          <EmptyContent className="flex-row justify-center gap-2">
+            <Button
+              size="sm"
+              onClick={openCreateDialog}
+              disabled={isCreateOpenPending}
+              data-test="add-volunteer-btn"
+            >
+              {isCreateOpenPending ? (
+                <Loader2 className="mr-1 size-4 animate-spin" />
+              ) : (
+                <Plus className="mr-1 size-4" />
+              )}
+              {isCreateOpenPending ? "Opening..." : "Create Volunteer Entry"}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => {
+                void navigate({
+                  to: ".",
+                  search: (prev) => ({ ...prev, sq: "" }),
+                  replace: true,
+                });
+              }}
+            >
+              Clear filters
+            </Button>
+          </EmptyContent>
+        </Empty>
+        <VolunteerCreateFormDialog open={createOpen} setOpen={setCreateOpen} />
       </div>
     );
   }
