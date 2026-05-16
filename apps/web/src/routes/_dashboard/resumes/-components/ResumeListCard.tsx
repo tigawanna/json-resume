@@ -6,11 +6,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { resumeDetailToDocument } from "@/data-access-layer/resume/resume-converters";
 import { deleteResumeMutationOptions } from "@/data-access-layer/resume/resume-mutatin-options";
+import { resumeDetailQueryOptions } from "@/data-access-layer/resume/resume-query-options";
 import type { ResumeListItemDTO } from "@/data-access-layer/resume/resume.types";
-import { useMutation } from "@tanstack/react-query";
+import { unwrapUnknownError } from "@/utils/errors";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { FileText, GitFork, MoreVertical, Trash2 } from "lucide-react";
+import { ClipboardCopy, FileText, GitFork, MoreVertical, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 interface ResumeListCardProps {
   resume: ResumeListItemDTO;
@@ -18,7 +22,24 @@ interface ResumeListCardProps {
 }
 
 export function ResumeListCard({ resume, onClone }: ResumeListCardProps) {
+  const queryClient = useQueryClient();
   const deleteMutation = useMutation(deleteResumeMutationOptions);
+  const copyJsonMutation = useMutation({
+    mutationFn: async (resumeId: string) => {
+      const detail = await queryClient.ensureQueryData(resumeDetailQueryOptions(resumeId));
+      if (!detail) throw new Error("Resume not found");
+      const doc = resumeDetailToDocument(detail);
+      await navigator.clipboard.writeText(JSON.stringify(doc, null, 2));
+    },
+    onSuccess() {
+      toast.success("Resume JSON copied");
+    },
+    onError(err: unknown) {
+      toast.error("Failed to copy resume JSON", {
+        description: unwrapUnknownError(err).message,
+      });
+    },
+  });
 
   const handleDelete = (resumeId: string) => {
     deleteMutation.mutate(resumeId);
@@ -63,6 +84,15 @@ export function ResumeListCard({ resume, onClone }: ResumeListCardProps) {
                 >
                   <GitFork className="size-4" />
                   Clone Resume
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="gap-2"
+                  disabled={copyJsonMutation.isPending}
+                  onSelect={() => copyJsonMutation.mutate(resume.id)}
+                  data-test="resume-copy-json-btn"
+                >
+                  <ClipboardCopy className="size-4" />
+                  Copy as JSON
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   variant="destructive"

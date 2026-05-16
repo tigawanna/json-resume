@@ -1,4 +1,8 @@
-import { createDefaultResume, safeParseResumeJson } from "@/features/resume/resume-schema";
+import {
+  createDefaultResume,
+  safeParseResumeJson,
+  type ResumeDocumentV1,
+} from "@/features/resume/resume-schema";
 import { isErrorThrownByRedirect } from "@/lib/tanstack/router/utils";
 import { unwrapUnknownError } from "@/utils/errors";
 import { mutationOptions } from "@tanstack/react-query";
@@ -7,6 +11,13 @@ import { toast } from "sonner";
 import { queryKeyPrefixes } from "../query-keys";
 import { resumeDetailToDocument } from "./resume-converters";
 import { createResume, deleteResume, getResume } from "./resume.functions";
+
+function importedResumeNameFromDoc(doc: ResumeDocumentV1): string {
+  const fullName = doc.header.fullName.trim();
+  const headline = doc.header.headline.trim();
+  if (fullName && headline) return `${fullName} - ${headline}`;
+  return headline || fullName || "Imported Resume";
+}
 
 export const createResumeMuationOptions = mutationOptions({
   mutationFn: async () => {
@@ -102,9 +113,10 @@ export const createResumeFromJsonMutationOptions = mutationOptions({
   mutationFn: async (jsonText: string) => {
     const result = safeParseResumeJson(jsonText);
     if (!result.ok) throw new Error(result.error);
+    const importedName = importedResumeNameFromDoc(result.data);
     return createResume({
       data: {
-        name: "Imported Resume",
+        name: importedName,
         description: "",
         jobDescription: "",
         doc: result.data,
@@ -116,7 +128,7 @@ export const createResumeFromJsonMutationOptions = mutationOptions({
     // const now = new Date().toISOString();
     // resumesCollection.utils.writeInsert({
     //   id: result.id,
-    //   name: "Imported Resume",
+    //   name: result.name,
     //   fullName: "",
     //   headline: "",
     //   description: "",

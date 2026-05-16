@@ -107,11 +107,11 @@ interface ResumeDocumentV1 {
 
 // ─── CLI args ────────────────────────────────────────────────────────────────
 
-function parseArgs(): { userId: string; filePath: string; resumeName: string } {
+function parseArgs(): { userId: string; filePath: string; resumeName?: string } {
   const args = process.argv.slice(2);
   let userId = "";
   let filePath = "";
-  let resumeName = "Imported Resume";
+  let resumeName: string | undefined;
 
   for (let i = 0; i < args.length; i++) {
     if (args[i] === "--user" && args[i + 1]) userId = args[++i]!;
@@ -134,7 +134,7 @@ function parseArgs(): { userId: string; filePath: string; resumeName: string } {
 // ─── Main ────────────────────────────────────────────────────────────────────
 
 async function main() {
-  const { userId, filePath, resumeName } = parseArgs();
+  const { userId, filePath, resumeName: resumeNameOverride } = parseArgs();
 
   const env = { ...loadEnv(process.cwd()), ...process.env };
   const DATABASE_URL = env["DATABASE_URL"];
@@ -152,6 +152,13 @@ async function main() {
 
   const raw = readFileSync(filePath, "utf-8");
   const doc: ResumeDocumentV1 = JSON.parse(raw) as ResumeDocumentV1;
+  const importedFullName = doc.header.fullName.trim();
+  const importedHeadline = doc.header.headline.trim();
+  const importedResumeName =
+    importedFullName && importedHeadline
+      ? `${importedFullName} - ${importedHeadline}`
+      : importedHeadline || importedFullName || "Imported Resume";
+  const resumeName = resumeNameOverride ?? importedResumeName;
 
   if (doc.version !== 1) {
     console.error("Error: Only version 1 documents are supported");
