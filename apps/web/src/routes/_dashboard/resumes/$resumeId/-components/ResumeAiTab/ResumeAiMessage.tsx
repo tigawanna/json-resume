@@ -4,7 +4,7 @@ import type { UIMessage } from "@tanstack/ai-react";
 import type { ReactNode } from "react";
 import { MessageSquareText, PencilLine, RefreshCcw, Sparkles } from "lucide-react";
 import { ChatText } from "./ResumeAiMarkdown";
-import { ToolCallPanel, ToolResultPanel } from "./ResumeAiToolPanels";
+import { ResumeAiThinkingBlock } from "./ResumeAiThinkingBlock";
 import type { ResumeAiMessageAction, ResumeAiRole } from "./resume-ai-types";
 
 interface ResumeAiMessageProps {
@@ -47,7 +47,7 @@ export function ResumeAiMessage({
       <ChatAvatar role={role} />
       <div
         className={cn(
-          "min-w-0 max-w-[min(44rem,calc(100%-3rem))] rounded-2xl px-4 py-3 shadow-sm ring-1",
+          "min-w-0 max-w-[min(44rem,calc(100%-3rem))] overflow-hidden rounded-2xl px-4 py-3 shadow-sm ring-1",
           role === "user"
             ? "rounded-tr-md bg-primary text-primary-foreground ring-[color-mix(in_oklch,var(--color-primary)_34%,transparent)]"
             : "rounded-tl-md bg-base-100 text-foreground ring-[color-mix(in_oklch,var(--color-base-content)_9%,transparent)]",
@@ -83,30 +83,44 @@ export function ResumeAiMessage({
             </div>
           ) : null}
         </div>
-        <div className="flex flex-col gap-2">
-          {message.parts.map((part, index) => {
-            if (part.type === "text")
-              return <ChatText key={index} content={part.content} role={role} />;
-            if (part.type === "tool-call") return <ToolCallPanel key={index} part={part} />;
-            if (part.type === "tool-result") return <ToolResultPanel key={index} part={part} />;
-            if (part.type !== "thinking") return null;
-
-            return (
-              <details
-                key={index}
-                className="group rounded-lg bg-[color-mix(in_oklch,var(--color-primary)_8%,transparent)] px-3 py-2 text-xs text-muted-foreground"
-              >
-                <summary className="cursor-pointer list-none font-medium text-foreground/80 marker:hidden">
-                  Thinking
-                </summary>
-                <p className="mt-2 whitespace-pre-wrap leading-5">{part.content}</p>
-              </details>
-            );
+        <div className="flex min-w-0 flex-col gap-2">
+          {getMessageBlocks(message).map((block, index) => {
+            if (block.type === "text") {
+              return <ChatText key={index} content={block.content} role={role} />;
+            }
+            return <ResumeAiThinkingBlock key={index} parts={block.parts} />;
           })}
         </div>
       </div>
     </div>
   );
+}
+
+type MessagePart = UIMessage["parts"][number];
+
+type MessageBlock = { type: "text"; content: string } | { type: "thinking"; parts: MessagePart[] };
+
+function getMessageBlocks(message: UIMessage): MessageBlock[] {
+  const blocks: MessageBlock[] = [];
+  let thinkingParts: MessagePart[] = [];
+
+  for (const part of message.parts) {
+    if (part.type === "text") {
+      if (thinkingParts.length > 0) {
+        blocks.push({ type: "thinking", parts: thinkingParts });
+        thinkingParts = [];
+      }
+      blocks.push({ type: "text", content: part.content });
+      continue;
+    }
+
+    if (part.type === "thinking" || part.type === "tool-call" || part.type === "tool-result") {
+      thinkingParts.push(part);
+    }
+  }
+
+  if (thinkingParts.length > 0) blocks.push({ type: "thinking", parts: thinkingParts });
+  return blocks;
 }
 
 interface PromptActionButtonProps {

@@ -76,7 +76,7 @@ export function ResumePreviewTab({ resumeId, selectedTemplate, doc }: ResumePrev
         </Button>
       </div>
       <div
-        className="resume-preview-paper rounded-lg border bg-white p-8 shadow-sm"
+        className="resume-preview-paper rounded-lg bg-base-200 p-8 text-base-content shadow-sm ring-1 ring-base-content/10 [&_[data-slot=card]]:bg-base-100 [&_[data-slot=card]]:shadow-sm [&_[data-slot=card]]:ring-1 [&_[data-slot=card]]:ring-base-content/10 [&_[data-slot=separator]]:bg-base-content/10"
         data-test="resume-preview-paper"
       >
         <JSONUIProvider registry={resumeRegistry}>

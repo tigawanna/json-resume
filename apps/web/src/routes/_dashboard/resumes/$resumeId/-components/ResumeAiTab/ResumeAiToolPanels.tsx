@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "@tanstack/react-router";
-import { Box, ChevronDown, ExternalLink } from "lucide-react";
+import { Box, CheckCircle2, ChevronDown, ExternalLink, Wrench } from "lucide-react";
 import { formatPayload, getCreatedResumeOutput, getToolLabel } from "./resume-ai-message-utils";
 import type { CreatedResumeOutput, ToolCallViewPart, ToolResultViewPart } from "./resume-ai-types";
 
@@ -41,23 +41,23 @@ export function ToolCallPanel({ part }: { part: ToolCallViewPart }) {
 
   return (
     <details
-      className="group rounded-lg bg-[color-mix(in_oklch,var(--color-base-content)_6%,transparent)] px-3 py-2 text-xs text-muted-foreground"
+      className="group min-w-0 max-w-full overflow-hidden rounded-md py-1 text-xs text-muted-foreground/80"
       data-test="resume-ai-tool-call"
     >
-      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 font-medium text-foreground/80 marker:hidden">
-        <span className="flex min-w-0 items-center gap-2">
-          <span className="size-2 shrink-0 rounded-full bg-primary" />
-          <span className="truncate">{getToolLabel(part.name)}</span>
-          <span className="rounded-full bg-base-100 px-2 py-0.5 text-[0.68rem] text-muted-foreground">
+      <summary className="flex cursor-pointer list-none items-center gap-3 py-1 font-medium marker:hidden">
+        <span className="flex min-w-0 flex-1 items-center gap-2">
+          <Wrench className="size-3.5 shrink-0 text-muted-foreground/70" />
+          <span className="truncate text-foreground/80">{getToolLabel(part.name)}</span>
+          <span className="shrink-0 rounded-full bg-[color-mix(in_oklch,var(--color-base-content)_8%,transparent)] px-2 py-0.5 text-[0.68rem] text-muted-foreground">
             {part.state}
           </span>
         </span>
         <ChevronDown className="size-3.5 shrink-0 transition-transform group-open:rotate-180" />
       </summary>
       {createdResume ? <CreatedResumeCard output={createdResume} /> : null}
-      <div className="mt-3 grid gap-2">
-        {input ? <PayloadBlock label="Input" value={input} /> : null}
-        {output ? <PayloadBlock label="Output" value={output} /> : null}
+      <div className="mt-2 grid min-w-0 gap-2 pl-5">
+        {input ? <PayloadBlock label="Parameters" value={input} /> : null}
+        {output ? <PayloadBlock label="Response" value={output} /> : null}
       </div>
     </details>
   );
@@ -68,24 +68,24 @@ export function ToolResultPanel({ part }: { part: ToolResultViewPart }) {
 
   return (
     <details
-      className="group rounded-lg bg-[color-mix(in_oklch,var(--color-success)_10%,transparent)] px-3 py-2 text-xs text-muted-foreground"
+      className="group min-w-0 max-w-full overflow-hidden rounded-md py-1 text-xs text-muted-foreground/80"
       data-test="resume-ai-tool-result"
     >
-      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 font-medium text-foreground/80 marker:hidden">
-        <span className="flex min-w-0 items-center gap-2">
-          <span className="size-2 shrink-0 rounded-full bg-success" />
-          <span>Tool result</span>
-          <span className="rounded-full bg-base-100 px-2 py-0.5 text-[0.68rem] text-muted-foreground">
+      <summary className="flex cursor-pointer list-none items-center gap-3 py-1 font-medium marker:hidden">
+        <span className="flex min-w-0 flex-1 items-center gap-2">
+          <CheckCircle2 className="size-3.5 shrink-0 text-muted-foreground/70" />
+          <span className="truncate text-foreground/80">Tool result</span>
+          <span className="shrink-0 rounded-full bg-[color-mix(in_oklch,var(--color-base-content)_8%,transparent)] px-2 py-0.5 text-[0.68rem] text-muted-foreground">
             {part.state}
           </span>
         </span>
         <ChevronDown className="size-3.5 shrink-0 transition-transform group-open:rotate-180" />
       </summary>
-      <div className="mt-3 grid gap-2">
+      <div className="mt-2 grid min-w-0 gap-2 pl-5">
         {part.error ? (
           <p className="rounded-md bg-destructive/10 p-2 text-destructive">{part.error}</p>
         ) : null}
-        {content ? <PayloadBlock label={null} value={content} /> : null}
+        {content ? <PayloadBlock label="Response" value={content} /> : null}
       </div>
     </details>
   );
@@ -93,9 +93,13 @@ export function ToolResultPanel({ part }: { part: ToolResultViewPart }) {
 
 function PayloadBlock({ label, value }: { label: string | null; value: string }) {
   return (
-    <div>
-      {label ? <p className="mb-1 font-medium text-foreground/70">{label}</p> : null}
-      <pre className="max-h-56 overflow-auto rounded-md bg-base-100 p-2 text-[0.7rem] leading-5 text-foreground">
+    <div className="min-w-0 max-w-full">
+      {label ? (
+        <p className="mb-1 text-[0.65rem] font-semibold uppercase tracking-normal text-muted-foreground">
+          {label}
+        </p>
+      ) : null}
+      <pre className="max-h-64 max-w-full overflow-auto rounded-md bg-[color-mix(in_oklch,var(--color-base-content)_5%,transparent)] p-3 text-[0.7rem] leading-5 text-muted-foreground">
         {value}
       </pre>
     </div>
