@@ -1,14 +1,14 @@
 import { index, integer, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 import { resume } from "./resume";
 import { embeddable, timestamps } from "./shared-columns";
+import { uuidv7 } from "uuidv7";
 
 export const resumeLink = sqliteTable(
   "resume_link",
   {
     id: text("id")
       .primaryKey()
-      .$defaultFn(() => crypto.randomUUID()),
-    resumeId: text("resume_id").references(() => resume.id, { onDelete: "cascade" }),
+      .$defaultFn(() => uuidv7()),
     label: text("label").notNull(),
     url: text("url").notNull(),
     /** Optional icon hint (e.g. "github", "linkedin", "globe") */
@@ -18,10 +18,7 @@ export const resumeLink = sqliteTable(
     ...timestamps,
     userId: text("user_id"),
   },
-  (table) => [
-    index("resume_link_userId_idx").on(table.userId),
-    index("resume_link_resumeId_idx").on(table.resumeId),
-  ],
+  (table) => [index("resume_link_userId_idx").on(table.userId)],
 );
 
 export const resumeLinkItem = sqliteTable(
@@ -29,7 +26,7 @@ export const resumeLinkItem = sqliteTable(
   {
     id: text("id")
       .primaryKey()
-      .$defaultFn(() => crypto.randomUUID()),
+      .$defaultFn(() => uuidv7()),
     resumeId: text("resume_id")
       .notNull()
       .references(() => resume.id, { onDelete: "cascade" }),

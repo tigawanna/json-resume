@@ -8,17 +8,13 @@ export const resumeSkillGroup = sqliteTable(
     id: text("id")
       .primaryKey()
       .$defaultFn(() => crypto.randomUUID()),
-    resumeId: text("resume_id").references(() => resume.id, { onDelete: "cascade" }),
     name: text("name").notNull(),
     sortOrder: integer("sort_order").default(0).notNull(),
     ...embeddable,
     ...timestamps,
     userId: text("user_id"),
   },
-  (table) => [
-    index("resume_skill_group_userId_idx").on(table.userId),
-    index("resume_skill_group_resumeId_idx").on(table.resumeId),
-  ],
+  (table) => [index("resume_skill_group_userId_idx").on(table.userId)],
 );
 
 export const resumeSkillGroupItem = sqliteTable(

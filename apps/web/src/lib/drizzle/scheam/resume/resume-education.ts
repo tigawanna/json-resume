@@ -1,14 +1,14 @@
 import { index, integer, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 import { resume } from "./resume";
 import { embeddable, timestamps } from "./shared-columns";
+import { uuidv7 } from "uuidv7";
 
 export const resumeEducation = sqliteTable(
   "resume_education",
   {
     id: text("id")
       .primaryKey()
-      .$defaultFn(() => crypto.randomUUID()),
-    resumeId: text("resume_id").references(() => resume.id, { onDelete: "cascade" }),
+      .$defaultFn(() => uuidv7()),
     school: text("school").notNull(),
     degree: text("degree").default("").notNull(),
     field: text("field").default("").notNull(),
@@ -20,10 +20,7 @@ export const resumeEducation = sqliteTable(
     ...timestamps,
     userId: text("user_id"),
   },
-  (table) => [
-    index("resume_education_userId_idx").on(table.userId),
-    index("resume_education_resumeId_idx").on(table.resumeId),
-  ],
+  (table) => [index("resume_education_userId_idx").on(table.userId)],
 );
 
 export const resumeEducationItem = sqliteTable(
@@ -31,7 +28,7 @@ export const resumeEducationItem = sqliteTable(
   {
     id: text("id")
       .primaryKey()
-      .$defaultFn(() => crypto.randomUUID()),
+      .$defaultFn(() => uuidv7()),
     resumeId: text("resume_id")
       .notNull()
       .references(() => resume.id, { onDelete: "cascade" }),
@@ -53,7 +50,7 @@ export const resumeEducationBullet = sqliteTable(
   {
     id: text("id")
       .primaryKey()
-      .$defaultFn(() => crypto.randomUUID()),
+      .$defaultFn(() => uuidv7()),
     educationId: text("education_id")
       .notNull()
       .references(() => resumeEducation.id, { onDelete: "cascade" }),

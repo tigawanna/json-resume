@@ -1,14 +1,14 @@
 import { index, integer, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 import { resume } from "./resume";
 import { embeddable, timestamps } from "./shared-columns";
+import { uuidv7 } from "uuidv7";
 
 export const resumeLanguage = sqliteTable(
   "resume_language",
   {
     id: text("id")
       .primaryKey()
-      .$defaultFn(() => crypto.randomUUID()),
-    resumeId: text("resume_id").references(() => resume.id, { onDelete: "cascade" }),
+      .$defaultFn(() => uuidv7()),
     name: text("name").notNull(),
     /** e.g. "native", "fluent", "professional", "conversational", "basic" */
     proficiency: text("proficiency").default("").notNull(),
@@ -17,10 +17,7 @@ export const resumeLanguage = sqliteTable(
     ...timestamps,
     userId: text("user_id"),
   },
-  (table) => [
-    index("resume_language_userId_idx").on(table.userId),
-    index("resume_language_resumeId_idx").on(table.resumeId),
-  ],
+  (table) => [index("resume_language_userId_idx").on(table.userId)],
 );
 
 export const resumeLanguageItem = sqliteTable(
@@ -28,7 +25,7 @@ export const resumeLanguageItem = sqliteTable(
   {
     id: text("id")
       .primaryKey()
-      .$defaultFn(() => crypto.randomUUID()),
+      .$defaultFn(() => uuidv7()),
     resumeId: text("resume_id")
       .notNull()
       .references(() => resume.id, { onDelete: "cascade" }),

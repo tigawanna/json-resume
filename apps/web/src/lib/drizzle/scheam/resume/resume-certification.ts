@@ -1,14 +1,14 @@
 import { index, integer, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 import { resume } from "./resume";
 import { embeddable, timestamps } from "./shared-columns";
+import { uuidv7 } from "uuidv7";
 
 export const resumeCertification = sqliteTable(
   "resume_certification",
   {
     id: text("id")
       .primaryKey()
-      .$defaultFn(() => crypto.randomUUID()),
-    resumeId: text("resume_id").references(() => resume.id, { onDelete: "cascade" }),
+      .$defaultFn(() => uuidv7()),
     name: text("name").notNull(),
     issuer: text("issuer").default("").notNull(),
     date: text("date").default("").notNull(),
@@ -18,10 +18,7 @@ export const resumeCertification = sqliteTable(
     ...timestamps,
     userId: text("user_id"),
   },
-  (table) => [
-    index("resume_certification_userId_idx").on(table.userId),
-    index("resume_certification_resumeId_idx").on(table.resumeId),
-  ],
+  (table) => [index("resume_certification_userId_idx").on(table.userId)],
 );
 
 export const resumeCertificationItem = sqliteTable(
@@ -29,7 +26,7 @@ export const resumeCertificationItem = sqliteTable(
   {
     id: text("id")
       .primaryKey()
-      .$defaultFn(() => crypto.randomUUID()),
+      .$defaultFn(() => uuidv7()),
     resumeId: text("resume_id")
       .notNull()
       .references(() => resume.id, { onDelete: "cascade" }),

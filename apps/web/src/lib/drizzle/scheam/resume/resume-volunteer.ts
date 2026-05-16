@@ -8,7 +8,6 @@ export const resumeVolunteer = sqliteTable(
     id: text("id")
       .primaryKey()
       .$defaultFn(() => crypto.randomUUID()),
-    resumeId: text("resume_id").references(() => resume.id, { onDelete: "cascade" }),
     organization: text("organization").notNull(),
     role: text("role").default("").notNull(),
     startDate: text("start_date").default("").notNull(),
@@ -19,10 +18,7 @@ export const resumeVolunteer = sqliteTable(
     ...timestamps,
     userId: text("user_id"),
   },
-  (table) => [
-    index("resume_volunteer_userId_idx").on(table.userId),
-    index("resume_volunteer_resumeId_idx").on(table.resumeId),
-  ],
+  (table) => [index("resume_volunteer_userId_idx").on(table.userId)],
 );
 
 export const resumeVolunteerItem = sqliteTable(

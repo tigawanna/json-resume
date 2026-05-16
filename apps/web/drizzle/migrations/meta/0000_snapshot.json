@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "3210dcf2-28b6-49bc-8175-30e70bcf928f",
+  "id": "f5363195-f20a-4108-9102-4a03fa9760ce",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "account": {
@@ -406,6 +406,51 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
+    "jwks": {
+      "name": "jwks",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "public_key": {
+          "name": "public_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "private_key": {
+          "name": "private_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
     "member": {
       "name": "member",
       "columns": {
@@ -492,30 +537,9 @@
           "notNull": true,
           "autoincrement": false
         },
-        "access_token": {
-          "name": "access_token",
+        "token": {
+          "name": "token",
           "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "refresh_token": {
-          "name": "refresh_token",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "access_token_expires_at": {
-          "name": "access_token_expires_at",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "refresh_token_expires_at": {
-          "name": "refresh_token_expires_at",
-          "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -527,6 +551,13 @@
           "notNull": true,
           "autoincrement": false
         },
+        "session_id": {
+          "name": "session_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "user_id": {
           "name": "user_id",
           "type": "text",
@@ -534,9 +565,23 @@
           "notNull": false,
           "autoincrement": false
         },
-        "scopes": {
-          "name": "scopes",
+        "reference_id": {
+          "name": "reference_id",
           "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "refresh_id": {
+          "name": "refresh_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -548,44 +593,38 @@
           "notNull": true,
           "autoincrement": false
         },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "integer",
+        "scopes": {
+          "name": "scopes",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         }
       },
       "indexes": {
-        "oauth_access_token_access_token_unique": {
-          "name": "oauth_access_token_access_token_unique",
-          "columns": ["access_token"],
+        "oauth_access_token_token_unique": {
+          "name": "oauth_access_token_token_unique",
+          "columns": ["token"],
           "isUnique": true
-        },
-        "oauth_access_token_refresh_token_unique": {
-          "name": "oauth_access_token_refresh_token_unique",
-          "columns": ["refresh_token"],
-          "isUnique": true
-        },
-        "oauthAccessToken_clientId_idx": {
-          "name": "oauthAccessToken_clientId_idx",
-          "columns": ["client_id"],
-          "isUnique": false
-        },
-        "oauthAccessToken_userId_idx": {
-          "name": "oauthAccessToken_userId_idx",
-          "columns": ["user_id"],
-          "isUnique": false
         }
       },
       "foreignKeys": {
-        "oauth_access_token_client_id_oauth_application_client_id_fk": {
-          "name": "oauth_access_token_client_id_oauth_application_client_id_fk",
+        "oauth_access_token_client_id_oauth_client_client_id_fk": {
+          "name": "oauth_access_token_client_id_oauth_client_client_id_fk",
           "tableFrom": "oauth_access_token",
-          "tableTo": "oauth_application",
+          "tableTo": "oauth_client",
           "columnsFrom": ["client_id"],
           "columnsTo": ["client_id"],
           "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "oauth_access_token_session_id_session_id_fk": {
+          "name": "oauth_access_token_session_id_session_id_fk",
+          "tableFrom": "oauth_access_token",
+          "tableTo": "session",
+          "columnsFrom": ["session_id"],
+          "columnsTo": ["id"],
+          "onDelete": "set null",
           "onUpdate": "no action"
         },
         "oauth_access_token_user_id_user_id_fk": {
@@ -596,41 +635,29 @@
           "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
+        },
+        "oauth_access_token_refresh_id_oauth_refresh_token_id_fk": {
+          "name": "oauth_access_token_refresh_id_oauth_refresh_token_id_fk",
+          "tableFrom": "oauth_access_token",
+          "tableTo": "oauth_refresh_token",
+          "columnsFrom": ["refresh_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "oauth_application": {
-      "name": "oauth_application",
+    "oauth_client": {
+      "name": "oauth_client",
       "columns": {
         "id": {
           "name": "id",
           "type": "text",
           "primaryKey": true,
           "notNull": true,
-          "autoincrement": false
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "icon": {
-          "name": "icon",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "metadata": {
-          "name": "metadata",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
           "autoincrement": false
         },
         "client_id": {
@@ -647,20 +674,6 @@
           "notNull": false,
           "autoincrement": false
         },
-        "redirect_urls": {
-          "name": "redirect_urls",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "type": {
-          "name": "type",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
         "disabled": {
           "name": "disabled",
           "type": "integer",
@@ -668,6 +681,34 @@
           "notNull": false,
           "autoincrement": false,
           "default": false
+        },
+        "skip_consent": {
+          "name": "skip_consent",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "enable_end_session": {
+          "name": "enable_end_session",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "subject_type": {
+          "name": "subject_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "scopes": {
+          "name": "scopes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
         },
         "user_id": {
           "name": "user_id",
@@ -680,33 +721,161 @@
           "name": "created_at",
           "type": "integer",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false
         },
         "updated_at": {
           "name": "updated_at",
           "type": "integer",
           "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "uri": {
+          "name": "uri",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "icon": {
+          "name": "icon",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "contacts": {
+          "name": "contacts",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "tos": {
+          "name": "tos",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "policy": {
+          "name": "policy",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "software_id": {
+          "name": "software_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "software_version": {
+          "name": "software_version",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "software_statement": {
+          "name": "software_statement",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "redirect_uris": {
+          "name": "redirect_uris",
+          "type": "text",
+          "primaryKey": false,
           "notNull": true,
+          "autoincrement": false
+        },
+        "post_logout_redirect_uris": {
+          "name": "post_logout_redirect_uris",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "token_endpoint_auth_method": {
+          "name": "token_endpoint_auth_method",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "grant_types": {
+          "name": "grant_types",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "response_types": {
+          "name": "response_types",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "public": {
+          "name": "public",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "type": {
+          "name": "type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "require_pkce": {
+          "name": "require_pkce",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "reference_id": {
+          "name": "reference_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "metadata": {
+          "name": "metadata",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
           "autoincrement": false
         }
       },
       "indexes": {
-        "oauth_application_client_id_unique": {
-          "name": "oauth_application_client_id_unique",
+        "oauth_client_client_id_unique": {
+          "name": "oauth_client_client_id_unique",
           "columns": ["client_id"],
           "isUnique": true
-        },
-        "oauthApplication_userId_idx": {
-          "name": "oauthApplication_userId_idx",
-          "columns": ["user_id"],
-          "isUnique": false
         }
       },
       "foreignKeys": {
-        "oauth_application_user_id_user_id_fk": {
-          "name": "oauth_application_user_id_user_id_fk",
-          "tableFrom": "oauth_application",
+        "oauth_client_user_id_user_id_fk": {
+          "name": "oauth_client_user_id_user_id_fk",
+          "tableFrom": "oauth_client",
           "tableTo": "user",
           "columnsFrom": ["user_id"],
           "columnsTo": ["id"],
@@ -739,7 +908,14 @@
           "name": "user_id",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "reference_id": {
+          "name": "reference_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
           "autoincrement": false
         },
         "scopes": {
@@ -762,32 +938,14 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
-        },
-        "consent_given": {
-          "name": "consent_given",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
         }
       },
-      "indexes": {
-        "oauthConsent_clientId_idx": {
-          "name": "oauthConsent_clientId_idx",
-          "columns": ["client_id"],
-          "isUnique": false
-        },
-        "oauthConsent_userId_idx": {
-          "name": "oauthConsent_userId_idx",
-          "columns": ["user_id"],
-          "isUnique": false
-        }
-      },
+      "indexes": {},
       "foreignKeys": {
-        "oauth_consent_client_id_oauth_application_client_id_fk": {
-          "name": "oauth_consent_client_id_oauth_application_client_id_fk",
+        "oauth_consent_client_id_oauth_client_client_id_fk": {
+          "name": "oauth_consent_client_id_oauth_client_client_id_fk",
           "tableFrom": "oauth_consent",
-          "tableTo": "oauth_application",
+          "tableTo": "oauth_client",
           "columnsFrom": ["client_id"],
           "columnsTo": ["client_id"],
           "onDelete": "cascade",
@@ -796,6 +954,121 @@
         "oauth_consent_user_id_user_id_fk": {
           "name": "oauth_consent_user_id_user_id_fk",
           "tableFrom": "oauth_consent",
+          "tableTo": "user",
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "oauth_refresh_token": {
+      "name": "oauth_refresh_token",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "token": {
+          "name": "token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "client_id": {
+          "name": "client_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "session_id": {
+          "name": "session_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "reference_id": {
+          "name": "reference_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "revoked": {
+          "name": "revoked",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "auth_time": {
+          "name": "auth_time",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "scopes": {
+          "name": "scopes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "oauth_refresh_token_client_id_oauth_client_client_id_fk": {
+          "name": "oauth_refresh_token_client_id_oauth_client_client_id_fk",
+          "tableFrom": "oauth_refresh_token",
+          "tableTo": "oauth_client",
+          "columnsFrom": ["client_id"],
+          "columnsTo": ["client_id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "oauth_refresh_token_session_id_session_id_fk": {
+          "name": "oauth_refresh_token_session_id_session_id_fk",
+          "tableFrom": "oauth_refresh_token",
+          "tableTo": "session",
+          "columnsFrom": ["session_id"],
+          "columnsTo": ["id"],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "oauth_refresh_token_user_id_user_id_fk": {
+          "name": "oauth_refresh_token_user_id_user_id_fk",
+          "tableFrom": "oauth_refresh_token",
           "tableTo": "user",
           "columnsFrom": ["user_id"],
           "columnsTo": ["id"],
@@ -1350,8 +1623,8 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "resume_certification": {
-      "name": "resume_certification",
+    "resume_ai_chat": {
+      "name": "resume_ai_chat",
       "columns": {
         "id": {
           "name": "id",
@@ -1360,10 +1633,93 @@
           "notNull": true,
           "autoincrement": false
         },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
         "resume_id": {
           "name": "resume_id",
           "type": "text",
           "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "messages": {
+          "name": "messages",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'[]'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast(unixepoch('subsecond') * 1000 as integer))"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast(unixepoch('subsecond') * 1000 as integer))"
+        }
+      },
+      "indexes": {
+        "resume_ai_chat_userId_idx": {
+          "name": "resume_ai_chat_userId_idx",
+          "columns": ["user_id"],
+          "isUnique": false
+        },
+        "resume_ai_chat_resumeId_idx": {
+          "name": "resume_ai_chat_resumeId_idx",
+          "columns": ["resume_id"],
+          "isUnique": false
+        },
+        "resume_ai_chat_userId_resumeId_idx": {
+          "name": "resume_ai_chat_userId_resumeId_idx",
+          "columns": ["user_id", "resume_id"],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "resume_ai_chat_user_id_user_id_fk": {
+          "name": "resume_ai_chat_user_id_user_id_fk",
+          "tableFrom": "resume_ai_chat",
+          "tableTo": "user",
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "resume_ai_chat_resume_id_resume_id_fk": {
+          "name": "resume_ai_chat_resume_id_resume_id_fk",
+          "tableFrom": "resume_ai_chat",
+          "tableTo": "resume",
+          "columnsFrom": ["resume_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "resume_certification": {
+      "name": "resume_certification",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
           "notNull": true,
           "autoincrement": false
         },
@@ -1443,21 +1799,108 @@
           "notNull": true,
           "autoincrement": false,
           "default": "(cast(unixepoch('subsecond') * 1000 as integer))"
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
         }
       },
       "indexes": {
-        "resume_certification_resumeId_idx": {
-          "name": "resume_certification_resumeId_idx",
-          "columns": ["resume_id"],
+        "resume_certification_userId_idx": {
+          "name": "resume_certification_userId_idx",
+          "columns": ["user_id"],
           "isUnique": false
         }
       },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "resume_certification_item": {
+      "name": "resume_certification_item",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "resume_id": {
+          "name": "resume_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "certification_id": {
+          "name": "certification_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "sort_order": {
+          "name": "sort_order",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast(unixepoch('subsecond') * 1000 as integer))"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast(unixepoch('subsecond') * 1000 as integer))"
+        }
+      },
+      "indexes": {
+        "resume_certification_item_resumeId_idx": {
+          "name": "resume_certification_item_resumeId_idx",
+          "columns": ["resume_id"],
+          "isUnique": false
+        },
+        "resume_certification_item_certificationId_idx": {
+          "name": "resume_certification_item_certificationId_idx",
+          "columns": ["certification_id"],
+          "isUnique": false
+        },
+        "resume_certification_item_unique_idx": {
+          "name": "resume_certification_item_unique_idx",
+          "columns": ["resume_id", "certification_id"],
+          "isUnique": true
+        }
+      },
       "foreignKeys": {
-        "resume_certification_resume_id_resume_id_fk": {
-          "name": "resume_certification_resume_id_resume_id_fk",
-          "tableFrom": "resume_certification",
+        "resume_certification_item_resume_id_resume_id_fk": {
+          "name": "resume_certification_item_resume_id_resume_id_fk",
+          "tableFrom": "resume_certification_item",
           "tableTo": "resume",
           "columnsFrom": ["resume_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "resume_certification_item_certification_id_resume_certification_id_fk": {
+          "name": "resume_certification_item_certification_id_resume_certification_id_fk",
+          "tableFrom": "resume_certification_item",
+          "tableTo": "resume_certification",
+          "columnsFrom": ["certification_id"],
           "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
@@ -1474,13 +1917,6 @@
           "name": "id",
           "type": "text",
           "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "resume_id": {
-          "name": "resume_id",
-          "type": "text",
-          "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
@@ -1551,21 +1987,108 @@
           "notNull": true,
           "autoincrement": false,
           "default": "(cast(unixepoch('subsecond') * 1000 as integer))"
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
         }
       },
       "indexes": {
-        "resume_contact_resumeId_idx": {
-          "name": "resume_contact_resumeId_idx",
-          "columns": ["resume_id"],
+        "resume_contact_userId_idx": {
+          "name": "resume_contact_userId_idx",
+          "columns": ["user_id"],
           "isUnique": false
         }
       },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "resume_contact_item": {
+      "name": "resume_contact_item",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "resume_id": {
+          "name": "resume_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "contact_id": {
+          "name": "contact_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "sort_order": {
+          "name": "sort_order",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast(unixepoch('subsecond') * 1000 as integer))"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast(unixepoch('subsecond') * 1000 as integer))"
+        }
+      },
+      "indexes": {
+        "resume_contact_item_resumeId_idx": {
+          "name": "resume_contact_item_resumeId_idx",
+          "columns": ["resume_id"],
+          "isUnique": false
+        },
+        "resume_contact_item_contactId_idx": {
+          "name": "resume_contact_item_contactId_idx",
+          "columns": ["contact_id"],
+          "isUnique": false
+        },
+        "resume_contact_item_unique_idx": {
+          "name": "resume_contact_item_unique_idx",
+          "columns": ["resume_id", "contact_id"],
+          "isUnique": true
+        }
+      },
       "foreignKeys": {
-        "resume_contact_resume_id_resume_id_fk": {
-          "name": "resume_contact_resume_id_resume_id_fk",
-          "tableFrom": "resume_contact",
+        "resume_contact_item_resume_id_resume_id_fk": {
+          "name": "resume_contact_item_resume_id_resume_id_fk",
+          "tableFrom": "resume_contact_item",
           "tableTo": "resume",
           "columnsFrom": ["resume_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "resume_contact_item_contact_id_resume_contact_id_fk": {
+          "name": "resume_contact_item_contact_id_resume_contact_id_fk",
+          "tableFrom": "resume_contact_item",
+          "tableTo": "resume_contact",
+          "columnsFrom": ["contact_id"],
           "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
@@ -1582,13 +2105,6 @@
           "name": "id",
           "type": "text",
           "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "resume_id": {
-          "name": "resume_id",
-          "type": "text",
-          "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
@@ -1684,26 +2200,23 @@
           "notNull": true,
           "autoincrement": false,
           "default": "(cast(unixepoch('subsecond') * 1000 as integer))"
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
         }
       },
       "indexes": {
-        "resume_education_resumeId_idx": {
-          "name": "resume_education_resumeId_idx",
-          "columns": ["resume_id"],
+        "resume_education_userId_idx": {
+          "name": "resume_education_userId_idx",
+          "columns": ["user_id"],
           "isUnique": false
         }
       },
-      "foreignKeys": {
-        "resume_education_resume_id_resume_id_fk": {
-          "name": "resume_education_resume_id_resume_id_fk",
-          "tableFrom": "resume_education",
-          "tableTo": "resume",
-          "columnsFrom": ["resume_id"],
-          "columnsTo": ["id"],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {}
@@ -1801,8 +2314,8 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "resume_experience": {
-      "name": "resume_experience",
+    "resume_education_item": {
+      "name": "resume_education_item",
       "columns": {
         "id": {
           "name": "id",
@@ -1815,6 +2328,89 @@
           "name": "resume_id",
           "type": "text",
           "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "education_id": {
+          "name": "education_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "sort_order": {
+          "name": "sort_order",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast(unixepoch('subsecond') * 1000 as integer))"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast(unixepoch('subsecond') * 1000 as integer))"
+        }
+      },
+      "indexes": {
+        "resume_education_item_resumeId_idx": {
+          "name": "resume_education_item_resumeId_idx",
+          "columns": ["resume_id"],
+          "isUnique": false
+        },
+        "resume_education_item_educationId_idx": {
+          "name": "resume_education_item_educationId_idx",
+          "columns": ["education_id"],
+          "isUnique": false
+        },
+        "resume_education_item_unique_idx": {
+          "name": "resume_education_item_unique_idx",
+          "columns": ["resume_id", "education_id"],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "resume_education_item_resume_id_resume_id_fk": {
+          "name": "resume_education_item_resume_id_resume_id_fk",
+          "tableFrom": "resume_education_item",
+          "tableTo": "resume",
+          "columnsFrom": ["resume_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "resume_education_item_education_id_resume_education_id_fk": {
+          "name": "resume_education_item_education_id_resume_education_id_fk",
+          "tableFrom": "resume_education_item",
+          "tableTo": "resume_education",
+          "columnsFrom": ["education_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "resume_experience": {
+      "name": "resume_experience",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
           "notNull": true,
           "autoincrement": false
         },
@@ -1901,26 +2497,23 @@
           "notNull": true,
           "autoincrement": false,
           "default": "(cast(unixepoch('subsecond') * 1000 as integer))"
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
         }
       },
       "indexes": {
-        "resume_experience_resumeId_idx": {
-          "name": "resume_experience_resumeId_idx",
-          "columns": ["resume_id"],
+        "resume_experience_userId_idx": {
+          "name": "resume_experience_userId_idx",
+          "columns": ["user_id"],
           "isUnique": false
         }
       },
-      "foreignKeys": {
-        "resume_experience_resume_id_resume_id_fk": {
-          "name": "resume_experience_resume_id_resume_id_fk",
-          "tableFrom": "resume_experience",
-          "tableTo": "resume",
-          "columnsFrom": ["resume_id"],
-          "columnsTo": ["id"],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {}
@@ -2018,8 +2611,8 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "resume_language": {
-      "name": "resume_language",
+    "resume_experience_item": {
+      "name": "resume_experience_item",
       "columns": {
         "id": {
           "name": "id",
@@ -2032,6 +2625,89 @@
           "name": "resume_id",
           "type": "text",
           "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "experience_id": {
+          "name": "experience_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "sort_order": {
+          "name": "sort_order",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast(unixepoch('subsecond') * 1000 as integer))"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast(unixepoch('subsecond') * 1000 as integer))"
+        }
+      },
+      "indexes": {
+        "resume_experience_item_resumeId_idx": {
+          "name": "resume_experience_item_resumeId_idx",
+          "columns": ["resume_id"],
+          "isUnique": false
+        },
+        "resume_experience_item_experienceId_idx": {
+          "name": "resume_experience_item_experienceId_idx",
+          "columns": ["experience_id"],
+          "isUnique": false
+        },
+        "resume_experience_item_unique_idx": {
+          "name": "resume_experience_item_unique_idx",
+          "columns": ["resume_id", "experience_id"],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "resume_experience_item_resume_id_resume_id_fk": {
+          "name": "resume_experience_item_resume_id_resume_id_fk",
+          "tableFrom": "resume_experience_item",
+          "tableTo": "resume",
+          "columnsFrom": ["resume_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "resume_experience_item_experience_id_resume_experience_id_fk": {
+          "name": "resume_experience_item_experience_id_resume_experience_id_fk",
+          "tableFrom": "resume_experience_item",
+          "tableTo": "resume_experience",
+          "columnsFrom": ["experience_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "resume_language": {
+      "name": "resume_language",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
           "notNull": true,
           "autoincrement": false
         },
@@ -2095,21 +2771,108 @@
           "notNull": true,
           "autoincrement": false,
           "default": "(cast(unixepoch('subsecond') * 1000 as integer))"
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
         }
       },
       "indexes": {
-        "resume_language_resumeId_idx": {
-          "name": "resume_language_resumeId_idx",
-          "columns": ["resume_id"],
+        "resume_language_userId_idx": {
+          "name": "resume_language_userId_idx",
+          "columns": ["user_id"],
           "isUnique": false
         }
       },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "resume_language_item": {
+      "name": "resume_language_item",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "resume_id": {
+          "name": "resume_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "language_id": {
+          "name": "language_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "sort_order": {
+          "name": "sort_order",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast(unixepoch('subsecond') * 1000 as integer))"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast(unixepoch('subsecond') * 1000 as integer))"
+        }
+      },
+      "indexes": {
+        "resume_language_item_resumeId_idx": {
+          "name": "resume_language_item_resumeId_idx",
+          "columns": ["resume_id"],
+          "isUnique": false
+        },
+        "resume_language_item_languageId_idx": {
+          "name": "resume_language_item_languageId_idx",
+          "columns": ["language_id"],
+          "isUnique": false
+        },
+        "resume_language_item_unique_idx": {
+          "name": "resume_language_item_unique_idx",
+          "columns": ["resume_id", "language_id"],
+          "isUnique": true
+        }
+      },
       "foreignKeys": {
-        "resume_language_resume_id_resume_id_fk": {
-          "name": "resume_language_resume_id_resume_id_fk",
-          "tableFrom": "resume_language",
+        "resume_language_item_resume_id_resume_id_fk": {
+          "name": "resume_language_item_resume_id_resume_id_fk",
+          "tableFrom": "resume_language_item",
           "tableTo": "resume",
           "columnsFrom": ["resume_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "resume_language_item_language_id_resume_language_id_fk": {
+          "name": "resume_language_item_language_id_resume_language_id_fk",
+          "tableFrom": "resume_language_item",
+          "tableTo": "resume_language",
+          "columnsFrom": ["language_id"],
           "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
@@ -2126,13 +2889,6 @@
           "name": "id",
           "type": "text",
           "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "resume_id": {
-          "name": "resume_id",
-          "type": "text",
-          "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
@@ -2202,21 +2958,108 @@
           "notNull": true,
           "autoincrement": false,
           "default": "(cast(unixepoch('subsecond') * 1000 as integer))"
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
         }
       },
       "indexes": {
-        "resume_link_resumeId_idx": {
-          "name": "resume_link_resumeId_idx",
-          "columns": ["resume_id"],
+        "resume_link_userId_idx": {
+          "name": "resume_link_userId_idx",
+          "columns": ["user_id"],
           "isUnique": false
         }
       },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "resume_link_item": {
+      "name": "resume_link_item",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "resume_id": {
+          "name": "resume_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "link_id": {
+          "name": "link_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "sort_order": {
+          "name": "sort_order",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast(unixepoch('subsecond') * 1000 as integer))"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast(unixepoch('subsecond') * 1000 as integer))"
+        }
+      },
+      "indexes": {
+        "resume_link_item_resumeId_idx": {
+          "name": "resume_link_item_resumeId_idx",
+          "columns": ["resume_id"],
+          "isUnique": false
+        },
+        "resume_link_item_linkId_idx": {
+          "name": "resume_link_item_linkId_idx",
+          "columns": ["link_id"],
+          "isUnique": false
+        },
+        "resume_link_item_unique_idx": {
+          "name": "resume_link_item_unique_idx",
+          "columns": ["resume_id", "link_id"],
+          "isUnique": true
+        }
+      },
       "foreignKeys": {
-        "resume_link_resume_id_resume_id_fk": {
-          "name": "resume_link_resume_id_resume_id_fk",
-          "tableFrom": "resume_link",
+        "resume_link_item_resume_id_resume_id_fk": {
+          "name": "resume_link_item_resume_id_resume_id_fk",
+          "tableFrom": "resume_link_item",
           "tableTo": "resume",
           "columnsFrom": ["resume_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "resume_link_item_link_id_resume_link_id_fk": {
+          "name": "resume_link_item_link_id_resume_link_id_fk",
+          "tableFrom": "resume_link_item",
+          "tableTo": "resume_link",
+          "columnsFrom": ["link_id"],
           "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
@@ -2233,13 +3076,6 @@
           "name": "id",
           "type": "text",
           "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "resume_id": {
-          "name": "resume_id",
-          "type": "text",
-          "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
@@ -2327,21 +3163,108 @@
           "notNull": true,
           "autoincrement": false,
           "default": "(cast(unixepoch('subsecond') * 1000 as integer))"
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
         }
       },
       "indexes": {
-        "resume_project_resumeId_idx": {
-          "name": "resume_project_resumeId_idx",
-          "columns": ["resume_id"],
+        "resume_project_userId_idx": {
+          "name": "resume_project_userId_idx",
+          "columns": ["user_id"],
           "isUnique": false
         }
       },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "resume_project_item": {
+      "name": "resume_project_item",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "resume_id": {
+          "name": "resume_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "project_id": {
+          "name": "project_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "sort_order": {
+          "name": "sort_order",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast(unixepoch('subsecond') * 1000 as integer))"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast(unixepoch('subsecond') * 1000 as integer))"
+        }
+      },
+      "indexes": {
+        "resume_project_item_resumeId_idx": {
+          "name": "resume_project_item_resumeId_idx",
+          "columns": ["resume_id"],
+          "isUnique": false
+        },
+        "resume_project_item_projectId_idx": {
+          "name": "resume_project_item_projectId_idx",
+          "columns": ["project_id"],
+          "isUnique": false
+        },
+        "resume_project_item_unique_idx": {
+          "name": "resume_project_item_unique_idx",
+          "columns": ["resume_id", "project_id"],
+          "isUnique": true
+        }
+      },
       "foreignKeys": {
-        "resume_project_resume_id_resume_id_fk": {
-          "name": "resume_project_resume_id_resume_id_fk",
-          "tableFrom": "resume_project",
+        "resume_project_item_resume_id_resume_id_fk": {
+          "name": "resume_project_item_resume_id_resume_id_fk",
+          "tableFrom": "resume_project_item",
           "tableTo": "resume",
           "columnsFrom": ["resume_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "resume_project_item_project_id_resume_project_id_fk": {
+          "name": "resume_project_item_project_id_resume_project_id_fk",
+          "tableFrom": "resume_project_item",
+          "tableTo": "resume_project",
+          "columnsFrom": ["project_id"],
           "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
@@ -2461,13 +3384,6 @@
           "notNull": true,
           "autoincrement": false
         },
-        "resume_id": {
-          "name": "resume_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
         "name": {
           "name": "name",
           "type": "text",
@@ -2520,21 +3436,108 @@
           "notNull": true,
           "autoincrement": false,
           "default": "(cast(unixepoch('subsecond') * 1000 as integer))"
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
         }
       },
       "indexes": {
-        "resume_skill_group_resumeId_idx": {
-          "name": "resume_skill_group_resumeId_idx",
-          "columns": ["resume_id"],
+        "resume_skill_group_userId_idx": {
+          "name": "resume_skill_group_userId_idx",
+          "columns": ["user_id"],
           "isUnique": false
         }
       },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "resume_skill_group_item": {
+      "name": "resume_skill_group_item",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "resume_id": {
+          "name": "resume_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "group_id": {
+          "name": "group_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "sort_order": {
+          "name": "sort_order",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast(unixepoch('subsecond') * 1000 as integer))"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast(unixepoch('subsecond') * 1000 as integer))"
+        }
+      },
+      "indexes": {
+        "resume_skill_group_item_resumeId_idx": {
+          "name": "resume_skill_group_item_resumeId_idx",
+          "columns": ["resume_id"],
+          "isUnique": false
+        },
+        "resume_skill_group_item_groupId_idx": {
+          "name": "resume_skill_group_item_groupId_idx",
+          "columns": ["group_id"],
+          "isUnique": false
+        },
+        "resume_skill_group_item_unique_idx": {
+          "name": "resume_skill_group_item_unique_idx",
+          "columns": ["resume_id", "group_id"],
+          "isUnique": true
+        }
+      },
       "foreignKeys": {
-        "resume_skill_group_resume_id_resume_id_fk": {
-          "name": "resume_skill_group_resume_id_resume_id_fk",
-          "tableFrom": "resume_skill_group",
+        "resume_skill_group_item_resume_id_resume_id_fk": {
+          "name": "resume_skill_group_item_resume_id_resume_id_fk",
+          "tableFrom": "resume_skill_group_item",
           "tableTo": "resume",
           "columnsFrom": ["resume_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "resume_skill_group_item_group_id_resume_skill_group_id_fk": {
+          "name": "resume_skill_group_item_group_id_resume_skill_group_id_fk",
+          "tableFrom": "resume_skill_group_item",
+          "tableTo": "resume_skill_group",
+          "columnsFrom": ["group_id"],
           "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
@@ -2551,13 +3554,6 @@
           "name": "id",
           "type": "text",
           "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "resume_id": {
-          "name": "resume_id",
-          "type": "text",
-          "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
@@ -2614,21 +3610,108 @@
           "notNull": true,
           "autoincrement": false,
           "default": "(cast(unixepoch('subsecond') * 1000 as integer))"
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
         }
       },
       "indexes": {
-        "resume_summary_resumeId_idx": {
-          "name": "resume_summary_resumeId_idx",
-          "columns": ["resume_id"],
+        "resume_summary_userId_idx": {
+          "name": "resume_summary_userId_idx",
+          "columns": ["user_id"],
           "isUnique": false
         }
       },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "resume_summary_item": {
+      "name": "resume_summary_item",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "resume_id": {
+          "name": "resume_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "summary_id": {
+          "name": "summary_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "sort_order": {
+          "name": "sort_order",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast(unixepoch('subsecond') * 1000 as integer))"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast(unixepoch('subsecond') * 1000 as integer))"
+        }
+      },
+      "indexes": {
+        "resume_summary_item_resumeId_idx": {
+          "name": "resume_summary_item_resumeId_idx",
+          "columns": ["resume_id"],
+          "isUnique": false
+        },
+        "resume_summary_item_summaryId_idx": {
+          "name": "resume_summary_item_summaryId_idx",
+          "columns": ["summary_id"],
+          "isUnique": false
+        },
+        "resume_summary_item_unique_idx": {
+          "name": "resume_summary_item_unique_idx",
+          "columns": ["resume_id", "summary_id"],
+          "isUnique": true
+        }
+      },
       "foreignKeys": {
-        "resume_summary_resume_id_resume_id_fk": {
-          "name": "resume_summary_resume_id_resume_id_fk",
-          "tableFrom": "resume_summary",
+        "resume_summary_item_resume_id_resume_id_fk": {
+          "name": "resume_summary_item_resume_id_resume_id_fk",
+          "tableFrom": "resume_summary_item",
           "tableTo": "resume",
           "columnsFrom": ["resume_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "resume_summary_item_summary_id_resume_summary_id_fk": {
+          "name": "resume_summary_item_summary_id_resume_summary_id_fk",
+          "tableFrom": "resume_summary_item",
+          "tableTo": "resume_summary",
+          "columnsFrom": ["summary_id"],
           "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
@@ -2645,13 +3728,6 @@
           "name": "id",
           "type": "text",
           "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "resume_id": {
-          "name": "resume_id",
-          "type": "text",
-          "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
@@ -2739,21 +3815,108 @@
           "notNull": true,
           "autoincrement": false,
           "default": "(cast(unixepoch('subsecond') * 1000 as integer))"
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
         }
       },
       "indexes": {
-        "resume_talk_resumeId_idx": {
-          "name": "resume_talk_resumeId_idx",
-          "columns": ["resume_id"],
+        "resume_talk_userId_idx": {
+          "name": "resume_talk_userId_idx",
+          "columns": ["user_id"],
           "isUnique": false
         }
       },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "resume_talk_item": {
+      "name": "resume_talk_item",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "resume_id": {
+          "name": "resume_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "talk_id": {
+          "name": "talk_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "sort_order": {
+          "name": "sort_order",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast(unixepoch('subsecond') * 1000 as integer))"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast(unixepoch('subsecond') * 1000 as integer))"
+        }
+      },
+      "indexes": {
+        "resume_talk_item_resumeId_idx": {
+          "name": "resume_talk_item_resumeId_idx",
+          "columns": ["resume_id"],
+          "isUnique": false
+        },
+        "resume_talk_item_talkId_idx": {
+          "name": "resume_talk_item_talkId_idx",
+          "columns": ["talk_id"],
+          "isUnique": false
+        },
+        "resume_talk_item_unique_idx": {
+          "name": "resume_talk_item_unique_idx",
+          "columns": ["resume_id", "talk_id"],
+          "isUnique": true
+        }
+      },
       "foreignKeys": {
-        "resume_talk_resume_id_resume_id_fk": {
-          "name": "resume_talk_resume_id_resume_id_fk",
-          "tableFrom": "resume_talk",
+        "resume_talk_item_resume_id_resume_id_fk": {
+          "name": "resume_talk_item_resume_id_resume_id_fk",
+          "tableFrom": "resume_talk_item",
           "tableTo": "resume",
           "columnsFrom": ["resume_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "resume_talk_item_talk_id_resume_talk_id_fk": {
+          "name": "resume_talk_item_talk_id_resume_talk_id_fk",
+          "tableFrom": "resume_talk_item",
+          "tableTo": "resume_talk",
+          "columnsFrom": ["talk_id"],
           "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
@@ -2770,13 +3933,6 @@
           "name": "id",
           "type": "text",
           "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "resume_id": {
-          "name": "resume_id",
-          "type": "text",
-          "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
@@ -2864,21 +4020,108 @@
           "notNull": true,
           "autoincrement": false,
           "default": "(cast(unixepoch('subsecond') * 1000 as integer))"
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
         }
       },
       "indexes": {
-        "resume_volunteer_resumeId_idx": {
-          "name": "resume_volunteer_resumeId_idx",
-          "columns": ["resume_id"],
+        "resume_volunteer_userId_idx": {
+          "name": "resume_volunteer_userId_idx",
+          "columns": ["user_id"],
           "isUnique": false
         }
       },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "resume_volunteer_item": {
+      "name": "resume_volunteer_item",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "resume_id": {
+          "name": "resume_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "volunteer_id": {
+          "name": "volunteer_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "sort_order": {
+          "name": "sort_order",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast(unixepoch('subsecond') * 1000 as integer))"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast(unixepoch('subsecond') * 1000 as integer))"
+        }
+      },
+      "indexes": {
+        "resume_volunteer_item_resumeId_idx": {
+          "name": "resume_volunteer_item_resumeId_idx",
+          "columns": ["resume_id"],
+          "isUnique": false
+        },
+        "resume_volunteer_item_volunteerId_idx": {
+          "name": "resume_volunteer_item_volunteerId_idx",
+          "columns": ["volunteer_id"],
+          "isUnique": false
+        },
+        "resume_volunteer_item_unique_idx": {
+          "name": "resume_volunteer_item_unique_idx",
+          "columns": ["resume_id", "volunteer_id"],
+          "isUnique": true
+        }
+      },
       "foreignKeys": {
-        "resume_volunteer_resume_id_resume_id_fk": {
-          "name": "resume_volunteer_resume_id_resume_id_fk",
-          "tableFrom": "resume_volunteer",
+        "resume_volunteer_item_resume_id_resume_id_fk": {
+          "name": "resume_volunteer_item_resume_id_resume_id_fk",
+          "tableFrom": "resume_volunteer_item",
           "tableTo": "resume",
           "columnsFrom": ["resume_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "resume_volunteer_item_volunteer_id_resume_volunteer_id_fk": {
+          "name": "resume_volunteer_item_volunteer_id_resume_volunteer_id_fk",
+          "tableFrom": "resume_volunteer_item",
+          "tableTo": "resume_volunteer",
+          "columnsFrom": ["volunteer_id"],
           "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"

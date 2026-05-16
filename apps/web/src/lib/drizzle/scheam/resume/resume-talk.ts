@@ -8,7 +8,6 @@ export const resumeTalk = sqliteTable(
     id: text("id")
       .primaryKey()
       .$defaultFn(() => crypto.randomUUID()),
-    resumeId: text("resume_id").references(() => resume.id, { onDelete: "cascade" }),
     title: text("title").notNull(),
     event: text("event").default("").notNull(),
     date: text("date").default("").notNull(),
@@ -20,10 +19,7 @@ export const resumeTalk = sqliteTable(
     ...timestamps,
     userId: text("user_id"),
   },
-  (table) => [
-    index("resume_talk_userId_idx").on(table.userId),
-    index("resume_talk_resumeId_idx").on(table.resumeId),
-  ],
+  (table) => [index("resume_talk_userId_idx").on(table.userId)],
 );
 
 export const resumeTalkItem = sqliteTable(
