@@ -7,6 +7,7 @@ import { ResumePdfDocument } from "@/features/resume/resume-pdf";
 import { resumePdfFileStem } from "@/features/resume/resume-pdf-filename";
 import type { ResumeDocumentV1, TemplateId } from "@/features/resume/resume-schema";
 import { resumeDocumentToSpec } from "@/features/resume/resume-to-spec";
+import { useThemeContext } from "@/lib/tanstack/router/theme-provider";
 import type { Spec } from "@json-render/core";
 import { JSONUIProvider, Renderer } from "@json-render/react";
 import { pdf } from "@react-pdf/renderer";
@@ -36,9 +37,11 @@ export function ResumePreviewTab({ resumeId, selectedTemplate, doc }: ResumePrev
       .findOne(),
   );
 
+  const { resolvedTheme } = useThemeContext();
+
   const spec = resumeDocumentToSpec(doc, selectedTemplate);
   const [previewPane, setPreviewPane] = useState<PreviewPane>("component");
-  const [previewTheme, setPreviewTheme] = useState<PreviewTheme>("light");
+  const [previewTheme, setPreviewTheme] = useState<PreviewTheme>(resolvedTheme);
   const [downloading, setDownloading] = useState(false);
   const [blobUrl, setBlobUrl] = useState<string | null>(null);
   const [generating, setGenerating] = useState(false);
@@ -262,15 +265,18 @@ function ResumeComponentPreviewPanel({ spec, theme }: { spec: Spec; theme: Previ
         </h2>
       </div>
       <div
-        className={`resume-preview-paper h-[72vh] min-h-150 overflow-auto bg-base-100 p-6 text-base-content ${
-          theme === "dark" ? "dark" : ""
-        }`}
-        data-theme={theme}
+        className="h-[72vh] min-h-150 overflow-auto bg-base-100 p-6"
         data-test={`resume-preview-paper-${theme}`}
       >
-        <JSONUIProvider registry={resumeRegistry}>
-          <Renderer spec={spec} registry={resumeRegistry} />
-        </JSONUIProvider>
+        <div
+          className={`mx-auto text-base-content ${theme === "dark" ? "dark" : ""}`}
+          style={{ width: 794, minHeight: 1123 }}
+          data-theme={theme}
+        >
+          <JSONUIProvider registry={resumeRegistry}>
+            <Renderer spec={spec} registry={resumeRegistry} />
+          </JSONUIProvider>
+        </div>
       </div>
     </section>
   );
