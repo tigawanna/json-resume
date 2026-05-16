@@ -208,6 +208,47 @@
   }
 }
 
+@layer components {
+  .resume-preview-paper {
+    color: var(--color-base-content);
+  }
+
+  .resume-preview-paper [data-slot="card"] {
+    background-color: var(--color-base-100);
+    color: var(--color-base-content);
+    border-color: color-mix(in oklch, var(--color-base-content) 14%, transparent);
+    box-shadow:
+      0 1px 2px color-mix(in oklch, var(--color-base-content) 8%, transparent),
+      0 0 0 1px color-mix(in oklch, var(--color-base-content) 8%, transparent);
+  }
+
+  .resume-preview-paper [data-slot="card-title"],
+  .resume-preview-paper h1,
+  .resume-preview-paper h2,
+  .resume-preview-paper h3,
+  .resume-preview-paper h4 {
+    color: var(--color-base-content);
+  }
+
+  .resume-preview-paper p,
+  .resume-preview-paper [data-slot="card-content"] {
+    color: color-mix(in oklch, var(--color-base-content) 86%, transparent);
+  }
+
+  .resume-preview-paper a {
+    color: var(--color-primary);
+  }
+
+  .resume-preview-paper [data-slot="separator"] {
+    background-color: color-mix(in oklch, var(--color-base-content) 14%, transparent);
+  }
+
+  .resume-preview-paper [data-slot="badge"] {
+    color: var(--color-base-content);
+    border-color: color-mix(in oklch, var(--color-base-content) 18%, transparent);
+  }
+}
+
 /* Responsive centered container utility */
 @utility container {
   margin-inline: auto;
@@ -402,18 +443,4 @@
   body {
     @apply bg-background text-foreground;
   }
-}
-
-/* Force dark text inside resume preview paper regardless of theme */
-.resume-preview-paper,
-.resume-preview-paper * {
-  color: #1a1a1a;
-}
-.resume-preview-paper a {
-  color: #2563eb;
-}
-.resume-preview-paper h1,
-.resume-preview-paper h2,
-.resume-preview-paper h3 {
-  color: #111;
 }
