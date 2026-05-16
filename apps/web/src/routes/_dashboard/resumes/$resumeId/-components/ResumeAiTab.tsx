@@ -6,6 +6,17 @@ import {
   type KeyboardEvent,
   type ReactNode,
 } from "react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
@@ -30,10 +41,6 @@ import {
   resumeCollection,
   resumesCollection,
 } from "@/data-access-layer/resume/resumes-query-collection";
-import {
-  navigateToResumeToolDefinition,
-  refreshResumePreviewToolDefinition,
-} from "@/features/agentic-tools/resume-chat-tool-definitions";
 import { AiSettingsPanel } from "@/features/agentic-tools/AiSettingsPanel";
 import { AiProviderModal } from "@/features/agentic-tools/AiProviderModal";
 import { useAiSettings } from "@/hooks/use-ai-settings";
@@ -42,15 +49,19 @@ import {
   openRouterCreditsQueryOptions,
 } from "@/hooks/use-openrouter-credits";
 import { cn } from "@/lib/utils";
+import { unwrapUnknownError } from "@/utils/errors";
 import { eq, useLiveQuery } from "@tanstack/react-db";
 import { fetchServerSentEvents, useChat, type UIMessage } from "@tanstack/ai-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import {
   ArrowUp,
   Bot,
+  Box,
+  ChevronDown,
   Coins,
   ChevronsUpDown,
+  ExternalLink,
   FileSearch,
   Hash,
   LoaderCircle,
@@ -62,6 +73,7 @@ import {
   Square,
   WandSparkles,
 } from "lucide-react";
+import { toast } from "sonner";
 
 interface ResumeAiTabProps {
   resumeId: string;
@@ -69,6 +81,32 @@ interface ResumeAiTabProps {
 }
 
 const isLocalMode = import.meta.env.VITE_AI_LOCAL_MODE === "true";
+const writeToolNames = new Set([
+  "clone_current_resume",
+  "create_resume_from_document",
+  "update_current_resume_document",
+]);
+const createdResumeToolNames = new Set(["clone_current_resume", "create_resume_from_document"]);
+
+interface ToolCallViewPart {
+  id: string;
+  name: string;
+  arguments: string;
+  state: string;
+  output?: unknown;
+}
+
+interface ToolResultViewPart {
+  toolCallId: string;
+  content: string;
+  state: string;
+  error?: string;
+}
+
+interface CreatedResumeOutput {
+  resumeId: string;
+  name?: string;
+}
 
 function formatCreditAmount(amount: number) {
   return amount.toLocaleString("en-US", {
@@ -413,6 +451,164 @@ function toJsonValue(value: unknown): JsonValue | undefined {
   return undefined;
 }
 
+function parseMaybeJson(value: string): unknown {
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+
+  try {
+    return JSON.parse(trimmed);
+  } catch {
+    return value;
+  }
+}
+
+function formatPayload(value: unknown): string {
+  if (typeof value === "string") {
+    const parsed = parseMaybeJson(value);
+    return typeof parsed === "string" ? parsed : JSON.stringify(parsed, null, 2);
+  }
+
+  const jsonValue = toJsonValue(value);
+  if (jsonValue === undefined) return "";
+  return typeof jsonValue === "string" ? jsonValue : JSON.stringify(jsonValue, null, 2);
+}
+
+function getJsonRecord(value: unknown): { [key: string]: JsonValue } | null {
+  const jsonValue = toJsonValue(value);
+  if (!jsonValue || typeof jsonValue !== "object" || Array.isArray(jsonValue)) return null;
+  return jsonValue;
+}
+
+function getToolOutputRecord(part: ToolCallViewPart): { [key: string]: JsonValue } | null {
+  if (part.output !== undefined) return getJsonRecord(part.output);
+  return null;
+}
+
+function getCreatedResumeOutput(part: ToolCallViewPart): CreatedResumeOutput | null {
+  if (!createdResumeToolNames.has(part.name)) return null;
+
+  const output = getToolOutputRecord(part);
+  if (!output || typeof output.resumeId !== "string") return null;
+
+  return {
+    resumeId: output.resumeId,
+    ...(typeof output.name === "string" ? { name: output.name } : {}),
+  };
+}
+
+function getToolLabel(name: string): string {
+  return name
+    .split("_")
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
+function CreatedResumeCard({ output }: { output: CreatedResumeOutput }) {
+  return (
+    <div
+      className="mt-3 rounded-lg bg-[color-mix(in_oklch,var(--color-success)_9%,var(--color-base-100))] p-3 text-sm ring-1 ring-[color-mix(in_oklch,var(--color-success)_25%,transparent)]"
+      data-test="resume-ai-created-resume-card"
+    >
+      <div className="flex items-start gap-3">
+        <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-success/15 text-success">
+          <Box className="size-4" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="font-medium text-foreground">{output.name ?? "New resume draft"}</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">Created and ready to review.</p>
+        </div>
+        <Button asChild size="sm" className="h-8 shrink-0 gap-1.5 rounded-lg">
+          <Link
+            to="/resumes/$resumeId"
+            params={{ resumeId: output.resumeId }}
+            search={{ tab: "preview" }}
+            data-test="resume-ai-open-created-resume"
+          >
+            Open
+            <ExternalLink className="size-3.5" />
+          </Link>
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function ToolCallPanel({ part }: { part: ToolCallViewPart }) {
+  const createdResume = getCreatedResumeOutput(part);
+  const input = formatPayload(part.arguments);
+  const output = part.output === undefined ? "" : formatPayload(part.output);
+
+  return (
+    <details
+      className="group rounded-lg bg-[color-mix(in_oklch,var(--color-base-content)_6%,transparent)] px-3 py-2 text-xs text-muted-foreground"
+      data-test="resume-ai-tool-call"
+    >
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 font-medium text-foreground/80 marker:hidden">
+        <span className="flex min-w-0 items-center gap-2">
+          <span className="size-2 shrink-0 rounded-full bg-primary" />
+          <span className="truncate">{getToolLabel(part.name)}</span>
+          <span className="rounded-full bg-base-100 px-2 py-0.5 text-[0.68rem] text-muted-foreground">
+            {part.state}
+          </span>
+        </span>
+        <ChevronDown className="size-3.5 shrink-0 transition-transform group-open:rotate-180" />
+      </summary>
+      {createdResume ? <CreatedResumeCard output={createdResume} /> : null}
+      <div className="mt-3 grid gap-2">
+        {input ? (
+          <div>
+            <p className="mb-1 font-medium text-foreground/70">Input</p>
+            <pre className="max-h-56 overflow-auto rounded-md bg-base-100 p-2 text-[0.7rem] leading-5 text-foreground">
+              {input}
+            </pre>
+          </div>
+        ) : null}
+        {output ? (
+          <div>
+            <p className="mb-1 font-medium text-foreground/70">Output</p>
+            <pre className="max-h-56 overflow-auto rounded-md bg-base-100 p-2 text-[0.7rem] leading-5 text-foreground">
+              {output}
+            </pre>
+          </div>
+        ) : null}
+      </div>
+    </details>
+  );
+}
+
+function ToolResultPanel({ part }: { part: ToolResultViewPart }) {
+  const content = formatPayload(part.content);
+
+  return (
+    <details
+      className="group rounded-lg bg-[color-mix(in_oklch,var(--color-success)_10%,transparent)] px-3 py-2 text-xs text-muted-foreground"
+      data-test="resume-ai-tool-result"
+    >
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 font-medium text-foreground/80 marker:hidden">
+        <span className="flex min-w-0 items-center gap-2">
+          <span className="size-2 shrink-0 rounded-full bg-success" />
+          <span>Tool result</span>
+          <span className="rounded-full bg-base-100 px-2 py-0.5 text-[0.68rem] text-muted-foreground">
+            {part.state}
+          </span>
+        </span>
+        <ChevronDown className="size-3.5 shrink-0 transition-transform group-open:rotate-180" />
+      </summary>
+      <div className="mt-3 grid gap-2">
+        {part.error ? (
+          <p className="rounded-md bg-destructive/10 p-2 text-destructive">{part.error}</p>
+        ) : null}
+        {content ? (
+          <pre className="max-h-56 overflow-auto rounded-md bg-base-100 p-2 text-[0.7rem] leading-5 text-foreground">
+            {content}
+          </pre>
+        ) : null}
+      </div>
+    </details>
+  );
+}
+
 function toStoredMessages(messages: UIMessage[]): ResumeAiChatMessage[] {
   return messages.map((message) => ({
     id: message.id,
@@ -467,13 +663,15 @@ function toUiMessages(messages: ResumeAiChatMessage[]): UIMessage[] {
 export function ResumeAiTab({ resumeId, jobDescription }: ResumeAiTabProps) {
   const [input, setInput] = useState("");
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [clearDialogOpen, setClearDialogOpen] = useState(false);
+  const [clearScope, setClearScope] = useState<"remote" | "both" | null>(null);
   const { settings, saveSettings, clearSettings } = useAiSettings();
   const queryClient = useQueryClient();
-  const router = useRouter();
   const endOfMessagesRef = useRef<HTMLDivElement>(null);
   const composerRef = useRef<HTMLTextAreaElement>(null);
   const lastSavedSignatureRef = useRef("");
   const hydratedHistoryRef = useRef<string | null>(null);
+  const handledToolOutputsRef = useRef(new Set<string>());
 
   const isReady = isLocalMode || !!settings;
 
@@ -487,18 +685,25 @@ export function ResumeAiTab({ resumeId, jobDescription }: ResumeAiTabProps) {
 
   const saveChatMutation = useMutation({
     mutationFn: async (messagesToSave: ResumeAiChatDTO["messages"]) =>
-      saveResumeAiChat({ data: { resumeId, messages: messagesToSave } }),
+      saveResumeAiChat({ data: { resumeId, messages: messagesToSave, model: settings?.model } }),
     onSuccess(chat) {
       void persistLocalResumeAiChat(chat);
       void queryClient.invalidateQueries({ queryKey: resumeAiChatQueryOptions(resumeId).queryKey });
+    },
+    onError(err: unknown) {
+      toast.error("Failed to save chat history", {
+        description: unwrapUnknownError(err).message,
+      });
     },
   });
 
   const clearChatMutation = useMutation({
     mutationFn: async () => clearResumeAiChat({ data: { resumeId } }),
     onSuccess() {
-      void clearLocalResumeAiChat(resumeId);
       void queryClient.invalidateQueries({ queryKey: resumeAiChatQueryOptions(resumeId).queryKey });
+    },
+    onSettled() {
+      setClearScope(null);
     },
   });
 
@@ -517,43 +722,6 @@ export function ResumeAiTab({ resumeId, jobDescription }: ResumeAiTabProps) {
     id: `resume-ai-chat-${resumeId}`,
     initialMessages: toUiMessages(localChat?.messages ?? historyQuery.data?.messages ?? []),
     connection: fetchServerSentEvents("/api/ai/resume-tailor"),
-    tools: [
-      refreshResumePreviewToolDefinition.client(async () => {
-        await Promise.all([
-          queryClient.invalidateQueries({ queryKey: resumeDetailQueryOptions(resumeId).queryKey }),
-          queryClient.invalidateQueries({ queryKey: ["resumes"] }),
-          resumeCollection.utils.refetch(),
-          resumesCollection.utils.refetch(),
-          router.invalidate(),
-        ]);
-
-        return { refreshed: true, resumeId };
-      }),
-      navigateToResumeToolDefinition.client(async (toolInput) => {
-        const tab = toolInput.tab ?? "preview";
-        await Promise.all([
-          queryClient.invalidateQueries({
-            queryKey: resumeDetailQueryOptions(toolInput.resumeId).queryKey,
-          }),
-          queryClient.invalidateQueries({ queryKey: ["resumes"] }),
-          resumeCollection.utils.refetch(),
-          resumesCollection.utils.refetch(),
-        ]);
-
-        await router.navigate({
-          to: "/resumes/$resumeId",
-          params: { resumeId: toolInput.resumeId },
-          search: { tab },
-        });
-        await router.invalidate();
-
-        return {
-          navigated: true,
-          resumeId: toolInput.resumeId,
-          tab,
-        };
-      }),
-    ],
     body: {
       resumeId,
       jobDescription,
@@ -571,6 +739,36 @@ export function ResumeAiTab({ resumeId, jobDescription }: ResumeAiTabProps) {
     }
     wasLoading.current = isLoading;
   }, [isLoading, settings?.apiKey, queryClient]);
+
+  useEffect(() => {
+    let shouldRefreshResumeList = false;
+
+    for (const message of messages) {
+      for (const part of message.parts) {
+        if (part.type !== "tool-call" || part.output === undefined) continue;
+        if (!writeToolNames.has(part.name)) continue;
+
+        const handledKey = `${part.id}:${part.state}`;
+        if (handledToolOutputsRef.current.has(handledKey)) continue;
+        handledToolOutputsRef.current.add(handledKey);
+
+        const output = getToolOutputRecord(part);
+        const outputResumeId =
+          output && typeof output.resumeId === "string" ? output.resumeId : resumeId;
+
+        shouldRefreshResumeList = true;
+        void queryClient.invalidateQueries({
+          queryKey: resumeDetailQueryOptions(outputResumeId).queryKey,
+        });
+      }
+    }
+
+    if (!shouldRefreshResumeList) return;
+
+    void queryClient.invalidateQueries({ queryKey: ["resumes"] });
+    void resumeCollection.utils.refetch();
+    void resumesCollection.utils.refetch();
+  }, [messages, queryClient, resumeId]);
 
   useEffect(() => {
     const serverChat = historyQuery.data;
@@ -596,7 +794,7 @@ export function ResumeAiTab({ resumeId, jobDescription }: ResumeAiTabProps) {
     const signature = JSON.stringify(storedMessages);
     if (signature === lastSavedSignatureRef.current) return;
     lastSavedSignatureRef.current = signature;
-    void saveChatMutation.mutateAsync(storedMessages);
+    saveChatMutation.mutate(storedMessages);
   }, [isLoading, messages, saveChatMutation]);
 
   useEffect(() => {
@@ -626,12 +824,28 @@ export function ResumeAiTab({ resumeId, jobDescription }: ResumeAiTabProps) {
     await sendMessage(message);
   }
 
-  async function clearConversation() {
+  function resetVisibleConversation() {
     clear();
     setInput("");
     lastSavedSignatureRef.current = "";
     hydratedHistoryRef.current = null;
+  }
+
+  async function clearRemoteConversation() {
+    setClearScope("remote");
     await clearChatMutation.mutateAsync();
+  }
+
+  async function clearRemoteAndLocalConversation() {
+    setClearScope("both");
+    await Promise.all([clearLocalResumeAiChat(resumeId), clearChatMutation.mutateAsync()]);
+    resetVisibleConversation();
+    setClearDialogOpen(false);
+  }
+
+  function handleClearDialogOpenChange(open: boolean) {
+    if (clearChatMutation.isPending) return;
+    setClearDialogOpen(open);
   }
 
   function editPastPrompt(message: UIMessage) {
@@ -766,16 +980,47 @@ export function ResumeAiTab({ resumeId, jobDescription }: ResumeAiTabProps) {
               </span>
             </span>
           </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            disabled={isLoading || messages.length === 0 || clearChatMutation.isPending}
-            onClick={() => void clearConversation()}
-            className="h-auto rounded-xl px-4 text-muted-foreground hover:text-foreground"
-            data-test="resume-ai-clear"
-          >
-            {clearChatMutation.isPending ? "Clearing..." : "Clear chat"}
-          </Button>
+          <AlertDialog open={clearDialogOpen} onOpenChange={handleClearDialogOpenChange}>
+            <AlertDialogTrigger asChild>
+              <Button
+                type="button"
+                variant="ghost"
+                disabled={isLoading || messages.length === 0 || clearChatMutation.isPending}
+                className="h-auto rounded-xl px-4 text-muted-foreground hover:text-foreground"
+                data-test="resume-ai-clear"
+              >
+                {clearChatMutation.isPending ? "Clearing..." : "Clear chat"}
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Clear chat history?</AlertDialogTitle>
+                <AlertDialogDescription className="leading-6">
+                  Choose whether to delete only the synced server copy or delete both the synced
+                  copy and this browser's local cached conversation.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel disabled={clearChatMutation.isPending}>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  variant="outline"
+                  disabled={clearChatMutation.isPending}
+                  onClick={() => void clearRemoteConversation()}
+                  data-test="resume-ai-clear-remote"
+                >
+                  {clearScope === "remote" ? "Clearing..." : "Remote only"}
+                </AlertDialogAction>
+                <AlertDialogAction
+                  variant="destructive"
+                  disabled={clearChatMutation.isPending}
+                  onClick={() => void clearRemoteAndLocalConversation()}
+                  data-test="resume-ai-clear-both"
+                >
+                  {clearScope === "both" ? "Clearing..." : "Remote and local"}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </CardContent>
       </Card>
 
@@ -905,27 +1150,10 @@ export function ResumeAiTab({ resumeId, jobDescription }: ResumeAiTabProps) {
                             );
                           }
                           if (part.type === "tool-call") {
-                            return (
-                              <div
-                                key={index}
-                                className="flex items-center gap-2 rounded-lg bg-[color-mix(in_oklch,var(--color-base-content)_6%,transparent)] px-3 py-2 text-xs text-muted-foreground"
-                              >
-                                <span className="size-2 rounded-full bg-primary" />
-                                Tool
-                                <span className="font-medium text-foreground">{part.name}</span>
-                              </div>
-                            );
+                            return <ToolCallPanel key={index} part={part} />;
                           }
                           if (part.type === "tool-result") {
-                            return (
-                              <div
-                                key={index}
-                                className="flex items-center gap-2 rounded-lg bg-[color-mix(in_oklch,var(--color-success)_10%,transparent)] px-3 py-2 text-xs text-muted-foreground"
-                              >
-                                <span className="size-2 rounded-full bg-success" />
-                                Tool result received
-                              </div>
-                            );
+                            return <ToolResultPanel key={index} part={part} />;
                           }
                           return null;
                         })}

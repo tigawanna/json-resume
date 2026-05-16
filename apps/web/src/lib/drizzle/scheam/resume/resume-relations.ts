@@ -1,7 +1,7 @@
 import { relations } from "drizzle-orm";
 import { user } from "../auth-schema";
 import { resume, resumeSection } from "./resume";
-import { resumeAiChat } from "./resume-ai-chat";
+import { resumeAiChat, resumeAiConversation, resumeAiMessage } from "./resume-ai-chat";
 import { resumeCertification, resumeCertificationItem } from "./resume-certification";
 import { resumeContact, resumeContactItem } from "./resume-contact";
 import { resumeEducation, resumeEducationBullet, resumeEducationItem } from "./resume-education";
@@ -33,6 +33,7 @@ export const resumeRelations = relations(resume, ({ one, many }) => ({
   volunteers: many(resumeVolunteerItem),
   languages: many(resumeLanguageItem),
   aiChats: many(resumeAiChat),
+  aiConversations: many(resumeAiConversation),
 }));
 
 export const resumeSectionRelations = relations(resumeSection, ({ one }) => ({
@@ -42,6 +43,19 @@ export const resumeSectionRelations = relations(resumeSection, ({ one }) => ({
 export const resumeAiChatRelations = relations(resumeAiChat, ({ one }) => ({
   user: one(user, { fields: [resumeAiChat.userId], references: [user.id] }),
   resume: one(resume, { fields: [resumeAiChat.resumeId], references: [resume.id] }),
+}));
+
+export const resumeAiConversationRelations = relations(resumeAiConversation, ({ one, many }) => ({
+  user: one(user, { fields: [resumeAiConversation.userId], references: [user.id] }),
+  resume: one(resume, { fields: [resumeAiConversation.resumeId], references: [resume.id] }),
+  messages: many(resumeAiMessage),
+}));
+
+export const resumeAiMessageRelations = relations(resumeAiMessage, ({ one }) => ({
+  conversation: one(resumeAiConversation, {
+    fields: [resumeAiMessage.conversationId],
+    references: [resumeAiConversation.id],
+  }),
 }));
 
 export const resumeContactRelations = relations(resumeContact, ({ one, many }) => ({

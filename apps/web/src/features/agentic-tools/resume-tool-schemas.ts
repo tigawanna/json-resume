@@ -183,6 +183,7 @@ export const replaceExperienceBulletsToolOutputSchema = z.object({
 
 export const createResumeFromDocumentToolOutputSchema = z.object({
   resumeId: z.string(),
+  name: z.string(),
 });
 
 export const cloneResumeToolOutputSchema = z.object({

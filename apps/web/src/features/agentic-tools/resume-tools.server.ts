@@ -470,7 +470,7 @@ export async function createResumeFromDocumentTool(
     doc: data.document,
   });
 
-  return { resumeId };
+  return { resumeId, name: data.name };
 }
 
 export async function updateResumeDocumentTool(

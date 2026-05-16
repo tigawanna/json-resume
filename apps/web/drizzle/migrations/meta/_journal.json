@@ -8,6 +8,13 @@
       "when": 1778745367313,
       "tag": "0000_chief_stranger",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1778956503528,
+      "tag": "0001_jittery_lethal_legion",
+      "breakpoints": true
     }
   ]
 }
