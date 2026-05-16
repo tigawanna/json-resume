@@ -30,7 +30,7 @@ import { unwrapUnknownError } from "@/utils/errors";
 import { eq, useLiveSuspenseQuery } from "@tanstack/react-db";
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
-import { File, FileUp, Save } from "lucide-react";
+import { ArrowLeft, File, FileUp, FileX, Save } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -158,7 +158,29 @@ function ResumeWorkbench({ resumeId }: ResumeWorkbenchProps) {
   });
 
   if (!displayResume) {
-    return <p className="text-muted-foreground py-8 text-center">Resume not found.</p>;
+    return (
+      <div className="flex h-[60vh] w-full items-center justify-center">
+        <Empty>
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <FileX />
+            </EmptyMedia>
+            <EmptyTitle>Resume not found</EmptyTitle>
+            <EmptyDescription>
+              This resume doesn&apos;t exist or may have been deleted. Double-check the link or
+              start fresh.
+            </EmptyDescription>
+          </EmptyHeader>
+          <EmptyContent className="flex-row justify-center gap-2">
+            <Button variant="outline" size="sm" onClick={() => router.history.back()}>
+              <ArrowLeft className="size-4" />
+              Go back
+            </Button>
+            <NewResumeButton />
+          </EmptyContent>
+        </Empty>
+      </div>
+    );
   }
   if (!workspace) {
     return <p className="text-muted-foreground py-8 text-center">Resume workspace unavailable.</p>;
@@ -169,18 +191,22 @@ function ResumeWorkbench({ resumeId }: ResumeWorkbenchProps) {
 
   if (!resume) {
     return (
-      <div className="flex w-full h-screen flex-col gap-6 pb-24">
+      <div className="flex h-[60vh] w-full items-center justify-center">
         <Empty>
           <EmptyHeader>
             <EmptyMedia variant="icon">
               <File />
             </EmptyMedia>
-            <EmptyTitle>Resume not found</EmptyTitle>
+            <EmptyTitle>Resume unavailable</EmptyTitle>
             <EmptyDescription>
-              You haven&apos;t created any resumes yet. Get started by creating your first resume.
+              This resume could not be loaded. It may have been removed or is no longer accessible.
             </EmptyDescription>
           </EmptyHeader>
           <EmptyContent className="flex-row justify-center gap-2">
+            <Button variant="outline" size="sm" onClick={() => router.history.back()}>
+              <ArrowLeft className="size-4" />
+              Go back
+            </Button>
             <NewResumeButton />
           </EmptyContent>
         </Empty>
