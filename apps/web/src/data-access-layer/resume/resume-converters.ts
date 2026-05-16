@@ -210,7 +210,14 @@ export function documentToInsertData(resumeId: string, userId: string, doc: Resu
     contactItems.push({ resumeId, contactId: id, sortOrder: 1 });
   }
 
-  const links = doc.header.links.map((l, i) => {
+  const links: {
+    id: string;
+    userId: string;
+    label: string;
+    url: string;
+    icon: string | null;
+    sortOrder: number;
+  }[] = doc.header.links.map((l, i) => {
     const id = crypto.randomUUID();
     return {
       id,
@@ -223,7 +230,12 @@ export function documentToInsertData(resumeId: string, userId: string, doc: Resu
   });
   const linkItems = links.map((l) => ({ resumeId, linkId: l.id, sortOrder: l.sortOrder }));
 
-  const summaries = doc.summary.text.trim()
+  const summaries: {
+    id: string;
+    userId: string;
+    text: string;
+    sortOrder: number;
+  }[] = doc.summary.text.trim()
     ? [{ id: crypto.randomUUID(), userId, text: doc.summary.text, sortOrder: 0 }]
     : [];
   const summaryItems = summaries.map((s) => ({
@@ -312,7 +324,16 @@ export function documentToInsertData(resumeId: string, userId: string, doc: Resu
     }
   }
 
-  const projects = doc.projects.items.map((p, i) => {
+  const projects: {
+    id: string;
+    userId: string;
+    name: string;
+    url: string;
+    homepageUrl: string;
+    description: string;
+    tech: string;
+    sortOrder: number;
+  }[] = doc.projects.items.map((p, i) => {
     const id = crypto.randomUUID();
     return {
       id,
@@ -348,7 +369,16 @@ export function documentToInsertData(resumeId: string, userId: string, doc: Resu
     }
   }
 
-  const talks = doc.talks.items.map((t, i) => {
+  const talks: {
+    id: string;
+    userId: string;
+    title: string;
+    event: string;
+    date: string;
+    description: string;
+    links: string;
+    sortOrder: number;
+  }[] = doc.talks.items.map((t, i) => {
     const id = crypto.randomUUID();
     return {
       id,

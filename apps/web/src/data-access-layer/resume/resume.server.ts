@@ -38,6 +38,8 @@ import type { PaginatedResult } from "../pagination.types";
 import { documentToInsertData } from "./resume-converters";
 import type { ResumeDetailDTO, ResumeListItemDTO } from "./resume.types";
 
+type ResumeInsertData = ReturnType<typeof documentToInsertData>;
+
 // ─── Helpers ────────────────────────────────────────────────
 
 function toListItem(row: typeof resume.$inferSelect): ResumeListItemDTO {
@@ -534,6 +536,384 @@ export async function getResumeDetail(
   };
 }
 
+function sameOrderedTextValues(actual: string[], expected: string[]): boolean {
+  if (actual.length !== expected.length) return false;
+  return actual.every((value, index) => value === expected[index]);
+}
+
+function uniqueBy<T>(items: T[], getKey: (item: T) => string): T[] {
+  const seen = new Set<string>();
+  return items.filter((item) => {
+    const key = getKey(item);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+async function findReusableExperienceId(
+  userId: string,
+  row: ResumeInsertData["experiences"][number],
+  expectedBullets: string[],
+): Promise<string | undefined> {
+  const candidates = await db
+    .select({ id: resumeExperience.id })
+    .from(resumeExperience)
+    .where(
+      and(
+        eq(resumeExperience.userId, userId),
+        eq(resumeExperience.company, row.company),
+        eq(resumeExperience.role, row.role),
+        eq(resumeExperience.startDate, row.startDate),
+        eq(resumeExperience.endDate, row.endDate),
+        eq(resumeExperience.location, row.location),
+      ),
+    )
+    .orderBy(asc(resumeExperience.id));
+
+  for (const candidate of candidates) {
+    const bullets = await db
+      .select({ text: resumeExperienceBullet.text })
+      .from(resumeExperienceBullet)
+      .where(eq(resumeExperienceBullet.experienceId, candidate.id))
+      .orderBy(asc(resumeExperienceBullet.sortOrder), asc(resumeExperienceBullet.id));
+
+    if (
+      sameOrderedTextValues(
+        bullets.map((bullet) => bullet.text),
+        expectedBullets,
+      )
+    ) {
+      return candidate.id;
+    }
+  }
+
+  return undefined;
+}
+
+async function findReusableEducationId(
+  userId: string,
+  row: ResumeInsertData["education"][number],
+  expectedBullets: string[],
+): Promise<string | undefined> {
+  const candidates = await db
+    .select({ id: resumeEducation.id })
+    .from(resumeEducation)
+    .where(
+      and(
+        eq(resumeEducation.userId, userId),
+        eq(resumeEducation.school, row.school),
+        eq(resumeEducation.degree, row.degree),
+        eq(resumeEducation.field, row.field),
+        eq(resumeEducation.startDate, row.startDate),
+        eq(resumeEducation.endDate, row.endDate),
+        eq(resumeEducation.description, row.description),
+      ),
+    )
+    .orderBy(asc(resumeEducation.id));
+
+  for (const candidate of candidates) {
+    const bullets = await db
+      .select({ text: resumeEducationBullet.text })
+      .from(resumeEducationBullet)
+      .where(eq(resumeEducationBullet.educationId, candidate.id))
+      .orderBy(asc(resumeEducationBullet.sortOrder), asc(resumeEducationBullet.id));
+
+    if (
+      sameOrderedTextValues(
+        bullets.map((bullet) => bullet.text),
+        expectedBullets,
+      )
+    ) {
+      return candidate.id;
+    }
+  }
+
+  return undefined;
+}
+
+async function findReusableSkillGroupId(
+  userId: string,
+  row: ResumeInsertData["skillGroups"][number],
+  expectedSkills: string[],
+): Promise<string | undefined> {
+  const candidates = await db
+    .select({ id: resumeSkillGroup.id })
+    .from(resumeSkillGroup)
+    .where(and(eq(resumeSkillGroup.userId, userId), eq(resumeSkillGroup.name, row.name)))
+    .orderBy(asc(resumeSkillGroup.id));
+
+  for (const candidate of candidates) {
+    const skills = await db
+      .select({ name: resumeSkill.name })
+      .from(resumeSkill)
+      .where(eq(resumeSkill.groupId, candidate.id))
+      .orderBy(asc(resumeSkill.sortOrder), asc(resumeSkill.id));
+
+    if (
+      sameOrderedTextValues(
+        skills.map((skill) => skill.name),
+        expectedSkills,
+      )
+    ) {
+      return candidate.id;
+    }
+  }
+
+  return undefined;
+}
+
+async function reuseExistingImportBlocks(
+  userId: string,
+  data: ResumeInsertData,
+): Promise<ResumeInsertData> {
+  const contactIdReplacements = new Map<string, string>();
+  const contacts: ResumeInsertData["contacts"] = [];
+  for (const row of data.contacts) {
+    const [existing] = await db
+      .select({ id: resumeContact.id })
+      .from(resumeContact)
+      .where(
+        and(
+          eq(resumeContact.userId, userId),
+          eq(resumeContact.type, row.type),
+          eq(resumeContact.value, row.value),
+          eq(resumeContact.label, row.label),
+        ),
+      )
+      .limit(1);
+
+    if (existing) {
+      contactIdReplacements.set(row.id, existing.id);
+    } else {
+      contacts.push(row);
+    }
+  }
+  const contactItems = uniqueBy(
+    data.contactItems.map((item) => ({
+      ...item,
+      contactId: contactIdReplacements.get(item.contactId) ?? item.contactId,
+    })),
+    (item) => item.contactId,
+  );
+
+  const linkIdReplacements = new Map<string, string>();
+  const links: ResumeInsertData["links"] = [];
+  for (const row of data.links) {
+    const [existing] = await db
+      .select({ id: resumeLink.id })
+      .from(resumeLink)
+      .where(
+        and(
+          eq(resumeLink.userId, userId),
+          eq(resumeLink.label, row.label),
+          eq(resumeLink.url, row.url),
+          row.icon === null ? isNull(resumeLink.icon) : eq(resumeLink.icon, row.icon),
+        ),
+      )
+      .limit(1);
+
+    if (existing) {
+      linkIdReplacements.set(row.id, existing.id);
+    } else {
+      links.push(row);
+    }
+  }
+  const linkItems = uniqueBy(
+    data.linkItems.map((item) => ({
+      ...item,
+      linkId: linkIdReplacements.get(item.linkId) ?? item.linkId,
+    })),
+    (item) => item.linkId,
+  );
+
+  const summaryIdReplacements = new Map<string, string>();
+  const summaries: ResumeInsertData["summaries"] = [];
+  for (const row of data.summaries) {
+    const [existing] = await db
+      .select({ id: resumeSummary.id })
+      .from(resumeSummary)
+      .where(and(eq(resumeSummary.userId, userId), eq(resumeSummary.text, row.text)))
+      .limit(1);
+
+    if (existing) {
+      summaryIdReplacements.set(row.id, existing.id);
+    } else {
+      summaries.push(row);
+    }
+  }
+  const summaryItems = uniqueBy(
+    data.summaryItems.map((item) => ({
+      ...item,
+      summaryId: summaryIdReplacements.get(item.summaryId) ?? item.summaryId,
+    })),
+    (item) => item.summaryId,
+  );
+
+  const experienceIdReplacements = new Map<string, string>();
+  const experiences: ResumeInsertData["experiences"] = [];
+  for (const row of data.experiences) {
+    const expectedBullets = data.experienceBullets
+      .filter((bullet) => bullet.experienceId === row.id)
+      .sort((a, b) => a.sortOrder - b.sortOrder)
+      .map((bullet) => bullet.text);
+    const existingId = await findReusableExperienceId(userId, row, expectedBullets);
+
+    if (existingId) {
+      experienceIdReplacements.set(row.id, existingId);
+    } else {
+      experiences.push(row);
+    }
+  }
+  const experienceItems = uniqueBy(
+    data.experienceItems.map((item) => ({
+      ...item,
+      experienceId: experienceIdReplacements.get(item.experienceId) ?? item.experienceId,
+    })),
+    (item) => item.experienceId,
+  );
+  const experienceBullets = data.experienceBullets.filter(
+    (bullet) => !experienceIdReplacements.has(bullet.experienceId),
+  );
+
+  const educationIdReplacements = new Map<string, string>();
+  const education: ResumeInsertData["education"] = [];
+  for (const row of data.education) {
+    const expectedBullets = data.educationBullets
+      .filter((bullet) => bullet.educationId === row.id)
+      .sort((a, b) => a.sortOrder - b.sortOrder)
+      .map((bullet) => bullet.text);
+    const existingId = await findReusableEducationId(userId, row, expectedBullets);
+
+    if (existingId) {
+      educationIdReplacements.set(row.id, existingId);
+    } else {
+      education.push(row);
+    }
+  }
+  const educationItems = uniqueBy(
+    data.educationItems.map((item) => ({
+      ...item,
+      educationId: educationIdReplacements.get(item.educationId) ?? item.educationId,
+    })),
+    (item) => item.educationId,
+  );
+  const educationBullets = data.educationBullets.filter(
+    (bullet) => !educationIdReplacements.has(bullet.educationId),
+  );
+
+  const projectIdReplacements = new Map<string, string>();
+  const projects: ResumeInsertData["projects"] = [];
+  for (const row of data.projects) {
+    const [existing] = await db
+      .select({ id: resumeProject.id })
+      .from(resumeProject)
+      .where(
+        and(
+          eq(resumeProject.userId, userId),
+          eq(resumeProject.name, row.name),
+          eq(resumeProject.url, row.url),
+          eq(resumeProject.homepageUrl, row.homepageUrl),
+          eq(resumeProject.description, row.description),
+          eq(resumeProject.tech, row.tech),
+        ),
+      )
+      .limit(1);
+
+    if (existing) {
+      projectIdReplacements.set(row.id, existing.id);
+    } else {
+      projects.push(row);
+    }
+  }
+  const projectItems = uniqueBy(
+    data.projectItems.map((item) => ({
+      ...item,
+      projectId: projectIdReplacements.get(item.projectId) ?? item.projectId,
+    })),
+    (item) => item.projectId,
+  );
+
+  const skillGroupIdReplacements = new Map<string, string>();
+  const skillGroups: ResumeInsertData["skillGroups"] = [];
+  for (const row of data.skillGroups) {
+    const expectedSkills = data.skills
+      .filter((skill) => skill.groupId === row.id)
+      .sort((a, b) => a.sortOrder - b.sortOrder)
+      .map((skill) => skill.name);
+    const existingId = await findReusableSkillGroupId(userId, row, expectedSkills);
+
+    if (existingId) {
+      skillGroupIdReplacements.set(row.id, existingId);
+    } else {
+      skillGroups.push(row);
+    }
+  }
+  const skillGroupItems = uniqueBy(
+    data.skillGroupItems.map((item) => ({
+      ...item,
+      groupId: skillGroupIdReplacements.get(item.groupId) ?? item.groupId,
+    })),
+    (item) => item.groupId,
+  );
+  const skills = data.skills.filter((skill) => !skillGroupIdReplacements.has(skill.groupId));
+
+  const talkIdReplacements = new Map<string, string>();
+  const talks: ResumeInsertData["talks"] = [];
+  for (const row of data.talks) {
+    const [existing] = await db
+      .select({ id: resumeTalk.id })
+      .from(resumeTalk)
+      .where(
+        and(
+          eq(resumeTalk.userId, userId),
+          eq(resumeTalk.title, row.title),
+          eq(resumeTalk.event, row.event),
+          eq(resumeTalk.date, row.date),
+          eq(resumeTalk.description, row.description),
+          eq(resumeTalk.links, row.links),
+        ),
+      )
+      .limit(1);
+
+    if (existing) {
+      talkIdReplacements.set(row.id, existing.id);
+    } else {
+      talks.push(row);
+    }
+  }
+  const talkItems = uniqueBy(
+    data.talkItems.map((item) => ({
+      ...item,
+      talkId: talkIdReplacements.get(item.talkId) ?? item.talkId,
+    })),
+    (item) => item.talkId,
+  );
+
+  return {
+    ...data,
+    contacts,
+    contactItems,
+    links,
+    linkItems,
+    summaries,
+    summaryItems,
+    experiences,
+    experienceItems,
+    experienceBullets,
+    education,
+    educationItems,
+    educationBullets,
+    projects,
+    projectItems,
+    skillGroups,
+    skillGroupItems,
+    skills,
+    talks,
+    talkItems,
+  };
+}
+
 // ─── Create (from ResumeDocumentV1 import) ──────────────────
 
 export async function createResumeForUser(
@@ -546,7 +926,10 @@ export async function createResumeForUser(
   },
 ): Promise<string> {
   const resumeId = crypto.randomUUID();
-  const data = documentToInsertData(resumeId, userId, input.doc);
+  const data = await reuseExistingImportBlocks(
+    userId,
+    documentToInsertData(resumeId, userId, input.doc),
+  );
 
   await db.insert(resume).values({
     id: resumeId,

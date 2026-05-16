@@ -168,6 +168,92 @@ describe("resume data access ownership", () => {
     ).rejects.toThrow("Resume not found");
   });
 
+  it("reuses matching imported blocks for the same user", async () => {
+    await createUser({ id: "import-dedupe-user", email: "import-dedupe@example.com" });
+    const doc = createDefaultResume();
+
+    const firstResumeId = await resumeDal.createResumeForUser("import-dedupe-user", {
+      name: "First import",
+      description: "",
+      jobDescription: "",
+      doc,
+    });
+    const secondResumeId = await resumeDal.createResumeForUser("import-dedupe-user", {
+      name: "Second import",
+      description: "",
+      jobDescription: "",
+      doc,
+    });
+
+    const summaries = await db
+      .select({ id: schema.resumeSummary.id })
+      .from(schema.resumeSummary)
+      .where(sql`${schema.resumeSummary.userId} = ${"import-dedupe-user"}`);
+    const experiences = await db
+      .select({ id: schema.resumeExperience.id })
+      .from(schema.resumeExperience)
+      .where(sql`${schema.resumeExperience.userId} = ${"import-dedupe-user"}`);
+    const projects = await db
+      .select({ id: schema.resumeProject.id })
+      .from(schema.resumeProject)
+      .where(sql`${schema.resumeProject.userId} = ${"import-dedupe-user"}`);
+    const skillGroups = await db
+      .select({ id: schema.resumeSkillGroup.id })
+      .from(schema.resumeSkillGroup)
+      .where(sql`${schema.resumeSkillGroup.userId} = ${"import-dedupe-user"}`);
+
+    expect(summaries).toHaveLength(1);
+    expect(experiences).toHaveLength(doc.experience.items.length);
+    expect(projects).toHaveLength(doc.projects.items.length);
+    expect(skillGroups).toHaveLength(doc.skills.groups.length);
+
+    const summaryItems = await db
+      .select({
+        resumeId: schema.resumeSummaryItem.resumeId,
+        summaryId: schema.resumeSummaryItem.summaryId,
+      })
+      .from(schema.resumeSummaryItem)
+      .where(sql`${schema.resumeSummaryItem.resumeId} in (${firstResumeId}, ${secondResumeId})`);
+    const firstSummaryItem = summaryItems.find((item) => item.resumeId === firstResumeId);
+    const secondSummaryItem = summaryItems.find((item) => item.resumeId === secondResumeId);
+
+    expect(firstSummaryItem?.summaryId).toBeDefined();
+    expect(secondSummaryItem?.summaryId).toBe(firstSummaryItem?.summaryId);
+  });
+
+  it("does not reuse another user's matching imported blocks", async () => {
+    await createUser({ id: "import-owner-a", email: "import-owner-a@example.com" });
+    await createUser({ id: "import-owner-b", email: "import-owner-b@example.com" });
+    const doc = createDefaultResume();
+
+    const firstResumeId = await resumeDal.createResumeForUser("import-owner-a", {
+      name: "Owner A import",
+      description: "",
+      jobDescription: "",
+      doc,
+    });
+    const secondResumeId = await resumeDal.createResumeForUser("import-owner-b", {
+      name: "Owner B import",
+      description: "",
+      jobDescription: "",
+      doc,
+    });
+
+    const summaryItems = await db
+      .select({
+        resumeId: schema.resumeSummaryItem.resumeId,
+        summaryId: schema.resumeSummaryItem.summaryId,
+      })
+      .from(schema.resumeSummaryItem)
+      .where(sql`${schema.resumeSummaryItem.resumeId} in (${firstResumeId}, ${secondResumeId})`);
+    const firstSummaryItem = summaryItems.find((item) => item.resumeId === firstResumeId);
+    const secondSummaryItem = summaryItems.find((item) => item.resumeId === secondResumeId);
+
+    expect(firstSummaryItem?.summaryId).toBeDefined();
+    expect(secondSummaryItem?.summaryId).toBeDefined();
+    expect(secondSummaryItem?.summaryId).not.toBe(firstSummaryItem?.summaryId);
+  });
+
   it("does not replace another user's resume content or delete its children", async () => {
     await createUser({ id: "replace-owner", email: "replace-owner@example.com" });
     await createUser({ id: "replace-attacker", email: "replace-attacker@example.com" });

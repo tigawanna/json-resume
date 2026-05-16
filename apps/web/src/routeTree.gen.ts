@@ -8,717 +8,724 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from "./routes/__root";
-import { Route as SearchRouteImport } from "./routes/search";
-import { Route as AuthLayoutRouteImport } from "./routes/auth/layout";
-import { Route as PublicLayoutRouteImport } from "./routes/_public/layout";
-import { Route as DashboardLayoutRouteImport } from "./routes/_dashboard/layout";
-import { Route as IndexRouteImport } from "./routes/index";
-import { Route as TestIndexRouteImport } from "./routes/test/index";
-import { Route as AuthIndexRouteImport } from "./routes/auth/index";
-import { Route as AuthSignupRouteImport } from "./routes/auth/signup";
-import { Route as AuthGithubRouteImport } from "./routes/auth/github";
-import { Route as ApiMcpRouteImport } from "./routes/api/mcp";
-import { Route as PublicPreviewRouteImport } from "./routes/_public/preview";
-import { Route as DashboardDashboardRouteImport } from "./routes/_dashboard/dashboard";
-import { Route as DashboardVolunteersIndexRouteImport } from "./routes/_dashboard/volunteers/index";
-import { Route as DashboardTalksIndexRouteImport } from "./routes/_dashboard/talks/index";
-import { Route as DashboardSummariesIndexRouteImport } from "./routes/_dashboard/summaries/index";
-import { Route as DashboardSkillGroupsIndexRouteImport } from "./routes/_dashboard/skill-groups/index";
-import { Route as DashboardSettingsIndexRouteImport } from "./routes/_dashboard/settings/index";
-import { Route as DashboardSavedProjectsIndexRouteImport } from "./routes/_dashboard/saved-projects/index";
-import { Route as DashboardResumesIndexRouteImport } from "./routes/_dashboard/resumes/index";
-import { Route as DashboardResumeProjectsIndexRouteImport } from "./routes/_dashboard/resume-projects/index";
-import { Route as DashboardReposIndexRouteImport } from "./routes/_dashboard/repos/index";
-import { Route as DashboardProjectsIndexRouteImport } from "./routes/_dashboard/projects/index";
-import { Route as DashboardLinksIndexRouteImport } from "./routes/_dashboard/links/index";
-import { Route as DashboardLanguagesIndexRouteImport } from "./routes/_dashboard/languages/index";
-import { Route as DashboardExperiencesIndexRouteImport } from "./routes/_dashboard/experiences/index";
-import { Route as DashboardEducationIndexRouteImport } from "./routes/_dashboard/education/index";
-import { Route as DashboardContactsIndexRouteImport } from "./routes/_dashboard/contacts/index";
-import { Route as DashboardCertificationsIndexRouteImport } from "./routes/_dashboard/certifications/index";
-import { Route as ApiAuthSplatRouteImport } from "./routes/api/auth/$";
-import { Route as ApiAiResumeTailorRouteImport } from "./routes/api/ai/resume-tailor";
-import { Route as ApiAgenticOpenapiRouteImport } from "./routes/api/agentic/openapi";
-import { Route as ApiAgenticSplatRouteImport } from "./routes/api/agentic/$";
-import { Route as DashboardResumesResumeIdIndexRouteImport } from "./routes/_dashboard/resumes/$resumeId/index";
-import { Route as ApiAgenticRpcSplatRouteImport } from "./routes/api/agentic/rpc/$";
-import { Route as ApiAgenticOpenapiJsonRouteImport } from "./routes/api/agentic/openapi.json";
+import { Route as rootRouteImport } from './routes/__root'
+import { Route as SearchRouteImport } from './routes/search'
+import { Route as AuthLayoutRouteImport } from './routes/auth/layout'
+import { Route as PublicLayoutRouteImport } from './routes/_public/layout'
+import { Route as DashboardLayoutRouteImport } from './routes/_dashboard/layout'
+import { Route as IndexRouteImport } from './routes/index'
+import { Route as TestIndexRouteImport } from './routes/test/index'
+import { Route as AuthIndexRouteImport } from './routes/auth/index'
+import { Route as AuthSignupRouteImport } from './routes/auth/signup'
+import { Route as AuthGithubRouteImport } from './routes/auth/github'
+import { Route as ApiMcpRouteImport } from './routes/api/mcp'
+import { Route as PublicPreviewRouteImport } from './routes/_public/preview'
+import { Route as DashboardDashboardRouteImport } from './routes/_dashboard/dashboard'
+import { Route as DashboardVolunteersIndexRouteImport } from './routes/_dashboard/volunteers/index'
+import { Route as DashboardTalksIndexRouteImport } from './routes/_dashboard/talks/index'
+import { Route as DashboardSummariesIndexRouteImport } from './routes/_dashboard/summaries/index'
+import { Route as DashboardSkillGroupsIndexRouteImport } from './routes/_dashboard/skill-groups/index'
+import { Route as DashboardSettingsIndexRouteImport } from './routes/_dashboard/settings/index'
+import { Route as DashboardSavedProjectsIndexRouteImport } from './routes/_dashboard/saved-projects/index'
+import { Route as DashboardResumesIndexRouteImport } from './routes/_dashboard/resumes/index'
+import { Route as DashboardResumeProjectsIndexRouteImport } from './routes/_dashboard/resume-projects/index'
+import { Route as DashboardReposIndexRouteImport } from './routes/_dashboard/repos/index'
+import { Route as DashboardProjectsIndexRouteImport } from './routes/_dashboard/projects/index'
+import { Route as DashboardLinksIndexRouteImport } from './routes/_dashboard/links/index'
+import { Route as DashboardLanguagesIndexRouteImport } from './routes/_dashboard/languages/index'
+import { Route as DashboardExperiencesIndexRouteImport } from './routes/_dashboard/experiences/index'
+import { Route as DashboardEducationIndexRouteImport } from './routes/_dashboard/education/index'
+import { Route as DashboardContactsIndexRouteImport } from './routes/_dashboard/contacts/index'
+import { Route as DashboardCertificationsIndexRouteImport } from './routes/_dashboard/certifications/index'
+import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as ApiAiResumeTailorRouteImport } from './routes/api/ai/resume-tailor'
+import { Route as ApiAgenticOpenapiRouteImport } from './routes/api/agentic/openapi'
+import { Route as ApiAgenticSplatRouteImport } from './routes/api/agentic/$'
+import { Route as DashboardResumesResumeIdIndexRouteImport } from './routes/_dashboard/resumes/$resumeId/index'
+import { Route as ApiAgenticRpcSplatRouteImport } from './routes/api/agentic/rpc/$'
+import { Route as ApiAgenticOpenapiJsonRouteImport } from './routes/api/agentic/openapi.json'
 
 const SearchRoute = SearchRouteImport.update({
-  id: "/search",
-  path: "/search",
+  id: '/search',
+  path: '/search',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const AuthLayoutRoute = AuthLayoutRouteImport.update({
-  id: "/auth",
-  path: "/auth",
+  id: '/auth',
+  path: '/auth',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const PublicLayoutRoute = PublicLayoutRouteImport.update({
-  id: "/_public",
+  id: '/_public',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const DashboardLayoutRoute = DashboardLayoutRouteImport.update({
-  id: "/_dashboard",
+  id: '/_dashboard',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const IndexRoute = IndexRouteImport.update({
-  id: "/",
-  path: "/",
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const TestIndexRoute = TestIndexRouteImport.update({
-  id: "/test/",
-  path: "/test/",
+  id: '/test/',
+  path: '/test/',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const AuthIndexRoute = AuthIndexRouteImport.update({
-  id: "/",
-  path: "/",
+  id: '/',
+  path: '/',
   getParentRoute: () => AuthLayoutRoute,
-} as any);
+} as any)
 const AuthSignupRoute = AuthSignupRouteImport.update({
-  id: "/signup",
-  path: "/signup",
+  id: '/signup',
+  path: '/signup',
   getParentRoute: () => AuthLayoutRoute,
-} as any);
+} as any)
 const AuthGithubRoute = AuthGithubRouteImport.update({
-  id: "/github",
-  path: "/github",
+  id: '/github',
+  path: '/github',
   getParentRoute: () => AuthLayoutRoute,
-} as any);
+} as any)
 const ApiMcpRoute = ApiMcpRouteImport.update({
-  id: "/api/mcp",
-  path: "/api/mcp",
+  id: '/api/mcp',
+  path: '/api/mcp',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const PublicPreviewRoute = PublicPreviewRouteImport.update({
-  id: "/preview",
-  path: "/preview",
+  id: '/preview',
+  path: '/preview',
   getParentRoute: () => PublicLayoutRoute,
-} as any);
+} as any)
 const DashboardDashboardRoute = DashboardDashboardRouteImport.update({
-  id: "/dashboard",
-  path: "/dashboard",
+  id: '/dashboard',
+  path: '/dashboard',
   getParentRoute: () => DashboardLayoutRoute,
-} as any);
-const DashboardVolunteersIndexRoute = DashboardVolunteersIndexRouteImport.update({
-  id: "/volunteers/",
-  path: "/volunteers/",
-  getParentRoute: () => DashboardLayoutRoute,
-} as any);
+} as any)
+const DashboardVolunteersIndexRoute =
+  DashboardVolunteersIndexRouteImport.update({
+    id: '/volunteers/',
+    path: '/volunteers/',
+    getParentRoute: () => DashboardLayoutRoute,
+  } as any)
 const DashboardTalksIndexRoute = DashboardTalksIndexRouteImport.update({
-  id: "/talks/",
-  path: "/talks/",
+  id: '/talks/',
+  path: '/talks/',
   getParentRoute: () => DashboardLayoutRoute,
-} as any);
+} as any)
 const DashboardSummariesIndexRoute = DashboardSummariesIndexRouteImport.update({
-  id: "/summaries/",
-  path: "/summaries/",
+  id: '/summaries/',
+  path: '/summaries/',
   getParentRoute: () => DashboardLayoutRoute,
-} as any);
-const DashboardSkillGroupsIndexRoute = DashboardSkillGroupsIndexRouteImport.update({
-  id: "/skill-groups/",
-  path: "/skill-groups/",
-  getParentRoute: () => DashboardLayoutRoute,
-} as any);
+} as any)
+const DashboardSkillGroupsIndexRoute =
+  DashboardSkillGroupsIndexRouteImport.update({
+    id: '/skill-groups/',
+    path: '/skill-groups/',
+    getParentRoute: () => DashboardLayoutRoute,
+  } as any)
 const DashboardSettingsIndexRoute = DashboardSettingsIndexRouteImport.update({
-  id: "/settings/",
-  path: "/settings/",
+  id: '/settings/',
+  path: '/settings/',
   getParentRoute: () => DashboardLayoutRoute,
-} as any);
-const DashboardSavedProjectsIndexRoute = DashboardSavedProjectsIndexRouteImport.update({
-  id: "/saved-projects/",
-  path: "/saved-projects/",
-  getParentRoute: () => DashboardLayoutRoute,
-} as any);
+} as any)
+const DashboardSavedProjectsIndexRoute =
+  DashboardSavedProjectsIndexRouteImport.update({
+    id: '/saved-projects/',
+    path: '/saved-projects/',
+    getParentRoute: () => DashboardLayoutRoute,
+  } as any)
 const DashboardResumesIndexRoute = DashboardResumesIndexRouteImport.update({
-  id: "/resumes/",
-  path: "/resumes/",
+  id: '/resumes/',
+  path: '/resumes/',
   getParentRoute: () => DashboardLayoutRoute,
-} as any);
-const DashboardResumeProjectsIndexRoute = DashboardResumeProjectsIndexRouteImport.update({
-  id: "/resume-projects/",
-  path: "/resume-projects/",
-  getParentRoute: () => DashboardLayoutRoute,
-} as any);
+} as any)
+const DashboardResumeProjectsIndexRoute =
+  DashboardResumeProjectsIndexRouteImport.update({
+    id: '/resume-projects/',
+    path: '/resume-projects/',
+    getParentRoute: () => DashboardLayoutRoute,
+  } as any)
 const DashboardReposIndexRoute = DashboardReposIndexRouteImport.update({
-  id: "/repos/",
-  path: "/repos/",
+  id: '/repos/',
+  path: '/repos/',
   getParentRoute: () => DashboardLayoutRoute,
-} as any);
+} as any)
 const DashboardProjectsIndexRoute = DashboardProjectsIndexRouteImport.update({
-  id: "/projects/",
-  path: "/projects/",
+  id: '/projects/',
+  path: '/projects/',
   getParentRoute: () => DashboardLayoutRoute,
-} as any);
+} as any)
 const DashboardLinksIndexRoute = DashboardLinksIndexRouteImport.update({
-  id: "/links/",
-  path: "/links/",
+  id: '/links/',
+  path: '/links/',
   getParentRoute: () => DashboardLayoutRoute,
-} as any);
+} as any)
 const DashboardLanguagesIndexRoute = DashboardLanguagesIndexRouteImport.update({
-  id: "/languages/",
-  path: "/languages/",
+  id: '/languages/',
+  path: '/languages/',
   getParentRoute: () => DashboardLayoutRoute,
-} as any);
-const DashboardExperiencesIndexRoute = DashboardExperiencesIndexRouteImport.update({
-  id: "/experiences/",
-  path: "/experiences/",
-  getParentRoute: () => DashboardLayoutRoute,
-} as any);
+} as any)
+const DashboardExperiencesIndexRoute =
+  DashboardExperiencesIndexRouteImport.update({
+    id: '/experiences/',
+    path: '/experiences/',
+    getParentRoute: () => DashboardLayoutRoute,
+  } as any)
 const DashboardEducationIndexRoute = DashboardEducationIndexRouteImport.update({
-  id: "/education/",
-  path: "/education/",
+  id: '/education/',
+  path: '/education/',
   getParentRoute: () => DashboardLayoutRoute,
-} as any);
+} as any)
 const DashboardContactsIndexRoute = DashboardContactsIndexRouteImport.update({
-  id: "/contacts/",
-  path: "/contacts/",
+  id: '/contacts/',
+  path: '/contacts/',
   getParentRoute: () => DashboardLayoutRoute,
-} as any);
-const DashboardCertificationsIndexRoute = DashboardCertificationsIndexRouteImport.update({
-  id: "/certifications/",
-  path: "/certifications/",
-  getParentRoute: () => DashboardLayoutRoute,
-} as any);
+} as any)
+const DashboardCertificationsIndexRoute =
+  DashboardCertificationsIndexRouteImport.update({
+    id: '/certifications/',
+    path: '/certifications/',
+    getParentRoute: () => DashboardLayoutRoute,
+  } as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
-  id: "/api/auth/$",
-  path: "/api/auth/$",
+  id: '/api/auth/$',
+  path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const ApiAiResumeTailorRoute = ApiAiResumeTailorRouteImport.update({
-  id: "/api/ai/resume-tailor",
-  path: "/api/ai/resume-tailor",
+  id: '/api/ai/resume-tailor',
+  path: '/api/ai/resume-tailor',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const ApiAgenticOpenapiRoute = ApiAgenticOpenapiRouteImport.update({
-  id: "/api/agentic/openapi",
-  path: "/api/agentic/openapi",
+  id: '/api/agentic/openapi',
+  path: '/api/agentic/openapi',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const ApiAgenticSplatRoute = ApiAgenticSplatRouteImport.update({
-  id: "/api/agentic/$",
-  path: "/api/agentic/$",
+  id: '/api/agentic/$',
+  path: '/api/agentic/$',
   getParentRoute: () => rootRouteImport,
-} as any);
-const DashboardResumesResumeIdIndexRoute = DashboardResumesResumeIdIndexRouteImport.update({
-  id: "/resumes/$resumeId/",
-  path: "/resumes/$resumeId/",
-  getParentRoute: () => DashboardLayoutRoute,
-} as any);
+} as any)
+const DashboardResumesResumeIdIndexRoute =
+  DashboardResumesResumeIdIndexRouteImport.update({
+    id: '/resumes/$resumeId/',
+    path: '/resumes/$resumeId/',
+    getParentRoute: () => DashboardLayoutRoute,
+  } as any)
 const ApiAgenticRpcSplatRoute = ApiAgenticRpcSplatRouteImport.update({
-  id: "/api/agentic/rpc/$",
-  path: "/api/agentic/rpc/$",
+  id: '/api/agentic/rpc/$',
+  path: '/api/agentic/rpc/$',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const ApiAgenticOpenapiJsonRoute = ApiAgenticOpenapiJsonRouteImport.update({
-  id: "/json",
-  path: "/json",
+  id: '/json',
+  path: '/json',
   getParentRoute: () => ApiAgenticOpenapiRoute,
-} as any);
+} as any)
 
 export interface FileRoutesByFullPath {
-  "/": typeof IndexRoute;
-  "/auth": typeof AuthLayoutRouteWithChildren;
-  "/search": typeof SearchRoute;
-  "/dashboard": typeof DashboardDashboardRoute;
-  "/preview": typeof PublicPreviewRoute;
-  "/api/mcp": typeof ApiMcpRoute;
-  "/auth/github": typeof AuthGithubRoute;
-  "/auth/signup": typeof AuthSignupRoute;
-  "/auth/": typeof AuthIndexRoute;
-  "/test/": typeof TestIndexRoute;
-  "/api/agentic/$": typeof ApiAgenticSplatRoute;
-  "/api/agentic/openapi": typeof ApiAgenticOpenapiRouteWithChildren;
-  "/api/ai/resume-tailor": typeof ApiAiResumeTailorRoute;
-  "/api/auth/$": typeof ApiAuthSplatRoute;
-  "/certifications/": typeof DashboardCertificationsIndexRoute;
-  "/contacts/": typeof DashboardContactsIndexRoute;
-  "/education/": typeof DashboardEducationIndexRoute;
-  "/experiences/": typeof DashboardExperiencesIndexRoute;
-  "/languages/": typeof DashboardLanguagesIndexRoute;
-  "/links/": typeof DashboardLinksIndexRoute;
-  "/projects/": typeof DashboardProjectsIndexRoute;
-  "/repos/": typeof DashboardReposIndexRoute;
-  "/resume-projects/": typeof DashboardResumeProjectsIndexRoute;
-  "/resumes/": typeof DashboardResumesIndexRoute;
-  "/saved-projects/": typeof DashboardSavedProjectsIndexRoute;
-  "/settings/": typeof DashboardSettingsIndexRoute;
-  "/skill-groups/": typeof DashboardSkillGroupsIndexRoute;
-  "/summaries/": typeof DashboardSummariesIndexRoute;
-  "/talks/": typeof DashboardTalksIndexRoute;
-  "/volunteers/": typeof DashboardVolunteersIndexRoute;
-  "/api/agentic/openapi/json": typeof ApiAgenticOpenapiJsonRoute;
-  "/api/agentic/rpc/$": typeof ApiAgenticRpcSplatRoute;
-  "/resumes/$resumeId/": typeof DashboardResumesResumeIdIndexRoute;
+  '/': typeof IndexRoute
+  '/auth': typeof AuthLayoutRouteWithChildren
+  '/search': typeof SearchRoute
+  '/dashboard': typeof DashboardDashboardRoute
+  '/preview': typeof PublicPreviewRoute
+  '/api/mcp': typeof ApiMcpRoute
+  '/auth/github': typeof AuthGithubRoute
+  '/auth/signup': typeof AuthSignupRoute
+  '/auth/': typeof AuthIndexRoute
+  '/test/': typeof TestIndexRoute
+  '/api/agentic/$': typeof ApiAgenticSplatRoute
+  '/api/agentic/openapi': typeof ApiAgenticOpenapiRouteWithChildren
+  '/api/ai/resume-tailor': typeof ApiAiResumeTailorRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
+  '/certifications/': typeof DashboardCertificationsIndexRoute
+  '/contacts/': typeof DashboardContactsIndexRoute
+  '/education/': typeof DashboardEducationIndexRoute
+  '/experiences/': typeof DashboardExperiencesIndexRoute
+  '/languages/': typeof DashboardLanguagesIndexRoute
+  '/links/': typeof DashboardLinksIndexRoute
+  '/projects/': typeof DashboardProjectsIndexRoute
+  '/repos/': typeof DashboardReposIndexRoute
+  '/resume-projects/': typeof DashboardResumeProjectsIndexRoute
+  '/resumes/': typeof DashboardResumesIndexRoute
+  '/saved-projects/': typeof DashboardSavedProjectsIndexRoute
+  '/settings/': typeof DashboardSettingsIndexRoute
+  '/skill-groups/': typeof DashboardSkillGroupsIndexRoute
+  '/summaries/': typeof DashboardSummariesIndexRoute
+  '/talks/': typeof DashboardTalksIndexRoute
+  '/volunteers/': typeof DashboardVolunteersIndexRoute
+  '/api/agentic/openapi/json': typeof ApiAgenticOpenapiJsonRoute
+  '/api/agentic/rpc/$': typeof ApiAgenticRpcSplatRoute
+  '/resumes/$resumeId/': typeof DashboardResumesResumeIdIndexRoute
 }
 export interface FileRoutesByTo {
-  "/": typeof IndexRoute;
-  "/search": typeof SearchRoute;
-  "/dashboard": typeof DashboardDashboardRoute;
-  "/preview": typeof PublicPreviewRoute;
-  "/api/mcp": typeof ApiMcpRoute;
-  "/auth/github": typeof AuthGithubRoute;
-  "/auth/signup": typeof AuthSignupRoute;
-  "/auth": typeof AuthIndexRoute;
-  "/test": typeof TestIndexRoute;
-  "/api/agentic/$": typeof ApiAgenticSplatRoute;
-  "/api/agentic/openapi": typeof ApiAgenticOpenapiRouteWithChildren;
-  "/api/ai/resume-tailor": typeof ApiAiResumeTailorRoute;
-  "/api/auth/$": typeof ApiAuthSplatRoute;
-  "/certifications": typeof DashboardCertificationsIndexRoute;
-  "/contacts": typeof DashboardContactsIndexRoute;
-  "/education": typeof DashboardEducationIndexRoute;
-  "/experiences": typeof DashboardExperiencesIndexRoute;
-  "/languages": typeof DashboardLanguagesIndexRoute;
-  "/links": typeof DashboardLinksIndexRoute;
-  "/projects": typeof DashboardProjectsIndexRoute;
-  "/repos": typeof DashboardReposIndexRoute;
-  "/resume-projects": typeof DashboardResumeProjectsIndexRoute;
-  "/resumes": typeof DashboardResumesIndexRoute;
-  "/saved-projects": typeof DashboardSavedProjectsIndexRoute;
-  "/settings": typeof DashboardSettingsIndexRoute;
-  "/skill-groups": typeof DashboardSkillGroupsIndexRoute;
-  "/summaries": typeof DashboardSummariesIndexRoute;
-  "/talks": typeof DashboardTalksIndexRoute;
-  "/volunteers": typeof DashboardVolunteersIndexRoute;
-  "/api/agentic/openapi/json": typeof ApiAgenticOpenapiJsonRoute;
-  "/api/agentic/rpc/$": typeof ApiAgenticRpcSplatRoute;
-  "/resumes/$resumeId": typeof DashboardResumesResumeIdIndexRoute;
+  '/': typeof IndexRoute
+  '/search': typeof SearchRoute
+  '/dashboard': typeof DashboardDashboardRoute
+  '/preview': typeof PublicPreviewRoute
+  '/api/mcp': typeof ApiMcpRoute
+  '/auth/github': typeof AuthGithubRoute
+  '/auth/signup': typeof AuthSignupRoute
+  '/auth': typeof AuthIndexRoute
+  '/test': typeof TestIndexRoute
+  '/api/agentic/$': typeof ApiAgenticSplatRoute
+  '/api/agentic/openapi': typeof ApiAgenticOpenapiRouteWithChildren
+  '/api/ai/resume-tailor': typeof ApiAiResumeTailorRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
+  '/certifications': typeof DashboardCertificationsIndexRoute
+  '/contacts': typeof DashboardContactsIndexRoute
+  '/education': typeof DashboardEducationIndexRoute
+  '/experiences': typeof DashboardExperiencesIndexRoute
+  '/languages': typeof DashboardLanguagesIndexRoute
+  '/links': typeof DashboardLinksIndexRoute
+  '/projects': typeof DashboardProjectsIndexRoute
+  '/repos': typeof DashboardReposIndexRoute
+  '/resume-projects': typeof DashboardResumeProjectsIndexRoute
+  '/resumes': typeof DashboardResumesIndexRoute
+  '/saved-projects': typeof DashboardSavedProjectsIndexRoute
+  '/settings': typeof DashboardSettingsIndexRoute
+  '/skill-groups': typeof DashboardSkillGroupsIndexRoute
+  '/summaries': typeof DashboardSummariesIndexRoute
+  '/talks': typeof DashboardTalksIndexRoute
+  '/volunteers': typeof DashboardVolunteersIndexRoute
+  '/api/agentic/openapi/json': typeof ApiAgenticOpenapiJsonRoute
+  '/api/agentic/rpc/$': typeof ApiAgenticRpcSplatRoute
+  '/resumes/$resumeId': typeof DashboardResumesResumeIdIndexRoute
 }
 export interface FileRoutesById {
-  __root__: typeof rootRouteImport;
-  "/": typeof IndexRoute;
-  "/_dashboard": typeof DashboardLayoutRouteWithChildren;
-  "/_public": typeof PublicLayoutRouteWithChildren;
-  "/auth": typeof AuthLayoutRouteWithChildren;
-  "/search": typeof SearchRoute;
-  "/_dashboard/dashboard": typeof DashboardDashboardRoute;
-  "/_public/preview": typeof PublicPreviewRoute;
-  "/api/mcp": typeof ApiMcpRoute;
-  "/auth/github": typeof AuthGithubRoute;
-  "/auth/signup": typeof AuthSignupRoute;
-  "/auth/": typeof AuthIndexRoute;
-  "/test/": typeof TestIndexRoute;
-  "/api/agentic/$": typeof ApiAgenticSplatRoute;
-  "/api/agentic/openapi": typeof ApiAgenticOpenapiRouteWithChildren;
-  "/api/ai/resume-tailor": typeof ApiAiResumeTailorRoute;
-  "/api/auth/$": typeof ApiAuthSplatRoute;
-  "/_dashboard/certifications/": typeof DashboardCertificationsIndexRoute;
-  "/_dashboard/contacts/": typeof DashboardContactsIndexRoute;
-  "/_dashboard/education/": typeof DashboardEducationIndexRoute;
-  "/_dashboard/experiences/": typeof DashboardExperiencesIndexRoute;
-  "/_dashboard/languages/": typeof DashboardLanguagesIndexRoute;
-  "/_dashboard/links/": typeof DashboardLinksIndexRoute;
-  "/_dashboard/projects/": typeof DashboardProjectsIndexRoute;
-  "/_dashboard/repos/": typeof DashboardReposIndexRoute;
-  "/_dashboard/resume-projects/": typeof DashboardResumeProjectsIndexRoute;
-  "/_dashboard/resumes/": typeof DashboardResumesIndexRoute;
-  "/_dashboard/saved-projects/": typeof DashboardSavedProjectsIndexRoute;
-  "/_dashboard/settings/": typeof DashboardSettingsIndexRoute;
-  "/_dashboard/skill-groups/": typeof DashboardSkillGroupsIndexRoute;
-  "/_dashboard/summaries/": typeof DashboardSummariesIndexRoute;
-  "/_dashboard/talks/": typeof DashboardTalksIndexRoute;
-  "/_dashboard/volunteers/": typeof DashboardVolunteersIndexRoute;
-  "/api/agentic/openapi/json": typeof ApiAgenticOpenapiJsonRoute;
-  "/api/agentic/rpc/$": typeof ApiAgenticRpcSplatRoute;
-  "/_dashboard/resumes/$resumeId/": typeof DashboardResumesResumeIdIndexRoute;
+  __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
+  '/_dashboard': typeof DashboardLayoutRouteWithChildren
+  '/_public': typeof PublicLayoutRouteWithChildren
+  '/auth': typeof AuthLayoutRouteWithChildren
+  '/search': typeof SearchRoute
+  '/_dashboard/dashboard': typeof DashboardDashboardRoute
+  '/_public/preview': typeof PublicPreviewRoute
+  '/api/mcp': typeof ApiMcpRoute
+  '/auth/github': typeof AuthGithubRoute
+  '/auth/signup': typeof AuthSignupRoute
+  '/auth/': typeof AuthIndexRoute
+  '/test/': typeof TestIndexRoute
+  '/api/agentic/$': typeof ApiAgenticSplatRoute
+  '/api/agentic/openapi': typeof ApiAgenticOpenapiRouteWithChildren
+  '/api/ai/resume-tailor': typeof ApiAiResumeTailorRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
+  '/_dashboard/certifications/': typeof DashboardCertificationsIndexRoute
+  '/_dashboard/contacts/': typeof DashboardContactsIndexRoute
+  '/_dashboard/education/': typeof DashboardEducationIndexRoute
+  '/_dashboard/experiences/': typeof DashboardExperiencesIndexRoute
+  '/_dashboard/languages/': typeof DashboardLanguagesIndexRoute
+  '/_dashboard/links/': typeof DashboardLinksIndexRoute
+  '/_dashboard/projects/': typeof DashboardProjectsIndexRoute
+  '/_dashboard/repos/': typeof DashboardReposIndexRoute
+  '/_dashboard/resume-projects/': typeof DashboardResumeProjectsIndexRoute
+  '/_dashboard/resumes/': typeof DashboardResumesIndexRoute
+  '/_dashboard/saved-projects/': typeof DashboardSavedProjectsIndexRoute
+  '/_dashboard/settings/': typeof DashboardSettingsIndexRoute
+  '/_dashboard/skill-groups/': typeof DashboardSkillGroupsIndexRoute
+  '/_dashboard/summaries/': typeof DashboardSummariesIndexRoute
+  '/_dashboard/talks/': typeof DashboardTalksIndexRoute
+  '/_dashboard/volunteers/': typeof DashboardVolunteersIndexRoute
+  '/api/agentic/openapi/json': typeof ApiAgenticOpenapiJsonRoute
+  '/api/agentic/rpc/$': typeof ApiAgenticRpcSplatRoute
+  '/_dashboard/resumes/$resumeId/': typeof DashboardResumesResumeIdIndexRoute
 }
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath;
+  fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | "/"
-    | "/auth"
-    | "/search"
-    | "/dashboard"
-    | "/preview"
-    | "/api/mcp"
-    | "/auth/github"
-    | "/auth/signup"
-    | "/auth/"
-    | "/test/"
-    | "/api/agentic/$"
-    | "/api/agentic/openapi"
-    | "/api/ai/resume-tailor"
-    | "/api/auth/$"
-    | "/certifications/"
-    | "/contacts/"
-    | "/education/"
-    | "/experiences/"
-    | "/languages/"
-    | "/links/"
-    | "/projects/"
-    | "/repos/"
-    | "/resume-projects/"
-    | "/resumes/"
-    | "/saved-projects/"
-    | "/settings/"
-    | "/skill-groups/"
-    | "/summaries/"
-    | "/talks/"
-    | "/volunteers/"
-    | "/api/agentic/openapi/json"
-    | "/api/agentic/rpc/$"
-    | "/resumes/$resumeId/";
-  fileRoutesByTo: FileRoutesByTo;
+    | '/'
+    | '/auth'
+    | '/search'
+    | '/dashboard'
+    | '/preview'
+    | '/api/mcp'
+    | '/auth/github'
+    | '/auth/signup'
+    | '/auth/'
+    | '/test/'
+    | '/api/agentic/$'
+    | '/api/agentic/openapi'
+    | '/api/ai/resume-tailor'
+    | '/api/auth/$'
+    | '/certifications/'
+    | '/contacts/'
+    | '/education/'
+    | '/experiences/'
+    | '/languages/'
+    | '/links/'
+    | '/projects/'
+    | '/repos/'
+    | '/resume-projects/'
+    | '/resumes/'
+    | '/saved-projects/'
+    | '/settings/'
+    | '/skill-groups/'
+    | '/summaries/'
+    | '/talks/'
+    | '/volunteers/'
+    | '/api/agentic/openapi/json'
+    | '/api/agentic/rpc/$'
+    | '/resumes/$resumeId/'
+  fileRoutesByTo: FileRoutesByTo
   to:
-    | "/"
-    | "/search"
-    | "/dashboard"
-    | "/preview"
-    | "/api/mcp"
-    | "/auth/github"
-    | "/auth/signup"
-    | "/auth"
-    | "/test"
-    | "/api/agentic/$"
-    | "/api/agentic/openapi"
-    | "/api/ai/resume-tailor"
-    | "/api/auth/$"
-    | "/certifications"
-    | "/contacts"
-    | "/education"
-    | "/experiences"
-    | "/languages"
-    | "/links"
-    | "/projects"
-    | "/repos"
-    | "/resume-projects"
-    | "/resumes"
-    | "/saved-projects"
-    | "/settings"
-    | "/skill-groups"
-    | "/summaries"
-    | "/talks"
-    | "/volunteers"
-    | "/api/agentic/openapi/json"
-    | "/api/agentic/rpc/$"
-    | "/resumes/$resumeId";
+    | '/'
+    | '/search'
+    | '/dashboard'
+    | '/preview'
+    | '/api/mcp'
+    | '/auth/github'
+    | '/auth/signup'
+    | '/auth'
+    | '/test'
+    | '/api/agentic/$'
+    | '/api/agentic/openapi'
+    | '/api/ai/resume-tailor'
+    | '/api/auth/$'
+    | '/certifications'
+    | '/contacts'
+    | '/education'
+    | '/experiences'
+    | '/languages'
+    | '/links'
+    | '/projects'
+    | '/repos'
+    | '/resume-projects'
+    | '/resumes'
+    | '/saved-projects'
+    | '/settings'
+    | '/skill-groups'
+    | '/summaries'
+    | '/talks'
+    | '/volunteers'
+    | '/api/agentic/openapi/json'
+    | '/api/agentic/rpc/$'
+    | '/resumes/$resumeId'
   id:
-    | "__root__"
-    | "/"
-    | "/_dashboard"
-    | "/_public"
-    | "/auth"
-    | "/search"
-    | "/_dashboard/dashboard"
-    | "/_public/preview"
-    | "/api/mcp"
-    | "/auth/github"
-    | "/auth/signup"
-    | "/auth/"
-    | "/test/"
-    | "/api/agentic/$"
-    | "/api/agentic/openapi"
-    | "/api/ai/resume-tailor"
-    | "/api/auth/$"
-    | "/_dashboard/certifications/"
-    | "/_dashboard/contacts/"
-    | "/_dashboard/education/"
-    | "/_dashboard/experiences/"
-    | "/_dashboard/languages/"
-    | "/_dashboard/links/"
-    | "/_dashboard/projects/"
-    | "/_dashboard/repos/"
-    | "/_dashboard/resume-projects/"
-    | "/_dashboard/resumes/"
-    | "/_dashboard/saved-projects/"
-    | "/_dashboard/settings/"
-    | "/_dashboard/skill-groups/"
-    | "/_dashboard/summaries/"
-    | "/_dashboard/talks/"
-    | "/_dashboard/volunteers/"
-    | "/api/agentic/openapi/json"
-    | "/api/agentic/rpc/$"
-    | "/_dashboard/resumes/$resumeId/";
-  fileRoutesById: FileRoutesById;
+    | '__root__'
+    | '/'
+    | '/_dashboard'
+    | '/_public'
+    | '/auth'
+    | '/search'
+    | '/_dashboard/dashboard'
+    | '/_public/preview'
+    | '/api/mcp'
+    | '/auth/github'
+    | '/auth/signup'
+    | '/auth/'
+    | '/test/'
+    | '/api/agentic/$'
+    | '/api/agentic/openapi'
+    | '/api/ai/resume-tailor'
+    | '/api/auth/$'
+    | '/_dashboard/certifications/'
+    | '/_dashboard/contacts/'
+    | '/_dashboard/education/'
+    | '/_dashboard/experiences/'
+    | '/_dashboard/languages/'
+    | '/_dashboard/links/'
+    | '/_dashboard/projects/'
+    | '/_dashboard/repos/'
+    | '/_dashboard/resume-projects/'
+    | '/_dashboard/resumes/'
+    | '/_dashboard/saved-projects/'
+    | '/_dashboard/settings/'
+    | '/_dashboard/skill-groups/'
+    | '/_dashboard/summaries/'
+    | '/_dashboard/talks/'
+    | '/_dashboard/volunteers/'
+    | '/api/agentic/openapi/json'
+    | '/api/agentic/rpc/$'
+    | '/_dashboard/resumes/$resumeId/'
+  fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute;
-  DashboardLayoutRoute: typeof DashboardLayoutRouteWithChildren;
-  PublicLayoutRoute: typeof PublicLayoutRouteWithChildren;
-  AuthLayoutRoute: typeof AuthLayoutRouteWithChildren;
-  SearchRoute: typeof SearchRoute;
-  ApiMcpRoute: typeof ApiMcpRoute;
-  TestIndexRoute: typeof TestIndexRoute;
-  ApiAgenticSplatRoute: typeof ApiAgenticSplatRoute;
-  ApiAgenticOpenapiRoute: typeof ApiAgenticOpenapiRouteWithChildren;
-  ApiAiResumeTailorRoute: typeof ApiAiResumeTailorRoute;
-  ApiAuthSplatRoute: typeof ApiAuthSplatRoute;
-  ApiAgenticRpcSplatRoute: typeof ApiAgenticRpcSplatRoute;
+  IndexRoute: typeof IndexRoute
+  DashboardLayoutRoute: typeof DashboardLayoutRouteWithChildren
+  PublicLayoutRoute: typeof PublicLayoutRouteWithChildren
+  AuthLayoutRoute: typeof AuthLayoutRouteWithChildren
+  SearchRoute: typeof SearchRoute
+  ApiMcpRoute: typeof ApiMcpRoute
+  TestIndexRoute: typeof TestIndexRoute
+  ApiAgenticSplatRoute: typeof ApiAgenticSplatRoute
+  ApiAgenticOpenapiRoute: typeof ApiAgenticOpenapiRouteWithChildren
+  ApiAiResumeTailorRoute: typeof ApiAiResumeTailorRoute
+  ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  ApiAgenticRpcSplatRoute: typeof ApiAgenticRpcSplatRoute
 }
 
-declare module "@tanstack/react-router" {
+declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    "/search": {
-      id: "/search";
-      path: "/search";
-      fullPath: "/search";
-      preLoaderRoute: typeof SearchRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/auth": {
-      id: "/auth";
-      path: "/auth";
-      fullPath: "/auth";
-      preLoaderRoute: typeof AuthLayoutRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/_public": {
-      id: "/_public";
-      path: "";
-      fullPath: "/";
-      preLoaderRoute: typeof PublicLayoutRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/_dashboard": {
-      id: "/_dashboard";
-      path: "";
-      fullPath: "/";
-      preLoaderRoute: typeof DashboardLayoutRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/": {
-      id: "/";
-      path: "/";
-      fullPath: "/";
-      preLoaderRoute: typeof IndexRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/test/": {
-      id: "/test/";
-      path: "/test";
-      fullPath: "/test/";
-      preLoaderRoute: typeof TestIndexRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/auth/": {
-      id: "/auth/";
-      path: "/";
-      fullPath: "/auth/";
-      preLoaderRoute: typeof AuthIndexRouteImport;
-      parentRoute: typeof AuthLayoutRoute;
-    };
-    "/auth/signup": {
-      id: "/auth/signup";
-      path: "/signup";
-      fullPath: "/auth/signup";
-      preLoaderRoute: typeof AuthSignupRouteImport;
-      parentRoute: typeof AuthLayoutRoute;
-    };
-    "/auth/github": {
-      id: "/auth/github";
-      path: "/github";
-      fullPath: "/auth/github";
-      preLoaderRoute: typeof AuthGithubRouteImport;
-      parentRoute: typeof AuthLayoutRoute;
-    };
-    "/api/mcp": {
-      id: "/api/mcp";
-      path: "/api/mcp";
-      fullPath: "/api/mcp";
-      preLoaderRoute: typeof ApiMcpRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/_public/preview": {
-      id: "/_public/preview";
-      path: "/preview";
-      fullPath: "/preview";
-      preLoaderRoute: typeof PublicPreviewRouteImport;
-      parentRoute: typeof PublicLayoutRoute;
-    };
-    "/_dashboard/dashboard": {
-      id: "/_dashboard/dashboard";
-      path: "/dashboard";
-      fullPath: "/dashboard";
-      preLoaderRoute: typeof DashboardDashboardRouteImport;
-      parentRoute: typeof DashboardLayoutRoute;
-    };
-    "/_dashboard/volunteers/": {
-      id: "/_dashboard/volunteers/";
-      path: "/volunteers";
-      fullPath: "/volunteers/";
-      preLoaderRoute: typeof DashboardVolunteersIndexRouteImport;
-      parentRoute: typeof DashboardLayoutRoute;
-    };
-    "/_dashboard/talks/": {
-      id: "/_dashboard/talks/";
-      path: "/talks";
-      fullPath: "/talks/";
-      preLoaderRoute: typeof DashboardTalksIndexRouteImport;
-      parentRoute: typeof DashboardLayoutRoute;
-    };
-    "/_dashboard/summaries/": {
-      id: "/_dashboard/summaries/";
-      path: "/summaries";
-      fullPath: "/summaries/";
-      preLoaderRoute: typeof DashboardSummariesIndexRouteImport;
-      parentRoute: typeof DashboardLayoutRoute;
-    };
-    "/_dashboard/skill-groups/": {
-      id: "/_dashboard/skill-groups/";
-      path: "/skill-groups";
-      fullPath: "/skill-groups/";
-      preLoaderRoute: typeof DashboardSkillGroupsIndexRouteImport;
-      parentRoute: typeof DashboardLayoutRoute;
-    };
-    "/_dashboard/settings/": {
-      id: "/_dashboard/settings/";
-      path: "/settings";
-      fullPath: "/settings/";
-      preLoaderRoute: typeof DashboardSettingsIndexRouteImport;
-      parentRoute: typeof DashboardLayoutRoute;
-    };
-    "/_dashboard/saved-projects/": {
-      id: "/_dashboard/saved-projects/";
-      path: "/saved-projects";
-      fullPath: "/saved-projects/";
-      preLoaderRoute: typeof DashboardSavedProjectsIndexRouteImport;
-      parentRoute: typeof DashboardLayoutRoute;
-    };
-    "/_dashboard/resumes/": {
-      id: "/_dashboard/resumes/";
-      path: "/resumes";
-      fullPath: "/resumes/";
-      preLoaderRoute: typeof DashboardResumesIndexRouteImport;
-      parentRoute: typeof DashboardLayoutRoute;
-    };
-    "/_dashboard/resume-projects/": {
-      id: "/_dashboard/resume-projects/";
-      path: "/resume-projects";
-      fullPath: "/resume-projects/";
-      preLoaderRoute: typeof DashboardResumeProjectsIndexRouteImport;
-      parentRoute: typeof DashboardLayoutRoute;
-    };
-    "/_dashboard/repos/": {
-      id: "/_dashboard/repos/";
-      path: "/repos";
-      fullPath: "/repos/";
-      preLoaderRoute: typeof DashboardReposIndexRouteImport;
-      parentRoute: typeof DashboardLayoutRoute;
-    };
-    "/_dashboard/projects/": {
-      id: "/_dashboard/projects/";
-      path: "/projects";
-      fullPath: "/projects/";
-      preLoaderRoute: typeof DashboardProjectsIndexRouteImport;
-      parentRoute: typeof DashboardLayoutRoute;
-    };
-    "/_dashboard/links/": {
-      id: "/_dashboard/links/";
-      path: "/links";
-      fullPath: "/links/";
-      preLoaderRoute: typeof DashboardLinksIndexRouteImport;
-      parentRoute: typeof DashboardLayoutRoute;
-    };
-    "/_dashboard/languages/": {
-      id: "/_dashboard/languages/";
-      path: "/languages";
-      fullPath: "/languages/";
-      preLoaderRoute: typeof DashboardLanguagesIndexRouteImport;
-      parentRoute: typeof DashboardLayoutRoute;
-    };
-    "/_dashboard/experiences/": {
-      id: "/_dashboard/experiences/";
-      path: "/experiences";
-      fullPath: "/experiences/";
-      preLoaderRoute: typeof DashboardExperiencesIndexRouteImport;
-      parentRoute: typeof DashboardLayoutRoute;
-    };
-    "/_dashboard/education/": {
-      id: "/_dashboard/education/";
-      path: "/education";
-      fullPath: "/education/";
-      preLoaderRoute: typeof DashboardEducationIndexRouteImport;
-      parentRoute: typeof DashboardLayoutRoute;
-    };
-    "/_dashboard/contacts/": {
-      id: "/_dashboard/contacts/";
-      path: "/contacts";
-      fullPath: "/contacts/";
-      preLoaderRoute: typeof DashboardContactsIndexRouteImport;
-      parentRoute: typeof DashboardLayoutRoute;
-    };
-    "/_dashboard/certifications/": {
-      id: "/_dashboard/certifications/";
-      path: "/certifications";
-      fullPath: "/certifications/";
-      preLoaderRoute: typeof DashboardCertificationsIndexRouteImport;
-      parentRoute: typeof DashboardLayoutRoute;
-    };
-    "/api/auth/$": {
-      id: "/api/auth/$";
-      path: "/api/auth/$";
-      fullPath: "/api/auth/$";
-      preLoaderRoute: typeof ApiAuthSplatRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/api/ai/resume-tailor": {
-      id: "/api/ai/resume-tailor";
-      path: "/api/ai/resume-tailor";
-      fullPath: "/api/ai/resume-tailor";
-      preLoaderRoute: typeof ApiAiResumeTailorRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/api/agentic/openapi": {
-      id: "/api/agentic/openapi";
-      path: "/api/agentic/openapi";
-      fullPath: "/api/agentic/openapi";
-      preLoaderRoute: typeof ApiAgenticOpenapiRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/api/agentic/$": {
-      id: "/api/agentic/$";
-      path: "/api/agentic/$";
-      fullPath: "/api/agentic/$";
-      preLoaderRoute: typeof ApiAgenticSplatRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/_dashboard/resumes/$resumeId/": {
-      id: "/_dashboard/resumes/$resumeId/";
-      path: "/resumes/$resumeId";
-      fullPath: "/resumes/$resumeId/";
-      preLoaderRoute: typeof DashboardResumesResumeIdIndexRouteImport;
-      parentRoute: typeof DashboardLayoutRoute;
-    };
-    "/api/agentic/rpc/$": {
-      id: "/api/agentic/rpc/$";
-      path: "/api/agentic/rpc/$";
-      fullPath: "/api/agentic/rpc/$";
-      preLoaderRoute: typeof ApiAgenticRpcSplatRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/api/agentic/openapi/json": {
-      id: "/api/agentic/openapi/json";
-      path: "/json";
-      fullPath: "/api/agentic/openapi/json";
-      preLoaderRoute: typeof ApiAgenticOpenapiJsonRouteImport;
-      parentRoute: typeof ApiAgenticOpenapiRoute;
-    };
+    '/search': {
+      id: '/search'
+      path: '/search'
+      fullPath: '/search'
+      preLoaderRoute: typeof SearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthLayoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_public': {
+      id: '/_public'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof PublicLayoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_dashboard': {
+      id: '/_dashboard'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof DashboardLayoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/test/': {
+      id: '/test/'
+      path: '/test'
+      fullPath: '/test/'
+      preLoaderRoute: typeof TestIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/': {
+      id: '/auth/'
+      path: '/'
+      fullPath: '/auth/'
+      preLoaderRoute: typeof AuthIndexRouteImport
+      parentRoute: typeof AuthLayoutRoute
+    }
+    '/auth/signup': {
+      id: '/auth/signup'
+      path: '/signup'
+      fullPath: '/auth/signup'
+      preLoaderRoute: typeof AuthSignupRouteImport
+      parentRoute: typeof AuthLayoutRoute
+    }
+    '/auth/github': {
+      id: '/auth/github'
+      path: '/github'
+      fullPath: '/auth/github'
+      preLoaderRoute: typeof AuthGithubRouteImport
+      parentRoute: typeof AuthLayoutRoute
+    }
+    '/api/mcp': {
+      id: '/api/mcp'
+      path: '/api/mcp'
+      fullPath: '/api/mcp'
+      preLoaderRoute: typeof ApiMcpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_public/preview': {
+      id: '/_public/preview'
+      path: '/preview'
+      fullPath: '/preview'
+      preLoaderRoute: typeof PublicPreviewRouteImport
+      parentRoute: typeof PublicLayoutRoute
+    }
+    '/_dashboard/dashboard': {
+      id: '/_dashboard/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardDashboardRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
+    '/_dashboard/volunteers/': {
+      id: '/_dashboard/volunteers/'
+      path: '/volunteers'
+      fullPath: '/volunteers/'
+      preLoaderRoute: typeof DashboardVolunteersIndexRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
+    '/_dashboard/talks/': {
+      id: '/_dashboard/talks/'
+      path: '/talks'
+      fullPath: '/talks/'
+      preLoaderRoute: typeof DashboardTalksIndexRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
+    '/_dashboard/summaries/': {
+      id: '/_dashboard/summaries/'
+      path: '/summaries'
+      fullPath: '/summaries/'
+      preLoaderRoute: typeof DashboardSummariesIndexRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
+    '/_dashboard/skill-groups/': {
+      id: '/_dashboard/skill-groups/'
+      path: '/skill-groups'
+      fullPath: '/skill-groups/'
+      preLoaderRoute: typeof DashboardSkillGroupsIndexRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
+    '/_dashboard/settings/': {
+      id: '/_dashboard/settings/'
+      path: '/settings'
+      fullPath: '/settings/'
+      preLoaderRoute: typeof DashboardSettingsIndexRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
+    '/_dashboard/saved-projects/': {
+      id: '/_dashboard/saved-projects/'
+      path: '/saved-projects'
+      fullPath: '/saved-projects/'
+      preLoaderRoute: typeof DashboardSavedProjectsIndexRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
+    '/_dashboard/resumes/': {
+      id: '/_dashboard/resumes/'
+      path: '/resumes'
+      fullPath: '/resumes/'
+      preLoaderRoute: typeof DashboardResumesIndexRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
+    '/_dashboard/resume-projects/': {
+      id: '/_dashboard/resume-projects/'
+      path: '/resume-projects'
+      fullPath: '/resume-projects/'
+      preLoaderRoute: typeof DashboardResumeProjectsIndexRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
+    '/_dashboard/repos/': {
+      id: '/_dashboard/repos/'
+      path: '/repos'
+      fullPath: '/repos/'
+      preLoaderRoute: typeof DashboardReposIndexRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
+    '/_dashboard/projects/': {
+      id: '/_dashboard/projects/'
+      path: '/projects'
+      fullPath: '/projects/'
+      preLoaderRoute: typeof DashboardProjectsIndexRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
+    '/_dashboard/links/': {
+      id: '/_dashboard/links/'
+      path: '/links'
+      fullPath: '/links/'
+      preLoaderRoute: typeof DashboardLinksIndexRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
+    '/_dashboard/languages/': {
+      id: '/_dashboard/languages/'
+      path: '/languages'
+      fullPath: '/languages/'
+      preLoaderRoute: typeof DashboardLanguagesIndexRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
+    '/_dashboard/experiences/': {
+      id: '/_dashboard/experiences/'
+      path: '/experiences'
+      fullPath: '/experiences/'
+      preLoaderRoute: typeof DashboardExperiencesIndexRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
+    '/_dashboard/education/': {
+      id: '/_dashboard/education/'
+      path: '/education'
+      fullPath: '/education/'
+      preLoaderRoute: typeof DashboardEducationIndexRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
+    '/_dashboard/contacts/': {
+      id: '/_dashboard/contacts/'
+      path: '/contacts'
+      fullPath: '/contacts/'
+      preLoaderRoute: typeof DashboardContactsIndexRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
+    '/_dashboard/certifications/': {
+      id: '/_dashboard/certifications/'
+      path: '/certifications'
+      fullPath: '/certifications/'
+      preLoaderRoute: typeof DashboardCertificationsIndexRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
+    '/api/auth/$': {
+      id: '/api/auth/$'
+      path: '/api/auth/$'
+      fullPath: '/api/auth/$'
+      preLoaderRoute: typeof ApiAuthSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/ai/resume-tailor': {
+      id: '/api/ai/resume-tailor'
+      path: '/api/ai/resume-tailor'
+      fullPath: '/api/ai/resume-tailor'
+      preLoaderRoute: typeof ApiAiResumeTailorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/agentic/openapi': {
+      id: '/api/agentic/openapi'
+      path: '/api/agentic/openapi'
+      fullPath: '/api/agentic/openapi'
+      preLoaderRoute: typeof ApiAgenticOpenapiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/agentic/$': {
+      id: '/api/agentic/$'
+      path: '/api/agentic/$'
+      fullPath: '/api/agentic/$'
+      preLoaderRoute: typeof ApiAgenticSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_dashboard/resumes/$resumeId/': {
+      id: '/_dashboard/resumes/$resumeId/'
+      path: '/resumes/$resumeId'
+      fullPath: '/resumes/$resumeId/'
+      preLoaderRoute: typeof DashboardResumesResumeIdIndexRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
+    '/api/agentic/rpc/$': {
+      id: '/api/agentic/rpc/$'
+      path: '/api/agentic/rpc/$'
+      fullPath: '/api/agentic/rpc/$'
+      preLoaderRoute: typeof ApiAgenticRpcSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/agentic/openapi/json': {
+      id: '/api/agentic/openapi/json'
+      path: '/json'
+      fullPath: '/api/agentic/openapi/json'
+      preLoaderRoute: typeof ApiAgenticOpenapiJsonRouteImport
+      parentRoute: typeof ApiAgenticOpenapiRoute
+    }
   }
 }
 
 interface DashboardLayoutRouteChildren {
-  DashboardDashboardRoute: typeof DashboardDashboardRoute;
-  DashboardCertificationsIndexRoute: typeof DashboardCertificationsIndexRoute;
-  DashboardContactsIndexRoute: typeof DashboardContactsIndexRoute;
-  DashboardEducationIndexRoute: typeof DashboardEducationIndexRoute;
-  DashboardExperiencesIndexRoute: typeof DashboardExperiencesIndexRoute;
-  DashboardLanguagesIndexRoute: typeof DashboardLanguagesIndexRoute;
-  DashboardLinksIndexRoute: typeof DashboardLinksIndexRoute;
-  DashboardProjectsIndexRoute: typeof DashboardProjectsIndexRoute;
-  DashboardReposIndexRoute: typeof DashboardReposIndexRoute;
-  DashboardResumeProjectsIndexRoute: typeof DashboardResumeProjectsIndexRoute;
-  DashboardResumesIndexRoute: typeof DashboardResumesIndexRoute;
-  DashboardSavedProjectsIndexRoute: typeof DashboardSavedProjectsIndexRoute;
-  DashboardSettingsIndexRoute: typeof DashboardSettingsIndexRoute;
-  DashboardSkillGroupsIndexRoute: typeof DashboardSkillGroupsIndexRoute;
-  DashboardSummariesIndexRoute: typeof DashboardSummariesIndexRoute;
-  DashboardTalksIndexRoute: typeof DashboardTalksIndexRoute;
-  DashboardVolunteersIndexRoute: typeof DashboardVolunteersIndexRoute;
-  DashboardResumesResumeIdIndexRoute: typeof DashboardResumesResumeIdIndexRoute;
+  DashboardDashboardRoute: typeof DashboardDashboardRoute
+  DashboardCertificationsIndexRoute: typeof DashboardCertificationsIndexRoute
+  DashboardContactsIndexRoute: typeof DashboardContactsIndexRoute
+  DashboardEducationIndexRoute: typeof DashboardEducationIndexRoute
+  DashboardExperiencesIndexRoute: typeof DashboardExperiencesIndexRoute
+  DashboardLanguagesIndexRoute: typeof DashboardLanguagesIndexRoute
+  DashboardLinksIndexRoute: typeof DashboardLinksIndexRoute
+  DashboardProjectsIndexRoute: typeof DashboardProjectsIndexRoute
+  DashboardReposIndexRoute: typeof DashboardReposIndexRoute
+  DashboardResumeProjectsIndexRoute: typeof DashboardResumeProjectsIndexRoute
+  DashboardResumesIndexRoute: typeof DashboardResumesIndexRoute
+  DashboardSavedProjectsIndexRoute: typeof DashboardSavedProjectsIndexRoute
+  DashboardSettingsIndexRoute: typeof DashboardSettingsIndexRoute
+  DashboardSkillGroupsIndexRoute: typeof DashboardSkillGroupsIndexRoute
+  DashboardSummariesIndexRoute: typeof DashboardSummariesIndexRoute
+  DashboardTalksIndexRoute: typeof DashboardTalksIndexRoute
+  DashboardVolunteersIndexRoute: typeof DashboardVolunteersIndexRoute
+  DashboardResumesResumeIdIndexRoute: typeof DashboardResumesResumeIdIndexRoute
 }
 
 const DashboardLayoutRouteChildren: DashboardLayoutRouteChildren = {
@@ -740,47 +747,50 @@ const DashboardLayoutRouteChildren: DashboardLayoutRouteChildren = {
   DashboardTalksIndexRoute: DashboardTalksIndexRoute,
   DashboardVolunteersIndexRoute: DashboardVolunteersIndexRoute,
   DashboardResumesResumeIdIndexRoute: DashboardResumesResumeIdIndexRoute,
-};
+}
 
 const DashboardLayoutRouteWithChildren = DashboardLayoutRoute._addFileChildren(
   DashboardLayoutRouteChildren,
-);
+)
 
 interface PublicLayoutRouteChildren {
-  PublicPreviewRoute: typeof PublicPreviewRoute;
+  PublicPreviewRoute: typeof PublicPreviewRoute
 }
 
 const PublicLayoutRouteChildren: PublicLayoutRouteChildren = {
   PublicPreviewRoute: PublicPreviewRoute,
-};
+}
 
-const PublicLayoutRouteWithChildren = PublicLayoutRoute._addFileChildren(PublicLayoutRouteChildren);
+const PublicLayoutRouteWithChildren = PublicLayoutRoute._addFileChildren(
+  PublicLayoutRouteChildren,
+)
 
 interface AuthLayoutRouteChildren {
-  AuthGithubRoute: typeof AuthGithubRoute;
-  AuthSignupRoute: typeof AuthSignupRoute;
-  AuthIndexRoute: typeof AuthIndexRoute;
+  AuthGithubRoute: typeof AuthGithubRoute
+  AuthSignupRoute: typeof AuthSignupRoute
+  AuthIndexRoute: typeof AuthIndexRoute
 }
 
 const AuthLayoutRouteChildren: AuthLayoutRouteChildren = {
   AuthGithubRoute: AuthGithubRoute,
   AuthSignupRoute: AuthSignupRoute,
   AuthIndexRoute: AuthIndexRoute,
-};
+}
 
-const AuthLayoutRouteWithChildren = AuthLayoutRoute._addFileChildren(AuthLayoutRouteChildren);
+const AuthLayoutRouteWithChildren = AuthLayoutRoute._addFileChildren(
+  AuthLayoutRouteChildren,
+)
 
 interface ApiAgenticOpenapiRouteChildren {
-  ApiAgenticOpenapiJsonRoute: typeof ApiAgenticOpenapiJsonRoute;
+  ApiAgenticOpenapiJsonRoute: typeof ApiAgenticOpenapiJsonRoute
 }
 
 const ApiAgenticOpenapiRouteChildren: ApiAgenticOpenapiRouteChildren = {
   ApiAgenticOpenapiJsonRoute: ApiAgenticOpenapiJsonRoute,
-};
+}
 
-const ApiAgenticOpenapiRouteWithChildren = ApiAgenticOpenapiRoute._addFileChildren(
-  ApiAgenticOpenapiRouteChildren,
-);
+const ApiAgenticOpenapiRouteWithChildren =
+  ApiAgenticOpenapiRoute._addFileChildren(ApiAgenticOpenapiRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -795,16 +805,16 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAiResumeTailorRoute: ApiAiResumeTailorRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiAgenticRpcSplatRoute: ApiAgenticRpcSplatRoute,
-};
+}
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>();
+  ._addFileTypes<FileRouteTypes>()
 
-import type { getRouter } from "./router.tsx";
-import type { createStart } from "@tanstack/react-start";
-declare module "@tanstack/react-start" {
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
   interface Register {
-    ssr: true;
-    router: Awaited<ReturnType<typeof getRouter>>;
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
   }
 }
