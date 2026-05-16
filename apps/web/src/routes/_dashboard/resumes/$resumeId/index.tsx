@@ -159,8 +159,8 @@ function ResumeWorkbench({ resumeId }: ResumeWorkbenchProps) {
 
   if (!displayResume) {
     return (
-      <div className="flex h-[60vh] w-full items-center justify-center">
-        <Empty>
+      <EmptyStateScene>
+        <Empty className="relative z-10 border border-border/40 bg-background/75 backdrop-blur-md">
           <EmptyHeader>
             <EmptyMedia variant="icon">
               <FileX />
@@ -179,7 +179,7 @@ function ResumeWorkbench({ resumeId }: ResumeWorkbenchProps) {
             <NewResumeButton />
           </EmptyContent>
         </Empty>
-      </div>
+      </EmptyStateScene>
     );
   }
   if (!workspace) {
@@ -191,8 +191,8 @@ function ResumeWorkbench({ resumeId }: ResumeWorkbenchProps) {
 
   if (!resume) {
     return (
-      <div className="flex h-[60vh] w-full items-center justify-center">
-        <Empty>
+      <EmptyStateScene>
+        <Empty className="relative z-10 border border-border/40 bg-background/75 backdrop-blur-md">
           <EmptyHeader>
             <EmptyMedia variant="icon">
               <File />
@@ -210,7 +210,7 @@ function ResumeWorkbench({ resumeId }: ResumeWorkbenchProps) {
             <NewResumeButton />
           </EmptyContent>
         </Empty>
-      </div>
+      </EmptyStateScene>
     );
   }
 
@@ -318,5 +318,23 @@ function ResumeWorkbench({ resumeId }: ResumeWorkbenchProps) {
         </Dialog>
       </div>
     </ResumeWorkspaceProvider>
+  );
+}
+
+// ─── Empty State Scene ────────────────────────────────────────
+
+function EmptyStateScene({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="relative flex h-[60vh] w-full items-center justify-center overflow-hidden rounded-xl">
+      <div
+        className="animate-spin absolute size-[420px] rounded-[40%_60%_60%_40%/60%_30%_70%_40%] bg-linear-to-tr from-primary/25 via-primary/5 to-transparent blur-3xl"
+        style={{ animationDuration: "22s" }}
+      />
+      <div
+        className="absolute size-[280px] rounded-[60%_40%_30%_70%/60%_50%_60%_50%] bg-linear-to-bl from-primary/15 via-muted/30 to-transparent blur-2xl"
+        style={{ animation: "spin 16s linear infinite reverse" }}
+      />
+      {children}
+    </div>
   );
 }
