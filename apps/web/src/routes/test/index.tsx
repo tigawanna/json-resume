@@ -1,6 +1,5 @@
+import { RouterPendingComponent } from "@/lib/tanstack/router/RouterPendingComponent";
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { lazy } from "react";
-const TestList = lazy(() => import("./-components/TestList"));
 
 export const Route = createFileRoute("/test/")({
   component: RouteComponent,
@@ -21,7 +20,7 @@ export const Route = createFileRoute("/test/")({
 function RouteComponent() {
   return (
     <div>
-      <TestList />
+      <RouterPendingComponent />
     </div>
   );
 }
