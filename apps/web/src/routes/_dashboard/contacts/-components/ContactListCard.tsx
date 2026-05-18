@@ -1,4 +1,3 @@
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -29,11 +28,6 @@ export function ContactListCard({ contact, onDelete }: ContactListCardProps) {
                 {contact.type}
                 {contact.label ? ` · ${contact.label}` : ""}
               </CardDescription>
-              <Badge variant="outline" className="mt-2 max-w-56 truncate text-xs">
-                {contact.usageCount === 1
-                  ? contact.resumeName
-                  : `${contact.usageCount} resumes: ${contact.resumeNames.join(", ")}`}
-              </Badge>
             </div>
           </div>
         </CardHeader>

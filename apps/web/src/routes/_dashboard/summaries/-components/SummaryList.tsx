@@ -8,27 +8,28 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
-import { listSummaries } from "@/data-access-layer/resume/summaries/summary.functions";
+import type { listSummaries } from "@/data-access-layer/resume/summaries/summary.functions";
 import { deleteSummaryMutationOptions } from "@/data-access-layer/resume/summaries/summary.mutation-options";
 import { RouterPendingComponent } from "@/lib/tanstack/router/RouterPendingComponent";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { FileText, Loader2, Plus } from "lucide-react";
 import { useState, useTransition } from "react";
 import { Route } from "..";
 import { SummaryCreateFormDialog } from "./SummaryCreateForm";
 import { SummaryListCard } from "./SummaryListCard";
 
-export function SummaryList() {
-  const { sq, cursor, dir } = Route.useSearch();
+type PageData = Awaited<ReturnType<typeof listSummaries>>;
+
+interface SummaryListProps {
+  data: PageData | undefined;
+  isLoading: boolean;
+  isRefetching: boolean;
+}
+
+export function SummaryList({ data, isLoading, isRefetching }: SummaryListProps) {
   const [createOpen, setCreateOpen] = useState(false);
   const [isCreateOpenPending, startCreateOpenTransition] = useTransition();
   const navigate = Route.useNavigate();
-  const { data, isLoading, isRefetching } = useQuery({
-    queryKey: [queryKeyPrefixes.summaries, "page", cursor, dir ?? "after", sq],
-    queryFn: () => listSummaries({ data: { cursor, direction: dir, keyword: sq } }),
-    placeholderData: (prevData) => prevData,
-  });
   const deleteMutation = useMutation(deleteSummaryMutationOptions);
 
   function openCreateDialog() {

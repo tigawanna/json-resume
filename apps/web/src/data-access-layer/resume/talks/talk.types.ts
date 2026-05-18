@@ -1,7 +1,5 @@
 export interface TalkListItemDTO {
   id: string;
-  resumeId: string;
-  resumeName: string;
   title: string;
   event: string;
   date: string;

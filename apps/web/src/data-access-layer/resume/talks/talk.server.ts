@@ -1,7 +1,7 @@
 import "@tanstack/react-start/server-only";
 
 import { db } from "@/lib/drizzle/client";
-import { resume, resumeTalk, resumeTalkItem } from "@/lib/drizzle/scheam";
+import { resumeTalk } from "@/lib/drizzle/scheam";
 import { and, asc, desc, eq, gt, like, lt, or } from "drizzle-orm";
 import { DEFAULT_PAGE_SIZE } from "../../pagination.types";
 import type { PaginatedResult } from "../../pagination.types";
@@ -34,8 +34,6 @@ export async function listTalksForUserPaginated(
   const rows = await db
     .select({
       id: resumeTalk.id,
-      resumeId: resumeTalkItem.resumeId,
-      resumeName: resume.name,
       title: resumeTalk.title,
       event: resumeTalk.event,
       date: resumeTalk.date,
@@ -46,8 +44,6 @@ export async function listTalksForUserPaginated(
       updatedAt: resumeTalk.updatedAt,
     })
     .from(resumeTalk)
-    .leftJoin(resumeTalkItem, eq(resumeTalkItem.talkId, resumeTalk.id))
-    .leftJoin(resume, eq(resumeTalkItem.resumeId, resume.id))
     .where(and(...conditions))
     .orderBy(direction === "before" ? desc(resumeTalk.id) : asc(resumeTalk.id))
     .limit(DEFAULT_PAGE_SIZE + 1);
@@ -60,8 +56,6 @@ export async function listTalksForUserPaginated(
 
   const items = orderedRows.map((r) => ({
     ...r,
-    resumeId: r.resumeId ?? "",
-    resumeName: r.resumeName ?? "Reusable item",
     createdAt: r.createdAt.toISOString(),
     updatedAt: r.updatedAt.toISOString(),
   }));

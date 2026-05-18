@@ -1,4 +1,3 @@
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -31,9 +30,6 @@ export function TalkListCard({ talk, onDelete }: TalkListCardProps) {
                   {talk.description}
                 </p>
               )}
-              <Badge variant="outline" className="mt-2 max-w-48 truncate text-xs">
-                {talk.resumeName}
-              </Badge>
             </div>
           </div>
         </CardHeader>

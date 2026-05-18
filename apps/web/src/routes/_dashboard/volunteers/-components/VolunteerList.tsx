@@ -8,27 +8,28 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
-import { listVolunteers } from "@/data-access-layer/resume/volunteers/volunteer.functions";
+import type { listVolunteers } from "@/data-access-layer/resume/volunteers/volunteer.functions";
 import { deleteVolunteerMutationOptions } from "@/data-access-layer/resume/volunteers/volunteer.mutation-options";
 import { RouterPendingComponent } from "@/lib/tanstack/router/RouterPendingComponent";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { Heart, Loader2, Plus } from "lucide-react";
 import { useState, useTransition } from "react";
 import { Route } from "..";
 import { VolunteerCreateFormDialog } from "./VolunteerCreateForm";
 import { VolunteerListCard } from "./VolunteerListCard";
 
-export function VolunteerList() {
-  const { sq, cursor, dir } = Route.useSearch();
+type PageData = Awaited<ReturnType<typeof listVolunteers>>;
+
+interface VolunteerListProps {
+  data: PageData | undefined;
+  isLoading: boolean;
+  isRefetching: boolean;
+}
+
+export function VolunteerList({ data, isLoading, isRefetching }: VolunteerListProps) {
   const [createOpen, setCreateOpen] = useState(false);
   const [isCreateOpenPending, startCreateOpenTransition] = useTransition();
   const navigate = Route.useNavigate();
-  const { data, isLoading, isRefetching } = useQuery({
-    queryKey: [queryKeyPrefixes.volunteers, "page", cursor, dir ?? "after", sq],
-    queryFn: () => listVolunteers({ data: { cursor, direction: dir, keyword: sq } }),
-    placeholderData: (prevData) => prevData,
-  });
   const deleteMutation = useMutation(deleteVolunteerMutationOptions);
 
   function openCreateDialog() {

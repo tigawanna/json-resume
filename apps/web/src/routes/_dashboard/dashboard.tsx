@@ -28,23 +28,23 @@ const dashboardResumesQueryOptions = queryOptions({
 });
 
 const dashboardExperienceQueryOptions = queryOptions({
-  queryKey: [queryKeyPrefixes.experiences, "dashboard"],
-  queryFn: () => listExperiences({ data: {} }),
+  queryKey: [queryKeyPrefixes.experiences, "page", undefined, "after", ""],
+  queryFn: () => listExperiences({ data: { direction: "after", keyword: "" } }),
 });
 
 const dashboardEducationQueryOptions = queryOptions({
-  queryKey: [queryKeyPrefixes.education, "dashboard"],
-  queryFn: () => listEducation({ data: {} }),
+  queryKey: [queryKeyPrefixes.education, "page", undefined, "after", ""],
+  queryFn: () => listEducation({ data: { direction: "after", keyword: "" } }),
 });
 
 const dashboardProjectsQueryOptions = queryOptions({
-  queryKey: [queryKeyPrefixes.resumeProjects, "dashboard"],
-  queryFn: () => listResumeProjects({ data: {} }),
+  queryKey: [queryKeyPrefixes.resumeProjects, "page", undefined, "after", ""],
+  queryFn: () => listResumeProjects({ data: { direction: "after", keyword: "" } }),
 });
 
 const dashboardSkillsQueryOptions = queryOptions({
-  queryKey: [queryKeyPrefixes.skillGroups, "dashboard"],
-  queryFn: () => listSkillGroups({ data: {} }),
+  queryKey: [queryKeyPrefixes.skillGroups, "page", undefined, "after", ""],
+  queryFn: () => listSkillGroups({ data: { direction: "after", keyword: "" } }),
 });
 
 const dashboardSavedProjectsQueryOptions = queryOptions({

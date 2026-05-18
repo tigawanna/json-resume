@@ -2,8 +2,6 @@ export type { PaginatedResult } from "../../pagination.types";
 
 export interface EducationListItemDTO {
   id: string;
-  resumeId: string;
-  resumeName: string;
   school: string;
   degree: string;
   field: string;

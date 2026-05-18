@@ -8,27 +8,28 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
-import { listSkillGroups } from "@/data-access-layer/resume/skill-groups/skill-group.functions";
+import type { listSkillGroups } from "@/data-access-layer/resume/skill-groups/skill-group.functions";
 import { deleteSkillGroupMutationOptions } from "@/data-access-layer/resume/skill-groups/skill-group.mutation-options";
 import { RouterPendingComponent } from "@/lib/tanstack/router/RouterPendingComponent";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { Layers, Loader2, Plus } from "lucide-react";
 import { useState, useTransition } from "react";
 import { Route } from "..";
 import { SkillGroupCreateFormDialog } from "./SkillGroupCreateForm";
 import { SkillGroupListCard } from "./SkillGroupListCard";
 
-export function SkillGroupList() {
-  const { sq, cursor, dir } = Route.useSearch();
+type PageData = Awaited<ReturnType<typeof listSkillGroups>>;
+
+interface SkillGroupListProps {
+  data: PageData | undefined;
+  isLoading: boolean;
+  isRefetching: boolean;
+}
+
+export function SkillGroupList({ data, isLoading, isRefetching }: SkillGroupListProps) {
   const [createOpen, setCreateOpen] = useState(false);
   const [isCreateOpenPending, startCreateOpenTransition] = useTransition();
   const navigate = Route.useNavigate();
-  const { data, isLoading, isRefetching } = useQuery({
-    queryKey: [queryKeyPrefixes.skillGroups, "page", cursor, dir ?? "after", sq],
-    queryFn: () => listSkillGroups({ data: { cursor, direction: dir, keyword: sq } }),
-    placeholderData: (prevData) => prevData,
-  });
   const deleteMutation = useMutation(deleteSkillGroupMutationOptions);
 
   function openCreateDialog() {

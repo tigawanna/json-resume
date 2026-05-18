@@ -1,7 +1,7 @@
 import "@tanstack/react-start/server-only";
 
 import { db } from "@/lib/drizzle/client";
-import { resume, resumeLanguage, resumeLanguageItem } from "@/lib/drizzle/scheam";
+import { resumeLanguage } from "@/lib/drizzle/scheam";
 import { and, asc, desc, eq, gt, like, lt, or } from "drizzle-orm";
 import { DEFAULT_PAGE_SIZE } from "../../pagination.types";
 import type { PaginatedResult } from "../../pagination.types";
@@ -32,8 +32,6 @@ export async function listLanguagesForUserPaginated(
   const rows = await db
     .select({
       id: resumeLanguage.id,
-      resumeId: resumeLanguageItem.resumeId,
-      resumeName: resume.name,
       name: resumeLanguage.name,
       proficiency: resumeLanguage.proficiency,
       sortOrder: resumeLanguage.sortOrder,
@@ -41,8 +39,6 @@ export async function listLanguagesForUserPaginated(
       updatedAt: resumeLanguage.updatedAt,
     })
     .from(resumeLanguage)
-    .leftJoin(resumeLanguageItem, eq(resumeLanguageItem.languageId, resumeLanguage.id))
-    .leftJoin(resume, eq(resumeLanguageItem.resumeId, resume.id))
     .where(and(...conditions))
     .orderBy(direction === "before" ? desc(resumeLanguage.id) : asc(resumeLanguage.id))
     .limit(DEFAULT_PAGE_SIZE + 1);
@@ -55,8 +51,6 @@ export async function listLanguagesForUserPaginated(
 
   const items = orderedRows.map((r) => ({
     ...r,
-    resumeId: r.resumeId ?? "",
-    resumeName: r.resumeName ?? "Reusable item",
     createdAt: r.createdAt.toISOString(),
     updatedAt: r.updatedAt.toISOString(),
   }));
@@ -90,8 +84,6 @@ export async function listLanguagesForUser(
   const rows = await db
     .select({
       id: resumeLanguage.id,
-      resumeId: resumeLanguageItem.resumeId,
-      resumeName: resume.name,
       name: resumeLanguage.name,
       proficiency: resumeLanguage.proficiency,
       sortOrder: resumeLanguage.sortOrder,
@@ -99,15 +91,11 @@ export async function listLanguagesForUser(
       updatedAt: resumeLanguage.updatedAt,
     })
     .from(resumeLanguage)
-    .leftJoin(resumeLanguageItem, eq(resumeLanguageItem.languageId, resumeLanguage.id))
-    .leftJoin(resume, eq(resumeLanguageItem.resumeId, resume.id))
     .where(and(...conditions))
     .orderBy(desc(resumeLanguage.updatedAt));
 
   return rows.map((r) => ({
     ...r,
-    resumeId: r.resumeId ?? "",
-    resumeName: r.resumeName ?? "Reusable item",
     createdAt: r.createdAt.toISOString(),
     updatedAt: r.updatedAt.toISOString(),
   }));

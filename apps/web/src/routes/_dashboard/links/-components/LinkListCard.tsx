@@ -1,4 +1,3 @@
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -29,11 +28,6 @@ export function LinkListCard({ link, onDelete }: LinkListCardProps) {
               {link.icon && (
                 <p className="text-muted-foreground mt-1 truncate text-xs">Icon: {link.icon}</p>
               )}
-              <Badge variant="outline" className="mt-2 max-w-56 truncate text-xs">
-                {link.usageCount === 1
-                  ? link.resumeName
-                  : `${link.usageCount} resumes: ${link.resumeNames.join(", ")}`}
-              </Badge>
             </div>
           </div>
         </CardHeader>

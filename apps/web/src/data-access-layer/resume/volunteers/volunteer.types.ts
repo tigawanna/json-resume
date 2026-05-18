@@ -1,7 +1,5 @@
 export interface VolunteerListItemDTO {
   id: string;
-  resumeId: string;
-  resumeName: string;
   organization: string;
   role: string;
   startDate: string;

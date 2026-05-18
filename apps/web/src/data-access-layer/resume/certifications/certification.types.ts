@@ -1,7 +1,5 @@
 export interface CertificationListItemDTO {
   id: string;
-  resumeId: string;
-  resumeName: string;
   name: string;
   issuer: string;
   date: string;

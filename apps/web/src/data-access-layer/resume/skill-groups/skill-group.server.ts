@@ -1,7 +1,7 @@
 import "@tanstack/react-start/server-only";
 
 import { db } from "@/lib/drizzle/client";
-import { resume, resumeSkill, resumeSkillGroup, resumeSkillGroupItem } from "@/lib/drizzle/scheam";
+import { resumeSkill, resumeSkillGroup } from "@/lib/drizzle/scheam";
 import { and, asc, desc, eq, gt, like, lt, or } from "drizzle-orm";
 import { DEFAULT_PAGE_SIZE, type PaginatedResult } from "../../pagination.types";
 import type { SkillGroupListItemDTO } from "./skill-group.types";
@@ -19,16 +19,12 @@ export async function listSkillGroupsForUser(
   const groups = await db
     .select({
       id: resumeSkillGroup.id,
-      resumeId: resumeSkillGroupItem.resumeId,
-      resumeName: resume.name,
       name: resumeSkillGroup.name,
       sortOrder: resumeSkillGroup.sortOrder,
       createdAt: resumeSkillGroup.createdAt,
       updatedAt: resumeSkillGroup.updatedAt,
     })
     .from(resumeSkillGroup)
-    .leftJoin(resumeSkillGroupItem, eq(resumeSkillGroupItem.groupId, resumeSkillGroup.id))
-    .leftJoin(resume, eq(resumeSkillGroupItem.resumeId, resume.id))
     .where(and(...conditions))
     .orderBy(desc(resumeSkillGroup.updatedAt));
 
@@ -41,8 +37,6 @@ export async function listSkillGroupsForUser(
       .orderBy(asc(resumeSkill.sortOrder));
     result.push({
       ...g,
-      resumeId: g.resumeId ?? "",
-      resumeName: g.resumeName ?? "Reusable item",
       skills: JSON.stringify(skills.map((s) => s.name)),
       createdAt: g.createdAt.toISOString(),
       updatedAt: g.updatedAt.toISOString(),
@@ -74,16 +68,12 @@ export async function listSkillGroupsForUserPaginated(
   const groups = await db
     .select({
       id: resumeSkillGroup.id,
-      resumeId: resumeSkillGroupItem.resumeId,
-      resumeName: resume.name,
       name: resumeSkillGroup.name,
       sortOrder: resumeSkillGroup.sortOrder,
       createdAt: resumeSkillGroup.createdAt,
       updatedAt: resumeSkillGroup.updatedAt,
     })
     .from(resumeSkillGroup)
-    .leftJoin(resumeSkillGroupItem, eq(resumeSkillGroupItem.groupId, resumeSkillGroup.id))
-    .leftJoin(resume, eq(resumeSkillGroupItem.resumeId, resume.id))
     .where(and(...conditions))
     .orderBy(direction === "before" ? desc(resumeSkillGroup.id) : asc(resumeSkillGroup.id))
     .limit(DEFAULT_PAGE_SIZE + 1);
@@ -103,8 +93,6 @@ export async function listSkillGroupsForUserPaginated(
       .orderBy(asc(resumeSkill.sortOrder));
     items.push({
       ...g,
-      resumeId: g.resumeId ?? "",
-      resumeName: g.resumeName ?? "Reusable item",
       skills: JSON.stringify(skills.map((s) => s.name)),
       createdAt: g.createdAt.toISOString(),
       updatedAt: g.updatedAt.toISOString(),

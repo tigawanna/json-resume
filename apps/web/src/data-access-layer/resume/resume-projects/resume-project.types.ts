@@ -1,7 +1,5 @@
 export interface ResumeProjectListItemDTO {
   id: string;
-  resumeId: string;
-  resumeName: string;
   name: string;
   url: string;
   homepageUrl: string;

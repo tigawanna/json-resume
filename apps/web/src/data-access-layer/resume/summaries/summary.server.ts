@@ -1,7 +1,7 @@
 import "@tanstack/react-start/server-only";
 
 import { db } from "@/lib/drizzle/client";
-import { resume, resumeSummary, resumeSummaryItem } from "@/lib/drizzle/scheam";
+import { resumeSummary } from "@/lib/drizzle/scheam";
 import { and, asc, desc, eq, gt, like, lt } from "drizzle-orm";
 import { DEFAULT_PAGE_SIZE } from "../../pagination.types";
 import type { PaginatedResult } from "../../pagination.types";
@@ -30,16 +30,12 @@ export async function listSummariesForUserPaginated(
   const rows = await db
     .select({
       id: resumeSummary.id,
-      resumeId: resumeSummaryItem.resumeId,
-      resumeName: resume.name,
       text: resumeSummary.text,
       sortOrder: resumeSummary.sortOrder,
       createdAt: resumeSummary.createdAt,
       updatedAt: resumeSummary.updatedAt,
     })
     .from(resumeSummary)
-    .leftJoin(resumeSummaryItem, eq(resumeSummaryItem.summaryId, resumeSummary.id))
-    .leftJoin(resume, eq(resumeSummaryItem.resumeId, resume.id))
     .where(and(...conditions))
     .orderBy(direction === "before" ? desc(resumeSummary.id) : asc(resumeSummary.id))
     .limit(DEFAULT_PAGE_SIZE + 1);
@@ -52,8 +48,6 @@ export async function listSummariesForUserPaginated(
 
   const items = orderedRows.map((r) => ({
     ...r,
-    resumeId: r.resumeId ?? "",
-    resumeName: r.resumeName ?? "Reusable item",
     createdAt: r.createdAt.toISOString(),
     updatedAt: r.updatedAt.toISOString(),
   }));
@@ -85,23 +79,17 @@ export async function listSummariesForUser(
   const rows = await db
     .select({
       id: resumeSummary.id,
-      resumeId: resumeSummaryItem.resumeId,
-      resumeName: resume.name,
       text: resumeSummary.text,
       sortOrder: resumeSummary.sortOrder,
       createdAt: resumeSummary.createdAt,
       updatedAt: resumeSummary.updatedAt,
     })
     .from(resumeSummary)
-    .leftJoin(resumeSummaryItem, eq(resumeSummaryItem.summaryId, resumeSummary.id))
-    .leftJoin(resume, eq(resumeSummaryItem.resumeId, resume.id))
     .where(and(...conditions))
     .orderBy(desc(resumeSummary.updatedAt));
 
   return rows.map((r) => ({
     ...r,
-    resumeId: r.resumeId ?? "",
-    resumeName: r.resumeName ?? "Reusable item",
     createdAt: r.createdAt.toISOString(),
     updatedAt: r.updatedAt.toISOString(),
   }));

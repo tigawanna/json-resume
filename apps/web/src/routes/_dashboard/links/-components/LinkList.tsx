@@ -8,27 +8,28 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
-import { listLinks } from "@/data-access-layer/resume/links/link.functions";
+import type { listLinks } from "@/data-access-layer/resume/links/link.functions";
 import { deleteLinkMutationOptions } from "@/data-access-layer/resume/links/link.mutation-options";
 import { RouterPendingComponent } from "@/lib/tanstack/router/RouterPendingComponent";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { LinkIcon, Loader2, Plus } from "lucide-react";
 import { useState, useTransition } from "react";
 import { Route } from "..";
 import { LinkCreateFormDialog } from "./LinkCreateForm";
 import { LinkListCard } from "./LinkListCard";
 
-export function LinkList() {
-  const { sq, cursor, dir } = Route.useSearch();
+type PageData = Awaited<ReturnType<typeof listLinks>>;
+
+interface LinkListProps {
+  data: PageData | undefined;
+  isLoading: boolean;
+  isRefetching: boolean;
+}
+
+export function LinkList({ data, isLoading, isRefetching }: LinkListProps) {
   const [createOpen, setCreateOpen] = useState(false);
   const [isCreateOpenPending, startCreateOpenTransition] = useTransition();
   const navigate = Route.useNavigate();
-  const { data, isLoading, isRefetching } = useQuery({
-    queryKey: [queryKeyPrefixes.links, "page", cursor, dir ?? "after", sq],
-    queryFn: () => listLinks({ data: { cursor, direction: dir, keyword: sq } }),
-    placeholderData: (prevData) => prevData,
-  });
   const deleteMutation = useMutation(deleteLinkMutationOptions);
 
   function openCreateDialog() {

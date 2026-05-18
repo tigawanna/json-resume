@@ -1,7 +1,7 @@
 import "@tanstack/react-start/server-only";
 
 import { db } from "@/lib/drizzle/client";
-import { resume, resumeCertification, resumeCertificationItem } from "@/lib/drizzle/scheam";
+import { resumeCertification } from "@/lib/drizzle/scheam";
 import { and, asc, desc, eq, gt, like, lt, or } from "drizzle-orm";
 import { DEFAULT_PAGE_SIZE } from "../../pagination.types";
 import type { PaginatedResult } from "../../pagination.types";
@@ -32,8 +32,6 @@ export async function listCertificationsForUserPaginated(
   const rows = await db
     .select({
       id: resumeCertification.id,
-      resumeId: resumeCertificationItem.resumeId,
-      resumeName: resume.name,
       name: resumeCertification.name,
       issuer: resumeCertification.issuer,
       date: resumeCertification.date,
@@ -43,11 +41,6 @@ export async function listCertificationsForUserPaginated(
       updatedAt: resumeCertification.updatedAt,
     })
     .from(resumeCertification)
-    .leftJoin(
-      resumeCertificationItem,
-      eq(resumeCertificationItem.certificationId, resumeCertification.id),
-    )
-    .leftJoin(resume, eq(resumeCertificationItem.resumeId, resume.id))
     .where(and(...conditions))
     .orderBy(direction === "before" ? desc(resumeCertification.id) : asc(resumeCertification.id))
     .limit(DEFAULT_PAGE_SIZE + 1);
@@ -60,8 +53,6 @@ export async function listCertificationsForUserPaginated(
 
   const items = orderedRows.map((r) => ({
     ...r,
-    resumeId: r.resumeId ?? "",
-    resumeName: r.resumeName ?? "Reusable item",
     createdAt: r.createdAt.toISOString(),
     updatedAt: r.updatedAt.toISOString(),
   }));

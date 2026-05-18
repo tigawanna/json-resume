@@ -8,27 +8,28 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
-import { listLanguages } from "@/data-access-layer/resume/languages/language.functions";
+import type { listLanguages } from "@/data-access-layer/resume/languages/language.functions";
 import { deleteLanguageMutationOptions } from "@/data-access-layer/resume/languages/language.mutation-options";
 import { RouterPendingComponent } from "@/lib/tanstack/router/RouterPendingComponent";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { Globe, Loader2, Plus } from "lucide-react";
 import { useState, useTransition } from "react";
 import { Route } from "..";
 import { LanguageCreateFormDialog } from "./LanguageCreateForm";
 import { LanguageListCard } from "./LanguageListCard";
 
-export function LanguageList() {
-  const { sq, cursor, dir } = Route.useSearch();
+type PageData = Awaited<ReturnType<typeof listLanguages>>;
+
+interface LanguageListProps {
+  data: PageData | undefined;
+  isLoading: boolean;
+  isRefetching: boolean;
+}
+
+export function LanguageList({ data, isLoading, isRefetching }: LanguageListProps) {
   const [createOpen, setCreateOpen] = useState(false);
   const [isCreateOpenPending, startCreateOpenTransition] = useTransition();
   const navigate = Route.useNavigate();
-  const { data, isLoading, isRefetching } = useQuery({
-    queryKey: [queryKeyPrefixes.languages, "page", cursor, dir ?? "after", sq],
-    queryFn: () => listLanguages({ data: { cursor, direction: dir, keyword: sq } }),
-    placeholderData: (prevData) => prevData,
-  });
   const deleteMutation = useMutation(deleteLanguageMutationOptions);
 
   function openCreateDialog() {

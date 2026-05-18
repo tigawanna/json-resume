@@ -8,27 +8,28 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
-import { listContacts } from "@/data-access-layer/resume/contacts/contact.functions";
+import type { listContacts } from "@/data-access-layer/resume/contacts/contact.functions";
 import { deleteContactMutationOptions } from "@/data-access-layer/resume/contacts/contact.mutation-options";
 import { RouterPendingComponent } from "@/lib/tanstack/router/RouterPendingComponent";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { Contact, Loader2, Plus } from "lucide-react";
 import { useState, useTransition } from "react";
 import { Route } from "..";
 import { ContactCreateFormDialog } from "./ContactCreateForm";
 import { ContactListCard } from "./ContactListCard";
 
-export function ContactList() {
-  const { sq, cursor, dir } = Route.useSearch();
+type PageData = Awaited<ReturnType<typeof listContacts>>;
+
+interface ContactListProps {
+  data: PageData | undefined;
+  isLoading: boolean;
+  isRefetching: boolean;
+}
+
+export function ContactList({ data, isLoading, isRefetching }: ContactListProps) {
   const [createOpen, setCreateOpen] = useState(false);
   const [isCreateOpenPending, startCreateOpenTransition] = useTransition();
   const navigate = Route.useNavigate();
-  const { data, isLoading, isRefetching } = useQuery({
-    queryKey: [queryKeyPrefixes.contacts, "page", cursor, dir ?? "after", sq],
-    queryFn: () => listContacts({ data: { cursor, direction: dir, keyword: sq } }),
-    placeholderData: (prevData) => prevData,
-  });
   const deleteMutation = useMutation(deleteContactMutationOptions);
 
   function openCreateDialog() {

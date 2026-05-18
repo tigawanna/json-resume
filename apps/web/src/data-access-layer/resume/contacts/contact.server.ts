@@ -1,7 +1,7 @@
 import "@tanstack/react-start/server-only";
 
 import { db } from "@/lib/drizzle/client";
-import { resume, resumeContact, resumeContactItem } from "@/lib/drizzle/scheam";
+import { resumeContact } from "@/lib/drizzle/scheam";
 import { and, asc, desc, eq, inArray, like, or } from "drizzle-orm";
 import { DEFAULT_PAGE_SIZE } from "../../pagination.types";
 import type { PaginatedResult } from "../../pagination.types";
@@ -9,8 +9,6 @@ import type { ContactListItemDTO } from "./contact.types";
 
 type ContactRow = {
   id: string;
-  resumeId: string;
-  resumeName: string;
   type: string;
   value: string;
   label: string;
@@ -26,25 +24,18 @@ function normalizeContactIdentity(row: Pick<ContactRow, "type" | "value" | "labe
 }
 
 function groupContactRows(rows: ContactRow[]): ContactListItemDTO[] {
-  const grouped = new Map<string, ContactRow & { resumeIds: string[]; resumeNames: string[] }>();
+  const grouped = new Map<string, ContactRow>();
 
   for (const row of rows) {
     const key = normalizeContactIdentity(row);
     const current = grouped.get(key);
     if (!current) {
-      grouped.set(key, { ...row, resumeIds: [row.resumeId], resumeNames: [row.resumeName] });
+      grouped.set(key, row);
       continue;
-    }
-
-    if (!current.resumeIds.includes(row.resumeId)) {
-      current.resumeIds.push(row.resumeId);
-      current.resumeNames.push(row.resumeName);
     }
 
     if (row.updatedAt > current.updatedAt) {
       current.id = row.id;
-      current.resumeId = row.resumeId;
-      current.resumeName = row.resumeName;
       current.sortOrder = row.sortOrder;
       current.createdAt = row.createdAt;
       current.updatedAt = row.updatedAt;
@@ -53,11 +44,6 @@ function groupContactRows(rows: ContactRow[]): ContactListItemDTO[] {
 
   return Array.from(grouped.values()).map((r) => ({
     id: r.id,
-    resumeId: r.resumeId,
-    resumeName: r.resumeName,
-    resumeIds: r.resumeIds,
-    resumeNames: r.resumeNames,
-    usageCount: r.resumeIds.length,
     type: r.type,
     value: r.value,
     label: r.label,
@@ -88,8 +74,6 @@ export async function listContactsForUserPaginated(
   const rows = await db
     .select({
       id: resumeContact.id,
-      resumeId: resumeContactItem.resumeId,
-      resumeName: resume.name,
       type: resumeContact.type,
       value: resumeContact.value,
       label: resumeContact.label,
@@ -98,18 +82,10 @@ export async function listContactsForUserPaginated(
       updatedAt: resumeContact.updatedAt,
     })
     .from(resumeContact)
-    .leftJoin(resumeContactItem, eq(resumeContactItem.contactId, resumeContact.id))
-    .leftJoin(resume, eq(resumeContactItem.resumeId, resume.id))
     .where(and(...conditions))
     .orderBy(direction === "before" ? desc(resumeContact.id) : asc(resumeContact.id));
 
-  const groupedRows = groupContactRows(
-    rows.map((r) => ({
-      ...r,
-      resumeId: r.resumeId ?? "",
-      resumeName: r.resumeName ?? "Reusable item",
-    })),
-  );
+  const groupedRows = groupContactRows(rows);
   const cursor = opts?.cursor;
   const filteredRows = cursor
     ? groupedRows.filter((item) => (direction === "before" ? item.id < cursor : item.id > cursor))
@@ -155,8 +131,6 @@ export async function listContactsForUser(
   const rows = await db
     .select({
       id: resumeContact.id,
-      resumeId: resumeContactItem.resumeId,
-      resumeName: resume.name,
       type: resumeContact.type,
       value: resumeContact.value,
       label: resumeContact.label,
@@ -165,18 +139,10 @@ export async function listContactsForUser(
       updatedAt: resumeContact.updatedAt,
     })
     .from(resumeContact)
-    .leftJoin(resumeContactItem, eq(resumeContactItem.contactId, resumeContact.id))
-    .leftJoin(resume, eq(resumeContactItem.resumeId, resume.id))
     .where(and(...conditions))
     .orderBy(desc(resumeContact.updatedAt));
 
-  return groupContactRows(
-    rows.map((r) => ({
-      ...r,
-      resumeId: r.resumeId ?? "",
-      resumeName: r.resumeName ?? "Reusable item",
-    })),
-  );
+  return groupContactRows(rows);
 }
 
 export async function deleteContactForUser(contactId: string, userId: string): Promise<void> {

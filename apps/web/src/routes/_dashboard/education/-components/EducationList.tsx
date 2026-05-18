@@ -8,26 +8,27 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
-import { listEducation } from "@/data-access-layer/resume/education/education.functions";
+import type { listEducation } from "@/data-access-layer/resume/education/education.functions";
 import { deleteEducationMutationOptions } from "@/data-access-layer/resume/education/education.mutation-options";
 import { RouterPendingComponent } from "@/lib/tanstack/router/RouterPendingComponent";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { GraduationCap, Loader2, Plus } from "lucide-react";
 import { useState, useTransition } from "react";
 import { Route } from "..";
 import { EducationCreateFormDilaog } from "./EducationCreateForm";
 import { EducationListCard } from "./EducationListCard";
 
-export function EducationList() {
-  const { sq, cursor, dir } = Route.useSearch();
+type PageData = Awaited<ReturnType<typeof listEducation>>;
+
+interface EducationListProps {
+  data: PageData | undefined;
+  isLoading: boolean;
+  isRefetching: boolean;
+}
+
+export function EducationList({ data, isLoading, isRefetching }: EducationListProps) {
   const [createOpen, setCreateOpen] = useState(false);
   const [isCreateOpenPending, startCreateOpenTransition] = useTransition();
-  const { data, isLoading, isRefetching } = useQuery({
-    queryKey: [queryKeyPrefixes.education, "page", cursor, dir ?? "after", sq],
-    queryFn: () => listEducation({ data: { cursor, direction: dir, keyword: sq } }),
-    placeholderData: (prevData) => prevData,
-  });
   const deleteMutation = useMutation(deleteEducationMutationOptions);
   const navigate = Route.useNavigate();
 

@@ -2,12 +2,11 @@ import { SearchBox } from "@/components/search/SearchBox";
 import { Button } from "@/components/ui/button";
 import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
 import { listEducation } from "@/data-access-layer/resume/education/education.functions";
-import { RouterPendingComponent } from "@/lib/tanstack/router/RouterPendingComponent";
 import { useDebouncer } from "@tanstack/react-pacer";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ChevronLeft, ChevronRight, Loader2, Plus } from "lucide-react";
-import { Suspense, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { z } from "zod";
 import { EducationCreateFormDilaog } from "./-components/EducationCreateForm";
 import { EducationList } from "./-components/EducationList";
@@ -34,9 +33,7 @@ function RouteComponent() {
   const [createOpen, setCreateOpen] = useState(false);
   const [isCreateOpenPending, startCreateOpenTransition] = useTransition();
 
-  // Read cursor data from cache (populated by EducationList's useSuspenseQuery)
-  // to drive button disabled states — same queryKey, no duplicate fetch
-  const { data: pageData } = useQuery({
+  const { data, isLoading, isRefetching } = useQuery({
     queryKey: [queryKeyPrefixes.education, "page", cursor, dir ?? "after", sq],
     queryFn: () => listEducation({ data: { cursor, direction: dir, keyword: sq } }),
     placeholderData: (prevData) => prevData,
@@ -71,14 +68,14 @@ function RouteComponent() {
   function goNext() {
     void navigate({
       to: ".",
-      search: (prev) => ({ ...prev, cursor: pageData?.nextCursor, dir: "after" as const }),
+      search: (prev) => ({ ...prev, cursor: data?.nextCursor, dir: "after" as const }),
     });
   }
 
   function goPrevious() {
     void navigate({
       to: ".",
-      search: (prev) => ({ ...prev, cursor: pageData?.previousCursor, dir: "before" as const }),
+      search: (prev) => ({ ...prev, cursor: data?.previousCursor, dir: "before" as const }),
     });
   }
 
@@ -88,7 +85,7 @@ function RouteComponent() {
     });
   }
 
-  const showPagination = Boolean(pageData?.items?.length);
+  const showPagination = Boolean(data?.items?.length);
 
   return (
     <div className="flex w-full flex-col gap-6">
@@ -124,16 +121,14 @@ function RouteComponent() {
           inputProps={{ placeholder: "Search education..." }}
         />
       </div>
-      <Suspense fallback={<RouterPendingComponent />}>
-        <EducationList />
-      </Suspense>
+      <EducationList data={data} isLoading={isLoading} isRefetching={isRefetching} />
       {showPagination ? (
         <div className="flex items-center justify-between border-t pt-4">
           <Button
             variant="outline"
             size="sm"
             onClick={goPrevious}
-            disabled={!pageData?.previousCursor}
+            disabled={!data?.previousCursor}
             data-test="pagination-prev"
           >
             <ChevronLeft className="mr-1 size-4" /> Previous
@@ -142,7 +137,7 @@ function RouteComponent() {
             variant="outline"
             size="sm"
             onClick={goNext}
-            disabled={!pageData?.nextCursor}
+            disabled={!data?.nextCursor}
             data-test="pagination-next"
           >
             Next <ChevronRight className="ml-1 size-4" />

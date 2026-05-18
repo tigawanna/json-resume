@@ -1,7 +1,7 @@
 import "@tanstack/react-start/server-only";
 
 import { db } from "@/lib/drizzle/client";
-import { resume, resumeLink, resumeLinkItem } from "@/lib/drizzle/scheam";
+import { resumeLink } from "@/lib/drizzle/scheam";
 import { and, asc, desc, eq, inArray, isNull, like, or } from "drizzle-orm";
 import { DEFAULT_PAGE_SIZE } from "../../pagination.types";
 import type { PaginatedResult } from "../../pagination.types";
@@ -9,8 +9,6 @@ import type { LinkListItemDTO } from "./link.types";
 
 type LinkRow = {
   id: string;
-  resumeId: string;
-  resumeName: string;
   label: string;
   url: string;
   icon: string | null;
@@ -28,25 +26,18 @@ function normalizeLinkIdentity(row: Pick<LinkRow, "label" | "url" | "icon">): st
 }
 
 function groupLinkRows(rows: LinkRow[]): LinkListItemDTO[] {
-  const grouped = new Map<string, LinkRow & { resumeIds: string[]; resumeNames: string[] }>();
+  const grouped = new Map<string, LinkRow>();
 
   for (const row of rows) {
     const key = normalizeLinkIdentity(row);
     const current = grouped.get(key);
     if (!current) {
-      grouped.set(key, { ...row, resumeIds: [row.resumeId], resumeNames: [row.resumeName] });
+      grouped.set(key, row);
       continue;
-    }
-
-    if (!current.resumeIds.includes(row.resumeId)) {
-      current.resumeIds.push(row.resumeId);
-      current.resumeNames.push(row.resumeName);
     }
 
     if (row.updatedAt > current.updatedAt) {
       current.id = row.id;
-      current.resumeId = row.resumeId;
-      current.resumeName = row.resumeName;
       current.sortOrder = row.sortOrder;
       current.createdAt = row.createdAt;
       current.updatedAt = row.updatedAt;
@@ -55,11 +46,6 @@ function groupLinkRows(rows: LinkRow[]): LinkListItemDTO[] {
 
   return Array.from(grouped.values()).map((r) => ({
     id: r.id,
-    resumeId: r.resumeId,
-    resumeName: r.resumeName,
-    resumeIds: r.resumeIds,
-    resumeNames: r.resumeNames,
-    usageCount: r.resumeIds.length,
     label: r.label,
     url: r.url,
     icon: r.icon,
@@ -90,8 +76,6 @@ export async function listLinksForUserPaginated(
   const rows = await db
     .select({
       id: resumeLink.id,
-      resumeId: resumeLinkItem.resumeId,
-      resumeName: resume.name,
       label: resumeLink.label,
       url: resumeLink.url,
       icon: resumeLink.icon,
@@ -100,18 +84,10 @@ export async function listLinksForUserPaginated(
       updatedAt: resumeLink.updatedAt,
     })
     .from(resumeLink)
-    .leftJoin(resumeLinkItem, eq(resumeLinkItem.linkId, resumeLink.id))
-    .leftJoin(resume, eq(resumeLinkItem.resumeId, resume.id))
     .where(and(...conditions))
     .orderBy(direction === "before" ? desc(resumeLink.id) : asc(resumeLink.id));
 
-  const groupedRows = groupLinkRows(
-    rows.map((r) => ({
-      ...r,
-      resumeId: r.resumeId ?? "",
-      resumeName: r.resumeName ?? "Reusable item",
-    })),
-  );
+  const groupedRows = groupLinkRows(rows);
   const cursor = opts?.cursor;
   const filteredRows = cursor
     ? groupedRows.filter((item) => (direction === "before" ? item.id < cursor : item.id > cursor))
@@ -157,8 +133,6 @@ export async function listLinksForUser(
   const rows = await db
     .select({
       id: resumeLink.id,
-      resumeId: resumeLinkItem.resumeId,
-      resumeName: resume.name,
       label: resumeLink.label,
       url: resumeLink.url,
       icon: resumeLink.icon,
@@ -167,18 +141,10 @@ export async function listLinksForUser(
       updatedAt: resumeLink.updatedAt,
     })
     .from(resumeLink)
-    .leftJoin(resumeLinkItem, eq(resumeLinkItem.linkId, resumeLink.id))
-    .leftJoin(resume, eq(resumeLinkItem.resumeId, resume.id))
     .where(and(...conditions))
     .orderBy(desc(resumeLink.updatedAt));
 
-  return groupLinkRows(
-    rows.map((r) => ({
-      ...r,
-      resumeId: r.resumeId ?? "",
-      resumeName: r.resumeName ?? "Reusable item",
-    })),
-  );
+  return groupLinkRows(rows);
 }
 
 export async function deleteLinkForUser(linkId: string, userId: string): Promise<void> {

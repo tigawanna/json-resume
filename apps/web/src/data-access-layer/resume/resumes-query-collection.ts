@@ -29,7 +29,6 @@ export const resumesCollection = createCollection(
     id: "resumes-list",
     queryKey: [queryKeyPrefixes.resumes],
     syncMode: "on-demand",
-    staleTime: 1000 * 60 * 60, // 1 hour
     queryFn: async (ctx) => {
       const where = ctx.meta?.loadSubsetOptions?.where;
       let keyword: string | undefined;

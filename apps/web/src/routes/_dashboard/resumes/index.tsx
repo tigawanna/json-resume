@@ -33,7 +33,7 @@ function RouteComponent() {
   const navigate = useNavigate();
   const [keyword, setKeyword] = useState(sq ?? "");
 
-  const { data: pageData } = useQuery({
+  const { data, isLoading, isRefetching } = useQuery({
     queryKey: [queryKeyPrefixes.resumes, "page", cursor, dir ?? "after", sq],
     queryFn: () => listResumesPaginated({ data: { cursor, direction: dir, keyword: sq } }),
     placeholderData: (prevData) => prevData,
@@ -67,18 +67,18 @@ function RouteComponent() {
   function goNext() {
     void navigate({
       to: ".",
-      search: (prev) => ({ ...prev, cursor: pageData?.nextCursor, dir: "after" as const }),
+      search: (prev) => ({ ...prev, cursor: data?.nextCursor, dir: "after" as const }),
     });
   }
 
   function goPrevious() {
     void navigate({
       to: ".",
-      search: (prev) => ({ ...prev, cursor: pageData?.previousCursor, dir: "before" as const }),
+      search: (prev) => ({ ...prev, cursor: data?.previousCursor, dir: "before" as const }),
     });
   }
 
-  const showPagination = Boolean(pageData?.items?.length);
+  const showPagination = Boolean(data?.items?.length);
 
   return (
     <div className="w-full flex flex-col gap-6">
@@ -102,7 +102,7 @@ function RouteComponent() {
         inputProps={{ placeholder: "Search resumes..." }}
       />
       <Suspense fallback={<RouterPendingComponent />}>
-        <ResumeListPage />
+        <ResumeListPage data={data} isLoading={isLoading} isRefetching={isRefetching} />
       </Suspense>
       {showPagination ? (
         <div className="flex items-center justify-between border-t pt-4">
@@ -110,7 +110,7 @@ function RouteComponent() {
             variant="outline"
             size="sm"
             onClick={goPrevious}
-            disabled={!pageData?.previousCursor}
+            disabled={!data?.previousCursor}
             data-test="pagination-prev"
           >
             <ChevronLeft className="mr-1 size-4" /> Previous
@@ -119,7 +119,7 @@ function RouteComponent() {
             variant="outline"
             size="sm"
             onClick={goNext}
-            disabled={!pageData?.nextCursor}
+            disabled={!data?.nextCursor}
             data-test="pagination-next"
           >
             Next <ChevronRight className="ml-1 size-4" />

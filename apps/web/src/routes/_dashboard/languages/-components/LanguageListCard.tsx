@@ -1,4 +1,3 @@
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -30,9 +29,6 @@ export function LanguageListCard({ language, onDelete }: LanguageListCardProps) 
                   {language.proficiency}
                 </CardDescription>
               )}
-              <Badge variant="outline" className="mt-2 max-w-48 truncate text-xs">
-                {language.resumeName}
-              </Badge>
             </div>
           </div>
         </CardHeader>

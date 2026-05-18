@@ -1,7 +1,7 @@
 import "@tanstack/react-start/server-only";
 
 import { db } from "@/lib/drizzle/client";
-import { resume, resumeExperience, resumeExperienceItem } from "@/lib/drizzle/scheam";
+import { resumeExperience } from "@/lib/drizzle/scheam";
 import { and, asc, desc, eq, gt, like, lt, or } from "drizzle-orm";
 import { DEFAULT_PAGE_SIZE } from "../../pagination.types";
 import type { PaginatedResult } from "../../pagination.types";
@@ -69,8 +69,6 @@ export async function listExperiencesForUserPaginated(
   const rows = await db
     .select({
       id: resumeExperience.id,
-      resumeId: resumeExperienceItem.resumeId,
-      resumeName: resume.name,
       company: resumeExperience.company,
       role: resumeExperience.role,
       startDate: resumeExperience.startDate,
@@ -81,8 +79,6 @@ export async function listExperiencesForUserPaginated(
       updatedAt: resumeExperience.updatedAt,
     })
     .from(resumeExperience)
-    .leftJoin(resumeExperienceItem, eq(resumeExperienceItem.experienceId, resumeExperience.id))
-    .leftJoin(resume, eq(resumeExperienceItem.resumeId, resume.id))
     .where(and(...conditions))
     .orderBy(
       ...(direction === "before"
@@ -99,8 +95,6 @@ export async function listExperiencesForUserPaginated(
 
   const items = orderedRows.map((r) => ({
     ...r,
-    resumeId: r.resumeId ?? "",
-    resumeName: r.resumeName ?? "Reusable item",
     createdAt: r.createdAt.toISOString(),
     updatedAt: r.updatedAt.toISOString(),
   }));
@@ -149,8 +143,6 @@ export async function listExperiencesForUser(
   const rows = await db
     .select({
       id: resumeExperience.id,
-      resumeId: resumeExperienceItem.resumeId,
-      resumeName: resume.name,
       company: resumeExperience.company,
       role: resumeExperience.role,
       startDate: resumeExperience.startDate,
@@ -161,15 +153,11 @@ export async function listExperiencesForUser(
       updatedAt: resumeExperience.updatedAt,
     })
     .from(resumeExperience)
-    .leftJoin(resumeExperienceItem, eq(resumeExperienceItem.experienceId, resumeExperience.id))
-    .leftJoin(resume, eq(resumeExperienceItem.resumeId, resume.id))
     .where(and(...conditions))
     .orderBy(desc(resumeExperience.sortOrder), desc(resumeExperience.id));
 
   return rows.map((r) => ({
     ...r,
-    resumeId: r.resumeId ?? "",
-    resumeName: r.resumeName ?? "Reusable item",
     createdAt: r.createdAt.toISOString(),
     updatedAt: r.updatedAt.toISOString(),
   }));

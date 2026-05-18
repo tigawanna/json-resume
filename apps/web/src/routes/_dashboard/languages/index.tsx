@@ -3,12 +3,11 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
 import { listLanguages } from "@/data-access-layer/resume/languages/language.functions";
-import { RouterPendingComponent } from "@/lib/tanstack/router/RouterPendingComponent";
 import { useDebouncer } from "@tanstack/react-pacer";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
-import { Suspense, useState } from "react";
+import { useState } from "react";
 import { z } from "zod";
 import { LanguageCreateForm } from "./-components/LanguageCreateForm";
 import { LanguageList } from "./-components/LanguageList";
@@ -34,7 +33,7 @@ function RouteComponent() {
   const [keyword, setKeyword] = useState(sq);
   const [createOpen, setCreateOpen] = useState(false);
 
-  const { data: pageData } = useQuery({
+  const { data, isLoading, isRefetching } = useQuery({
     queryKey: [queryKeyPrefixes.languages, "page", cursor, dir ?? "after", sq],
     queryFn: () => listLanguages({ data: { cursor, direction: dir, keyword: sq } }),
     placeholderData: (prevData) => prevData,
@@ -68,18 +67,18 @@ function RouteComponent() {
   function goNext() {
     void navigate({
       to: ".",
-      search: (prev) => ({ ...prev, cursor: pageData?.nextCursor, dir: "after" as const }),
+      search: (prev) => ({ ...prev, cursor: data?.nextCursor, dir: "after" as const }),
     });
   }
 
   function goPrevious() {
     void navigate({
       to: ".",
-      search: (prev) => ({ ...prev, cursor: pageData?.previousCursor, dir: "before" as const }),
+      search: (prev) => ({ ...prev, cursor: data?.previousCursor, dir: "before" as const }),
     });
   }
 
-  const showPagination = Boolean(pageData?.items?.length);
+  const showPagination = Boolean(data?.items?.length);
 
   return (
     <div className="flex w-full flex-col gap-6">
@@ -112,16 +111,14 @@ function RouteComponent() {
         isDebouncing={debouncer.state.isPending ?? false}
         inputProps={{ placeholder: "Search languages..." }}
       />
-      <Suspense fallback={<RouterPendingComponent />}>
-        <LanguageList />
-      </Suspense>
+      <LanguageList data={data} isLoading={isLoading} isRefetching={isRefetching} />
       {showPagination ? (
         <div className="flex items-center justify-between border-t pt-4">
           <Button
             variant="outline"
             size="sm"
             onClick={goPrevious}
-            disabled={!pageData?.previousCursor}
+            disabled={!data?.previousCursor}
             data-test="pagination-prev"
           >
             <ChevronLeft className="mr-1 size-4" /> Previous
@@ -130,7 +127,7 @@ function RouteComponent() {
             variant="outline"
             size="sm"
             onClick={goNext}
-            disabled={!pageData?.nextCursor}
+            disabled={!data?.nextCursor}
             data-test="pagination-next"
           >
             Next <ChevronRight className="ml-1 size-4" />

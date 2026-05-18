@@ -9,29 +9,30 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
-import {
-  listExperiences,
-  reorderExperienceFn,
-} from "@/data-access-layer/resume/experiences/experience.functions";
+import type { listExperiences } from "@/data-access-layer/resume/experiences/experience.functions";
+import { reorderExperienceFn } from "@/data-access-layer/resume/experiences/experience.functions";
 import { deleteExperienceMutationOptions } from "@/data-access-layer/resume/experiences/experience.mutation-options";
 import { RouterPendingComponent } from "@/lib/tanstack/router/RouterPendingComponent";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { Briefcase, Loader2, Plus } from "lucide-react";
 import { useState, useTransition } from "react";
 import { Route } from "..";
 import { ExperienceCreateFormDialog } from "./ExperienceCreateForm";
 import { ExperienceListCard } from "./ExperienceListCard";
 
-export function ExperienceList() {
+type PageData = Awaited<ReturnType<typeof listExperiences>>;
+
+interface ExperienceListProps {
+  data: PageData | undefined;
+  isLoading: boolean;
+  isRefetching: boolean;
+}
+
+export function ExperienceList({ data, isLoading, isRefetching }: ExperienceListProps) {
   const { sq, cursor, dir } = Route.useSearch();
   const [createOpen, setCreateOpen] = useState(false);
   const [isCreateOpenPending, startCreateOpenTransition] = useTransition();
   const navigate = Route.useNavigate();
-  const { data, isLoading, isRefetching } = useQuery({
-    queryKey: [queryKeyPrefixes.experiences, "page", cursor, dir ?? "after", sq],
-    queryFn: () => listExperiences({ data: { cursor, direction: dir, keyword: sq } }),
-    placeholderData: (prevData) => prevData,
-  });
   const deleteMutation = useMutation(deleteExperienceMutationOptions);
 
   function openCreateDialog() {
