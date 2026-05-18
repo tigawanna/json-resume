@@ -95,7 +95,7 @@ export function SummaryList({ data, isLoading, isRefetching }: SummaryListProps)
   return (
     <div className="flex w-full flex-col gap-6" data-test="summary-list-page">
       <Nprogress isAnimating={isRefetching} />
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" data-test="summary-list">
+      <div className="grid gap-4 lg:grid-cols-2" data-test="summary-list">
         {data.items.map((item) => (
           <SummaryListCard
             key={item.id}

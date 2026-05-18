@@ -1,8 +1,9 @@
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import type { SummaryListItemDTO } from "@/data-access-layer/resume/summaries/summary.types";
-import { FileText, Pencil, Trash2 } from "lucide-react";
+import { FileText, ListOrdered, Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { SummaryEditForm } from "./SummaryEditForm";
 
@@ -13,41 +14,56 @@ interface SummaryListCardProps {
 
 export function SummaryListCard({ summary, onDelete }: SummaryListCardProps) {
   const [open, setOpen] = useState(false);
-  const preview = summary.text.length > 120 ? `${summary.text.slice(0, 120)}…` : summary.text;
+  const updatedLabel = new Date(summary.updatedAt).toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+
   return (
     <>
-      <Card
-        className="flex flex-row items-start gap-2 py-6"
-        data-test={`summary-card-${summary.id}`}
-      >
-        <CardHeader className="min-w-0 flex-1 space-y-0 p-0 px-6 pr-3 pb-0">
-          <div className="flex min-w-0 items-start gap-3">
-            <FileText className="text-primary mt-0.5 size-5 shrink-0" />
-            <div className="min-w-0 flex-1">
-              <CardTitle className="text-base leading-snug line-clamp-2">{preview}</CardTitle>
-            </div>
+      <Card className="h-full gap-4 py-5" data-test={`summary-card-${summary.id}`}>
+        <CardHeader className="grid-cols-[1fr_auto] items-center gap-3 pb-0">
+          <div className="flex min-w-0 items-center gap-3">
+            <FileText className="text-primary size-5 shrink-0" />
+            <CardTitle className="text-base">Summary</CardTitle>
+          </div>
+          <div className="flex shrink-0 items-center gap-0.5">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-7 shrink-0"
+              onClick={() => setOpen(true)}
+              data-test="summary-edit-btn"
+            >
+              <Pencil className="size-3.5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-7 shrink-0"
+              onClick={() => onDelete?.(summary.id)}
+              data-test="summary-delete-btn"
+            >
+              <Trash2 className="size-3.5" />
+            </Button>
           </div>
         </CardHeader>
-        <div className="flex shrink-0 flex-col gap-0.5 pr-6">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="size-7 shrink-0"
-            onClick={() => setOpen(true)}
-            data-test="summary-edit-btn"
+        <CardContent className="pt-0">
+          <p className="text-foreground text-sm leading-relaxed whitespace-pre-wrap">
+            {summary.text}
+          </p>
+        </CardContent>
+        <CardFooter className="mt-auto flex flex-wrap items-center justify-between gap-2 border-t pt-4">
+          <Badge
+            variant="secondary"
+            className="text-xs"
+            title="Display order on resume (higher = appears first)"
           >
-            <Pencil className="size-3.5" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="size-7 shrink-0"
-            onClick={() => onDelete?.(summary.id)}
-            data-test="summary-delete-btn"
-          >
-            <Trash2 className="size-3.5" />
-          </Button>
-        </div>
+            <ListOrdered className="mr-1 size-3" />#{summary.sortOrder}
+          </Badge>
+          <p className="text-muted-foreground text-xs">Updated {updatedLabel}</p>
+        </CardFooter>
       </Card>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-lg">
