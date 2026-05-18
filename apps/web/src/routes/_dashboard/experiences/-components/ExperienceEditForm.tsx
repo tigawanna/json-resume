@@ -2,14 +2,18 @@ import { Button } from "@/components/ui/button";
 import { DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import type { ExperienceListItemDTO } from "@/data-access-layer/resume/experiences/experience.types";
-import { editExperience } from "@/data-access-layer/resume/resume.functions";
-
 import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
+import type { ExperienceListItemDTO } from "@/data-access-layer/resume/experiences/experience.types";
+import {
+  editExperience,
+  updateExperienceBullets,
+} from "@/data-access-layer/resume/resume.functions";
 import { useAppForm } from "@/lib/tanstack/form";
 import { unwrapUnknownError } from "@/utils/errors";
 import { formOptions } from "@tanstack/react-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Plus, X } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 const experienceEditOpts = formOptions({
@@ -26,16 +30,25 @@ const experienceEditOpts = formOptions({
 interface ExperienceEditFormProps {
   experience: ExperienceListItemDTO;
   onSuccess?: () => void;
+  onCancel?: () => void;
 }
 
-export function ExperienceEditForm({ experience, onSuccess }: ExperienceEditFormProps) {
+export function ExperienceEditForm({ experience, onSuccess, onCancel }: ExperienceEditFormProps) {
   const queryClient = useQueryClient();
+  const [bullets, setBullets] = useState(() => experience.bullets.map((bullet) => bullet.text));
 
   const mutation = useMutation({
-    mutationFn: async (values: typeof experienceEditOpts.defaultValues) =>
-      editExperience({
+    mutationFn: async (values: typeof experienceEditOpts.defaultValues) => {
+      await editExperience({
         data: { id: experience.id, ...values },
-      }),
+      });
+      await updateExperienceBullets({
+        data: {
+          experienceId: experience.id,
+          bullets: bullets.map((bullet) => bullet.trim()).filter(Boolean),
+        },
+      });
+    },
     onSuccess() {
       toast.success("Experience saved");
       void queryClient.invalidateQueries({ queryKey: [queryKeyPrefixes.experiences] });
@@ -64,12 +77,25 @@ export function ExperienceEditForm({ experience, onSuccess }: ExperienceEditForm
     },
   });
 
+  function addBullet() {
+    setBullets((current) => [...current, ""]);
+  }
+
+  function removeBullet(index: number) {
+    setBullets((current) => current.filter((_, bulletIndex) => bulletIndex !== index));
+  }
+
+  function updateBullet(index: number, text: string) {
+    setBullets((current) =>
+      current.map((bullet, bulletIndex) => (bulletIndex === index ? text : bullet)),
+    );
+  }
+
   return (
     <form
       onSubmit={(e) => {
         e.preventDefault();
         e.stopPropagation();
-
         void form.handleSubmit();
       }}
       className="flex flex-col gap-3"
@@ -178,6 +204,37 @@ export function ExperienceEditForm({ experience, onSuccess }: ExperienceEditForm
         )}
       </form.AppField>
 
+      <div className="flex flex-col gap-2">
+        <Label className="text-xs font-medium">Bullets</Label>
+        {bullets.length > 0 ? (
+          bullets.map((bullet, index) => (
+            <div key={index} className="flex items-start gap-2">
+              <span className="text-muted-foreground mt-2 shrink-0 text-xs">•</span>
+              <Input
+                value={bullet}
+                onChange={(e) => updateBullet(index, e.target.value)}
+                className="text-sm"
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="size-8 shrink-0"
+                onClick={() => removeBullet(index)}
+              >
+                <X className="size-3.5" />
+              </Button>
+            </div>
+          ))
+        ) : (
+          <p className="text-muted-foreground text-sm">No bullets yet.</p>
+        )}
+        <Button type="button" variant="outline" size="sm" className="w-fit" onClick={addBullet}>
+          <Plus className="mr-1 size-3.5" />
+          Add bullet
+        </Button>
+      </div>
+
       <form.Subscribe selector={(s) => s.values}>
         {(values) => {
           const hasRequired = Boolean(values.role.trim() && values.company.trim());
@@ -186,7 +243,11 @@ export function ExperienceEditForm({ experience, onSuccess }: ExperienceEditForm
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => form.reset()}
+                onClick={() => {
+                  form.reset();
+                  setBullets(experience.bullets.map((bullet) => bullet.text));
+                  onCancel?.();
+                }}
                 disabled={mutation.isPending}
               >
                 Cancel

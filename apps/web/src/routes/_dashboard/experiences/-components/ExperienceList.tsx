@@ -19,6 +19,7 @@ import { useState, useTransition } from "react";
 import { Route } from "..";
 import { ExperienceCreateFormDialog } from "./ExperienceCreateForm";
 import { ExperienceListCard } from "./ExperienceListCard";
+import { getPrimaryExperience, groupExperiences } from "./experience-display-groups";
 
 type PageData = Awaited<ReturnType<typeof listExperiences>>;
 
@@ -106,30 +107,36 @@ export function ExperienceList({ data, isLoading, isRefetching }: ExperienceList
     );
   }
 
+  const experienceGroups = data ? groupExperiences(data.items) : [];
+
   return (
     <div className="flex w-full flex-col gap-6" data-test="experience-list-page">
       <Nprogress isAnimating={isRefetching} />
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" data-test="experience-list">
-        {data.items.map((experience, index) => (
+      <div className="grid gap-4 lg:grid-cols-2" data-test="experience-list">
+        {experienceGroups.map((group, index) => (
           <ExperienceListCard
-            key={experience.id}
-            experience={experience}
-            onDelete={(id) => deleteMutation.mutate(id)}
+            key={group.key}
+            group={group}
+            onDelete={(experienceIds) => {
+              for (const experienceId of experienceIds) {
+                deleteMutation.mutate(experienceId);
+              }
+            }}
             onMoveUp={
               index > 0
                 ? () =>
                     reorderMutation.mutate({
-                      idA: experience.id,
-                      idB: data.items[index - 1].id,
+                      idA: getPrimaryExperience(group).id,
+                      idB: getPrimaryExperience(experienceGroups[index - 1]).id,
                     })
                 : undefined
             }
             onMoveDown={
-              index < data.items.length - 1
+              index < experienceGroups.length - 1
                 ? () =>
                     reorderMutation.mutate({
-                      idA: experience.id,
-                      idB: data.items[index + 1].id,
+                      idA: getPrimaryExperience(group).id,
+                      idB: getPrimaryExperience(experienceGroups[index + 1]).id,
                     })
                 : undefined
             }
