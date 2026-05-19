@@ -1,39 +1,14 @@
 // @vitest-environment node
 
-import { createClient, type Client } from "@libsql/client";
 import { sql } from "drizzle-orm";
-import { mkdtempSync, readdirSync, readFileSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { createDefaultResume, type ResumeDocumentV1 } from "@/features/resume/resume-schema";
+import { createMigratedTestDatabase, stubTestServerEnv, type TestDatabase } from "@/test/test-db";
 
-const tempDir = mkdtempSync(join(tmpdir(), "ajr-dal-"));
-const databasePath = join(tempDir, "test.sqlite");
-const databaseUrl = `file:${databasePath}`;
-
+let testDatabase: TestDatabase;
 let db: typeof import("@/lib/drizzle/client").db;
 let schema: typeof import("@/lib/drizzle/scheam");
 let resumeDal: typeof import("./resume.server");
-
-async function runMigrations(client: Client): Promise<void> {
-  const migrationDir = new URL("../../../drizzle/migrations/", import.meta.url);
-  const migrationFiles = readdirSync(migrationDir)
-    .filter((file) => file.endsWith(".sql"))
-    .sort();
-
-  for (const file of migrationFiles) {
-    const migration = readFileSync(new URL(file, migrationDir), "utf8");
-    const statements = migration
-      .split("--> statement-breakpoint")
-      .map((statement) => statement.trim())
-      .filter((statement) => statement.length > 0);
-
-    for (const statement of statements) {
-      await client.execute(statement);
-    }
-  }
-}
 
 async function createUser(input: { id: string; email: string; role?: string }): Promise<void> {
   await db.insert(schema.user).values({
@@ -74,16 +49,8 @@ async function createLink(input: {
 }
 
 beforeAll(async () => {
-  vi.stubEnv("DATABASE_URL", databaseUrl);
-  vi.stubEnv("DATABASE_AUTH_TOKEN", "");
-  vi.stubEnv("BETTER_AUTH_SECRET", "test-secret");
-  vi.stubEnv("GITHUB_CLIENT_ID", "test-client-id");
-  vi.stubEnv("GITHUB_CLIENT_SECRET", "test-client-secret");
-  vi.stubEnv("FRONTEND_URL", "http://localhost:3040");
-
-  const client = createClient({ url: databaseUrl });
-  await runMigrations(client);
-  client.close();
+  testDatabase = await createMigratedTestDatabase("ajr-dal-");
+  stubTestServerEnv(testDatabase.databaseUrl);
 
   const dbModule = await import("@/lib/drizzle/client");
   const schemaModule = await import("@/lib/drizzle/scheam");
@@ -96,7 +63,7 @@ beforeAll(async () => {
 
 afterAll(async () => {
   vi.unstubAllEnvs();
-  rmSync(tempDir, { recursive: true, force: true });
+  testDatabase.cleanup();
 });
 
 describe("resume data access ownership", () => {

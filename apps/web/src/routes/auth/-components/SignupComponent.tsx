@@ -148,7 +148,6 @@ export function SignupComponent() {
             validators={{
               onChange: z.string().min(8, "Password must be at least 8 characters"),
               onChangeListenTo: ["password"],
-              onChangeAsyncDebounceMs: 500,
             }}
           >
             {(field) => (

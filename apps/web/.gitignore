@@ -11,6 +11,9 @@ count.txt
 .output
 .vinxi
 todos.json
+.test
+test-results
+playwright-report
 db.sqlite
 *.sqlite
 *.sqlite3

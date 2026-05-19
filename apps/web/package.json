@@ -7,6 +7,10 @@
     "build": "vp build",
     "preview": "vp preview",
     "test": "vp test run",
+    "test:watch": "vp test",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:all": "pnpm test && pnpm test:e2e",
     "check-types": "tsc -b --noEmit",
     "auth:migrate": "npx auth@latest generate --output ./src/lib/drizzle/scheam/auth-schema.ts",
     "db:generate": "drizzle-kit generate",
@@ -92,6 +96,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
     "@tanstack/devtools-vite": "^0.5.0",
     "@tanstack/react-pacer-devtools": "^0.5.1",
     "@testing-library/dom": "^10.4.1",
