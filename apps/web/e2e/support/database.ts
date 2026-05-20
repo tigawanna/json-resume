@@ -65,6 +65,13 @@ export const resumeAssociationCountQueries = [
   ],
 ] as const;
 
+export const resumeOwnedCountQueries = [
+  [
+    "sections",
+    "select count(*) as count from resume_section section inner join resume r on r.id = section.resume_id where r.user_id = ?",
+  ],
+] as const;
+
 export async function getUserIdByEmail(email: string) {
   const client = createClient({ url: databaseUrl, authToken: "" });
   try {
