@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "tsc --watch",
     "build": "tsc",
-    "check-types": "tsc --noEmit",
+    "check-types": "tsgo --noEmit",
     "test": "echo 'Add test script here'"
   },
   "dependencies": {
@@ -17,6 +17,6 @@
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
-    "typescript": "*"
+    "typescript": "catalog:"
   }
 }

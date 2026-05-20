@@ -3,6 +3,8 @@ packages:
   - packages/*
 
 catalog:
+  "@typescript/native-preview": 7.0.0-dev.20260519.1
+  typescript: 6.0.3
   vite: npm:@voidzero-dev/vite-plus-core@latest
   vite-plus: latest
   vitest: npm:@voidzero-dev/vite-plus-test@^0.1.20
