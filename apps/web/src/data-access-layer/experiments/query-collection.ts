@@ -77,17 +77,19 @@ export const experimentsCollection = createCollection(
       let gtValue: unknown;
 
       if (where) {
-        parseWhereExpression(where, {
+        parseWhereExpression<unknown[]>(where, {
           handlers: {
-            gt: (_field, value) => {
+            gt: (_field: unknown, value: unknown) => {
               gtValue = value;
+              return [];
             },
-            ilike: (_field, value: unknown) => {
+            ilike: (_field: unknown, value: unknown) => {
               if (typeof value === "string" && !keyword) {
                 keyword = value.replaceAll("%", "");
               }
+              return [];
             },
-            or: (...conditions) => conditions,
+            or: (...conditions: unknown[]) => conditions,
           },
         });
       }

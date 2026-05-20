@@ -13,14 +13,15 @@ export const talksCollection = createCollection(
       const where = ctx.meta?.loadSubsetOptions?.where;
       let keyword: string | undefined;
       if (where) {
-        parseWhereExpression(where, {
+        parseWhereExpression<unknown[]>(where, {
           handlers: {
-            ilike: (_field, value: unknown) => {
+            ilike: (_field: unknown, value: unknown) => {
               if (typeof value === "string" && !keyword) {
                 keyword = value.replaceAll("%", "");
               }
+              return [];
             },
-            or: (...conditions) => conditions,
+            or: (...conditions: unknown[]) => conditions,
           },
         });
       }

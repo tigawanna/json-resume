@@ -226,6 +226,7 @@ function ExperienceCard({
               onClick={onMoveUp}
               disabled={!onMoveUp}
               title="Move up"
+              aria-label="Move experience up"
             >
               <ArrowUp className="size-3.5" />
             </Button>
@@ -236,10 +237,17 @@ function ExperienceCard({
               onClick={onMoveDown}
               disabled={!onMoveDown}
               title="Move down"
+              aria-label="Move experience down"
             >
               <ArrowDown className="size-3.5" />
             </Button>
-            <Button variant="ghost" size="icon" className="size-7" onClick={enterEdit}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-7"
+              onClick={enterEdit}
+              aria-label="Edit experience"
+            >
               <Pencil className="size-3.5" />
             </Button>
             <Button
@@ -248,6 +256,7 @@ function ExperienceCard({
               className="size-7"
               onClick={() => deleteMutation.mutate()}
               disabled={deleteMutation.isPending}
+              aria-label="Delete experience"
             >
               <Trash2 className="size-3.5" />
             </Button>
