@@ -8,9 +8,8 @@ export const deleteEducationMutationOptions = mutationOptions({
   mutationFn: async (educationId: string) => deleteEducationFn({ data: { id: educationId } }),
   onSuccess(_, __, ___, ctx) {
     toast.success("Education deleted");
-    ctx.client.invalidateQueries({
-      queryKey: [queryKeyPrefixes.education, queryKeyPrefixes.resumes],
-    });
+    void ctx.client.invalidateQueries({ queryKey: [queryKeyPrefixes.education] });
+    void ctx.client.invalidateQueries({ queryKey: [queryKeyPrefixes.resumes] });
   },
   onError(err: unknown) {
     toast.error("Failed to delete education", {
