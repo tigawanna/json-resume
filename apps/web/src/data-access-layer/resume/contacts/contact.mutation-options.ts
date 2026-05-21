@@ -7,9 +7,8 @@ import { deleteContactFn } from "./contact.functions";
 export const deleteContactMutationOptions = mutationOptions({
   mutationFn: async (contactId: string) => deleteContactFn({ data: { id: contactId } }),
   onSuccess(_, __, ___, ctx) {
-    ctx.client.invalidateQueries({
-      queryKey: [queryKeyPrefixes.contacts, queryKeyPrefixes.resumes],
-    });
+    void ctx.client.invalidateQueries({ queryKey: [queryKeyPrefixes.contacts] });
+    void ctx.client.invalidateQueries({ queryKey: [queryKeyPrefixes.resumes] });
     toast.success("Contact deleted");
   },
   onError(err: unknown) {

@@ -7,9 +7,8 @@ import { deleteLinkFn } from "./link.functions";
 export const deleteLinkMutationOptions = mutationOptions({
   mutationFn: async (linkId: string) => deleteLinkFn({ data: { id: linkId } }),
   onSuccess(_, __, ___, ctx) {
-    ctx.client.invalidateQueries({
-      queryKey: [queryKeyPrefixes.links, queryKeyPrefixes.resumes],
-    });
+    void ctx.client.invalidateQueries({ queryKey: [queryKeyPrefixes.links] });
+    void ctx.client.invalidateQueries({ queryKey: [queryKeyPrefixes.resumes] });
     toast.success("Link deleted");
   },
   onError(err: unknown) {

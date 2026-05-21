@@ -1,6 +1,6 @@
 # Playwright E2E TODO and Handoff
 
-Last updated: 2026-05-20
+Last updated: 2026-05-21
 
 ## How To Use This File
 
@@ -15,18 +15,49 @@ Last updated: 2026-05-20
 
 Completed in this pass: `resume-data-experiences.spec.ts`.
 Completed in this pass: `resume-data-education.spec.ts`.
+Completed in this pass: `resume-data-projects.spec.ts`.
+Completed in this pass: `resume-data-skill-groups.spec.ts`.
+Completed in this pass: `resume-data-summaries.spec.ts`.
+Completed in this pass: `resume-data-contacts.spec.ts`.
+Completed in this pass: `resume-data-links.spec.ts`.
+Completed in this pass: `resume-data-talks.spec.ts`.
 
 Created files in this pass:
 
 - `support/resume-data-navigation.ts`
 - `resume-data-experiences.spec.ts`
 - `resume-data-education.spec.ts`
+- `resume-data-projects.spec.ts`
+- `resume-data-skill-groups.spec.ts`
+- `resume-data-summaries.spec.ts`
+- `resume-data-contacts.spec.ts`
+- `resume-data-links.spec.ts`
+- `resume-data-talks.spec.ts`
+
+Implementation fix in this pass:
+
+- `src/data-access-layer/resume/resume-projects/resume-project.mutation-options.ts`
+  - Split project delete invalidation into separate `resume-projects` and `resumes` invalidations so the standalone project list refetches after delete.
+- Split delete invalidation into route-specific and `resumes` invalidations for:
+  - `src/data-access-layer/resume/skill-groups/skill-group.mutation-options.ts`
+  - `src/data-access-layer/resume/summaries/summary.mutation-options.ts`
+  - `src/data-access-layer/resume/contacts/contact.mutation-options.ts`
+  - `src/data-access-layer/resume/links/link.mutation-options.ts`
+  - `src/data-access-layer/resume/talks/talk.mutation-options.ts`
 
 Verification run in this pass:
 
 - `pnpm --dir apps/web exec playwright test e2e/resume-data-experiences.spec.ts`
 - `pnpm --dir apps/web check-types`
 - `pnpm --dir apps/web exec playwright test e2e/resume-data-education.spec.ts`
+- `pnpm --dir apps/web exec playwright test e2e/resume-data-projects.spec.ts`
+- `pnpm --dir apps/web check-types`
+- `pnpm --dir apps/web exec playwright test e2e/resume-data-skill-groups.spec.ts`
+- `pnpm --dir apps/web exec playwright test e2e/resume-data-summaries.spec.ts`
+- `pnpm --dir apps/web exec playwright test e2e/resume-data-contacts.spec.ts`
+- `pnpm --dir apps/web exec playwright test e2e/resume-data-links.spec.ts`
+- `pnpm --dir apps/web exec playwright test e2e/resume-data-talks.spec.ts`
+- `pnpm --dir apps/web check-types`
 
 We have baseline resume workflow coverage and an editor-embedded resume parts CRUD flow. The next recommended step is to add standalone **Resume Data** route specs, one file per sidebar route. These should test the list/library pages themselves, not the resume editor accordion.
 
@@ -106,35 +137,43 @@ Preferred flow for each standalone route:
   - Cover create, reload persistence, edit, delete.
   - Verified with `pnpm --dir apps/web exec playwright test e2e/resume-data-education.spec.ts` on 2026-05-20.
 
-- [ ] `resume-data-projects.spec.ts`
+- [x] `resume-data-projects.spec.ts`
   - Route: `/resume-projects`
   - Priority: high.
   - Use this for resume project CRUD, not `/projects` repository search.
+  - Cover create, reload persistence, edit with a tech tag, delete.
+  - Verified with `pnpm --dir apps/web exec playwright test e2e/resume-data-projects.spec.ts` on 2026-05-21.
 
-- [ ] `resume-data-skill-groups.spec.ts`
+- [x] `resume-data-skill-groups.spec.ts`
   - Route: `/skill-groups`
   - Priority: high.
   - Cover group creation with at least one skill item if the route exposes it.
+  - Cover create with a skill item, reload persistence, edit with an added skill item, delete.
+  - Verified with `pnpm --dir apps/web exec playwright test e2e/resume-data-skill-groups.spec.ts` on 2026-05-21.
 
-- [ ] `resume-data-summaries.spec.ts`
+- [x] `resume-data-summaries.spec.ts`
   - Route: `/summaries`
   - Priority: medium.
   - Cover create, reload persistence, edit, delete.
+  - Verified with `pnpm --dir apps/web exec playwright test e2e/resume-data-summaries.spec.ts` on 2026-05-21.
 
-- [ ] `resume-data-contacts.spec.ts`
+- [x] `resume-data-contacts.spec.ts`
   - Route: `/contacts`
   - Priority: medium.
   - Cover create, reload persistence, edit, delete.
+  - Verified with `pnpm --dir apps/web exec playwright test e2e/resume-data-contacts.spec.ts` on 2026-05-21.
 
-- [ ] `resume-data-links.spec.ts`
+- [x] `resume-data-links.spec.ts`
   - Route: `/links`
   - Priority: medium.
   - Cover create, reload persistence, edit, delete.
+  - Verified with `pnpm --dir apps/web exec playwright test e2e/resume-data-links.spec.ts` on 2026-05-21.
 
-- [ ] `resume-data-talks.spec.ts`
+- [x] `resume-data-talks.spec.ts`
   - Route: `/talks`
   - Priority: medium.
   - Cover create, reload persistence, edit, delete.
+  - Verified with `pnpm --dir apps/web exec playwright test e2e/resume-data-talks.spec.ts` on 2026-05-21.
 
 - [ ] `resume-data-certifications.spec.ts`
   - Route: `/certifications`
@@ -172,17 +211,17 @@ Preferred flow for each standalone route:
 
 ## Next Pickup
 
-Start `resume-data-projects.spec.ts`.
+Start `resume-data-certifications.spec.ts`.
 
 Suggested first edit:
 
-1. Reuse `support/resume-data-navigation.ts` to open `/resume-projects` and assert `resume-project-list-page`.
-2. Add `resume-data-projects.spec.ts` with one CRUD test.
+1. Reuse `support/resume-data-navigation.ts` to open `/certifications` and assert `certification-list-page`.
+2. Add `resume-data-certifications.spec.ts` with one CRUD test.
 3. Update this file immediately after the spec file is created, then again after it passes.
 
 Suggested verification:
 
 ```bash
-pnpm --dir apps/web exec playwright test e2e/resume-data-projects.spec.ts
+pnpm --dir apps/web exec playwright test e2e/resume-data-certifications.spec.ts
 pnpm --dir apps/web check-types
 ```

@@ -7,9 +7,8 @@ import { deleteSummaryFn } from "./summary.functions";
 export const deleteSummaryMutationOptions = mutationOptions({
   mutationFn: async (summaryId: string) => deleteSummaryFn({ data: { id: summaryId } }),
   onSuccess(_, __, ___, ctx) {
-    ctx.client.invalidateQueries({
-      queryKey: [queryKeyPrefixes.summaries, queryKeyPrefixes.resumes],
-    });
+    void ctx.client.invalidateQueries({ queryKey: [queryKeyPrefixes.summaries] });
+    void ctx.client.invalidateQueries({ queryKey: [queryKeyPrefixes.resumes] });
     toast.success("Summary deleted");
   },
   onError(err: unknown) {

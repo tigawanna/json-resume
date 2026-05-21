@@ -7,9 +7,8 @@ import { deleteResumeProjectFn } from "./resume-project.functions";
 export const deleteResumeProjectMutationOptions = mutationOptions({
   mutationFn: async (projectId: string) => deleteResumeProjectFn({ data: { id: projectId } }),
   onSuccess(_, __, ___, ctx) {
-    ctx.client.invalidateQueries({
-      queryKey: [queryKeyPrefixes.resumeProjects, queryKeyPrefixes.resumes],
-    });
+    void ctx.client.invalidateQueries({ queryKey: [queryKeyPrefixes.resumeProjects] });
+    void ctx.client.invalidateQueries({ queryKey: [queryKeyPrefixes.resumes] });
     toast.success("Project deleted");
   },
   onError(err: unknown) {
