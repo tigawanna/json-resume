@@ -8,9 +8,8 @@ export const deleteLanguageMutationOptions = mutationOptions({
   mutationFn: async (languageId: string) => deleteLanguageFn({ data: { id: languageId } }),
   onSuccess(_, __, ___, ctx) {
     toast.success("Language deleted");
-    ctx.client.invalidateQueries({
-      queryKey: [queryKeyPrefixes.languages, queryKeyPrefixes.resumes],
-    });
+    void ctx.client.invalidateQueries({ queryKey: [queryKeyPrefixes.languages] });
+    void ctx.client.invalidateQueries({ queryKey: [queryKeyPrefixes.resumes] });
   },
   onError(err: unknown) {
     toast.error("Failed to delete language", {

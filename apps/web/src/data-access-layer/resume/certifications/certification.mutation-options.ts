@@ -7,9 +7,8 @@ import { deleteCertificationFn } from "./certification.functions";
 export const deleteCertificationMutationOptions = mutationOptions({
   mutationFn: async (certId: string) => deleteCertificationFn({ data: { id: certId } }),
   onSuccess(_, __, ___, ctx) {
-    ctx.client.invalidateQueries({
-      queryKey: [queryKeyPrefixes.certifications, queryKeyPrefixes.resumes],
-    });
+    void ctx.client.invalidateQueries({ queryKey: [queryKeyPrefixes.certifications] });
+    void ctx.client.invalidateQueries({ queryKey: [queryKeyPrefixes.resumes] });
     toast.success("Certification deleted");
   },
   onError(err: unknown) {

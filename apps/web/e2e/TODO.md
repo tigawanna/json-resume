@@ -21,6 +21,10 @@ Completed in this pass: `resume-data-summaries.spec.ts`.
 Completed in this pass: `resume-data-contacts.spec.ts`.
 Completed in this pass: `resume-data-links.spec.ts`.
 Completed in this pass: `resume-data-talks.spec.ts`.
+Completed in this pass: `resume-data-certifications.spec.ts`.
+Completed in this pass: `resume-data-volunteers.spec.ts`.
+Completed in this pass: `resume-data-languages.spec.ts`.
+In progress: `resumes-list.spec.ts`.
 
 Created files in this pass:
 
@@ -33,6 +37,10 @@ Created files in this pass:
 - `resume-data-contacts.spec.ts`
 - `resume-data-links.spec.ts`
 - `resume-data-talks.spec.ts`
+- `resume-data-certifications.spec.ts`
+- `resume-data-volunteers.spec.ts`
+- `resume-data-languages.spec.ts`
+- `resumes-list.spec.ts`
 
 Implementation fix in this pass:
 
@@ -44,6 +52,10 @@ Implementation fix in this pass:
   - `src/data-access-layer/resume/contacts/contact.mutation-options.ts`
   - `src/data-access-layer/resume/links/link.mutation-options.ts`
   - `src/data-access-layer/resume/talks/talk.mutation-options.ts`
+- Split delete invalidation into route-specific and `resumes` invalidations for:
+  - `src/data-access-layer/resume/certifications/certification.mutation-options.ts`
+  - `src/data-access-layer/resume/volunteers/volunteer.mutation-options.ts`
+  - `src/data-access-layer/resume/languages/language.mutation-options.ts`
 
 Verification run in this pass:
 
@@ -57,6 +69,10 @@ Verification run in this pass:
 - `pnpm --dir apps/web exec playwright test e2e/resume-data-contacts.spec.ts`
 - `pnpm --dir apps/web exec playwright test e2e/resume-data-links.spec.ts`
 - `pnpm --dir apps/web exec playwright test e2e/resume-data-talks.spec.ts`
+- `pnpm --dir apps/web check-types`
+- `pnpm --dir apps/web exec playwright test e2e/resume-data-certifications.spec.ts`
+- `pnpm --dir apps/web exec playwright test e2e/resume-data-volunteers.spec.ts`
+- `pnpm --dir apps/web exec playwright test e2e/resume-data-languages.spec.ts`
 - `pnpm --dir apps/web check-types`
 
 We have baseline resume workflow coverage and an editor-embedded resume parts CRUD flow. The next recommended step is to add standalone **Resume Data** route specs, one file per sidebar route. These should test the list/library pages themselves, not the resume editor accordion.
@@ -175,24 +191,27 @@ Preferred flow for each standalone route:
   - Cover create, reload persistence, edit, delete.
   - Verified with `pnpm --dir apps/web exec playwright test e2e/resume-data-talks.spec.ts` on 2026-05-21.
 
-- [ ] `resume-data-certifications.spec.ts`
+- [x] `resume-data-certifications.spec.ts`
   - Route: `/certifications`
   - Priority: medium.
   - Cover create, reload persistence, edit, delete.
+  - Verified with `pnpm --dir apps/web exec playwright test e2e/resume-data-certifications.spec.ts` on 2026-05-21.
 
-- [ ] `resume-data-volunteers.spec.ts`
+- [x] `resume-data-volunteers.spec.ts`
   - Route: `/volunteers`
   - Priority: medium.
   - Cover create, reload persistence, edit, delete.
+  - Verified with `pnpm --dir apps/web exec playwright test e2e/resume-data-volunteers.spec.ts` on 2026-05-21.
 
-- [ ] `resume-data-languages.spec.ts`
+- [x] `resume-data-languages.spec.ts`
   - Route: `/languages`
   - Priority: medium.
   - Cover create, reload persistence, edit, delete.
+  - Verified with `pnpm --dir apps/web exec playwright test e2e/resume-data-languages.spec.ts` on 2026-05-21.
 
 ## Non Resume Data Route Specs To Consider Later
 
-- [ ] `resumes-list.spec.ts`
+- [ ] `resumes-list.spec.ts` _(in progress)_
   - Route: `/resumes`
   - Cover list, open, clone, copy JSON if clipboard permissions are stable, and delete.
 
@@ -211,17 +230,17 @@ Preferred flow for each standalone route:
 
 ## Next Pickup
 
-Start `resume-data-certifications.spec.ts`.
+Start `resumes-list.spec.ts`.
 
 Suggested first edit:
 
-1. Reuse `support/resume-data-navigation.ts` to open `/certifications` and assert `certification-list-page`.
-2. Add `resume-data-certifications.spec.ts` with one CRUD test.
+1. Reuse existing auth and resume workflow helpers.
+2. Add `resumes-list.spec.ts` for `/resumes` list interactions.
 3. Update this file immediately after the spec file is created, then again after it passes.
 
 Suggested verification:
 
 ```bash
-pnpm --dir apps/web exec playwright test e2e/resume-data-certifications.spec.ts
+pnpm --dir apps/web exec playwright test e2e/resumes-list.spec.ts
 pnpm --dir apps/web check-types
 ```

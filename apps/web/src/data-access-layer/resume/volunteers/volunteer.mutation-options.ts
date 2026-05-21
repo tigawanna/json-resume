@@ -7,9 +7,8 @@ import { deleteVolunteerFn } from "./volunteer.functions";
 export const deleteVolunteerMutationOptions = mutationOptions({
   mutationFn: async (volunteerId: string) => deleteVolunteerFn({ data: { id: volunteerId } }),
   onSuccess(_, __, ___, ctx) {
-    ctx.client.invalidateQueries({
-      queryKey: [queryKeyPrefixes.volunteers, queryKeyPrefixes.resumes],
-    });
+    void ctx.client.invalidateQueries({ queryKey: [queryKeyPrefixes.volunteers] });
+    void ctx.client.invalidateQueries({ queryKey: [queryKeyPrefixes.resumes] });
     toast.success("Volunteer entry deleted");
   },
   onError(err: unknown) {
