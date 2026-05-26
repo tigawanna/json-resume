@@ -33,7 +33,7 @@ function RouteComponent() {
   const [keyword, setKeyword] = useState(sq);
   const [createOpen, setCreateOpen] = useState(false);
 
-  const { data, isLoading, isRefetching } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: [queryKeyPrefixes.volunteers, "page", cursor, dir ?? "after", sq],
     queryFn: () => listVolunteers({ data: { cursor, direction: dir, keyword: sq } }),
     placeholderData: (prevData) => prevData,
@@ -113,7 +113,7 @@ function RouteComponent() {
         isDebouncing={debouncer.state.isPending ?? false}
         inputProps={{ placeholder: "Search volunteer experience..." }}
       />
-      <VolunteerList data={data} isLoading={isLoading} isRefetching={isRefetching} />
+      <VolunteerList data={data} isLoading={isLoading} />
       {showPagination ? (
         <div className="flex items-center justify-between border-t pt-4">
           <Button

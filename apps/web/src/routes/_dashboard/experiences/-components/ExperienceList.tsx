@@ -1,4 +1,3 @@
-import Nprogress from "@/components/navigation/nprogress/Nprogress";
 import { Button } from "@/components/ui/button";
 import {
   Empty,
@@ -26,10 +25,9 @@ type PageData = Awaited<ReturnType<typeof listExperiences>>;
 interface ExperienceListProps {
   data: PageData | undefined;
   isLoading: boolean;
-  isRefetching: boolean;
 }
 
-export function ExperienceList({ data, isLoading, isRefetching }: ExperienceListProps) {
+export function ExperienceList({ data, isLoading }: ExperienceListProps) {
   const { sq, cursor, dir } = Route.useSearch();
   const [createOpen, setCreateOpen] = useState(false);
   const [isCreateOpenPending, startCreateOpenTransition] = useTransition();
@@ -111,7 +109,6 @@ export function ExperienceList({ data, isLoading, isRefetching }: ExperienceList
 
   return (
     <div className="flex w-full flex-col gap-6" data-test="experience-list-page">
-      <Nprogress isAnimating={isRefetching} />
       <div className="grid gap-4 lg:grid-cols-2" data-test="experience-list">
         {experienceGroups.map((group, index) => (
           <ExperienceListCard

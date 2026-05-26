@@ -33,7 +33,7 @@ function RouteComponent() {
   const [keyword, setKeyword] = useState(sq);
   const [createOpen, setCreateOpen] = useState(false);
 
-  const { data, isLoading, isRefetching } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: [queryKeyPrefixes.summaries, "page", cursor, dir ?? "after", sq],
     queryFn: () => listSummaries({ data: { cursor, direction: dir, keyword: sq } }),
     placeholderData: (prevData) => prevData,
@@ -111,7 +111,7 @@ function RouteComponent() {
         isDebouncing={debouncer.state.isPending ?? false}
         inputProps={{ placeholder: "Search summaries..." }}
       />
-      <SummaryList data={data} isLoading={isLoading} isRefetching={isRefetching} />
+      <SummaryList data={data} isLoading={isLoading} />
       {showPagination ? (
         <div className="flex items-center justify-between border-t pt-4">
           <Button

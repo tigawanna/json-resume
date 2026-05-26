@@ -1,4 +1,3 @@
-import Nprogress from "@/components/navigation/nprogress/Nprogress";
 import { cloneResumeMuationOptions } from "@/data-access-layer/resume/resume-mutatin-options";
 import type { listResumesPaginated } from "@/data-access-layer/resume/resume.functions";
 import { resumeCollection } from "@/data-access-layer/resume/resumes-query-collection";
@@ -14,10 +13,9 @@ type PageData = Awaited<ReturnType<typeof listResumesPaginated>>;
 interface ResumeListPageProps {
   data: PageData | undefined;
   isLoading: boolean;
-  isRefetching: boolean;
 }
 
-export function ResumeListPage({ data, isLoading, isRefetching }: ResumeListPageProps) {
+export function ResumeListPage({ data, isLoading }: ResumeListPageProps) {
   useLiveSuspenseQuery((q) => q.from({ resume: resumeCollection }));
   const cloneMutation = useMutation(cloneResumeMuationOptions);
 
@@ -42,7 +40,6 @@ export function ResumeListPage({ data, isLoading, isRefetching }: ResumeListPage
 
   return (
     <div className="flex w-full flex-col gap-6" data-test="resume-list-page">
-      <Nprogress isAnimating={isRefetching} />
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" data-test="resume-list">
         {data.items.map((resume) => (
           <ResumeListCard

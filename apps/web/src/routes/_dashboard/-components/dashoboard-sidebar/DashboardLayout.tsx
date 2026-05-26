@@ -17,6 +17,7 @@ import { Helmet } from "@/components/wrappers/custom-helmet";
 import { AppConfig } from "@/utils/system";
 import { TSRBreadCrumbs } from "@/lib/tanstack/router/TSRBreadCrumbs";
 import { Outlet } from "@tanstack/react-router";
+import { QueryActivityNprogress } from "@/components/navigation/nprogress/QueryActivityNprogress";
 import { DashboardSidebarFooter } from "./DashboardSidebarFooter";
 import { DashboardSidebarHeader } from "./DashboardSidebarHeader";
 import { FloatingPersonaChat } from "../persona-chat/FloatingPersonaChat";
@@ -42,6 +43,7 @@ export function DashboardLayout({
 }: DashboardLayoutProps) {
   return (
     <SidebarProvider defaultOpen={false} className="h-svh overflow-hidden">
+      <QueryActivityNprogress />
       <Helmet
         title={`${AppConfig.name} | Dashboard`}
         description="Edit your JSON résumé, preview layout, and export PDF."

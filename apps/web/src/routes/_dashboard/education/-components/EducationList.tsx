@@ -1,4 +1,3 @@
-import Nprogress from "@/components/navigation/nprogress/Nprogress";
 import { Button } from "@/components/ui/button";
 import {
   Empty,
@@ -23,10 +22,9 @@ type PageData = Awaited<ReturnType<typeof listEducation>>;
 interface EducationListProps {
   data: PageData | undefined;
   isLoading: boolean;
-  isRefetching: boolean;
 }
 
-export function EducationList({ data, isLoading, isRefetching }: EducationListProps) {
+export function EducationList({ data, isLoading }: EducationListProps) {
   const [createOpen, setCreateOpen] = useState(false);
   const [isCreateOpenPending, startCreateOpenTransition] = useTransition();
   const deleteMutation = useMutation(deleteEducationMutationOptions);
@@ -99,7 +97,6 @@ export function EducationList({ data, isLoading, isRefetching }: EducationListPr
 
   return (
     <div className="flex w-full flex-col gap-6" data-test="education-list-page">
-      <Nprogress isAnimating={isRefetching} />
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" data-test="education-list">
         {data.items.map((item) => (
           <EducationListCard

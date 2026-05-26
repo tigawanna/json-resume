@@ -1,4 +1,3 @@
-import Nprogress from "@/components/navigation/nprogress/Nprogress";
 import { Button } from "@/components/ui/button";
 import {
   Empty,
@@ -23,10 +22,9 @@ type PageData = Awaited<ReturnType<typeof listTalks>>;
 interface TalkListProps {
   data: PageData | undefined;
   isLoading: boolean;
-  isRefetching: boolean;
 }
 
-export function TalkList({ data, isLoading, isRefetching }: TalkListProps) {
+export function TalkList({ data, isLoading }: TalkListProps) {
   const [createOpen, setCreateOpen] = useState(false);
   const [isCreateOpenPending, startCreateOpenTransition] = useTransition();
   const navigate = Route.useNavigate();
@@ -94,7 +92,6 @@ export function TalkList({ data, isLoading, isRefetching }: TalkListProps) {
 
   return (
     <div className="flex w-full flex-col gap-6" data-test="talk-list-page">
-      <Nprogress isAnimating={isRefetching} />
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" data-test="talk-list">
         {data.items.map((item) => (
           <TalkListCard key={item.id} talk={item} onDelete={(id) => deleteMutation.mutate(id)} />

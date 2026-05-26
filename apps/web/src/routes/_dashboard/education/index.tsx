@@ -33,7 +33,7 @@ function RouteComponent() {
   const [createOpen, setCreateOpen] = useState(false);
   const [isCreateOpenPending, startCreateOpenTransition] = useTransition();
 
-  const { data, isLoading, isRefetching } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: [queryKeyPrefixes.education, "page", cursor, dir ?? "after", sq],
     queryFn: () => listEducation({ data: { cursor, direction: dir, keyword: sq } }),
     placeholderData: (prevData) => prevData,
@@ -121,7 +121,7 @@ function RouteComponent() {
           inputProps={{ placeholder: "Search education..." }}
         />
       </div>
-      <EducationList data={data} isLoading={isLoading} isRefetching={isRefetching} />
+      <EducationList data={data} isLoading={isLoading} />
       {showPagination ? (
         <div className="flex items-center justify-between border-t pt-4">
           <Button

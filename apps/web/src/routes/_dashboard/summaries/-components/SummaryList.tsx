@@ -1,4 +1,3 @@
-import Nprogress from "@/components/navigation/nprogress/Nprogress";
 import { Button } from "@/components/ui/button";
 import {
   Empty,
@@ -23,10 +22,9 @@ type PageData = Awaited<ReturnType<typeof listSummaries>>;
 interface SummaryListProps {
   data: PageData | undefined;
   isLoading: boolean;
-  isRefetching: boolean;
 }
 
-export function SummaryList({ data, isLoading, isRefetching }: SummaryListProps) {
+export function SummaryList({ data, isLoading }: SummaryListProps) {
   const [createOpen, setCreateOpen] = useState(false);
   const [isCreateOpenPending, startCreateOpenTransition] = useTransition();
   const navigate = Route.useNavigate();
@@ -94,7 +92,6 @@ export function SummaryList({ data, isLoading, isRefetching }: SummaryListProps)
 
   return (
     <div className="flex w-full flex-col gap-6" data-test="summary-list-page">
-      <Nprogress isAnimating={isRefetching} />
       <div className="grid gap-4 lg:grid-cols-2" data-test="summary-list">
         {data.items.map((item) => (
           <SummaryListCard

@@ -33,7 +33,7 @@ function RouteComponent() {
   const navigate = useNavigate();
   const [keyword, setKeyword] = useState(sq ?? "");
 
-  const { data, isLoading, isRefetching } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: [queryKeyPrefixes.resumes, "page", cursor, dir ?? "after", sq],
     queryFn: () => listResumesPaginated({ data: { cursor, direction: dir, keyword: sq } }),
     placeholderData: (prevData) => prevData,
@@ -102,7 +102,7 @@ function RouteComponent() {
         inputProps={{ placeholder: "Search resumes..." }}
       />
       <Suspense fallback={<RouterPendingComponent />}>
-        <ResumeListPage data={data} isLoading={isLoading} isRefetching={isRefetching} />
+        <ResumeListPage data={data} isLoading={isLoading} />
       </Suspense>
       {showPagination ? (
         <div className="flex items-center justify-between border-t pt-4">

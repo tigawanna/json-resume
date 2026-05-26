@@ -1,4 +1,3 @@
-import Nprogress from "@/components/navigation/nprogress/Nprogress";
 import { Button } from "@/components/ui/button";
 import {
   Empty,
@@ -23,10 +22,9 @@ type PageData = Awaited<ReturnType<typeof listContacts>>;
 interface ContactListProps {
   data: PageData | undefined;
   isLoading: boolean;
-  isRefetching: boolean;
 }
 
-export function ContactList({ data, isLoading, isRefetching }: ContactListProps) {
+export function ContactList({ data, isLoading }: ContactListProps) {
   const [createOpen, setCreateOpen] = useState(false);
   const [isCreateOpenPending, startCreateOpenTransition] = useTransition();
   const navigate = Route.useNavigate();
@@ -94,7 +92,6 @@ export function ContactList({ data, isLoading, isRefetching }: ContactListProps)
 
   return (
     <div className="flex w-full flex-col gap-6" data-test="contact-list-page">
-      <Nprogress isAnimating={isRefetching} />
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" data-test="contact-list">
         {data.items.map((item) => (
           <ContactListCard

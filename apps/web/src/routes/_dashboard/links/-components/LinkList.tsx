@@ -1,4 +1,3 @@
-import Nprogress from "@/components/navigation/nprogress/Nprogress";
 import { Button } from "@/components/ui/button";
 import {
   Empty,
@@ -23,10 +22,9 @@ type PageData = Awaited<ReturnType<typeof listLinks>>;
 interface LinkListProps {
   data: PageData | undefined;
   isLoading: boolean;
-  isRefetching: boolean;
 }
 
-export function LinkList({ data, isLoading, isRefetching }: LinkListProps) {
+export function LinkList({ data, isLoading }: LinkListProps) {
   const [createOpen, setCreateOpen] = useState(false);
   const [isCreateOpenPending, startCreateOpenTransition] = useTransition();
   const navigate = Route.useNavigate();
@@ -94,7 +92,6 @@ export function LinkList({ data, isLoading, isRefetching }: LinkListProps) {
 
   return (
     <div className="flex w-full flex-col gap-6" data-test="link-list-page">
-      <Nprogress isAnimating={isRefetching} />
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" data-test="link-list">
         {data.items.map((item) => (
           <LinkListCard key={item.id} link={item} onDelete={(id) => deleteMutation.mutate(id)} />
