@@ -39,6 +39,7 @@ import { Route as DashboardContactsIndexRouteImport } from './routes/_dashboard/
 import { Route as DashboardCertificationsIndexRouteImport } from './routes/_dashboard/certifications/index'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ApiAiResumeTailorRouteImport } from './routes/api/ai/resume-tailor'
+import { Route as ApiAiPersonaWriterRouteImport } from './routes/api/ai/persona-writer'
 import { Route as ApiAgenticOpenapiRouteImport } from './routes/api/agentic/openapi'
 import { Route as ApiAgenticSplatRouteImport } from './routes/api/agentic/$'
 import { Route as DashboardResumesResumeIdIndexRouteImport } from './routes/_dashboard/resumes/$resumeId/index'
@@ -199,6 +200,11 @@ const ApiAiResumeTailorRoute = ApiAiResumeTailorRouteImport.update({
   path: '/api/ai/resume-tailor',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAiPersonaWriterRoute = ApiAiPersonaWriterRouteImport.update({
+  id: '/api/ai/persona-writer',
+  path: '/api/ai/persona-writer',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAgenticOpenapiRoute = ApiAgenticOpenapiRouteImport.update({
   id: '/api/agentic/openapi',
   path: '/api/agentic/openapi',
@@ -239,6 +245,7 @@ export interface FileRoutesByFullPath {
   '/test/': typeof TestIndexRoute
   '/api/agentic/$': typeof ApiAgenticSplatRoute
   '/api/agentic/openapi': typeof ApiAgenticOpenapiRouteWithChildren
+  '/api/ai/persona-writer': typeof ApiAiPersonaWriterRoute
   '/api/ai/resume-tailor': typeof ApiAiResumeTailorRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/certifications/': typeof DashboardCertificationsIndexRoute
@@ -273,6 +280,7 @@ export interface FileRoutesByTo {
   '/test': typeof TestIndexRoute
   '/api/agentic/$': typeof ApiAgenticSplatRoute
   '/api/agentic/openapi': typeof ApiAgenticOpenapiRouteWithChildren
+  '/api/ai/persona-writer': typeof ApiAiPersonaWriterRoute
   '/api/ai/resume-tailor': typeof ApiAiResumeTailorRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/certifications': typeof DashboardCertificationsIndexRoute
@@ -311,6 +319,7 @@ export interface FileRoutesById {
   '/test/': typeof TestIndexRoute
   '/api/agentic/$': typeof ApiAgenticSplatRoute
   '/api/agentic/openapi': typeof ApiAgenticOpenapiRouteWithChildren
+  '/api/ai/persona-writer': typeof ApiAiPersonaWriterRoute
   '/api/ai/resume-tailor': typeof ApiAiResumeTailorRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/_dashboard/certifications/': typeof DashboardCertificationsIndexRoute
@@ -348,6 +357,7 @@ export interface FileRouteTypes {
     | '/test/'
     | '/api/agentic/$'
     | '/api/agentic/openapi'
+    | '/api/ai/persona-writer'
     | '/api/ai/resume-tailor'
     | '/api/auth/$'
     | '/certifications/'
@@ -382,6 +392,7 @@ export interface FileRouteTypes {
     | '/test'
     | '/api/agentic/$'
     | '/api/agentic/openapi'
+    | '/api/ai/persona-writer'
     | '/api/ai/resume-tailor'
     | '/api/auth/$'
     | '/certifications'
@@ -419,6 +430,7 @@ export interface FileRouteTypes {
     | '/test/'
     | '/api/agentic/$'
     | '/api/agentic/openapi'
+    | '/api/ai/persona-writer'
     | '/api/ai/resume-tailor'
     | '/api/auth/$'
     | '/_dashboard/certifications/'
@@ -452,6 +464,7 @@ export interface RootRouteChildren {
   TestIndexRoute: typeof TestIndexRoute
   ApiAgenticSplatRoute: typeof ApiAgenticSplatRoute
   ApiAgenticOpenapiRoute: typeof ApiAgenticOpenapiRouteWithChildren
+  ApiAiPersonaWriterRoute: typeof ApiAiPersonaWriterRoute
   ApiAiResumeTailorRoute: typeof ApiAiResumeTailorRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiAgenticRpcSplatRoute: typeof ApiAgenticRpcSplatRoute
@@ -669,6 +682,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAiResumeTailorRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/ai/persona-writer': {
+      id: '/api/ai/persona-writer'
+      path: '/api/ai/persona-writer'
+      fullPath: '/api/ai/persona-writer'
+      preLoaderRoute: typeof ApiAiPersonaWriterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/agentic/openapi': {
       id: '/api/agentic/openapi'
       path: '/api/agentic/openapi'
@@ -802,6 +822,7 @@ const rootRouteChildren: RootRouteChildren = {
   TestIndexRoute: TestIndexRoute,
   ApiAgenticSplatRoute: ApiAgenticSplatRoute,
   ApiAgenticOpenapiRoute: ApiAgenticOpenapiRouteWithChildren,
+  ApiAiPersonaWriterRoute: ApiAiPersonaWriterRoute,
   ApiAiResumeTailorRoute: ApiAiResumeTailorRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiAgenticRpcSplatRoute: ApiAgenticRpcSplatRoute,

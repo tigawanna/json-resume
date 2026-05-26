@@ -19,6 +19,7 @@ import { TSRBreadCrumbs } from "@/lib/tanstack/router/TSRBreadCrumbs";
 import { Outlet } from "@tanstack/react-router";
 import { DashboardSidebarFooter } from "./DashboardSidebarFooter";
 import { DashboardSidebarHeader } from "./DashboardSidebarHeader";
+import { FloatingPersonaChat } from "../persona-chat/FloatingPersonaChat";
 
 interface DashboardLayoutProps {
   sidebarRoutes: SidebarItem[];
@@ -90,6 +91,7 @@ export function DashboardLayout({
           <Outlet />
         </div>
       </SidebarInset>
+      <FloatingPersonaChat />
     </SidebarProvider>
   );
 }
