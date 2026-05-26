@@ -32,7 +32,9 @@ import {
 } from "react";
 
 const isLocalMode = import.meta.env.VITE_AI_LOCAL_MODE === "true";
-const POSITION_STORAGE_KEY = "persona_writer_position";
+const POSITION_STORAGE_KEY = "persona_writer_position_v2";
+const DEFAULT_EDGE_OFFSET = 24;
+const DEFAULT_BOTTOM_OFFSET = 104;
 const createdResumeToolNames = new Set(["create_resume_from_document", "clone_resume"]);
 
 type FloatingPosition = {
@@ -49,7 +51,6 @@ type MessageRole = "assistant" | "user";
 
 export function FloatingPersonaChat() {
   const [open, setOpen] = useState(false);
-  const [dismissed, setDismissed] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [input, setInput] = useState("");
   const [position, setPosition] = useState<FloatingPosition | null>(null);
@@ -138,8 +139,6 @@ export function FloatingPersonaChat() {
       }
     }
   }, [messages, queryClient]);
-
-  if (dismissed) return null;
 
   async function submitMessage() {
     const trimmed = input.trim();
@@ -241,9 +240,9 @@ export function FloatingPersonaChat() {
                 variant="ghost"
                 size="icon"
                 className="size-8 rounded-lg"
-                onClick={() => setDismissed(true)}
-                data-test="persona-writer-dismiss"
-                title="Dismiss for now"
+                onClick={() => handleOpenChange(false)}
+                data-test="persona-writer-close"
+                title="Close"
               >
                 <X className="size-4" />
               </Button>
@@ -525,7 +524,7 @@ function getStatusLabel(status: string, isLoading: boolean): string {
 }
 
 function getSurfaceStyle(position: FloatingPosition | null): CSSProperties {
-  if (!position) return { right: "1.25rem", bottom: "1.25rem" };
+  if (!position) return { right: `${DEFAULT_EDGE_OFFSET}px`, bottom: `${DEFAULT_BOTTOM_OFFSET}px` };
   return { left: `${position.x}px`, top: `${position.y}px` };
 }
 
@@ -552,8 +551,8 @@ function getDefaultPosition(open: boolean): FloatingPosition {
   const height = open ? 640 : 56;
   return clampPosition(
     {
-      x: window.innerWidth - width - 24,
-      y: window.innerHeight - height - 24,
+      x: window.innerWidth - width - DEFAULT_EDGE_OFFSET,
+      y: window.innerHeight - height - DEFAULT_BOTTOM_OFFSET,
     },
     { width, height },
   );
