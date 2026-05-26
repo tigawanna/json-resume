@@ -37,8 +37,8 @@ const POSITION_STORAGE_KEY = "persona_writer_position_v2";
 const DEFAULT_EDGE_OFFSET = 24;
 const DEFAULT_BOTTOM_OFFSET = 104;
 const OPEN_PANEL_STYLE = {
-  height: "min(40rem, calc(100svh - 8rem))",
-  maxHeight: "calc(100svh - 8rem)",
+  height: "80vh",
+  maxHeight: "80vh",
 } satisfies CSSProperties;
 const createdResumeToolNames = new Set(["create_resume_from_document", "clone_resume"]);
 
