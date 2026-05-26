@@ -36,6 +36,10 @@ const isLocalMode = import.meta.env.VITE_AI_LOCAL_MODE === "true";
 const POSITION_STORAGE_KEY = "persona_writer_position_v2";
 const DEFAULT_EDGE_OFFSET = 24;
 const DEFAULT_BOTTOM_OFFSET = 104;
+const OPEN_PANEL_STYLE = {
+  height: "min(40rem, calc(100svh - 8rem))",
+  maxHeight: "calc(100svh - 8rem)",
+} satisfies CSSProperties;
 const createdResumeToolNames = new Set(["create_resume_from_document", "clone_resume"]);
 
 type FloatingPosition = {
@@ -221,7 +225,10 @@ export function FloatingPersonaChat() {
     <>
       <div ref={surfaceRef} className="fixed z-50" style={surfaceStyle} data-test="persona-writer">
         {open ? (
-          <section className="flex max-h-[min(44rem,calc(100vh-2rem))] w-[min(26rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-xl border border-[color-mix(in_oklch,var(--color-base-content)_12%,transparent)] bg-base-100 text-base-content shadow-[0_24px_80px_color-mix(in_oklch,var(--color-base-content)_22%,transparent)]">
+          <section
+            className="flex w-[min(26rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-xl border border-[color-mix(in_oklch,var(--color-base-content)_12%,transparent)] bg-base-100 text-base-content shadow-[0_24px_80px_color-mix(in_oklch,var(--color-base-content)_22%,transparent)]"
+            style={OPEN_PANEL_STYLE}
+          >
             <header className="flex items-center gap-2 border-b border-[color-mix(in_oklch,var(--color-base-content)_10%,transparent)] bg-base-200 px-3 py-2.5">
               <button
                 type="button"
