@@ -24,7 +24,9 @@ Completed in this pass: `resume-data-talks.spec.ts`.
 Completed in this pass: `resume-data-certifications.spec.ts`.
 Completed in this pass: `resume-data-volunteers.spec.ts`.
 Completed in this pass: `resume-data-languages.spec.ts`.
-In progress: `resumes-list.spec.ts`.
+Completed in this pass: `resumes-list.spec.ts`.
+Completed in this pass: `settings-api-keys.spec.ts`.
+Completed in this pass: `repos.spec.ts`.
 
 Created files in this pass:
 
@@ -41,6 +43,10 @@ Created files in this pass:
 - `resume-data-volunteers.spec.ts`
 - `resume-data-languages.spec.ts`
 - `resumes-list.spec.ts`
+- `settings-api-keys.spec.ts`
+- `support/github.ts`
+- `repos.spec.ts`
+- `../scripts/mock-github-api.mjs`
 
 Implementation fix in this pass:
 
@@ -73,6 +79,12 @@ Verification run in this pass:
 - `pnpm --dir apps/web exec playwright test e2e/resume-data-certifications.spec.ts`
 - `pnpm --dir apps/web exec playwright test e2e/resume-data-volunteers.spec.ts`
 - `pnpm --dir apps/web exec playwright test e2e/resume-data-languages.spec.ts`
+- `pnpm --dir apps/web check-types`
+- `pnpm --dir apps/web exec playwright test e2e/resumes-list.spec.ts`
+- `pnpm --dir apps/web exec playwright test e2e/settings-api-keys.spec.ts`
+- `pnpm --dir apps/web check-types`
+- `node --check apps/web/scripts/mock-github-api.mjs`
+- `pnpm --dir apps/web exec playwright test e2e/repos.spec.ts`
 - `pnpm --dir apps/web check-types`
 
 We have baseline resume workflow coverage and an editor-embedded resume parts CRUD flow. The next recommended step is to add standalone **Resume Data** route specs, one file per sidebar route. These should test the list/library pages themselves, not the resume editor accordion.
@@ -211,18 +223,22 @@ Preferred flow for each standalone route:
 
 ## Non Resume Data Route Specs To Consider Later
 
-- [ ] `resumes-list.spec.ts` _(in progress)_
+- [x] `resumes-list.spec.ts`
   - Route: `/resumes`
   - Cover list, open, clone, copy JSON if clipboard permissions are stable, and delete.
+  - Verified with `pnpm --dir apps/web exec playwright test e2e/resumes-list.spec.ts` on 2026-05-21.
 
-- [ ] `settings-api-keys.spec.ts`
+- [x] `settings-api-keys.spec.ts`
   - Route: `/settings`
   - Cover create API key, reveal/copy state, delete.
+  - Verified with `pnpm --dir apps/web exec playwright test e2e/settings-api-keys.spec.ts` on 2026-05-21.
 
-- [ ] `repos.spec.ts`
+- [x] `repos.spec.ts`
   - Route: `/repos`
   - Needs API mocking for GitHub responses.
   - Keep mocks local to this spec or a repos-specific support file.
+  - Covers mocked GitHub search, archived query filtering, save persistence, and unsave persistence.
+  - Verified with `pnpm --dir apps/web exec playwright test e2e/repos.spec.ts` on 2026-05-21.
 
 - [ ] `saved-projects.spec.ts`
   - Route: `/saved-projects`
@@ -230,17 +246,17 @@ Preferred flow for each standalone route:
 
 ## Next Pickup
 
-Start `resumes-list.spec.ts`.
+Start `saved-projects.spec.ts`.
 
 Suggested first edit:
 
-1. Reuse existing auth and resume workflow helpers.
-2. Add `resumes-list.spec.ts` for `/resumes` list interactions.
+1. Reuse shared auth helper.
+2. Add `repos.spec.ts` with local GitHub API mocks for `/repos`.
 3. Update this file immediately after the spec file is created, then again after it passes.
 
 Suggested verification:
 
 ```bash
-pnpm --dir apps/web exec playwright test e2e/resumes-list.spec.ts
+pnpm --dir apps/web exec playwright test e2e/repos.spec.ts
 pnpm --dir apps/web check-types
 ```

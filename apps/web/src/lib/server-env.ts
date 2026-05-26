@@ -18,6 +18,7 @@ const envSchema = z.object({
   BETTER_AUTH_SECRET: z.string(),
   GITHUB_CLIENT_ID: z.string(),
   GITHUB_CLIENT_SECRET: z.string(),
+  GITHUB_API_BASE_URL: z.url().optional(),
   FRONTEND_URL: z.url(),
   LMSTUDIO_BASE_URL: z.url().optional(),
   LMSTUDIO_MODEL: z.string().optional(),
