@@ -8,6 +8,7 @@ import { listResumeProjects } from "@/data-access-layer/resume/resume-projects/r
 import { listResumes } from "@/data-access-layer/resume/resume.functions";
 import { listSkillGroups } from "@/data-access-layer/resume/skill-groups/skill-group.functions";
 import { getSavedProjects } from "@/data-access-layer/saved-project/saved-project.functions";
+import { openPersonaWriter } from "./-components/persona-chat/persona-chat-events";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import type { ComponentType } from "react";
@@ -107,12 +108,23 @@ function DashboardPage() {
             version.
           </p>
         </div>
-        <Button asChild data-test="dashboard-primary-action">
-          <Link to="/resumes" search={{ dir: "after" }}>
-            Open resumes
-            <ArrowRight className="size-4" />
-          </Link>
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={openPersonaWriter}
+            data-test="dashboard-open-persona-writer"
+          >
+            <Sparkles className="size-4" />
+            Persona Writer
+          </Button>
+          <Button asChild data-test="dashboard-primary-action">
+            <Link to="/resumes" search={{ dir: "after" }}>
+              Open resumes
+              <ArrowRight className="size-4" />
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">

@@ -7,6 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 import { fetchServerSentEvents, useChat, type UIMessage } from "@tanstack/ai-react";
 import { useQueryClient } from "@tanstack/react-query";
+import { PERSONA_WRITER_OPEN_EVENT } from "./persona-chat-events";
 import {
   Bot,
   Check,
@@ -56,6 +57,7 @@ export function FloatingPersonaChat() {
   const [position, setPosition] = useState<FloatingPosition | null>(null);
   const [dragState, setDragState] = useState<DragState | null>(null);
   const surfaceRef = useRef<HTMLDivElement>(null);
+  const composerRef = useRef<HTMLTextAreaElement>(null);
   const endOfMessagesRef = useRef<HTMLDivElement>(null);
   const handledToolOutputsRef = useRef(new Set<string>());
   const { settings, saveSettings, clearSettings } = useAiSettings();
@@ -126,6 +128,31 @@ export function FloatingPersonaChat() {
   }, [messages.length, isLoading, status, open]);
 
   useEffect(() => {
+    if (!open) return;
+    window.setTimeout(() => composerRef.current?.focus(), 0);
+  }, [open]);
+
+  useEffect(() => {
+    function handleOpenRequest() {
+      openWriter();
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key.toLowerCase() !== "k" || (!event.ctrlKey && !event.metaKey)) return;
+      event.preventDefault();
+      openWriter();
+    }
+
+    window.addEventListener(PERSONA_WRITER_OPEN_EVENT, handleOpenRequest);
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener(PERSONA_WRITER_OPEN_EVENT, handleOpenRequest);
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [position]);
+
+  useEffect(() => {
     for (const message of messages) {
       for (const part of message.parts) {
         if (part.type !== "tool-call" || !createdResumeToolNames.has(part.name)) continue;
@@ -169,6 +196,11 @@ export function FloatingPersonaChat() {
       const nextPosition = position ?? getDefaultPosition(nextOpen);
       setPosition(clampPosition(nextPosition, getSurfaceSize(surfaceRef.current)));
     }, 0);
+  }
+
+  function openWriter() {
+    handleOpenChange(true);
+    window.setTimeout(() => composerRef.current?.focus(), 0);
   }
 
   function sendStarter(message: string) {
@@ -288,6 +320,7 @@ export function FloatingPersonaChat() {
                 </p>
               ) : null}
               <Textarea
+                ref={composerRef}
                 value={input}
                 onChange={(event) => setInput(event.target.value)}
                 onKeyDown={(event) => {
