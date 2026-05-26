@@ -3,7 +3,6 @@ import { useAiSettings } from "@/hooks/use-ai-settings";
 import { cn } from "@/lib/utils";
 import { resumeCollection } from "@/data-access-layer/resume/resumes-query-collection";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 import { fetchServerSentEvents, useChat, type UIMessage } from "@tanstack/ai-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -36,10 +35,6 @@ const isLocalMode = import.meta.env.VITE_AI_LOCAL_MODE === "true";
 const POSITION_STORAGE_KEY = "persona_writer_position_v2";
 const DEFAULT_EDGE_OFFSET = 24;
 const DEFAULT_BOTTOM_OFFSET = 104;
-const OPEN_PANEL_STYLE = {
-  height: "80vh",
-  maxHeight: "80vh",
-} satisfies CSSProperties;
 const createdResumeToolNames = new Set(["create_resume_from_document", "clone_resume"]);
 
 type FloatingPosition = {
@@ -62,7 +57,8 @@ export function FloatingPersonaChat() {
   const [dragState, setDragState] = useState<DragState | null>(null);
   const surfaceRef = useRef<HTMLDivElement>(null);
   const composerRef = useRef<HTMLTextAreaElement>(null);
-  const endOfMessagesRef = useRef<HTMLDivElement>(null);
+  const messagesScrollRef = useRef<HTMLDivElement>(null);
+  const latestMessageRef = useRef<HTMLDivElement>(null);
   const handledToolOutputsRef = useRef(new Set<string>());
   const { settings, saveSettings, clearSettings } = useAiSettings();
   const queryClient = useQueryClient();
@@ -128,8 +124,14 @@ export function FloatingPersonaChat() {
   }, [dragState]);
 
   useEffect(() => {
-    endOfMessagesRef.current?.scrollIntoView({ block: "end" });
-  }, [messages.length, isLoading, status, open]);
+    if (!open || messages.length === 0) return;
+    const container = messagesScrollRef.current;
+    const target = latestMessageRef.current;
+    if (!container || !target) return;
+    const containerTop = container.getBoundingClientRect().top;
+    const targetTop = target.getBoundingClientRect().top;
+    container.scrollTop += targetTop - containerTop;
+  }, [messages.length, open]);
 
   useEffect(() => {
     if (!open) return;
@@ -225,11 +227,8 @@ export function FloatingPersonaChat() {
     <>
       <div ref={surfaceRef} className="fixed z-50" style={surfaceStyle} data-test="persona-writer">
         {open ? (
-          <section
-            className="flex w-[min(26rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-xl border border-[color-mix(in_oklch,var(--color-base-content)_12%,transparent)] bg-base-100 text-base-content shadow-[0_24px_80px_color-mix(in_oklch,var(--color-base-content)_22%,transparent)]"
-            style={OPEN_PANEL_STYLE}
-          >
-            <header className="flex items-center gap-2 border-b border-[color-mix(in_oklch,var(--color-base-content)_10%,transparent)] bg-base-200 px-3 py-2.5">
+          <section className="flex h-[80vh] max-h-[80vh] w-[min(26rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-xl border border-[color-mix(in_oklch,var(--color-base-content)_12%,transparent)] bg-base-100 text-base-content shadow-[0_24px_80px_color-mix(in_oklch,var(--color-base-content)_22%,transparent)]">
+            <header className="flex shrink-0 items-center gap-2 border-b border-[color-mix(in_oklch,var(--color-base-content)_10%,transparent)] bg-base-200 px-3 py-2.5">
               <button
                 type="button"
                 onPointerDown={startDrag}
@@ -287,7 +286,7 @@ export function FloatingPersonaChat() {
               </Button>
             </header>
 
-            <div className="border-b border-[color-mix(in_oklch,var(--color-base-content)_10%,transparent)] bg-base-100 px-3 py-2">
+            <div className="shrink-0 border-b border-[color-mix(in_oklch,var(--color-base-content)_10%,transparent)] bg-base-100 px-3 py-2">
               <div className="grid grid-cols-2 gap-2">
                 {starterPrompts.map((starter) => (
                   <button
@@ -304,19 +303,28 @@ export function FloatingPersonaChat() {
               </div>
             </div>
 
-            <ScrollArea className="min-h-0 flex-1">
-              <div className="flex min-h-80 flex-col gap-4 p-3">
-                {messages.length === 0 ? <EmptyPersonaConversation isReady={isReady} /> : null}
-                {messages.map((message) => (
-                  <PersonaMessage key={message.id} message={message} />
-                ))}
-                <div ref={endOfMessagesRef} />
+            <div className="relative min-h-0 flex-1">
+              <div
+                ref={messagesScrollRef}
+                className="absolute inset-0 overflow-y-auto overscroll-contain"
+              >
+                <div className="flex flex-col gap-4 p-3">
+                  {messages.length === 0 ? <EmptyPersonaConversation isReady={isReady} /> : null}
+                  {messages.map((message, index) => (
+                    <div
+                      key={message.id}
+                      ref={index === messages.length - 1 ? latestMessageRef : undefined}
+                    >
+                      <PersonaMessage message={message} />
+                    </div>
+                  ))}
+                </div>
               </div>
-            </ScrollArea>
+            </div>
 
             <form
               onSubmit={handleSubmit}
-              className="border-t border-[color-mix(in_oklch,var(--color-base-content)_10%,transparent)] bg-base-200/80 p-3"
+              className="shrink-0 border-t border-[color-mix(in_oklch,var(--color-base-content)_10%,transparent)] bg-base-200/80 p-3"
             >
               {chat.error ? (
                 <p
@@ -344,7 +352,7 @@ export function FloatingPersonaChat() {
                 }
                 rows={3}
                 disabled={isLoading || !isReady}
-                className="min-h-20 resize-none border-0 bg-base-100 shadow-none focus-visible:ring-primary/35"
+                className="field-sizing-fixed max-h-32 min-h-20 resize-none overflow-y-auto border-0 bg-base-100 shadow-none focus-visible:ring-primary/35"
                 data-test="persona-writer-input"
               />
               <div className="mt-2 flex items-center justify-between gap-2">
@@ -479,7 +487,7 @@ function PersonaMessage({ message }: { message: UIMessage }) {
           {message.parts.map((part, index) => {
             if (part.type === "text") {
               return (
-                <div key={index} className="whitespace-pre-wrap leading-6">
+                <div key={index} className="break-words whitespace-pre-wrap leading-6">
                   {part.content}
                 </div>
               );
