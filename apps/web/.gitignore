@@ -18,3 +18,4 @@ db.sqlite
 *.sqlite
 *.sqlite3
 *.db
+tsconfig.tsbuildinfo
