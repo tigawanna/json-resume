@@ -1,4 +1,9 @@
 import { AiProviderModal } from "@/features/agentic-tools/AiProviderModal";
+import { CreatedResumeCard } from "@/components/agentic-tools/CreatedResumeCard";
+import {
+  createdResumeToolNames,
+  getCreatedResumesFromParts,
+} from "@/features/agentic-tools/created-resume-output";
 import { useAiSettings } from "@/hooks/use-ai-settings";
 import { cn } from "@/lib/utils";
 import { resumeCollection } from "@/data-access-layer/resume/resumes-query-collection";
@@ -35,7 +40,6 @@ const isLocalMode = import.meta.env.VITE_AI_LOCAL_MODE === "true";
 const POSITION_STORAGE_KEY = "persona_writer_position_v2";
 const DEFAULT_EDGE_OFFSET = 24;
 const DEFAULT_BOTTOM_OFFSET = 104;
-const createdResumeToolNames = new Set(["create_resume_from_document", "clone_resume"]);
 
 type FloatingPosition = {
   x: number;
@@ -461,6 +465,7 @@ function EmptyPersonaConversation({ isReady }: { isReady: boolean }) {
 
 function PersonaMessage({ message }: { message: UIMessage }) {
   const role: MessageRole = message.role === "assistant" ? "assistant" : "user";
+  const createdResumes = role === "assistant" ? getCreatedResumesFromParts(message.parts) : [];
 
   return (
     <div className={cn("flex items-start gap-2", role === "user" && "flex-row-reverse")}>
@@ -514,6 +519,13 @@ function PersonaMessage({ message }: { message: UIMessage }) {
 
             return null;
           })}
+          {createdResumes.map((output) => (
+            <CreatedResumeCard
+              key={output.resumeId}
+              output={output}
+              dataTest="persona-writer-created-resume-card"
+            />
+          ))}
         </div>
       </div>
     </div>

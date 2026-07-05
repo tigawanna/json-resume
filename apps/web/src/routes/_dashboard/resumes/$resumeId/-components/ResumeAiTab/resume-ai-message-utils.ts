@@ -3,12 +3,16 @@ import type {
   ResumeAiChatMessage,
   ResumeAiChatMessagePart,
 } from "@/data-access-layer/resume/ai-chat/ai-chat.types";
-import type { UIMessage } from "@tanstack/ai-react";
 import {
   createdResumeToolNames,
+  getCreatedResumeOutput,
   type CreatedResumeOutput,
-  type ToolCallViewPart,
-} from "./resume-ai-types";
+} from "@/features/agentic-tools/created-resume-output";
+import type { UIMessage } from "@tanstack/ai-react";
+import type { ToolCallViewPart } from "./resume-ai-types";
+
+export type { CreatedResumeOutput };
+export { createdResumeToolNames, getCreatedResumeOutput };
 
 export function toJsonValue(value: unknown): JsonValue | undefined {
   if (
@@ -72,18 +76,6 @@ function getJsonRecord(value: unknown): { [key: string]: JsonValue } | null {
 export function getToolOutputRecord(part: ToolCallViewPart): { [key: string]: JsonValue } | null {
   if (part.output !== undefined) return getJsonRecord(part.output);
   return null;
-}
-
-export function getCreatedResumeOutput(part: ToolCallViewPart): CreatedResumeOutput | null {
-  if (!createdResumeToolNames.has(part.name)) return null;
-
-  const output = getToolOutputRecord(part);
-  if (!output || typeof output.resumeId !== "string") return null;
-
-  return {
-    resumeId: output.resumeId,
-    ...(typeof output.name === "string" ? { name: output.name } : {}),
-  };
 }
 
 export function getToolLabel(name: string): string {

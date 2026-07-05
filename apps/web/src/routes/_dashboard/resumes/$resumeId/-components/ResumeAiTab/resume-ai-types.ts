@@ -20,11 +20,6 @@ export interface ToolResultViewPart {
   error?: string;
 }
 
-export interface CreatedResumeOutput {
-  resumeId: string;
-  name?: string;
-}
-
 export type ResumeAiRole = "assistant" | "user";
 
 export type ResumeAiPromptAction = (message: string) => void | Promise<void>;
@@ -38,7 +33,4 @@ export const writeToolNames = new Set([
   "update_current_resume_document",
 ]);
 
-export const createdResumeToolNames = new Set([
-  "clone_current_resume",
-  "create_resume_from_document",
-]);
+export { createdResumeToolNames } from "@/features/agentic-tools/created-resume-output";

@@ -1,41 +1,8 @@
-import { Button } from "@/components/ui/button";
-import { Link } from "@tanstack/react-router";
-import { Box, CheckCircle2, ChevronDown, ExternalLink, Wrench } from "lucide-react";
-import { formatPayload, getCreatedResumeOutput, getToolLabel } from "./resume-ai-message-utils";
-import type { CreatedResumeOutput, ToolCallViewPart, ToolResultViewPart } from "./resume-ai-types";
-
-function CreatedResumeCard({ output }: { output: CreatedResumeOutput }) {
-  return (
-    <div
-      className="mt-3 rounded-lg bg-[color-mix(in_oklch,var(--color-success)_9%,var(--color-base-100))] p-3 text-sm ring-1 ring-[color-mix(in_oklch,var(--color-success)_25%,transparent)]"
-      data-test="resume-ai-created-resume-card"
-    >
-      <div className="flex items-start gap-3">
-        <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-success/15 text-success">
-          <Box className="size-4" />
-        </div>
-        <div className="min-w-0 flex-1">
-          <p className="font-medium text-foreground">{output.name ?? "New resume draft"}</p>
-          <p className="mt-0.5 text-xs text-muted-foreground">Created and ready to review.</p>
-        </div>
-        <Button asChild size="sm" className="h-8 shrink-0 gap-1.5 rounded-lg">
-          <Link
-            to="/resumes/$resumeId"
-            params={{ resumeId: output.resumeId }}
-            search={{ tab: "preview" }}
-            data-test="resume-ai-open-created-resume"
-          >
-            Open
-            <ExternalLink className="size-3.5" />
-          </Link>
-        </Button>
-      </div>
-    </div>
-  );
-}
+import { CheckCircle2, ChevronDown, Wrench } from "lucide-react";
+import { formatPayload, getToolLabel } from "./resume-ai-message-utils";
+import type { ToolCallViewPart, ToolResultViewPart } from "./resume-ai-types";
 
 export function ToolCallPanel({ part }: { part: ToolCallViewPart }) {
-  const createdResume = getCreatedResumeOutput(part);
   const input = formatPayload(part.arguments);
   const output = part.output === undefined ? "" : formatPayload(part.output);
 
@@ -54,7 +21,6 @@ export function ToolCallPanel({ part }: { part: ToolCallViewPart }) {
         </span>
         <ChevronDown className="size-3.5 shrink-0 transition-transform group-open:rotate-180" />
       </summary>
-      {createdResume ? <CreatedResumeCard output={createdResume} /> : null}
       <div className="mt-2 grid min-w-0 gap-2 pl-5">
         {input ? <PayloadBlock label="Parameters" value={input} /> : null}
         {output ? <PayloadBlock label="Response" value={output} /> : null}

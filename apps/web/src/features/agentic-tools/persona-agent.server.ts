@@ -24,7 +24,7 @@ function buildPersonaSystemPrompt(): string {
     "- For proposals and messages, produce polished copy the user can paste directly. Keep explanation short unless asked.",
     "- Match the requested channel: letters can be structured and formal; email should have subject/body; DMs and WhatsApp should be shorter and more conversational.",
     "- When creating a new resume, use list_resumes, search_resume_blocks, and get_resume_document as needed, then call create_resume_from_document or clone_resume only when the user clearly asks to save a draft.",
-    "- After creating or cloning a resume, briefly tell the user the draft is ready. The UI will expose the new resume in the app.",
+    "- After creating or cloning a resume, briefly tell the user the draft is ready. The UI will show a clickable resume card with an Open link.",
     "- If you provide JSON manually, it must be valid ResumeDocumentV1 JSON with no markdown fences.",
   ].join("\n\n");
 }

@@ -1,3 +1,5 @@
+import { CreatedResumeCard } from "@/components/agentic-tools/CreatedResumeCard";
+import { getCreatedResumesFromParts } from "@/features/agentic-tools/created-resume-output";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { UIMessage } from "@tanstack/ai-react";
@@ -41,6 +43,7 @@ export function ResumeAiMessage({
   onResend,
 }: ResumeAiMessageProps) {
   const role: ResumeAiRole = message.role === "assistant" ? "assistant" : "user";
+  const createdResumes = role === "assistant" ? getCreatedResumesFromParts(message.parts) : [];
 
   return (
     <div className={cn("flex w-full items-start gap-3", role === "user" && "flex-row-reverse")}>
@@ -90,6 +93,13 @@ export function ResumeAiMessage({
             }
             return <ResumeAiThinkingBlock key={index} parts={block.parts} />;
           })}
+          {createdResumes.map((output) => (
+            <CreatedResumeCard
+              key={output.resumeId}
+              output={output}
+              dataTest="resume-ai-created-resume-card"
+            />
+          ))}
         </div>
       </div>
     </div>

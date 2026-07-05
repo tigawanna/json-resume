@@ -6,11 +6,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { resumeDetailToDocument } from "@/data-access-layer/resume/resume-converters";
 import { deleteResumeMutationOptions } from "@/data-access-layer/resume/resume-mutatin-options";
 import { resumeDetailQueryOptions } from "@/data-access-layer/resume/resume-query-options";
 import type { ResumeListItemDTO } from "@/data-access-layer/resume/resume.types";
 import { unwrapUnknownError } from "@/utils/errors";
+import { getResumeCardDisplayName } from "@/utils/resume-display-name";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { ClipboardCopy, FileText, GitFork, MoreVertical, Trash2 } from "lucide-react";
@@ -45,22 +47,31 @@ export function ResumeListCard({ resume, onClone }: ResumeListCardProps) {
     deleteMutation.mutate(resumeId);
   };
 
+  const displayName = getResumeCardDisplayName(resume);
+
   return (
     <Card data-test={`resume-card-${resume.id}`}>
       <CardHeader className="w-full">
         <div className="flex w-full min-w-0 flex-col gap-1">
           <div className="flex min-w-0 items-center gap-2">
-            <Link
-              to="/resumes/$resumeId"
-              params={{ resumeId: resume.id }}
-              search={(prev) => ({ ...prev, tab: "edit" })}
-              className="flex min-w-0 flex-1 items-center gap-3 no-underline outline-none"
-            >
-              <FileText className="text-primary size-5 shrink-0" />
-              <CardTitle className="min-w-0 flex-1 truncate text-base leading-tight">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link
+                  to="/resumes/$resumeId"
+                  params={{ resumeId: resume.id }}
+                  search={(prev) => ({ ...prev, tab: "edit" })}
+                  className="flex min-w-0 flex-1 items-center gap-3 no-underline outline-none"
+                >
+                  <FileText className="text-primary size-5 shrink-0" />
+                  <CardTitle className="min-w-0 flex-1 truncate text-base leading-tight">
+                    {displayName}
+                  </CardTitle>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="max-w-xs wrap-break-word">
                 {resume.name}
-              </CardTitle>
-            </Link>
+              </TooltipContent>
+            </Tooltip>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
