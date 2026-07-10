@@ -24,7 +24,7 @@
   "dependencies": {
     "@base-ui/react": "^1.1.0",
     "@better-auth/api-key": "^1.6.9",
-    "@better-auth/oauth-provider": "^1.6.9",
+    "@better-auth/oauth-provider": "^1.6.23",
     "@hookform/resolvers": "^5.2.2",
     "@huggingface/transformers": "^4.1.0",
     "@json-render/core": "^0.17.0",
