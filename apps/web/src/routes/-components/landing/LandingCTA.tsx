@@ -1,32 +1,25 @@
-import { Link } from "@tanstack/react-router";
-
 export function LandingCTA() {
   return (
-    <section data-test="landing-cta" className="mx-auto max-w-360 border-x border-border/50">
-      <div className="border-t border-border/50 px-8 py-24 md:px-16">
-        <div className="mx-auto max-w-2xl text-center">
-          <h2 className="mb-4 font-serif text-4xl font-medium tracking-tight text-base-content md:text-5xl">
-            Start from <span className="italic text-primary">your</span> JSON
-          </h2>
-          <p className="mx-auto mb-10 max-w-md text-muted-foreground">
-            Open the dashboard in this browser with no account. Sign in later when you want to sync
-            your work to the server.
+    <section
+      id="sync"
+      data-test="landing-cta"
+      className="mx-auto max-w-360 scroll-mt-14 border-x border-border/50"
+    >
+      <div className="border-t border-border/50 bg-neutral/40 px-6 py-20 md:px-16 md:py-28">
+        <h2 className="max-w-[16ch] text-balance text-3xl font-medium tracking-tight text-base-content md:text-4xl">
+          Local first. The server is a choice.
+        </h2>
+        <div className="mt-12 grid grid-cols-1 gap-12 md:grid-cols-12 md:gap-8">
+          <p className="max-w-[48ch] text-pretty text-base leading-relaxed text-muted-foreground md:col-span-7">
+            Editing happens in this browser. Lists open without a round trip, and a change is
+            stored before anything is sent. The workbench stays quick when you are offline, and the
+            library on this machine is the one you are actually changing.
           </p>
-          <div className="flex flex-col justify-center gap-4 sm:flex-row">
-            <Link
-              to="/dashboard"
-              className="bg-primary px-8 py-3 font-mono text-sm font-medium text-primary-content transition-opacity hover:opacity-90"
-            >
-              Open the editor →
-            </Link>
-            <Link
-              to="/auth"
-              search={{ returnTo: "/dashboard" }}
-              className="border border-border px-8 py-3 font-mono text-sm text-base-content transition-colors hover:bg-neutral"
-            >
-              Sign in to sync
-            </Link>
-          </div>
+          <p className="max-w-[36ch] text-pretty text-base leading-relaxed text-base-content md:col-span-5">
+            Sign in and turn managed sync on when you want those changes copied to the server. A
+            public résumé is published separately, so you can share one snapshot and keep the
+            working library to yourself.
+          </p>
         </div>
       </div>
     </section>

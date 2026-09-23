@@ -2,7 +2,7 @@ import { cell, colorGradientLegend, defineChart } from "@tanstack/charts";
 import { Chart } from "@tanstack/charts/react";
 import { tooltip } from "@tanstack/charts/tooltip";
 import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
-import { gte, lte, useLiveQuery } from "@tanstack/react-db";
+import { and, gte, lte, or, useLiveQuery } from "@tanstack/react-db";
 import { useNavigate } from "@tanstack/react-router";
 import { scaleBand, scaleSequential } from "d3-scale";
 import { utcSunday } from "d3-time";
@@ -18,6 +18,11 @@ type ActivityDay = {
   events: number;
 };
 
+type ResumeActivity = {
+  createdAt: number;
+  updatedAt: number;
+};
+
 function startOfUtcDay(ms: number) {
   const date = new Date(ms);
   return Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
@@ -29,18 +34,21 @@ function calendarWindow(now = Date.now()) {
   const aligned = new Date(windowStart);
   aligned.setUTCDate(aligned.getUTCDate() - aligned.getUTCDay());
   const startMs = aligned.getTime();
-  return { startMs, endMs, calendarStart: new Date(startMs) };
+  return { startMs, endMs, endInclusiveMs: endMs + MS_PER_DAY - 1, calendarStart: new Date(startMs) };
 }
 
+/** One count per résumé per calendar day from createdAt and/or updatedAt. */
 function buildActivityDays(
-  writes: readonly { timestamp: number }[],
+  resumes: readonly ResumeActivity[],
   window: ReturnType<typeof calendarWindow>,
 ): ActivityDay[] {
   const byDay = new Map<number, number>();
-  for (const write of writes) {
-    const day = startOfUtcDay(write.timestamp);
-    if (day < window.startMs || day > window.endMs) continue;
-    byDay.set(day, (byDay.get(day) ?? 0) + 1);
+  for (const resume of resumes) {
+    const days = new Set([startOfUtcDay(resume.createdAt), startOfUtcDay(resume.updatedAt)]);
+    for (const day of days) {
+      if (day < window.startMs || day > window.endMs) continue;
+      byDay.set(day, (byDay.get(day) ?? 0) + 1);
+    }
   }
 
   const rows: ActivityDay[] = [];
@@ -60,15 +68,22 @@ export function LibraryActivityHeatmap() {
   const db = useEventSourcedDb();
   const navigate = useNavigate();
   const window = calendarWindow();
-  const { data: writes } = useLiveQuery({
+  const { data: resumes } = useLiveQuery({
     query: (q) =>
       q
         .from({ resume: db.collections.resume })
-        .where(({ resume }) => gte(resume.updatedAt, window.startMs))
-        .where(({ resume }) => lte(resume.updatedAt, window.endMs + MS_PER_DAY - 1))
-        .select(({ resume }) => ({ timestamp: resume.updatedAt })),
+        .where(({ resume }) =>
+          or(
+            and(gte(resume.createdAt, window.startMs), lte(resume.createdAt, window.endInclusiveMs)),
+            and(gte(resume.updatedAt, window.startMs), lte(resume.updatedAt, window.endInclusiveMs)),
+          ),
+        )
+        .select(({ resume }) => ({
+          createdAt: resume.createdAt,
+          updatedAt: resume.updatedAt,
+        })),
   });
-  const rows = buildActivityDays(writes ?? [], window);
+  const rows = buildActivityDays(resumes ?? [], window);
   const calendarStart = rows[0]?.date;
 
   const definition =
@@ -102,7 +117,7 @@ export function LibraryActivityHeatmap() {
             color: {
               scale: scaleSequential<string>,
               range: ["#173322", "#56bc7d"],
-              legend: colorGradientLegend({ label: "Résumé updates", steps: 5 }),
+              legend: colorGradientLegend({ label: "Creates & updates", steps: 5 }),
             },
           },
           { keyboard: true, tooltip },
@@ -115,7 +130,7 @@ export function LibraryActivityHeatmap() {
     >
       <h2 className="text-sm font-medium tracking-tight">Activity</h2>
       <p className="text-muted-foreground mt-1 mb-3 text-xs text-pretty">
-        Résumé updates for the last fourteen weeks. Click a day to open résumés.
+        Résumé creates and updates for the last fourteen weeks. Click a day to open résumés.
       </p>
       {definition ? (
         <Chart

@@ -1,62 +1,51 @@
-import { FileJson, GitCompare, ShieldCheck } from "lucide-react";
-
-const REASONS = [
-  {
-    icon: FileJson,
-    title: "Structured, not freeform",
-    description:
-      "The LLM edits a compact schema you control — not five pages of prose. You review diffs in structure, not paragraphs.",
-  },
-  {
-    icon: GitCompare,
-    title: "Diff-friendly updates",
-    description:
-      "JSON changes are easy to compare. See exactly which bullet the model rewrote and which section it pruned, before you export.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "You own the data",
-    description:
-      "Your résumé stays in your JSON file. Paste into any model, any time. No lock-in to a provider, no data left behind.",
-  },
-];
+const JSON_SAMPLE = `{
+  "work": [
+    { "name": "Ledger", "position": "Staff engineer" }
+  ],
+  "projects": [
+    { "name": "Reconciliation job" }
+  ],
+  "skills": [
+    { "name": "Distributed systems" }
+  ]
+}`;
 
 export function LandingShowcase() {
   return (
     <section
-      id="features"
+      id="agents"
       data-test="landing-showcase"
-      className="mx-auto max-w-360 scroll-mt-14 border-x border-border/50 py-24"
+      className="mx-auto max-w-360 scroll-mt-14 border-x border-border/50"
     >
-      <div className="px-8 md:px-16">
-        <div className="mb-16">
-          <h2 className="text-3xl font-medium tracking-tight text-base-content md:text-4xl">
-            Why JSON beats a pasted essay
-          </h2>
-          <p className="mt-4 max-w-[50ch] text-pretty text-muted-foreground">
-            Pasting a full résumé into a doc often reads like raw model output. Here the model edits
-            a compact schema you control.
+      <div className="border-t border-border/50 px-6 py-20 md:px-16 md:py-28">
+        <h2 className="max-w-[20ch] text-balance text-3xl font-medium tracking-tight text-base-content md:text-4xl">
+          A model can see which configuration fits.
+        </h2>
+        <div className="mt-6 max-w-[65ch] space-y-4 text-pretty text-base leading-relaxed text-muted-foreground">
+          <p>
+            Paste a JSON Resume document and the editor already knows the shape. Work, projects,
+            skills, and the other blocks become records in the library. Download the library as a
+            JSON backup when you want a file, and print a PDF from those same records.
+          </p>
+          <p>
+            An agent with API access can list résumés, search the blocks, add a bullet, or clone a
+            version. Because it can follow which project belongs to which job, a draft and an email
+            can both start from the configuration you would have picked by hand.
           </p>
         </div>
 
-        <div className="grid gap-px overflow-hidden border border-border bg-border md:grid-cols-3">
-          {REASONS.map((reason) => {
-            const Icon = reason.icon;
-            return (
-              <div
-                key={reason.title}
-                className="group flex flex-col gap-4 bg-base-100 p-8 transition-colors hover:bg-neutral/50 lg:p-12"
-              >
-                <Icon className="size-6 text-primary transition-transform group-hover:scale-110" />
-                <h3 className="text-lg font-medium tracking-tight text-base-content">
-                  {reason.title}
-                </h3>
-                <p className="max-w-[35ch] text-sm leading-relaxed text-muted-foreground">
-                  {reason.description}
-                </p>
-              </div>
-            );
-          })}
+        <div className="mt-14 grid grid-cols-1 border border-border lg:grid-cols-12">
+          <div className="border-b border-border px-6 py-8 lg:col-span-7 lg:border-r lg:border-b-0 md:px-8">
+            <p className="font-mono text-xs text-muted-foreground">Note a model can draft</p>
+            <p className="mt-6 max-w-[48ch] text-lg leading-relaxed text-base-content">
+              Happy to send the payments version. It keeps the ledger role and the reconciliation
+              project, and leaves the conference talk in the library unless you want speaking on
+              the page.
+            </p>
+          </div>
+          <pre className="overflow-x-auto bg-base-200 px-6 py-8 font-mono text-[13px] leading-relaxed text-base-content lg:col-span-5 md:px-8">
+            {JSON_SAMPLE}
+          </pre>
         </div>
       </div>
     </section>

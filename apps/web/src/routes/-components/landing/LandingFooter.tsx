@@ -10,14 +10,17 @@ export function LandingFooter() {
         <Link to="/" className="transition-colors hover:text-base-content">
           {AppConfig.wordmark}
           <span className="text-primary">.</span>
-          <span className="ml-2">— JSON in · LLM in the middle · PDF out</span>
+          <span className="ml-2">Parts stored locally. Sync is optional.</span>
         </Link>
         <div className="flex gap-6">
-          <a href="#pipeline" className="transition-colors hover:text-base-content">
-            Pipeline
+          <a href="#parts" className="transition-colors hover:text-base-content">
+            Parts
           </a>
-          <a href="#features" className="transition-colors hover:text-base-content">
-            Features
+          <a href="#agents" className="transition-colors hover:text-base-content">
+            Agents
+          </a>
+          <a href="#sync" className="transition-colors hover:text-base-content">
+            Sync
           </a>
           <a
             href={AppConfig.links.github}

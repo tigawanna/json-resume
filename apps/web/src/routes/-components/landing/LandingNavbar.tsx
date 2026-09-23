@@ -7,8 +7,9 @@ import { lazy, Suspense, useState } from "react";
 const DashboardLink = lazy(() => import("./LandingDashboardLink"));
 
 const NAV_LINKS = [
-  { label: "Pipeline", href: "#pipeline" },
-  { label: "Features", href: "#features" },
+  { label: "Parts", href: "#parts" },
+  { label: "Agents", href: "#agents" },
+  { label: "Sync", href: "#sync" },
 ] as const;
 
 export function LandingNavbar() {
@@ -43,11 +44,8 @@ export function LandingNavbar() {
         </Link>
 
         {/* Status indicator — desktop */}
-        <div className="hidden flex-1 items-center gap-6 border-r border-border/50 px-6 font-mono text-xs text-muted-foreground md:flex">
-          <div className="flex items-center gap-2">
-            <span className="size-1.5 animate-pulse rounded-full bg-primary" />
-            <span>JSON → LLM → PDF</span>
-          </div>
+        <div className="hidden flex-1 items-center border-r border-border/50 px-6 font-mono text-xs text-muted-foreground md:flex">
+          Local until you sync
         </div>
 
         {/* Right actions — desktop */}

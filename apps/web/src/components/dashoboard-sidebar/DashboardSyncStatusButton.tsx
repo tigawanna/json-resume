@@ -54,9 +54,7 @@ export function DashboardSyncStatusButton({ className }: { className?: string })
             <RefreshCwOff className="text-base-content size-4" strokeWidth={2.25} />
           </Link>
         </TooltipTrigger>
-        <TooltipContent side="bottom" className="bg-base-content text-base-100">
-          Sync disabled — open settings to enable
-        </TooltipContent>
+        <TooltipContent side="bottom">Sync disabled — open settings to enable</TooltipContent>
       </Tooltip>
     );
   }
@@ -76,9 +74,7 @@ export function DashboardSyncStatusButton({ className }: { className?: string })
             <RefreshCw className="text-primary size-4 animate-spin" strokeWidth={2.25} />
           </button>
         </TooltipTrigger>
-        <TooltipContent side="bottom" className="bg-base-content text-base-100">
-          Sync in progress
-        </TooltipContent>
+        <TooltipContent side="bottom">Sync in progress</TooltipContent>
       </Tooltip>
     );
   }
@@ -98,7 +94,7 @@ export function DashboardSyncStatusButton({ className }: { className?: string })
             <CloudAlert className="text-error size-4" strokeWidth={2.25} />
           </Link>
         </TooltipTrigger>
-        <TooltipContent side="bottom" className="bg-base-content text-base-100">
+        <TooltipContent side="bottom">
           {lastError ? `Sync error: ${lastError}` : "Sync issues — open events"}
         </TooltipContent>
       </Tooltip>
@@ -119,9 +115,7 @@ export function DashboardSyncStatusButton({ className }: { className?: string })
           <CloudCheck className="text-primary size-4" strokeWidth={2.25} />
         </Link>
       </TooltipTrigger>
-      <TooltipContent side="bottom" className="bg-base-content text-base-100">
-        Synced with managed server
-      </TooltipContent>
+      <TooltipContent side="bottom">Synced with managed server</TooltipContent>
     </Tooltip>
   );
 }
