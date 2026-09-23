@@ -1,6 +1,6 @@
 import { authClient, BetterAuthSession } from "@/lib/better-auth/client";
 import { getSession } from "@/lib/auth.functions";
-import { auth } from "@/lib/auth";
+import { getSessionSafely } from "@/lib/auth-session";
 import { safeStringToUrl } from "@/utils/url";
 import { queryOptions, useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { redirect } from "@tanstack/react-router";
@@ -16,17 +16,25 @@ export type TViewer = {
 };
 export type TViewerLoginPayload = { email: string; password: string };
 
+const loggedOutViewer = { data: null, error: null } as const;
+
 export const viewerqueryOptions = queryOptions({
   queryKey: ["viewer"],
+  retry: false,
   queryFn: async () => {
-    const session = await getSession();
-    if (!session) {
-      return { data: null, error: null };
+    try {
+      const session = await getSession();
+      if (!session) {
+        return loggedOutViewer;
+      }
+      return {
+        data: { user: session.user, session: session.session },
+        error: null,
+      };
+    } catch (err: unknown) {
+      console.warn("[auth] viewer query failed; treating as logged out", err);
+      return loggedOutViewer;
     }
-    return {
-      data: { user: session.user, session: session.session },
-      error: null,
-    };
   },
 });
 
@@ -52,7 +60,7 @@ export function useViewer() {
 }
 
 export const viewerMiddleware = createMiddleware().server(async ({ next, request }) => {
-  const session = await auth.api.getSession({ headers: request.headers });
+  const session = await getSessionSafely(request.headers);
   if (!session) {
     const returnTo = safeStringToUrl(request.url)?.pathname ?? "/";
     throw redirect({ to: "/auth", search: { returnTo } });
