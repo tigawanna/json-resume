@@ -1,49 +1,42 @@
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import type { RepositoryResponse } from "@/data-access-layer/github/repos.octo";
-import { savedProjectsCollection } from "@/data-access-layer/saved-project/saved-project.collection";
-import {
-  saveGithubProject,
-  unsaveGithubProject,
-} from "@/data-access-layer/saved-project/saved-project.functions";
-import type { SavedProjectRow } from "@/data-access-layer/saved-project/saved-project.server";
+import { useViewer } from "@/data-access-layer/auth/viewer";
+import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
+import type { ResumeProject } from "@/data-access-layer/event-sourced/schemas";
 import { unwrapUnknownError } from "@/utils/errors";
 import { formatLocaleDate } from "@/utils/date-helpers";
 import { useMutation } from "@tanstack/react-query";
+import { joinSearchable, libraryRowBase } from "../../-utils/row-helpers";
 import { Bookmark, BookmarkCheck, ExternalLink, GitFork, Globe, Star } from "lucide-react";
 import { toast } from "sonner";
 
 interface RepoCardProps {
   repo: RepositoryResponse;
-  savedProject: SavedProjectRow | undefined;
+  savedProject: ResumeProject | undefined;
 }
 
 export default function RepoCard({ repo, savedProject }: RepoCardProps) {
+  const db = useEventSourcedDb();
+  const { viewer } = useViewer();
   const isSaved = !!savedProject;
 
   const saveMutation = useMutation({
     mutationFn: async () => {
-      const now = new Date();
-      // Optimistic insert into the collection for instant UI feedback
-      savedProjectsCollection.utils.writeInsert({
-        id: `optimistic-${repo.id}`,
-        name: repo.name,
+      const userId = viewer.user?.id;
+      if (!userId) throw new Error("Sign in to save projects");
+      const name = repo.name;
+      const description = repo.description ?? "";
+      const tech = JSON.stringify(repo.language ? [repo.language] : []);
+      const base = libraryRowBase(userId);
+      db.collections.resumeProject.insert({
+        ...base,
+        name,
         url: repo.html_url,
         homepageUrl: repo.homepage ?? "",
-        description: repo.description ?? "",
-        tech: JSON.stringify(repo.language ? [repo.language] : []),
-        createdAt: now,
-        updatedAt: now,
-      });
-
-      return saveGithubProject({
-        data: {
-          name: repo.name,
-          url: repo.html_url,
-          homepageUrl: repo.homepage ?? "",
-          description: repo.description ?? "",
-          tech: repo.language ? [repo.language] : [],
-        },
+        description,
+        tech,
+        searchableText: joinSearchable(name, description, tech, repo.html_url),
       });
     },
     onSuccess() {
@@ -54,19 +47,12 @@ export default function RepoCard({ repo, savedProject }: RepoCardProps) {
         description: unwrapUnknownError(err).message,
       });
     },
-    meta: {
-      invalidates: [["saved-projects"]],
-    },
   });
 
   const unsaveMutation = useMutation({
     mutationFn: async () => {
-      // Optimistic delete from the collection for instant UI feedback
-      if (savedProject) {
-        savedProjectsCollection.utils.writeDelete(savedProject.id);
-      }
-
-      return unsaveGithubProject({ data: { url: repo.html_url } });
+      if (!savedProject) return;
+      db.collections.resumeProject.delete(savedProject.id);
     },
     onSuccess() {
       toast.success(`Removed "${repo.name}" from saved projects`);
@@ -75,9 +61,6 @@ export default function RepoCard({ repo, savedProject }: RepoCardProps) {
       toast.error("Failed to remove project", {
         description: unwrapUnknownError(err).message,
       });
-    },
-    meta: {
-      invalidates: [["saved-projects"]],
     },
   });
 

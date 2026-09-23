@@ -6,7 +6,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { resumesCollection } from "@/data-access-layer/resume/resumes-query-collection";
+import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
 import { useLiveSuspenseQuery } from "@tanstack/react-db";
 
 interface ResumePickerFieldProps {
@@ -22,7 +22,11 @@ export function ResumePickerField({
   label = "Resume",
   error,
 }: ResumePickerFieldProps) {
-  const { data: resumes } = useLiveSuspenseQuery((q) => q.from({ resume: resumesCollection }), []);
+  const db = useEventSourcedDb();
+  const { data: resumes } = useLiveSuspenseQuery(
+    (q) => q.from({ resume: db.collections.resume }),
+    [],
+  );
 
   return (
     <div>

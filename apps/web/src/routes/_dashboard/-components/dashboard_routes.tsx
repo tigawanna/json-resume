@@ -4,7 +4,6 @@ import {
   Briefcase,
   Contact,
   FileText,
-  FolderGit2,
   FolderKanban,
   Github,
   Globe,
@@ -52,7 +51,6 @@ export function getDashboardPrimaryRoutes(): SidebarItem[] {
       ],
     },
     { title: "Repositories", href: "/repos", icon: Github },
-    { title: "Saved Projects", href: "/saved-projects", icon: FolderGit2 },
     { title: "Events", href: "/events", icon: Inbox },
   ];
 }

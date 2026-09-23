@@ -7,7 +7,7 @@ import type { ResumeProject } from "@/data-access-layer/event-sourced/schemas";
 import { RouterPendingComponent } from "@/lib/tanstack/router/RouterPendingComponent";
 import { count, useLiveQuery } from "@tanstack/react-db";
 import { FolderKanban, Plus } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { createSortableColumns } from "@/lib/tanstack/db/sortable-columns";
 import { EventSourcedListScaffold } from "../../-components/EventSourcedListScaffold";
@@ -24,6 +24,7 @@ import {
   totalPagesFromCount,
 } from "../../-utils/list-query";
 import { unwrapUnknownError } from "@/utils/errors";
+import { adoptSavedProjects } from "../../-utils/adopt-saved-projects";
 import { Route } from "..";
 import { ProjectCreateForm, ProjectCreateFormDialog } from "./ProjectCreateForm";
 import { ProjectEditForm } from "./ProjectEditForm";
@@ -46,6 +47,11 @@ function parseTechTags(tech: string): string[] {
 
 export function ProjectList() {
   const db = useEventSourcedDb();
+
+  useEffect(() => {
+    adoptSavedProjects(db);
+  }, [db]);
+
   const { page = 1, q = "", sortBy, sortDirection } = Route.useSearch();
   const { clearSearch } = usePageSearchQuery(ROUTE_ID);
   const [createOpen, setCreateOpen] = useState(false);

@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { resumeCollection } from "@/data-access-layer/resume/resumes-query-collection";
+import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
 import { resumeRegistry } from "@/features/resume/resume-catalog";
 import { ResumePdfDocument } from "@/features/resume/resume-pdf";
 import { resumePdfFileStem } from "@/features/resume/resume-pdf-filename";
@@ -30,11 +30,14 @@ interface ResumePreviewTabProps {
 }
 
 export function ResumePreviewTab({ resumeId, selectedTemplate, doc }: ResumePreviewTabProps) {
-  const { data: resume } = useLiveSuspenseQuery((q) =>
-    q
-      .from({ resume: resumeCollection })
-      .where(({ resume }) => eq(resume.id, resumeId))
-      .findOne(),
+  const db = useEventSourcedDb();
+  const { data: resume } = useLiveSuspenseQuery(
+    (q) =>
+      q
+        .from({ resume: db.collections.resume })
+        .where(({ resume }) => eq(resume.id, resumeId))
+        .findOne(),
+    [resumeId],
   );
 
   return (

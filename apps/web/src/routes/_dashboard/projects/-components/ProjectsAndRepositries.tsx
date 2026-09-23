@@ -1,17 +1,24 @@
 import { Empty, EmptyDescription, EmptyTitle } from "@/components/ui/empty";
 import { githubReposCollection } from "@/data-access-layer/github/repos-collections";
 import type { RepositoryResponse } from "@/data-access-layer/github/repos.octo";
-import { savedProjectsCollection } from "@/data-access-layer/saved-project/saved-project.collection";
-import type { SavedProjectRow } from "@/data-access-layer/saved-project/saved-project.server";
+import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
+import type { ResumeProject } from "@/data-access-layer/event-sourced/schemas";
 import { useDebouncedValue } from "@/hooks/use-debouncer";
 import { RouterPendingComponent } from "@/lib/tanstack/router/RouterPendingComponent";
 import { eq, useLiveQuery } from "@tanstack/react-db";
 import { useRouter, useSearch } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { adoptSavedProjects } from "../../-utils/adopt-saved-projects";
 import RepoCard from "./RepoCard";
 import RepoFilters, { type ForkFilter, type SortField } from "./RepoFilters";
 
 export function ProjectsAndRepositries() {
+  const db = useEventSourcedDb();
   const router = useRouter();
+
+  useEffect(() => {
+    adoptSavedProjects(db);
+  }, [db]);
   const { search, sort, forks } = useSearch({ from: "/_dashboard/projects/" });
 
   const handleSearchChange = (value: string) => {
@@ -51,13 +58,13 @@ export function ProjectsAndRepositries() {
     (q) => {
       let query = q
         .from({ repo: githubReposCollection })
-        .leftJoin({ saved: savedProjectsCollection }, ({ repo, saved }) =>
+        .leftJoin({ saved: db.collections.resumeProject }, ({ repo, saved }) =>
           eq(repo.html_url, saved.url),
         );
 
       // Search filter
       if (debouncedSearch) {
-        query = query.fn.where((row: { repo: RepositoryResponse; saved?: SavedProjectRow }) => {
+        query = query.fn.where((row: { repo: RepositoryResponse; saved?: ResumeProject }) => {
           const s = debouncedSearch.toLowerCase();
           const name = row.repo.name?.toLowerCase() ?? "";
           const desc = row.repo.description?.toLowerCase() ?? "";

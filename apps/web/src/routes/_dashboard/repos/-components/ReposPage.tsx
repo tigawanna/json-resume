@@ -5,8 +5,9 @@ import {
   searchGithubRepos,
   type GithubRepo,
 } from "@/data-access-layer/github/repos.functions";
+import { useViewer } from "@/data-access-layer/auth/viewer";
+import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
 import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
-import { savedProjectsCollection } from "@/data-access-layer/saved-project/saved-project.collection";
 import { authClient } from "@/lib/better-auth/client";
 import { unwrapUnknownError } from "@/utils/errors";
 import { eq, useLiveQuery } from "@tanstack/react-db";
@@ -21,8 +22,10 @@ import {
   Loader,
   Star,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { adoptSavedProjects } from "../../-utils/adopt-saved-projects";
+import { joinSearchable, libraryRowBase } from "../../-utils/row-helpers";
 import { REPO_PAGE_ROUTEID } from "./constants";
 import { ReposFilters } from "./ReposFilters";
 import type { RepoSearchFilters } from "./repos-search-query";
@@ -55,7 +58,12 @@ function githubReposQueryOptions(filters: RepoSearchFilters) {
 }
 
 export function ReposPage() {
+  const db = useEventSourcedDb();
   const filters = routeApi.useSearch();
+
+  useEffect(() => {
+    adoptSavedProjects(db);
+  }, [db]);
   const reposQuery = useQuery(githubReposQueryOptions(filters));
   const repos = reposQuery.data?.repos || [];
 
@@ -120,12 +128,14 @@ export function ReposPage() {
 }
 
 function RepoCard({ repo }: { repo: GithubRepo }) {
+  const db = useEventSourcedDb();
+  const { viewer } = useViewer();
   const repoUrl = repo.html_url || "";
 
   const { data: savedMatches } = useLiveQuery(
     (q) =>
       q
-        .from({ projects: savedProjectsCollection })
+        .from({ projects: db.collections.resumeProject })
         .where(({ projects }) => eq(projects.url, repoUrl)),
     [repoUrl],
   );
@@ -135,16 +145,20 @@ function RepoCard({ repo }: { repo: GithubRepo }) {
 
   const saveMutation = useMutation({
     mutationFn: async () => {
-      const now = new Date();
-      savedProjectsCollection.utils.writeInsert({
-        id: `optimistic-${repo.id}`,
-        name: repo.name,
+      const userId = viewer.user?.id;
+      if (!userId) throw new Error("Sign in to save projects");
+      const name = repo.name || "";
+      const description = repo.description || "";
+      const tech = JSON.stringify(repo.topics || []);
+      const base = libraryRowBase(userId);
+      db.collections.resumeProject.insert({
+        ...base,
+        name,
         url: repoUrl,
-        homepageUrl: repo.homepage ?? "",
-        description: repo.description ?? "",
-        tech: JSON.stringify(repo.topics),
-        createdAt: now,
-        updatedAt: now,
+        homepageUrl: repo.homepage || "",
+        description,
+        tech,
+        searchableText: joinSearchable(name, description, tech, repoUrl),
       });
     },
     onSuccess() {
@@ -160,7 +174,7 @@ function RepoCard({ repo }: { repo: GithubRepo }) {
   const unsaveMutation = useMutation({
     mutationFn: async () => {
       if (!savedProject) return;
-      savedProjectsCollection.utils.writeDelete(savedProject.id);
+      db.collections.resumeProject.delete(savedProject.id);
     },
     onSuccess() {
       toast.success("Project removed", { description: "Removed from your shortlist" });

@@ -6,11 +6,9 @@ import {
 } from "@/features/agentic-tools/created-resume-output";
 import { useAiSettings } from "@/hooks/use-ai-settings";
 import { cn } from "@/lib/utils";
-import { resumeCollection } from "@/data-access-layer/resume/resumes-query-collection";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { fetchServerSentEvents, useChat, type UIMessage } from "@tanstack/ai-react";
-import { useQueryClient } from "@tanstack/react-query";
 import { PERSONA_WRITER_OPEN_EVENT } from "./persona-chat-events";
 import {
   Bot,
@@ -65,7 +63,6 @@ export function FloatingPersonaChat() {
   const latestMessageRef = useRef<HTMLDivElement>(null);
   const handledToolOutputsRef = useRef(new Set<string>());
   const { settings, saveSettings, clearSettings } = useAiSettings();
-  const queryClient = useQueryClient();
   const isReady = isLocalMode || !!settings;
 
   const chat = useChat({
@@ -174,11 +171,9 @@ export function FloatingPersonaChat() {
         }
 
         handledToolOutputsRef.current.add(part.id);
-        void queryClient.invalidateQueries({ queryKey: ["resumes"] });
-        void resumeCollection.utils.refetch();
       }
     }
-  }, [messages, queryClient]);
+  }, [messages]);
 
   async function submitMessage() {
     const trimmed = input.trim();
