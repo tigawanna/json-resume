@@ -1,3 +1,6 @@
+import { LandingActivityDemo } from "./LandingActivityDemo";
+import { LandingSyncDemo } from "./LandingSyncDemo";
+
 export function LandingCTA() {
   return (
     <section
@@ -5,7 +8,7 @@ export function LandingCTA() {
       data-test="landing-cta"
       className="mx-auto max-w-360 scroll-mt-14 border-x border-border/50"
     >
-      <div className="border-t border-border/50 bg-neutral/40 px-6 py-20 md:px-16 md:py-28">
+      <div className="border-t border-border/50 bg-neutral/50 px-6 py-20 md:px-16 md:py-28">
         <h2 className="max-w-[16ch] text-balance text-3xl font-medium tracking-tight text-base-content md:text-4xl">
           Local first. The server is a choice.
         </h2>
@@ -20,6 +23,14 @@ export function LandingCTA() {
             public résumé is published separately, so you can share one snapshot and keep the
             working library to yourself.
           </p>
+        </div>
+        <div className="mt-12 grid grid-cols-1 gap-4 lg:grid-cols-12">
+          <div className="lg:col-span-7">
+            <LandingActivityDemo />
+          </div>
+          <div className="lg:col-span-5">
+            <LandingSyncDemo />
+          </div>
         </div>
       </div>
     </section>

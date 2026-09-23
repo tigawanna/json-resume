@@ -5,7 +5,7 @@ import { Link } from "@tanstack/react-router";
 
 export function LandingFooter() {
   return (
-    <footer className="mx-auto max-w-360 border-x border-t border-border/50">
+    <footer className="mx-auto max-w-360 border-x border-t border-border/50 bg-neutral/30">
       <div className="flex flex-col items-center justify-between gap-6 px-8 py-12 font-mono text-xs text-muted-foreground md:flex-row md:px-16">
         <Link to="/" className="transition-colors hover:text-base-content">
           {AppConfig.wordmark}

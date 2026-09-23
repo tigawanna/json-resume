@@ -382,6 +382,12 @@
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .animate-cell-ripple {
+    animation: none;
+  }
+}
+
 @utility animate-fade-in {
   animation: fade-in 0.6s ease-out both;
 }

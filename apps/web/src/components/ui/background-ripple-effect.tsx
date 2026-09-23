@@ -69,6 +69,7 @@ export const BackgroundRippleEffect = ({
 
   useEffect(() => {
     if (!pulse) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
     const id = setInterval(() => {
       const row =
