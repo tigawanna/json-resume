@@ -1,3 +1,5 @@
+import { TigawannaCredit } from "@tigawanna/credit";
+import "@tigawanna/credit/styles.css";
 import { AppConfig } from "@/utils/system";
 import { Link } from "@tanstack/react-router";
 
@@ -26,6 +28,9 @@ export function LandingFooter() {
             GitHub
           </a>
         </div>
+      </div>
+      <div className="flex justify-center border-x border-border/50 px-8 pb-8 md:px-16">
+        <TigawannaCredit position="inline" />
       </div>
     </footer>
   );

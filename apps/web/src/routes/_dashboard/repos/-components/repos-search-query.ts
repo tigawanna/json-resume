@@ -1,7 +1,7 @@
 import type {
   GithubRepoForkFilter,
-  GithubRepoSort,
   GithubRepoOrder,
+  GithubRepoSort,
 } from "@/data-access-layer/github/repos.functions";
 
 export type RepoArchivedFilter = "any" | "active" | "archived";

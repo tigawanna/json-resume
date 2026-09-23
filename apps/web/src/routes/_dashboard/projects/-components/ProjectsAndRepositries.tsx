@@ -10,7 +10,7 @@ import { useRouter, useSearch } from "@tanstack/react-router";
 import RepoCard from "./RepoCard";
 import RepoFilters, { type ForkFilter, type SortField } from "./RepoFilters";
 
-export default function ProjectsAndRepositries() {
+export function ProjectsAndRepositries() {
   const router = useRouter();
   const { search, sort, forks } = useSearch({ from: "/_dashboard/projects/" });
 

@@ -1,8 +1,7 @@
-import { z } from "zod";
 import { createFileRoute } from "@tanstack/react-router";
-import { lazy } from "react";
+import { z } from "zod";
 
-const ProjectsAndRepositries = lazy(() => import("./-components/ProjectsAndRepositries"));
+import { ProjectsAndRepositries } from "./-components/ProjectsAndRepositries";
 
 const projectsSearchSchema = z.object({
   search: z.string().optional().default(""),
