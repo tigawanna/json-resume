@@ -42,7 +42,7 @@
       "postcss": "^8.5.10"
     },
     "onlyBuiltDependencies": [
-      "@openrouter/sdk",
+      "better-sqlite3",
       "core-js",
       "es5-ext",
       "esbuild",

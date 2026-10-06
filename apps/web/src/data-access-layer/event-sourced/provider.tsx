@@ -1,8 +1,14 @@
-import { createContext, useContext, type ReactNode } from "react";
+import { createContext, useContext, useEffect, type ReactNode } from "react";
 import { useEnsureDb } from "event-sourced-collection/react";
 import { useViewer } from "@/data-access-layer/auth/viewer";
 import { applyManagedSyncGate, kickManagedSync } from "./app-settings";
 import { db as dbProxy, ensureDb, type AppDb } from "./collection";
+import {
+  canAutoReloadForOpfsRecovery,
+  isOpfsTempDirBusyError,
+  reloadForOpfsRecovery,
+  toOpfsBusyUserError,
+} from "./opfs-recovery";
 
 declare global {
   interface Window {
@@ -50,11 +56,19 @@ export function EventSourcedDbProvider({
     },
   });
 
-  if (error) {
+  const opfsBusy = error !== null && isOpfsTempDirBusyError(error);
+  const recovering = opfsBusy && canAutoReloadForOpfsRecovery();
+
+  useEffect(() => {
+    if (recovering) reloadForOpfsRecovery();
+  }, [recovering]);
+
+  if (error && !recovering) {
+    const surfaced = opfsBusy ? toOpfsBusyUserError(error) : error;
     if (errorFallback) {
-      return errorFallback(error);
+      return errorFallback(surfaced);
     }
-    throw error;
+    throw surfaced;
   }
 
   if (!ready) {

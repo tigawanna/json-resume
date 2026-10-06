@@ -1,7 +1,11 @@
 import { BasicIndex, type Collection } from "@tanstack/db";
 import { createBrowserEventSourcedDB } from "event-sourced-collection/browser";
 import type { CollectionDef, EventSourcedDB } from "event-sourced-collection";
-import type { BrowserWASQLitePersistenceOptions } from "@tanstack/browser-db-sqlite-persistence";
+import type {
+  BrowserWASQLitePersistenceOptions,
+  OpenBrowserWASQLiteOPFSDatabaseOptions,
+} from "@tanstack/browser-db-sqlite-persistence";
+import { withOpfsBusyRetry } from "./opfs-recovery";
 import { installStaleReplayGuard } from "./stale-replay-guard";
 import { createCookieSyncTransport } from "./sync-transport";
 
@@ -399,7 +403,8 @@ const {
           ...options,
           schemaMismatchPolicy: "reset",
         }),
-      openBrowserWASQLiteOPFSDatabase,
+      openBrowserWASQLiteOPFSDatabase: (options: OpenBrowserWASQLiteOPFSDatabaseOptions) =>
+        withOpfsBusyRetry(() => openBrowserWASQLiteOPFSDatabase(options)),
       persistedCollectionOptions,
     };
   },
