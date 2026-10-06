@@ -24,14 +24,19 @@ function readUpdatedAt(value: unknown): number | null {
   return typeof updatedAt === "number" && Number.isFinite(updatedAt) ? updatedAt : null;
 }
 
-/** True when the local row is newer than the payload a replay is about to write. */
+/**
+ * True when the local row is newer than the payload a replay is about to write.
+ *
+ * Deletes are never stale. The deleting device already removed the row from its
+ * own copy, so every other device must remove it too or they never agree again.
+ * The delete carries the deleter's last copy of the row, which can be older than
+ * an edit from another device, so its `updatedAt` says nothing about intent.
+ */
 export function isStaleReplay(local: unknown, mutation: ReplayMutation): boolean {
+  if (mutation.type === "delete") return false;
   const localUpdatedAt = readUpdatedAt(local);
   if (localUpdatedAt == null) return false;
-  // Deletes carry the row they would remove on `original`; inserts and updates carry it on `modified`.
-  const incoming = readUpdatedAt(
-    mutation.type === "delete" ? mutation.original : mutation.modified,
-  );
+  const incoming = readUpdatedAt(mutation.modified);
   if (incoming == null) return false;
   return localUpdatedAt > incoming;
 }

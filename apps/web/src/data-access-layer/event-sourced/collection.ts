@@ -385,6 +385,7 @@ const {
 
     settings: {
       getKey: (row) => row.id,
+      localOnly: true,
     },
   },
 

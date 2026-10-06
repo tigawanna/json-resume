@@ -61,6 +61,28 @@ export async function runManagedSync(db: AppDb, mode: "background" | "manual") {
 }
 
 /**
+ * Drops this device's synced data and pulls it back from the server.
+ * Pushes first so no local edit is lost; refuses if anything is still unsent.
+ * The library removes rows without authoring delete events.
+ */
+export async function resetLocalCopy(db: AppDb) {
+  if (!db.getSyncEnabled()) throw new Error("Turn on managed sync and stay signed in first");
+
+  const pushed = await runManagedSync(db, "manual");
+  if (pushed.deferred) throw new Error("Another tab is syncing. Close it and try again.");
+  const pending = db.getSyncStatus().pendingCount;
+  if (pending > 0) {
+    throw new Error(`${pending} local change(s) could not be uploaded. Sync them first.`);
+  }
+
+  const reset = await db.resetLocalReplica();
+  if (reset.deferred) throw new Error("Another tab is syncing. Close it and try again.");
+
+  const pulled = await runManagedSync(db, "manual");
+  return { removed: reset.removedRows, pulled: pulled.pulled, errors: pulled.errors };
+}
+
+/**
  * Fire-and-forget push/pull when managed sync is enabled.
  * Safe to call from multiple {@link EventSourcedDbProvider} mounts.
  */

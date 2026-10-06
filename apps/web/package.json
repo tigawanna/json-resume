@@ -76,7 +76,7 @@
     "diff": "^8.0.4",
     "drizzle-orm": "^0.45.2",
     "embla-carousel-react": "^8.6.0",
-    "event-sourced-collection": "^0.0.13",
+    "event-sourced-collection": "^0.0.14",
     "evlog": "^2.16.0",
     "hono": "^4.12.18",
     "input-otp": "^1.4.2",

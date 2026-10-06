@@ -103,4 +103,32 @@ describe("stale sync replay", () => {
       updatedAt: 3_000,
     });
   });
+
+  it("applies a delete made from an older copy on every device", async () => {
+    const deviceA = devices.open("device-a");
+    const deviceB = devices.open("device-b");
+    const dbA = await deviceA.ensureDb();
+    const dbB = await deviceB.ensureDb();
+
+    await dbA.collections.resume.insert({ id: "resume-1", name: "Draft", updatedAt: 1_000 })
+      .isPersisted.promise;
+    await dbA.sync();
+    await dbB.sync();
+
+    await dbA.collections.resume.update("resume-1", (draft) => {
+      draft.name = "Newer edit";
+      draft.updatedAt = 3_000;
+    }).isPersisted.promise;
+    await dbA.sync();
+
+    await dbB.collections.resume.delete("resume-1").isPersisted.promise;
+    await dbB.sync();
+
+    await dbA.sync();
+    expect(dbA.collections.resume.get("resume-1")).toBeUndefined();
+
+    const dbFresh = await devices.open("device-fresh").ensureDb();
+    await dbFresh.sync();
+    expect(dbFresh.collections.resume.get("resume-1")).toBeUndefined();
+  });
 });

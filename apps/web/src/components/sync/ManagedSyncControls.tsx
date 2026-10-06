@@ -14,6 +14,7 @@ import { useEventSourcedSyncStatus } from "@/data-access-layer/event-sourced/use
 import { unwrapUnknownError } from "@/utils/errors";
 import { Link } from "@tanstack/react-router";
 import { RefreshCw } from "lucide-react";
+import { ResetLocalCopyButton } from "./ResetLocalCopyButton";
 import { SyncBatchSizeControl } from "./SyncBatchSizeControl";
 import { SyncTransferProgress } from "./SyncTransferProgress";
 import { useId, useState } from "react";
@@ -131,6 +132,9 @@ export function ManagedSyncControls({
         </Button>
       )}
       {isAuthenticated ? <SyncBatchSizeControl /> : null}
+      {isAuthenticated ? (
+        <ResetLocalCopyButton disabled={!settings.syncEnabled || isSyncing} />
+      ) : null}
     </div>
   );
 
