@@ -1,12 +1,18 @@
 /**
  * Angled — incoming page unclips from a corner.
- * Flash fix: hide old snapshot (was animation: none + z-index -1).
+ * The old snapshot stays fully painted underneath. Hiding it (or sending it
+ * behind the group with z-index: -1) exposes the canvas, which turns black
+ * the moment color-scheme flips to dark.
  */
 [data-style="angled"]::view-transition-old(root) {
-  display: none;
+  animation: none;
+  mix-blend-mode: normal;
+  z-index: 1;
 }
 
 [data-style="angled"]::view-transition-new(root) {
+  z-index: 2;
+  mix-blend-mode: normal;
   animation: angled-unclip 1s ease;
   animation-fill-mode: both;
   clip-path: polygon(-100vmax 100%, 100% 100%, 100% -100vmax);

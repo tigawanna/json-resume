@@ -7,14 +7,7 @@ export function ThemeToggle(_props: ThemeToggleProps) {
   const { theme, updateTheme } = useTheme();
 
   function toggleTheme() {
-    const newTheme = theme === "light" ? "dark" : "light";
-    if (typeof document !== "undefined" && "startViewTransition" in document) {
-      try {
-        document.startViewTransition(() => updateTheme(newTheme));
-        return;
-      } catch {}
-    }
-    updateTheme(newTheme);
+    updateTheme(theme === "light" ? "dark" : "light");
   }
 
   return (

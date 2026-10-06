@@ -17,16 +17,7 @@ export function LandingNavbar() {
   const { theme, updateTheme } = useTheme();
 
   function toggleTheme() {
-    const newTheme = theme === "light" ? "dark" : "light";
-    if (typeof document !== "undefined" && "startViewTransition" in document) {
-      try {
-        document.startViewTransition(() => updateTheme(newTheme));
-        return;
-      } catch {
-        console.error("view transition not supported");
-      }
-    }
-    updateTheme(newTheme);
+    updateTheme(theme === "light" ? "dark" : "light");
   }
 
   return (

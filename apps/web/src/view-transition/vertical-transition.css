@@ -1,12 +1,16 @@
 /**
  * Vertical — incoming page reveals from an edge.
- * Flash fix: hide old snapshot instead of leaving it under with animation: none.
+ * Keep the old snapshot visible so the clipped region does not show the canvas.
  */
 [data-style="vertical"]::view-transition-old(root) {
-  display: none;
+  animation: none;
+  mix-blend-mode: normal;
+  z-index: 1;
 }
 
 [data-style="vertical"]::view-transition-new(root) {
+  z-index: 2;
+  mix-blend-mode: normal;
   animation: vertical-reveal 1s ease;
   animation-fill-mode: both;
   clip-path: inset(0 0 0 0);

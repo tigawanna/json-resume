@@ -112,8 +112,11 @@
     1 100%
   );
   z-index: 2;
+  mix-blend-mode: normal;
 }
 
 [data-style="slides"]::view-transition-old(root) {
-  display: none;
+  animation: none;
+  mix-blend-mode: normal;
+  z-index: 1;
 }

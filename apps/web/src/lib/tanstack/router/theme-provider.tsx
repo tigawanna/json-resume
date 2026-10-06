@@ -1,4 +1,4 @@
-import { createContext, use, useEffect, useMemo, useState } from "react";
+import { createContext, use, useLayoutEffect, useMemo, useState } from "react";
 import { FunctionOnce } from "./function-once";
 
 export type ResolvedTheme = "dark" | "light";
@@ -26,6 +26,20 @@ const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
 
 const isBrowser = typeof window !== "undefined";
 
+function resolveTheme(theme: Theme): ResolvedTheme {
+  if (theme === "system") {
+    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  }
+  return theme;
+}
+
+function applyResolvedTheme(resolved: ResolvedTheme) {
+  const root = document.documentElement;
+  root.classList.remove("light", "dark");
+  root.classList.add(resolved);
+  root.setAttribute("data-theme", resolved);
+}
+
 export function ThemeProvider({
   children,
   defaultTheme = "system",
@@ -36,24 +50,13 @@ export function ThemeProvider({
   );
   const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>("light");
 
-  useEffect(() => {
-    const root = window.document.documentElement;
+  useLayoutEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
 
     function applyTheme() {
-      root.classList.remove("light", "dark");
-
-      if (theme === "system") {
-        const systemTheme = mediaQuery.matches ? "dark" : "light";
-        setResolvedTheme(systemTheme);
-        root.classList.add(systemTheme);
-        root.setAttribute("data-theme", systemTheme);
-        return;
-      }
-
-      setResolvedTheme(theme as ResolvedTheme);
-      root.classList.add(theme);
-      root.setAttribute("data-theme", theme);
+      const resolved = resolveTheme(theme);
+      applyResolvedTheme(resolved);
+      setResolvedTheme(resolved);
     }
 
     mediaQuery.addEventListener("change", applyTheme);
@@ -68,7 +71,21 @@ export function ThemeProvider({
       resolvedTheme,
       setTheme: (newTheme: Theme) => {
         localStorage.setItem(storageKey, newTheme);
-        setTheme(newTheme);
+        const resolved = resolveTheme(newTheme);
+
+        const apply = () => {
+          applyResolvedTheme(resolved);
+          setResolvedTheme(resolved);
+          setTheme(newTheme);
+        };
+
+        const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        if (!reduceMotion && typeof document.startViewTransition === "function") {
+          document.startViewTransition(apply);
+          return;
+        }
+
+        apply();
       },
     }),
     [theme, resolvedTheme, storageKey],

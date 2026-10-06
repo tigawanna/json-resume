@@ -13,16 +13,7 @@ export function DashboardTheme() {
   const showLabel = state === "expanded" || isMobile;
 
   function toggleTheme() {
-    const newTheme = theme === "light" ? "dark" : "light";
-    if (typeof document !== "undefined" && "startViewTransition" in document) {
-      try {
-        (
-          document as unknown as { startViewTransition: (cb: () => void) => void }
-        ).startViewTransition(() => updateTheme(newTheme));
-        return;
-      } catch {}
-    }
-    updateTheme(newTheme);
+    updateTheme(theme === "light" ? "dark" : "light");
   }
 
   return (

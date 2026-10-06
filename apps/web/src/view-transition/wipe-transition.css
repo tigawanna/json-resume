@@ -1,16 +1,20 @@
 /**
  * Wipe — incoming page reveals with a diagonal clip.
- * Flash fix: hide old snapshot immediately (was `animation: none`).
+ * Keep the old snapshot visible so the clipped region does not show the canvas.
  */
 [data-style="wipe"]::view-transition-group(root) {
   animation-duration: 1.25s;
 }
 
 [data-style="wipe"]::view-transition-old(root) {
-  display: none;
+  animation: none;
+  mix-blend-mode: normal;
+  z-index: 1;
 }
 
 [data-style="wipe"]::view-transition-new(root) {
+  z-index: 2;
+  mix-blend-mode: normal;
   animation-name: wipe-reveal-dark;
   animation-duration: 1.25s;
   animation-timing-function: ease;

@@ -81,12 +81,12 @@ export function DashboardSidebarUser() {
         <SidebarMenuItem>
           <HoverCard openDelay={150} closeDelay={120}>
             <HoverCardTrigger asChild>
-              <SidebarMenuButton size="lg" asChild>
-                <Link
-                  to="/auth"
-                  search={{ returnTo }}
-                  data-test="dashboard-sidebar-signin"
-                >
+              <SidebarMenuButton
+                size="lg"
+                asChild
+                className="group-data-[collapsible=icon]:justify-center"
+              >
+                <Link to="/auth" search={{ returnTo }} data-test="dashboard-sidebar-signin">
                   <RefreshCwOff className="size-4 shrink-0" aria-hidden />
                   {isExpanded ? (
                     <span className="truncate font-medium">Sign in</span>
@@ -104,11 +104,14 @@ export function DashboardSidebarUser() {
               data-test="dashboard-sidebar-signin-hover"
             >
               <div className="flex gap-3">
-                <RefreshCwOff className="text-muted-foreground mt-0.5 size-4 shrink-0" aria-hidden />
+                <RefreshCwOff
+                  className="text-muted-foreground mt-0.5 size-4 shrink-0"
+                  aria-hidden
+                />
                 <div className="grid gap-3">
                   <p className="text-sm text-pretty">
-                    You are not signed in. Everything you do stays on this computer until you
-                    enable sync.
+                    You are not signed in. Everything you do stays on this computer until you enable
+                    sync.
                   </p>
                   <div className="flex flex-col gap-1.5 text-sm">
                     <Link
