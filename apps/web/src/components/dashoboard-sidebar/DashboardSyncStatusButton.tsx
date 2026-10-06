@@ -17,6 +17,7 @@ import { useOnlineStatus } from "@/hooks/use-online-status";
 import { cn } from "@/lib/utils";
 import { ManagedSyncControls } from "@/components/sync/ManagedSyncControls";
 import { SyncActivityPanel } from "@/components/sync/SyncActivityPanel";
+import { useSyncTransferProgress } from "@/data-access-layer/event-sourced/sync-progress";
 import { eq, useLiveQuery } from "@tanstack/react-db";
 import { useLocation } from "@tanstack/react-router";
 import {
@@ -127,6 +128,7 @@ function OfflineIndicator() {
  */
 export function DashboardSyncStatusButton({ className }: { className?: string }) {
   const { state, lastError, isOnline } = useManagedSyncUiState();
+  const transfer = useSyncTransferProgress();
   const [open, setOpen] = useState(false);
   const [activitySlot, setActivitySlot] = useState<HTMLDivElement | null>(null);
   const [activityHost, setActivityHost] = useState<HTMLDivElement | null>(null);
@@ -136,11 +138,15 @@ export function DashboardSyncStatusButton({ className }: { className?: string })
   const meta = STATUS[state];
   const Icon = meta.icon;
   const tooltip =
-    !isOnline && state === "disabled"
-      ? "Sync off"
-      : state === "error" && lastError
-        ? `Sync error: ${lastError}`
-        : meta.tooltip;
+    state === "syncing" && transfer.uploadTotal > 0
+      ? `Uploading ${transfer.uploadDone} of ${transfer.uploadTotal}`
+      : state === "syncing" && transfer.downloadReceived > 0
+        ? `Downloading ${transfer.downloadReceived} events`
+        : !isOnline && state === "disabled"
+          ? "Sync off"
+          : state === "error" && lastError
+            ? `Sync error: ${lastError}`
+            : meta.tooltip;
   const description =
     !isOnline && state !== "logged-out"
       ? "No internet connection. Sync stays off until you're back online."

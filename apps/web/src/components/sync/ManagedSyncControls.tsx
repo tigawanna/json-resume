@@ -13,7 +13,8 @@ import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
 import { useEventSourcedSyncStatus } from "@/data-access-layer/event-sourced/use-sync-status";
 import { unwrapUnknownError } from "@/utils/errors";
 import { Link } from "@tanstack/react-router";
-import { Loader2, RefreshCw } from "lucide-react";
+import { RefreshCw } from "lucide-react";
+import { SyncTransferProgress } from "./SyncTransferProgress";
 import { useId, useState } from "react";
 import { toast } from "sonner";
 
@@ -112,22 +113,22 @@ export function ManagedSyncControls({
           data-test="managed-sync-toggle"
         />
       </div>
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        className="w-fit"
-        disabled={!isAuthenticated || !settings.syncEnabled || isSyncing}
-        onClick={() => void handleSyncNow()}
-        data-test="managed-sync-now-btn"
-      >
-        {isSyncing ? (
-          <Loader2 className="mr-2 size-4 animate-spin" />
-        ) : (
+      {isSyncing ? (
+        <SyncTransferProgress />
+      ) : (
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="w-fit"
+          disabled={!isAuthenticated || !settings.syncEnabled}
+          onClick={() => void handleSyncNow()}
+          data-test="managed-sync-now-btn"
+        >
           <RefreshCw className="mr-2 size-4" />
-        )}
-        {isSyncing ? "Syncing…" : "Sync now"}
-      </Button>
+          Sync now
+        </Button>
+      )}
     </div>
   );
 

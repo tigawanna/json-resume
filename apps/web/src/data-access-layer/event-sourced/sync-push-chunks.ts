@@ -1,4 +1,5 @@
 import type { OutboundEvent, PushFailure, PushResponse } from "event-sourced-collection";
+import { noteUploadChunk } from "./sync-progress";
 
 /**
  * Stay under Vercel's 4.5 MB function body cap. The platform rejects the
@@ -154,6 +155,7 @@ export async function pushEventsInChunks(
     }
 
     try {
+      noteUploadChunk(chunk.length, pack.bytes);
       absorbResponse(index, summary, await postChunk(chunk));
       return { confirmed, failed };
     } catch (err: unknown) {
@@ -188,6 +190,7 @@ export async function pushEventsInChunks(
       return;
     }
     try {
+      noteUploadChunk(1, summary.bytes);
       absorbResponse(-1, summary, await postChunk(alone));
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Sync push failed";

@@ -1,5 +1,6 @@
 import type { AppDb } from "./collection";
 import type { AppSettings } from "./schemas";
+import { beginSyncProgress, finishSyncProgress, noteUploadRecorded } from "./sync-progress";
 
 export const APP_SETTINGS_ID = "app";
 
@@ -54,21 +55,28 @@ export async function drainManagedSync(db: AppDb, mode: "background" | "manual")
   let pulled = 0;
   let deferred = false;
   const errors: Error[] = [];
+  const uploadTotal = db.getSyncStatus().pendingCount;
+  beginSyncProgress(uploadTotal);
 
-  for (let pass = 0; pass < MAX_SYNC_PASSES; pass++) {
-    const before = db.getSyncStatus().pendingCount;
-    if (before === 0) break;
+  try {
+    for (let pass = 0; pass < MAX_SYNC_PASSES; pass++) {
+      const before = db.getSyncStatus().pendingCount;
+      if (pass > 0 && before === 0) break;
 
-    const result = mode === "manual" ? await db.manualSync() : await db.sync();
-    pushed += result.pushed;
-    pulled += result.pulled;
-    if (result.deferred) deferred = true;
-    errors.push(...result.errors);
-    await removeSyncedOutbox(db);
+      const result = mode === "manual" ? await db.manualSync() : await db.sync();
+      pushed += result.pushed;
+      pulled += result.pulled;
+      if (result.deferred) deferred = true;
+      errors.push(...result.errors);
+      await removeSyncedOutbox(db);
 
-    if (result.deferred || result.errors.length > 0) break;
-    const after = db.getSyncStatus().pendingCount;
-    if (after === 0 || after >= before) break;
+      const after = db.getSyncStatus().pendingCount;
+      noteUploadRecorded(Math.max(0, uploadTotal - after), uploadTotal);
+      if (result.deferred || result.errors.length > 0) break;
+      if (after === 0 || after >= before) break;
+    }
+  } finally {
+    finishSyncProgress();
   }
 
   return { pushed, pulled, deferred, errors };

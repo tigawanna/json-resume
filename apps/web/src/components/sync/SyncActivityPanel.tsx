@@ -60,18 +60,9 @@ export function SyncActivityPanel({ preferredTab, active, onOpenEvents }: SyncAc
 
       <Tabs value={tab} onValueChange={(value) => setTab(value as EventQueueTab)}>
         <TabsList className="w-full" data-test="sync-activity-tabs">
-          <TabsTrigger value="outbox">
-            Outbox
-            <CountMark value={outboxCount} />
-          </TabsTrigger>
-          <TabsTrigger value="inbox">
-            Inbox
-            <CountMark value={inboxCount} />
-          </TabsTrigger>
-          <TabsTrigger value="deadletter">
-            Failed
-            <CountMark value={deadLetterCount} />
-          </TabsTrigger>
+          <TabsTrigger value="outbox">Outbox</TabsTrigger>
+          <TabsTrigger value="inbox">Inbox</TabsTrigger>
+          <TabsTrigger value="deadletter">Failed</TabsTrigger>
         </TabsList>
       </Tabs>
 
@@ -94,11 +85,6 @@ export function SyncActivityPanel({ preferredTab, active, onOpenEvents }: SyncAc
       ) : null}
     </section>
   );
-}
-
-function CountMark({ value }: { value: number | null }) {
-  if (value == null || value <= 0) return null;
-  return <span className="text-muted-foreground tabular-nums">{value > 99 ? "99+" : value}</span>;
 }
 
 function useOutboxCount() {

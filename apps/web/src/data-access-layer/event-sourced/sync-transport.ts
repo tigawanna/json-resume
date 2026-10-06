@@ -6,6 +6,7 @@ import type {
   SyncTransport,
 } from "event-sourced-collection";
 import { pushEventsInChunks } from "./sync-push-chunks";
+import { beginDownloadPage, noteDownloadPage } from "./sync-progress";
 
 const SYNC_URL = "/api/sync/events";
 
@@ -25,6 +26,13 @@ function isPushFailure(value: unknown): value is PushFailure {
   if (value == null || typeof value !== "object") return false;
   if (!("eventId" in value) || !("message" in value)) return false;
   return typeof value.eventId === "string" && typeof value.message === "string";
+}
+
+function readPullProgress(value: unknown): { count: number; hasMore: boolean } | null {
+  if (value == null || typeof value !== "object" || !("events" in value)) return null;
+  if (!Array.isArray(value.events)) return null;
+  const hasMore = "hasMore" in value && value.hasMore === true;
+  return { count: value.events.length, hasMore };
 }
 
 function parsePushResponse(value: unknown): PushResponse {
@@ -71,7 +79,7 @@ export function createCookieSyncTransport(): SyncTransport {
       });
     },
     async pull(since) {
-      // console.log("pull === ", since);
+      beginDownloadPage();
       const url = `${SYNC_URL}?since=${encodeURIComponent(String(since))}`;
       const response = await fetch(url, {
         method: "GET",
@@ -82,7 +90,10 @@ export function createCookieSyncTransport(): SyncTransport {
         const body = await response.text();
         throw new Error(`Sync pull failed (${response.status}): ${body}`);
       }
-      return (await readJson(response)) as PullResponse;
+      const body = await readJson(response);
+      const page = readPullProgress(body);
+      if (page) noteDownloadPage(page.count, page.hasMore);
+      return body as PullResponse;
     },
   };
 }
