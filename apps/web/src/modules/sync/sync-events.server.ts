@@ -32,6 +32,10 @@ export const outboundEventSchema = z.object({
 export const outboundEventBatchSchema = z.array(outboundEventSchema);
 
 const PULL_LIMIT = 200;
+/** JSON length budget per pull response, under Vercel's 4.5 MB body limit. */
+const PULL_MAX_BYTES = 3_500_000;
+/** Ids, cursor, timestamps and keys around each payload. */
+const PULL_ROW_OVERHEAD_BYTES = 400;
 
 export async function ensureSyncBackend() {
   const existing = await db.select().from(syncBackend).where(eq(syncBackend.id, 1)).limit(1);
@@ -154,7 +158,23 @@ export async function pullSyncEvents(userId: string, since: number): Promise<Pul
     .orderBy(syncEvent.globalSeq)
     .limit(PULL_LIMIT);
 
-  const events: ServerEvent[] = rows.map((row) => ({
+  // Vercel also caps response bodies at 4.5 MB: stop at PULL_MAX_BYTES and let
+  // the client page on with `hasMore`. The first row always goes out so a
+  // single huge event cannot stall the cursor.
+  let bytes = 0;
+  let take = 0;
+  for (const row of rows) {
+    const rowBytes =
+      Buffer.byteLength(row.payload) +
+      (row.previous ? Buffer.byteLength(row.previous) : 0) +
+      PULL_ROW_OVERHEAD_BYTES;
+    if (take > 0 && bytes + rowBytes > PULL_MAX_BYTES) break;
+    bytes += rowBytes;
+    take++;
+  }
+  const truncated = take < rows.length;
+
+  const events: ServerEvent[] = rows.slice(0, take).map((row) => ({
     globalSeq: row.globalSeq,
     eventId: row.eventId,
     collectionId: row.collectionId,
@@ -173,7 +193,7 @@ export async function pullSyncEvents(userId: string, since: number): Promise<Pul
   return {
     events,
     cursor: last ? last.cursor : String(safeSince),
-    hasMore: events.length === PULL_LIMIT,
+    hasMore: truncated || rows.length === PULL_LIMIT,
     backendId: backend.backendId,
   };
 }

@@ -140,6 +140,7 @@ const {
   syncEnabled: true,
   recordLocalEchoes: false,
   sync: createCookieSyncTransport(),
+  syncPreset: "vercel",
 
   collections: {
     resume: {

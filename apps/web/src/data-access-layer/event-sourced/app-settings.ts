@@ -1,6 +1,6 @@
 import type { AppDb } from "./collection";
 import type { AppSettings } from "./schemas";
-import { beginSyncProgress, finishSyncProgress, noteUploadRecorded } from "./sync-progress";
+import { beginSyncProgress, finishSyncProgress } from "./sync-progress";
 
 export const APP_SETTINGS_ID = "app";
 
@@ -32,54 +32,32 @@ export function applyManagedSyncGate(db: AppDb, isAuthenticated: boolean): AppSe
   return settings;
 }
 
-/** Coalesce concurrent kickers (nested providers) into one in-flight drain. */
+/** Coalesce concurrent kickers (nested providers) into one in-flight sync. */
 let managedSyncInFlight: Promise<void> | null = null;
 
-const MAX_SYNC_PASSES = 200;
-
-async function removeSyncedOutbox(db: AppDb) {
-  const syncedIds = db.collections.outbox.toArray
-    .filter((row) => row.sync)
-    .map((row) => row.eventId);
-  for (const eventId of syncedIds) {
-    await db.collections.outbox.delete(eventId).isPersisted.promise;
-  }
-}
+/** Recent synced outbox/inbox rows kept for the Events page; older ones are pruned. */
+const SYNCED_EVENTS_KEPT = 50;
 
 /**
- * Push one chunk per sync pass, drop the rows that were accepted, then continue
- * from what is still waiting. Stops when the outbox no longer shrinks.
+ * One library sync: it pushes the outbox batch by batch until drained, then
+ * pulls every page. Synced outbox rows are left for `pruneSyncedEvents`.
  */
-export async function drainManagedSync(db: AppDb, mode: "background" | "manual") {
-  let pushed = 0;
-  let pulled = 0;
-  let deferred = false;
-  const errors: Error[] = [];
-  const uploadTotal = db.getSyncStatus().pendingCount;
-  beginSyncProgress(uploadTotal);
-
+export async function runManagedSync(db: AppDb, mode: "background" | "manual") {
+  beginSyncProgress(db.getSyncStatus().pendingCount);
   try {
-    for (let pass = 0; pass < MAX_SYNC_PASSES; pass++) {
-      const before = db.getSyncStatus().pendingCount;
-      if (pass > 0 && before === 0) break;
-
-      const result = mode === "manual" ? await db.manualSync() : await db.sync();
-      pushed += result.pushed;
-      pulled += result.pulled;
-      if (result.deferred) deferred = true;
-      errors.push(...result.errors);
-      await removeSyncedOutbox(db);
-
-      const after = db.getSyncStatus().pendingCount;
-      noteUploadRecorded(Math.max(0, uploadTotal - after), uploadTotal);
-      if (result.deferred || result.errors.length > 0) break;
-      if (after === 0 || after >= before) break;
+    const result = mode === "manual" ? await db.manualSync() : await db.sync();
+    if (!result.deferred && result.errors.length === 0) {
+      await db.pruneSyncedEvents({ keepLast: SYNCED_EVENTS_KEPT });
     }
+    return {
+      pushed: result.pushed,
+      pulled: result.pulled,
+      deferred: result.deferred,
+      errors: result.errors,
+    };
   } finally {
     finishSyncProgress();
   }
-
-  return { pushed, pulled, deferred, errors };
 }
 
 /**
@@ -90,7 +68,7 @@ export function kickManagedSync(db: AppDb): void {
   if (!db.getSyncEnabled()) return;
   if (managedSyncInFlight) return;
 
-  managedSyncInFlight = drainManagedSync(db, "background")
+  managedSyncInFlight = runManagedSync(db, "background")
     .then((result) => {
       if (result.errors.length > 0) {
         console.error("[sync] managed sync errors", result.errors);

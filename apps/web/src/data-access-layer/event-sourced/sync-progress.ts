@@ -60,13 +60,12 @@ export function noteUploadChunk(events: number, bytes: number) {
   });
 }
 
-export function noteUploadRecorded(done: number, total: number) {
-  const uploadTotal = Math.max(total, done);
+export function noteUploaded(count: number) {
+  const uploadDone = current.uploadDone + count;
   emit({
     ...current,
-    uploadActive: uploadTotal > 0,
-    uploadDone: Math.max(0, done),
-    uploadTotal,
+    uploadDone,
+    uploadTotal: Math.max(current.uploadTotal, uploadDone),
     uploadChunkEvents: 0,
     uploadChunkBytes: 0,
   });

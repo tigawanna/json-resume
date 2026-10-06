@@ -5,7 +5,7 @@ import { Switch } from "@/components/ui/switch";
 import { useViewer } from "@/data-access-layer/auth/viewer";
 import {
   applyManagedSyncGate,
-  drainManagedSync,
+  runManagedSync,
   readAppSettings,
   setManagedSyncEnabled,
 } from "@/data-access-layer/event-sourced/app-settings";
@@ -65,7 +65,7 @@ export function ManagedSyncControls({
         });
         return;
       }
-      const result = await drainManagedSync(db, "manual");
+      const result = await runManagedSync(db, "manual");
       // manualSync does not throw on transport/server failures — check the result.
       if (result.deferred) {
         toast.error("Sync skipped", {

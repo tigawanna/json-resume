@@ -1,3 +1,4 @@
+import { SyncPushError } from "event-sourced-collection";
 import type {
   PullResponse,
   PushConfirmation,
@@ -5,8 +6,12 @@ import type {
   PushResponse,
   SyncTransport,
 } from "event-sourced-collection";
-import { pushEventsInChunks } from "./sync-push-chunks";
-import { beginDownloadPage, noteDownloadPage } from "./sync-progress";
+import {
+  beginDownloadPage,
+  noteDownloadPage,
+  noteUploadChunk,
+  noteUploaded,
+} from "./sync-progress";
 
 const SYNC_URL = "/api/sync/events";
 
@@ -60,23 +65,33 @@ function parsePushResponse(value: unknown): PushResponse {
 /**
  * Cookie-session transport. Push/pull never run unless the DB has sync enabled;
  * the server still 401s if there is no session.
+ *
+ * One call is one request: the library sizes each batch (`syncPreset`) and
+ * splits it further on HTTP 413, which it detects via `SyncPushError.status`.
  */
 export function createCookieSyncTransport(): SyncTransport {
   return {
     async push(events) {
-      return pushEventsInChunks(events, async (chunk) => {
-        const response = await fetch(SYNC_URL, {
-          method: "POST",
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(chunk),
-        });
-        if (!response.ok) {
-          const body = await response.text();
-          throw new Error(`Sync push failed (${response.status}): ${body}`);
-        }
-        return parsePushResponse(await readJson(response));
+      const body = JSON.stringify(events);
+      noteUploadChunk(events.length, new TextEncoder().encode(body).length);
+      const response = await fetch(SYNC_URL, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body,
       });
+      if (!response.ok) {
+        const text = await response.text();
+        console.warn("[sync push] request failed", {
+          status: response.status,
+          events: events.length,
+          bytes: body.length,
+        });
+        throw new SyncPushError(response.status, text);
+      }
+      const result = parsePushResponse(await readJson(response));
+      noteUploaded(result.confirmed.length + (result.failed?.length ?? 0));
+      return result;
     },
     async pull(since) {
       beginDownloadPage();
