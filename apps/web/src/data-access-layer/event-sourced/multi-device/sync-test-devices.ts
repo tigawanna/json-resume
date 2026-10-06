@@ -6,6 +6,7 @@ import {
 import { createMockSyncBackend, type MockSyncBackend } from "event-sourced-collection";
 import { createNodeEventSourcedDB } from "event-sourced-collection/node";
 import Database from "better-sqlite3";
+import { installStaleReplayGuard } from "../stale-replay-guard";
 
 type SyncCollectionDefs = Record<string, { getKey: (row: never) => string | number }>;
 
@@ -43,6 +44,12 @@ export function createSyncDevices<const TDefs extends SyncCollectionDefs>(option
         persistedCollectionOptions,
       },
     });
+    const ensure = device.ensureDb.bind(device);
+    device.ensureDb = async () => {
+      const db = await ensure();
+      installStaleReplayGuard(db);
+      return db;
+    };
     devices.push(device);
     return device;
   }

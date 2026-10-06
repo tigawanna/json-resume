@@ -4,9 +4,9 @@
  * Two node databases share one in-memory backend, with the same echo setting
  * the app uses (`recordLocalEchoes: false`).
  *
- * These assertions describe the guardrail we want: a local row whose
- * `updatedAt` is newer must survive replay of an older upstream event.
- * They fail today if pull applies that event anyway.
+ * A local row whose `updatedAt` is newer must survive replay of an older
+ * upstream event. The guard lives on `acceptMutations`, which is where both
+ * pull and a later inbox replay write the row.
  */
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { createSyncDevices } from "./sync-test-devices";

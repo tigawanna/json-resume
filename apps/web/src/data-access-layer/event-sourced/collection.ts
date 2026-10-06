@@ -2,6 +2,7 @@ import { BasicIndex, type Collection } from "@tanstack/db";
 import { createBrowserEventSourcedDB } from "event-sourced-collection/browser";
 import type { CollectionDef, EventSourcedDB } from "event-sourced-collection";
 import type { BrowserWASQLitePersistenceOptions } from "@tanstack/browser-db-sqlite-persistence";
+import { installStaleReplayGuard } from "./stale-replay-guard";
 import { createCookieSyncTransport } from "./sync-transport";
 
 import type {
@@ -454,6 +455,7 @@ function ensureMetaQueueIndexes(database: AppDb) {
 async function ensureDb() {
   const database = await ensureDbInner();
   ensureMetaQueueIndexes(database);
+  installStaleReplayGuard(database);
   return database;
 }
 
