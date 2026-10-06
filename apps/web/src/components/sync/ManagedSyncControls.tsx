@@ -130,7 +130,7 @@ export function ManagedSyncControls({
           Sync now
         </Button>
       )}
-      {isAuthenticated ? <SyncBatchSizeControl disabled={isSyncing} /> : null}
+      {isAuthenticated ? <SyncBatchSizeControl /> : null}
     </div>
   );
 

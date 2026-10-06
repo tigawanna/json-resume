@@ -139,9 +139,9 @@ export function DashboardSyncStatusButton({ className }: { className?: string })
   const Icon = meta.icon;
   const tooltip =
     state === "syncing" && transfer.uploadTotal > 0
-      ? `Uploading ${transfer.uploadDone} of ${transfer.uploadTotal}`
+      ? `Pushing outbox: ${transfer.uploadDone} of ${transfer.uploadTotal}`
       : state === "syncing" && transfer.downloadReceived > 0
-        ? `Downloading ${transfer.downloadReceived} events`
+        ? `Pulling into inbox: ${transfer.downloadReceived} events`
         : !isOnline && state === "disabled"
           ? "Sync off"
           : state === "error" && lastError

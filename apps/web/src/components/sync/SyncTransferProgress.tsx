@@ -34,42 +34,50 @@ export function SyncTransferProgress() {
 
   const uploadValue =
     progress.uploadTotal === 0
-      ? progress.uploadActive
-        ? null
-        : 0
+      ? 100
       : Math.min(100, Math.round((progress.uploadDone / progress.uploadTotal) * 100));
-  const uploadDetail = [
-    progress.uploadTotal > 0 ? `${progress.uploadDone} of ${progress.uploadTotal}` : "Waiting",
-    progress.uploadChunkEvents > 0
-      ? `sending ${progress.uploadChunkEvents} · ${formatBytes(progress.uploadChunkBytes)}`
-      : null,
-  ]
-    .filter(Boolean)
-    .join(" · ");
+  const uploadDetail =
+    progress.uploadTotal === 0
+      ? "Outbox empty"
+      : [
+          progress.uploadDone >= progress.uploadTotal
+            ? `All ${progress.uploadTotal} pushed`
+            : `${progress.uploadDone} of ${progress.uploadTotal}`,
+          progress.uploadChunkEvents > 0
+            ? `sending ${progress.uploadChunkEvents} · ${formatBytes(progress.uploadChunkBytes)}`
+            : null,
+        ]
+          .filter(Boolean)
+          .join(" · ");
 
-  const downloadValue = progress.downloadHasMore || progress.downloadReceived === 0 ? null : 100;
-  const downloadDetail =
-    progress.downloadReceived === 0
-      ? "Starting"
-      : progress.downloadHasMore
-        ? `${progress.downloadReceived} events, more coming`
-        : `${progress.downloadReceived} events`;
+  // Pull starts after push; `downloadHasMore` stays true until the last page lands.
+  const downloadDone = progress.downloadActive && !progress.downloadHasMore;
+  const downloadValue = !progress.downloadActive ? 0 : downloadDone ? 100 : null;
+  const downloadDetail = !progress.downloadActive
+    ? "After push"
+    : downloadDone
+      ? progress.downloadReceived === 0
+        ? "Up to date"
+        : `${progress.downloadReceived} new events`
+      : progress.downloadReceived === 0
+        ? "Checking server"
+        : `${progress.downloadReceived} events, more coming`;
 
   return (
     <div className="flex w-full flex-col gap-4" data-test="sync-transfer-progress">
       <div className="flex flex-col gap-1.5">
         <div className="flex items-baseline justify-between gap-3 text-xs">
-          <span className="font-medium">Upload</span>
+          <span className="font-medium">Push · outbox</span>
           <span className="text-muted-foreground tabular-nums">{uploadDetail}</span>
         </div>
-        <Meter value={uploadValue} testId="sync-upload-progress" />
+        <Meter value={uploadValue} testId="sync-push-progress" />
       </div>
       <div className="flex flex-col gap-1.5">
         <div className="flex items-baseline justify-between gap-3 text-xs">
-          <span className="font-medium">Download</span>
+          <span className="font-medium">Pull · inbox</span>
           <span className="text-muted-foreground tabular-nums">{downloadDetail}</span>
         </div>
-        <Meter value={downloadValue} testId="sync-download-progress" />
+        <Meter value={downloadValue} testId="sync-pull-progress" />
       </div>
     </div>
   );
