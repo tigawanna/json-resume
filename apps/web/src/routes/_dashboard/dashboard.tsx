@@ -18,7 +18,6 @@ import {
   StickyNote,
   Wrench,
 } from "lucide-react";
-import { ImportAllFromLegacyButton } from "./-components/ImportAllFromLegacyButton";
 import { LibraryActivityHeatmap } from "./-components/LibraryActivityHeatmap";
 import { LibraryQuickLinks } from "./-components/LibraryQuickLinks";
 
@@ -184,7 +183,7 @@ function RouteComponent() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <ImportAllFromLegacyButton />
+          {/* <ImportAllFromLegacyButton /> */}
           <Button asChild variant="outline" size="sm">
             <Link to="/resumes">
               <FileText className="mr-1 size-4" />
