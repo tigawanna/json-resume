@@ -340,10 +340,12 @@ const {
 
     resumeAiChat: {
       getKey: (row) => row.id,
+      localOnly: true,
       indexes: [byId<ResumeAiChat>(), byUserId<ResumeAiChat>(), byResumeId<ResumeAiChat>()],
     },
     resumeAiConversation: {
       getKey: (row) => row.id,
+      localOnly: true,
       indexes: [
         byId<ResumeAiConversation>(),
         byUserId<ResumeAiConversation>(),
@@ -353,6 +355,7 @@ const {
     },
     resumeAiMessage: {
       getKey: (row) => row.id,
+      localOnly: true,
       indexes: [
         byId<ResumeAiMessage>(),
         { select: (r) => r.conversationId, indexType: BasicIndex, name: "by-conversation" },

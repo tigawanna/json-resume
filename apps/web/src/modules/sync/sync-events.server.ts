@@ -2,7 +2,7 @@ import "@tanstack/react-start/server-only";
 
 import { db } from "@/lib/drizzle/client";
 import { syncBackend, syncEvent } from "@/lib/drizzle/scheam/sync-event";
-import { and, eq, gt, lte, sql } from "drizzle-orm";
+import { and, eq, gt, lte, notInArray, sql } from "drizzle-orm";
 import type {
   OutboundEvent,
   PullResponse,
@@ -30,6 +30,13 @@ export const outboundEventSchema = z.object({
 });
 
 export const outboundEventBatchSchema = z.array(outboundEventSchema);
+
+/** Kept in the browser only (`localOnly` in the client registry); never stored or served. */
+const LOCAL_ONLY_COLLECTIONS: string[] = [
+  "resumeAiChat",
+  "resumeAiConversation",
+  "resumeAiMessage",
+];
 
 const PULL_LIMIT = 200;
 /** JSON length budget per pull response, under Vercel's 4.5 MB body limit. */
@@ -71,10 +78,15 @@ export async function pushSyncEvents(
   if (events.length === 0) return { confirmed: [], failed: [] };
   await ensureSyncBackend();
 
-  const confirmed: PushConfirmation[] = [];
+  // Clients built before these collections went local-only still push them;
+  // acknowledge without storing so their outboxes drain.
+  const confirmed: PushConfirmation[] = events
+    .filter((event) => LOCAL_ONLY_COLLECTIONS.includes(event.collectionId))
+    .map((event) => ({ eventId: event.eventId, globalSeq: 0 }));
   const failed: PushFailure[] = [];
+  const stored = events.filter((event) => !LOCAL_ONLY_COLLECTIONS.includes(event.collectionId));
 
-  for (const group of groupByTxId(events)) {
+  for (const group of groupByTxId(stored)) {
     try {
       const groupConfirmed = await db.transaction(
         async (tx) => {
@@ -151,7 +163,11 @@ export async function pullSyncEvents(userId: string, since: number): Promise<Pul
   const backend = await ensureSyncBackend();
   const safeSince = Number.isFinite(since) && since >= 0 ? Math.floor(since) : 0;
 
-  const pageFilter = and(eq(syncEvent.userId, userId), gt(syncEvent.globalSeq, safeSince));
+  const pageFilter = and(
+    eq(syncEvent.userId, userId),
+    gt(syncEvent.globalSeq, safeSince),
+    notInArray(syncEvent.collectionId, LOCAL_ONLY_COLLECTIONS),
+  );
 
   // Size the page before loading payloads: rows can be hundreds of KB, and
   // reading PULL_LIMIT of them from the remote DB only to drop most took
