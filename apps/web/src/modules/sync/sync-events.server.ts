@@ -2,7 +2,7 @@ import "@tanstack/react-start/server-only";
 
 import { db } from "@/lib/drizzle/client";
 import { syncBackend, syncEvent } from "@/lib/drizzle/scheam/sync-event";
-import { and, eq, gt } from "drizzle-orm";
+import { and, eq, gt, lte, sql } from "drizzle-orm";
 import type {
   OutboundEvent,
   PullResponse,
@@ -151,30 +151,43 @@ export async function pullSyncEvents(userId: string, since: number): Promise<Pul
   const backend = await ensureSyncBackend();
   const safeSince = Number.isFinite(since) && since >= 0 ? Math.floor(since) : 0;
 
-  const rows = await db
-    .select()
+  const pageFilter = and(eq(syncEvent.userId, userId), gt(syncEvent.globalSeq, safeSince));
+
+  // Size the page before loading payloads: rows can be hundreds of KB, and
+  // reading PULL_LIMIT of them from the remote DB only to drop most took
+  // minutes per page. Vercel caps responses at 4.5 MB, so stop at
+  // PULL_MAX_BYTES; the first row always goes out so a huge one can't stall.
+  const sizes = await db
+    .select({
+      globalSeq: syncEvent.globalSeq,
+      bytes: sql<number>`length(cast(${syncEvent.payload} as blob)) + coalesce(length(cast(${syncEvent.previous} as blob)), 0)`,
+    })
     .from(syncEvent)
-    .where(and(eq(syncEvent.userId, userId), gt(syncEvent.globalSeq, safeSince)))
+    .where(pageFilter)
     .orderBy(syncEvent.globalSeq)
     .limit(PULL_LIMIT);
 
-  // Vercel also caps response bodies at 4.5 MB: stop at PULL_MAX_BYTES and let
-  // the client page on with `hasMore`. The first row always goes out so a
-  // single huge event cannot stall the cursor.
   let bytes = 0;
   let take = 0;
-  for (const row of rows) {
-    const rowBytes =
-      Buffer.byteLength(row.payload) +
-      (row.previous ? Buffer.byteLength(row.previous) : 0) +
-      PULL_ROW_OVERHEAD_BYTES;
+  for (const size of sizes) {
+    const rowBytes = size.bytes + PULL_ROW_OVERHEAD_BYTES;
     if (take > 0 && bytes + rowBytes > PULL_MAX_BYTES) break;
     bytes += rowBytes;
     take++;
   }
-  const truncated = take < rows.length;
+  const truncated = take < sizes.length;
+  const lastSeq = sizes[take - 1]?.globalSeq;
 
-  const events: ServerEvent[] = rows.slice(0, take).map((row) => ({
+  const rows =
+    lastSeq === undefined
+      ? []
+      : await db
+          .select()
+          .from(syncEvent)
+          .where(and(pageFilter, lte(syncEvent.globalSeq, lastSeq)))
+          .orderBy(syncEvent.globalSeq);
+
+  const events: ServerEvent[] = rows.map((row) => ({
     globalSeq: row.globalSeq,
     eventId: row.eventId,
     collectionId: row.collectionId,
@@ -193,7 +206,7 @@ export async function pullSyncEvents(userId: string, since: number): Promise<Pul
   return {
     events,
     cursor: last ? last.cursor : String(safeSince),
-    hasMore: truncated || rows.length === PULL_LIMIT,
+    hasMore: truncated || sizes.length === PULL_LIMIT,
     backendId: backend.backendId,
   };
 }
