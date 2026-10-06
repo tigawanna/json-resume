@@ -7,6 +7,7 @@ import type {
 } from "@tanstack/browser-db-sqlite-persistence";
 import { withOpfsBusyRetry } from "./opfs-recovery";
 import { installStaleReplayGuard } from "./stale-replay-guard";
+import { installSyncPushTuning } from "./sync-push-tuning";
 import { createCookieSyncTransport } from "./sync-transport";
 
 import type {
@@ -462,6 +463,7 @@ async function ensureDb() {
   const database = await ensureDbInner();
   ensureMetaQueueIndexes(database);
   installStaleReplayGuard(database);
+  installSyncPushTuning(database);
   return database;
 }
 

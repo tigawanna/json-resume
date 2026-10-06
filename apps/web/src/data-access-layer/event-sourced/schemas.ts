@@ -28,6 +28,26 @@ export const listTablePrefsSchema = z.object({
 export type ListTablePrefs = z.infer<typeof listTablePrefsSchema>;
 
 /** Persisted app prefs for the event-sourced DB (not a Drizzle table). */
+export const syncPushStatsSchema = z.object({
+  /** Largest request the server accepted. */
+  largestOkEvents: z.number().int().nonnegative(),
+  largestOkBytes: z.number().int().nonnegative(),
+  /** Running average JSON size of one pushed event. */
+  avgEventBytes: z.number().nonnegative(),
+  sampledEvents: z.number().int().nonnegative(),
+  lastTooLarge: z
+    .object({
+      at: z.number(),
+      events: z.number().int(),
+      bytes: z.number().int(),
+      droppedFrom: z.number().int(),
+      droppedTo: z.number().int(),
+      maxBytesTo: z.number().int(),
+    })
+    .optional(),
+});
+export type SyncPushStats = z.infer<typeof syncPushStatsSchema>;
+
 export const appSettingsSchema = z.object({
   id: z.string(),
   theme: z.enum(["light", "dark"]),
@@ -38,6 +58,11 @@ export const appSettingsSchema = z.object({
   aiSystemPrompt: z.string().optional(),
   /** Column visibility + sort per list route (e.g. `resumes`). */
   listTablePrefs: z.record(z.string(), listTablePrefsSchema).optional(),
+  /** Max events per sync push request (1–100); the byte cap may send fewer. */
+  syncPushBatchSize: z.number().int().min(1).max(100).optional(),
+  /** Byte cap learned from HTTP 413s; unset means the preset's cap. */
+  syncPushMaxBytes: z.number().int().positive().optional(),
+  syncPushStats: syncPushStatsSchema.optional(),
 });
 export type AppSettings = z.infer<typeof appSettingsSchema>;
 

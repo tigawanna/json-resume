@@ -14,6 +14,7 @@ import { useEventSourcedSyncStatus } from "@/data-access-layer/event-sourced/use
 import { unwrapUnknownError } from "@/utils/errors";
 import { Link } from "@tanstack/react-router";
 import { RefreshCw } from "lucide-react";
+import { SyncBatchSizeControl } from "./SyncBatchSizeControl";
 import { SyncTransferProgress } from "./SyncTransferProgress";
 import { useId, useState } from "react";
 import { toast } from "sonner";
@@ -129,6 +130,7 @@ export function ManagedSyncControls({
           Sync now
         </Button>
       )}
+      {isAuthenticated ? <SyncBatchSizeControl disabled={isSyncing} /> : null}
     </div>
   );
 

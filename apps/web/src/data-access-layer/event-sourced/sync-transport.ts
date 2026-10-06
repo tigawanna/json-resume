@@ -15,6 +15,15 @@ import {
 
 const SYNC_URL = "/api/sync/events";
 
+export type PushOutcome = { events: number; bytes: number; status: "ok" | "too-large" };
+
+let pushObserver: ((outcome: PushOutcome) => void) | null = null;
+
+/** One listener for push request outcomes (used to tune batch limits). */
+export function setPushObserver(observer: ((outcome: PushOutcome) => void) | null) {
+  pushObserver = observer;
+}
+
 async function readJson(response: Response): Promise<unknown> {
   const text = await response.text();
   if (!text) return null;
@@ -73,7 +82,8 @@ export function createCookieSyncTransport(): SyncTransport {
   return {
     async push(events) {
       const body = JSON.stringify(events);
-      noteUploadChunk(events.length, new TextEncoder().encode(body).length);
+      const bytes = new TextEncoder().encode(body).length;
+      noteUploadChunk(events.length, bytes);
       const response = await fetch(SYNC_URL, {
         method: "POST",
         credentials: "include",
@@ -85,11 +95,15 @@ export function createCookieSyncTransport(): SyncTransport {
         console.warn("[sync push] request failed", {
           status: response.status,
           events: events.length,
-          bytes: body.length,
+          bytes,
         });
+        if (response.status === 413) {
+          pushObserver?.({ events: events.length, bytes, status: "too-large" });
+        }
         throw new SyncPushError(response.status, text);
       }
       const result = parsePushResponse(await readJson(response));
+      pushObserver?.({ events: events.length, bytes, status: "ok" });
       noteUploaded(result.confirmed.length + (result.failed?.length ?? 0));
       return result;
     },
