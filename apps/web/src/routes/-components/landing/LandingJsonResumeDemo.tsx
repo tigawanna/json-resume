@@ -18,47 +18,62 @@ type DemoResume = {
   skills: string[];
 };
 
-const PAYMENTS_JSON = `{
+const AI_ENGINEER_JSON = `{
   "header": {
     "fullName": "Amina Okonkwo",
-    "headline": "Staff engineer, payments"
+    "headline": "Product engineer who ships model features and checks them with Playwright."
   },
   "work": [
     {
-      "name": "Ledger",
-      "position": "Staff engineer",
-      "highlights": ["Shipped the reconciliation job that shortened month-end close"]
+      "name": "Account service",
+      "position": "Product engineer",
+      "highlights": ["Built the account service both the assistant and the CRM call."]
+    },
+    {
+      "name": "Release checks",
+      "position": "Product engineer",
+      "highlights": ["Covered the assistant flow with Playwright, from the prompt to the saved result."]
     }
   ],
   "projects": [
     {
-      "name": "Reconciliation job",
-      "description": "Matches ledger entries against the processor file."
+      "name": "Shared forms",
+      "description": "Kept the form components both products use."
     }
   ],
-  "skills": ["Distributed systems"]
+  "skills": ["Playwright"]
 }`;
 
-const SPEAKING_JSON = `{
+const CRM_DEVELOPER_JSON = `{
   "header": {
     "fullName": "Amina Okonkwo",
-    "headline": "Engineer who teaches the close"
+    "headline": "Product engineer who ships the customer workspace and checks it with Jest and manual QA."
   },
   "work": [
     {
-      "name": "Ledger",
-      "position": "Staff engineer",
-      "highlights": ["Gave the conference talk on month-end close"]
+      "name": "Account service",
+      "position": "Product engineer",
+      "highlights": ["Built the account service both the assistant and the CRM call."]
+    },
+    {
+      "name": "Release checks",
+      "position": "Product engineer",
+      "highlights": ["Covered the account screens with Jest, and walked the rest with manual QA."]
     }
   ],
   "projects": [
     {
-      "name": "Month-end close",
-      "description": "A talk about the reconciliation job, for an audience that does not run the ledger."
+      "name": "Shared forms",
+      "description": "Kept the form components both products use."
     }
   ],
-  "skills": ["Distributed systems", "Technical talks"]
+  "skills": ["Jest", "Manual QA"]
 }`;
+
+const ROLE_JSON = [
+  { id: "ai", name: "AI engineer", source: AI_ENGINEER_JSON },
+  { id: "crm", name: "CRM developer", source: CRM_DEVELOPER_JSON },
+] as const;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -125,8 +140,8 @@ function parseDemoResume(text: string): { resume: DemoResume } | { error: string
 }
 
 export function LandingJsonResumeDemo() {
-  const initial = parseDemoResume(PAYMENTS_JSON);
-  const [source, setSource] = useState(PAYMENTS_JSON);
+  const initial = parseDemoResume(AI_ENGINEER_JSON);
+  const [source, setSource] = useState(AI_ENGINEER_JSON);
   const [preview, setPreview] = useState<DemoResume | null>(
     "resume" in initial ? initial.resume : null,
   );
@@ -142,25 +157,29 @@ export function LandingJsonResumeDemo() {
   return (
     <div
       data-test="landing-json-demo"
-      className="mt-14 grid grid-cols-1 border border-border lg:grid-cols-12"
+      className="grid grid-cols-1 border border-border lg:grid-cols-12"
     >
       <div className="flex flex-col border-b border-border bg-base-200 lg:col-span-7 lg:border-r lg:border-b-0">
         <div className="flex flex-wrap items-center gap-2 border-b border-border px-4 py-3">
           <span className="mr-auto font-mono text-xs text-muted-foreground">resume.json</span>
-          <button
-            type="button"
-            className="border border-border bg-base-100 px-2 py-1 font-mono text-xs text-base-content hover:bg-neutral active:scale-[0.98]"
-            onClick={() => updateSource(PAYMENTS_JSON)}
-          >
-            Payments
-          </button>
-          <button
-            type="button"
-            className="border border-border bg-base-100 px-2 py-1 font-mono text-xs text-base-content hover:bg-neutral active:scale-[0.98]"
-            onClick={() => updateSource(SPEAKING_JSON)}
-          >
-            Speaking
-          </button>
+          {ROLE_JSON.map((role) => {
+            const selected = source === role.source;
+            return (
+              <button
+                key={role.id}
+                type="button"
+                aria-pressed={selected}
+                className={`border px-2 py-1 font-mono text-xs transition-colors active:scale-[0.98] ${
+                  selected
+                    ? "border-primary bg-primary text-primary-content"
+                    : "border-border bg-base-100 text-base-content hover:border-primary/40"
+                }`}
+                onClick={() => updateSource(role.source)}
+              >
+                {role.name}
+              </button>
+            );
+          })}
         </div>
         <label className="sr-only" htmlFor="landing-resume-json">
           Résumé JSON
@@ -173,7 +192,10 @@ export function LandingJsonResumeDemo() {
           className="min-h-80 flex-1 resize-y bg-transparent p-4 font-mono text-[13px] leading-relaxed text-base-content outline-none"
         />
         {error ? (
-          <p className="border-t border-border px-4 py-2 font-mono text-xs text-error" role="status">
+          <p
+            className="border-t border-border px-4 py-2 font-mono text-xs text-error"
+            role="status"
+          >
             {error}
           </p>
         ) : null}
@@ -186,7 +208,9 @@ export function LandingJsonResumeDemo() {
               {preview.header.fullName}
             </h3>
             {preview.header.headline ? (
-              <p className="mt-1 font-mono text-xs text-muted-foreground">{preview.header.headline}</p>
+              <p className="mt-1 font-mono text-xs text-muted-foreground">
+                {preview.header.headline}
+              </p>
             ) : null}
 
             {preview.work.length > 0 ? (
@@ -201,7 +225,10 @@ export function LandingJsonResumeDemo() {
                       {job.highlights.length > 0 ? (
                         <ul className="mt-1 space-y-1">
                           {job.highlights.map((line) => (
-                            <li key={line} className="text-sm leading-relaxed text-muted-foreground">
+                            <li
+                              key={line}
+                              className="text-sm leading-relaxed text-muted-foreground"
+                            >
                               {line}
                             </li>
                           ))}
