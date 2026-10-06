@@ -2,7 +2,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
 import { cn } from "@/lib/utils";
 import type { EventQueueTab } from "@/routes/_dashboard/-utils/list-search";
-import { count, useLiveQuery } from "@tanstack/react-db";
+import { count, eq, useLiveQuery } from "@tanstack/react-db";
 import { Link } from "@tanstack/react-router";
 import type { MutationType } from "event-sourced-collection";
 import { Activity, useState } from "react";
@@ -107,6 +107,7 @@ function useOutboxCount() {
     (query) =>
       query
         .from({ row: db.collections.outbox })
+        .where(({ row }) => eq(row.sync, false))
         .select(({ row }) => ({ total: count(row.eventId) })),
     [],
   );
@@ -143,6 +144,7 @@ function OutboxPreview() {
     (query) =>
       query
         .from({ row: db.collections.outbox })
+        .where(({ row }) => eq(row.sync, false))
         .orderBy(({ row }) => row.timestamp, "desc")
         .limit(PREVIEW_LIMIT),
     [],

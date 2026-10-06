@@ -12,31 +12,41 @@ export function jsonByteLength(value: unknown): number {
   return textEncoder.encode(JSON.stringify(value)).length;
 }
 
+type JsonPack<T> = {
+  items: T[];
+  /** UTF-8 size of `JSON.stringify(items)`, measured one event at a time. */
+  bytes: number;
+};
+
 /**
  * Split events into JSON arrays that each fit in `maxBytes`.
- * A single event larger than the cap is returned alone so the caller can
- * skip it and continue with the events after it.
+ * Each event is serialized once. A single event larger than the cap is
+ * returned alone so the caller can skip it and continue after it.
  */
-export function chunkOutboundEvents<T>(events: readonly T[], maxBytes: number): T[][] {
-  const chunks: T[][] = [];
-  let current: T[] = [];
+function packByJsonBytes<T>(events: readonly T[], maxBytes: number): JsonPack<T>[] {
+  const packs: JsonPack<T>[] = [];
+  let items: T[] = [];
+  let bytes = 2;
 
   for (const event of events) {
-    if (current.length === 0) {
-      current = [event];
+    const eventBytes = jsonByteLength(event);
+    const nextBytes = items.length === 0 ? 2 + eventBytes : bytes + 1 + eventBytes;
+    if (items.length > 0 && nextBytes > maxBytes) {
+      packs.push({ items, bytes });
+      items = [event];
+      bytes = 2 + eventBytes;
       continue;
     }
-    const candidate = [...current, event];
-    if (jsonByteLength(candidate) > maxBytes) {
-      chunks.push(current);
-      current = [event];
-      continue;
-    }
-    current = candidate;
+    items.push(event);
+    bytes = nextBytes;
   }
 
-  if (current.length > 0) chunks.push(current);
-  return chunks;
+  if (items.length > 0) packs.push({ items, bytes });
+  return packs;
+}
+
+export function chunkOutboundEvents<T>(events: readonly T[], maxBytes: number): T[][] {
+  return packByJsonBytes(events, maxBytes).map((pack) => pack.items);
 }
 
 function oversizedFailure(event: OutboundEvent, maxBytes: number): PushFailure {
@@ -105,10 +115,9 @@ function summarizeChunk(chunk: readonly OutboundEvent[]) {
 }
 
 /**
- * POST one capped chunk at a time. Accepted chunks stay confirmed.
- * A chunk the server still rejects as too large is sent again as one event
- * per request. One event that cannot fit in a request is rejected on its own
- * so the events after it still send. Any other failure retries from that event.
+ * POST one capped chunk, then return so those rows can leave the outbox
+ * before the next chunk starts. Events not attempted stay pending.
+ * A chunk the server rejects as too large is retried as its first event only.
  */
 export async function pushEventsInChunks(
   events: readonly OutboundEvent[],
@@ -118,110 +127,77 @@ export async function pushEventsInChunks(
 ): Promise<PushResponse> {
   const confirmed: PushResponse["confirmed"][number][] = [];
   const failed: PushFailure[] = [];
-  const chunks = chunkOutboundEvents(events, maxBytes);
+  const packs = packByJsonBytes(events, maxBytes);
 
-  if (chunks.length > 1) {
-    log.info("split push into chunks", {
+  const firstPack = packs[0];
+  if (packs.length > 1 && firstPack) {
+    log.info("pushing one chunk; the rest waits until this chunk is recorded", {
       eventCount: events.length,
-      totalBytes: jsonByteLength(events),
+      chunkEventCount: firstPack.items.length,
+      chunkBytes: firstPack.bytes,
+      remainingEventCount: events.length - firstPack.items.length,
       maxBytes,
-      chunks: chunks.map(summarizeChunk),
     });
   }
 
-  for (let index = 0; index < chunks.length; index++) {
-    const chunk = chunks[index];
-    if (!chunk) continue;
+  for (let index = 0; index < packs.length; index++) {
+    const pack = packs[index];
+    if (!pack) continue;
+    const chunk = pack.items;
     const summary = summarizeChunk(chunk);
 
-    if (summary.bytes > maxBytes && chunk.length > 1) {
-      log.info("chunk exceeds push limit; sending events one by one", {
-        chunkIndex: index,
-        maxBytes,
-        ...summary,
-      });
-      const stopMessage = await postEventsOneByOne(chunk);
-      if (stopMessage) {
-        stopAfter(index, stopMessage);
-        break;
-      }
-      continue;
-    }
-
-    if (summary.bytes > maxBytes) {
+    if (pack.bytes > maxBytes) {
       log.error("single event exceeds push limit", { chunkIndex: index, maxBytes, ...summary });
-      for (const event of chunk) failed.push(oversizedFailure(event, maxBytes));
+      const event = chunk[0];
+      if (event) failed.push(oversizedFailure(event, maxBytes));
       continue;
     }
 
     try {
       absorbResponse(index, summary, await postChunk(chunk));
+      return { confirmed, failed };
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Sync push failed";
-      if (chunk.length > 1 && isPayloadTooLarge(message)) {
-        log.info("chunk rejected as too large; sending events one by one", {
+      const first = chunk[0];
+      if (chunk.length > 1 && first && isPayloadTooLarge(message)) {
+        log.info("chunk rejected as too large; sending the first event", {
           chunkIndex: index,
           ...summary,
           message,
         });
-        const stopMessage = await postEventsOneByOne(chunk);
-        if (stopMessage) {
-          stopAfter(index, stopMessage);
-          break;
-        }
-        continue;
+        await postSingleEvent(first);
+        return { confirmed, failed };
       }
-      const remaining = chunks.slice(index).flat();
-      log.error("chunk post failed; later chunks not sent", {
+      log.error("chunk post failed; later events stay in the outbox", {
         chunkIndex: index,
-        chunkCount: chunks.length,
         ...summary,
-        remainingEventCount: remaining.length,
         message,
       });
-      for (const event of remaining) failed.push(transportFailure(event, message));
-      break;
+      for (const event of chunk) failed.push(transportFailure(event, message));
+      return { confirmed, failed };
     }
   }
 
-  function stopAfter(chunkIndex: number, message: string) {
-    for (const event of chunks.slice(chunkIndex + 1).flat()) {
-      failed.push(transportFailure(event, message));
-    }
-  }
+  return { confirmed, failed };
 
-  /** Returns a message when a non-size failure should stop the events still waiting. */
-  async function postEventsOneByOne(chunk: readonly OutboundEvent[]): Promise<string | null> {
-    for (let index = 0; index < chunk.length; index++) {
-      const event = chunk[index];
-      if (!event) continue;
-      const alone = [event];
-      const summary = summarizeChunk(alone);
-      if (summary.bytes > maxBytes) {
-        log.error("single event exceeds push limit", { maxBytes, ...summary });
-        failed.push(oversizedFailure(event, maxBytes));
-        continue;
-      }
-      try {
-        absorbResponse(-1, summary, await postChunk(alone));
-      } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : "Sync push failed";
-        log.error("single event post failed", { ...summary, message });
-        if (isPayloadTooLarge(message)) {
-          failed.push({
-            eventId: event.eventId,
-            message,
-            code: "PAYLOAD_TOO_LARGE",
-            retryable: false,
-          });
-          continue;
-        }
-        const remaining = chunk.slice(index);
-        for (const leftover of remaining) failed.push(transportFailure(leftover, message));
-        return message;
-      }
+  async function postSingleEvent(event: OutboundEvent) {
+    const alone = [event];
+    const summary = summarizeChunk(alone);
+    if (summary.bytes > maxBytes) {
+      failed.push(oversizedFailure(event, maxBytes));
+      return;
     }
-    return null;
+    try {
+      absorbResponse(-1, summary, await postChunk(alone));
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Sync push failed";
+      log.error("single event post failed", { ...summary, message });
+      failed.push(
+        isPayloadTooLarge(message)
+          ? { eventId: event.eventId, message, code: "PAYLOAD_TOO_LARGE", retryable: false }
+          : transportFailure(event, message),
+      );
+    }
   }
 
   function absorbResponse(
@@ -242,6 +218,4 @@ export async function pushEventsInChunks(
     });
     failed.push(...response.failed);
   }
-
-  return { confirmed, failed };
 }

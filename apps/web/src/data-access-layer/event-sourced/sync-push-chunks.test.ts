@@ -63,6 +63,20 @@ describe("chunkOutboundEvents", () => {
     expect(jsonByteLength(chunks[0])).toBeLessThanOrEqual(one);
   });
 
+  it("keeps packed chunk sizes equal to the serialized JSON", () => {
+    const events = [
+      event("a", { text: "héllo" }),
+      event("b", { text: "b".repeat(40) }),
+      event("c", { text: "ok" }),
+    ];
+    const cap = jsonByteLength([events[0], events[1]]);
+    const chunks = chunkOutboundEvents(events, cap);
+    expect(chunks.map((chunk) => chunk.map((item) => item.eventId))).toEqual([["a", "b"], ["c"]]);
+    for (const chunk of chunks) {
+      expect(jsonByteLength(chunk)).toBeLessThanOrEqual(cap);
+    }
+  });
+
   it("leaves an event that is larger than the cap in its own chunk", () => {
     const huge = event("huge", { text: "x".repeat(200) });
     const next = event("next", { text: "ok" });
@@ -78,8 +92,17 @@ describe("pushEventsInChunks", () => {
     const posted: string[][] = [];
     const log = captureLog();
 
-    const result = await pushEventsInChunks(
+    const first = await pushEventsInChunks(
       events,
+      async (chunk) => {
+        posted.push(chunk.map((item) => item.eventId));
+        return confirm(chunk);
+      },
+      cap,
+      log,
+    );
+    const second = await pushEventsInChunks(
+      events.slice(1),
       async (chunk) => {
         posted.push(chunk.map((item) => item.eventId));
         return confirm(chunk);
@@ -89,10 +112,12 @@ describe("pushEventsInChunks", () => {
     );
 
     expect(posted).toEqual([["a"], ["b"]]);
-    expect(log.infoCalls[0]?.[0]).toBe("split push into chunks");
-    expect(log.errorCalls).toEqual([]);
-    expect(result.confirmed.map((item) => item.eventId)).toEqual(["a", "b"]);
-    expect(result.failed).toEqual([]);
+    expect(log.infoCalls[0]?.[0]).toBe(
+      "pushing one chunk; the rest waits until this chunk is recorded",
+    );
+    expect(first.confirmed.map((item) => item.eventId)).toEqual(["a"]);
+    expect(first.failed).toEqual([]);
+    expect(second.confirmed.map((item) => item.eventId)).toEqual(["b"]);
   });
 
   it("keeps accepted chunks and retries from the chunk that failed", async () => {
@@ -105,29 +130,22 @@ describe("pushEventsInChunks", () => {
     const posted: string[] = [];
     const log = captureLog();
 
-    const result = await pushEventsInChunks(
-      events,
-      async (chunk) => {
-        const id = chunk[0]?.eventId;
-        posted.push(id ?? "");
-        if (id === "b") throw new Error("Sync push failed (413): too large");
-        return confirm(chunk);
-      },
-      cap,
-      log,
-    );
+    const post = async (chunk: readonly OutboundEvent[]) => {
+      const id = chunk[0]?.eventId;
+      posted.push(id ?? "");
+      if (id === "b") throw new Error("Sync push failed (500): unavailable");
+      return confirm(chunk);
+    };
+
+    const first = await pushEventsInChunks(events, post, cap, log);
+    const second = await pushEventsInChunks(events.slice(1), post, cap, log);
 
     expect(posted).toEqual(["a", "b"]);
-    expect(result.confirmed.map((item) => item.eventId)).toEqual(["a"]);
-    expect(result.failed?.map((item) => item.eventId)).toEqual(["b", "c"]);
-    expect(result.failed?.every((item) => item.retryable === true)).toBe(true);
-    expect(log.errorCalls[0]?.[0]).toBe("chunk post failed; later chunks not sent");
-    expect(log.errorCalls[0]?.[1]).toMatchObject({
-      chunkIndex: 1,
-      eventCount: 1,
-      remainingEventCount: 2,
-      largestEvent: { eventId: "b", collectionId: "resume" },
-    });
+    expect(first.confirmed.map((item) => item.eventId)).toEqual(["a"]);
+    expect(first.failed).toEqual([]);
+    expect(second.failed?.map((item) => item.eventId)).toEqual(["b"]);
+    expect(second.failed?.every((item) => item.retryable === true)).toBe(true);
+    expect(log.errorCalls[0]?.[0]).toBe("chunk post failed; later events stay in the outbox");
   });
 
   it("sends a too-large chunk one event at a time", async () => {
@@ -155,14 +173,12 @@ describe("pushEventsInChunks", () => {
       log,
     );
 
-    expect(posted).toEqual([["a", "b", "c"], ["a"], ["b"], ["c"]]);
-    expect(result.confirmed.map((item) => item.eventId)).toEqual(["a", "c"]);
-    expect(result.failed).toEqual([
-      expect.objectContaining({ eventId: "b", code: "PAYLOAD_TOO_LARGE", retryable: false }),
-    ]);
+    expect(posted).toEqual([["a", "b", "c"], ["a"]]);
+    expect(result.confirmed.map((item) => item.eventId)).toEqual(["a"]);
+    expect(result.failed).toEqual([]);
     expect(
       log.infoCalls.some(
-        (call) => call[0] === "chunk rejected as too large; sending events one by one",
+        (call) => call[0] === "chunk rejected as too large; sending the first event",
       ),
     ).toBe(true);
   });

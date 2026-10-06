@@ -3,7 +3,7 @@ import { usePageSearchQuery } from "@/components/search/use-page-search-query";
 import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
 import { RouterPendingComponent } from "@/lib/tanstack/router/RouterPendingComponent";
 import { unwrapUnknownError } from "@/utils/errors";
-import { count, useLiveQuery } from "@tanstack/react-db";
+import { count, eq, useLiveQuery } from "@tanstack/react-db";
 import { Inbox } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -39,10 +39,12 @@ export function OutboxList({ onTotalPages }: OutboxListProps) {
 
   const { data: items, isLoading } = useLiveQuery(
     (query) => {
-      const base = query.from({ row: db.collections.outbox });
+      const waiting = query
+        .from({ row: db.collections.outbox })
+        .where(({ row }) => eq(row.sync, false));
       const filtered = keyword
-        ? base.where(({ row }) => orIlike(keyword, row.collectionId, row.type, row.eventId))
-        : base;
+        ? waiting.where(({ row }) => orIlike(keyword, row.collectionId, row.type, row.eventId))
+        : waiting;
       return filtered
         .orderBy(({ row }) => listOrderByRef(row, sortBy, "localSeq"), sortDir)
         .limit(ADMIN_LIST_PER_PAGE)
@@ -53,10 +55,12 @@ export function OutboxList({ onTotalPages }: OutboxListProps) {
 
   const { data: totals } = useLiveQuery(
     (query) => {
-      const base = query.from({ row: db.collections.outbox });
+      const waiting = query
+        .from({ row: db.collections.outbox })
+        .where(({ row }) => eq(row.sync, false));
       const filtered = keyword
-        ? base.where(({ row }) => orIlike(keyword, row.collectionId, row.type, row.eventId))
-        : base;
+        ? waiting.where(({ row }) => orIlike(keyword, row.collectionId, row.type, row.eventId))
+        : waiting;
       return filtered.select(({ row }) => ({ total: count(row.eventId) }));
     },
     [keyword],
