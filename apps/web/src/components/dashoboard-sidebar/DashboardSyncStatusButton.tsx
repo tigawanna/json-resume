@@ -16,8 +16,9 @@ import { useMediaQuery } from "@/hooks/use-media-query";
 import { useOnlineStatus } from "@/hooks/use-online-status";
 import { cn } from "@/lib/utils";
 import { ManagedSyncControls } from "@/components/sync/ManagedSyncControls";
+import { SyncActivityPanel } from "@/components/sync/SyncActivityPanel";
 import { eq, useLiveQuery } from "@tanstack/react-db";
-import { Link, useLocation } from "@tanstack/react-router";
+import { useLocation } from "@tanstack/react-router";
 import {
   CloudAlert,
   CloudCheck,
@@ -26,7 +27,8 @@ import {
   WifiOff,
   type LucideIcon,
 } from "lucide-react";
-import { useState } from "react";
+import { Activity, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 type SyncUiState = "logged-out" | "disabled" | "syncing" | "error" | "synced";
 
@@ -126,6 +128,9 @@ function OfflineIndicator() {
 export function DashboardSyncStatusButton({ className }: { className?: string }) {
   const { state, lastError, isOnline } = useManagedSyncUiState();
   const [open, setOpen] = useState(false);
+  const [activitySlot, setActivitySlot] = useState<HTMLDivElement | null>(null);
+  const [activityHost, setActivityHost] = useState<HTMLDivElement | null>(null);
+  const activityParkRef = useRef<HTMLDivElement>(null);
   const isDesktop = useMediaQuery("(min-width: 768px)");
   const pathname = useLocation({ select: (location) => location.pathname });
   const meta = STATUS[state];
@@ -143,9 +148,34 @@ export function DashboardSyncStatusButton({ className }: { className?: string })
         ? lastError
         : meta.description;
 
+  useEffect(() => {
+    const host = document.createElement("div");
+    setActivityHost(host);
+    return () => host.remove();
+  }, []);
+
+  useEffect(() => {
+    if (!activityHost) return;
+    const parent = activitySlot ?? activityParkRef.current;
+    if (!parent) return;
+    parent.appendChild(activityHost);
+  }, [activityHost, activitySlot]);
+
+  const activity = (
+    <Activity mode={open ? "visible" : "hidden"} name="dashboard-sync-activity">
+      <SyncActivityPanel
+        preferredTab={state === "error" ? "deadletter" : "outbox"}
+        active={open}
+        onOpenEvents={() => setOpen(false)}
+      />
+    </Activity>
+  );
+
   return (
     <div className={cn("flex items-center gap-1", className)}>
       {isOnline ? null : <OfflineIndicator />}
+      <div ref={activityParkRef} className="hidden" />
+      {activityHost ? createPortal(activity, activityHost) : null}
       <Drawer open={open} onOpenChange={setOpen} direction={isDesktop ? "right" : "bottom"}>
         <Tooltip>
           <TooltipTrigger asChild>
@@ -176,23 +206,13 @@ export function DashboardSyncStatusButton({ className }: { className?: string })
           className="data-[vaul-drawer-direction=bottom]:max-h-[85vh] data-[vaul-drawer-direction=right]:sm:max-w-md"
           data-test="dashboard-sync-drawer"
         >
-          <DrawerHeader className="gap-3 px-6 pt-8 pb-2">
+          <DrawerHeader className="shrink-0 gap-3 px-6 pt-8 pb-2">
             <DrawerTitle className="text-lg">{meta.label}</DrawerTitle>
             <DrawerDescription className="text-sm leading-relaxed">{description}</DrawerDescription>
           </DrawerHeader>
-          <div className="flex flex-col gap-8 overflow-y-auto px-6 pt-4 pb-10">
+          <div className="flex min-h-0 flex-1 flex-col gap-8 overflow-y-auto px-6 pt-4 pb-10">
             <ManagedSyncControls returnTo={pathname} presentation="plain" />
-            {state === "error" || state === "synced" || state === "syncing" ? (
-              <Link
-                to="/events"
-                search={{ tab: state === "error" ? "deadletter" : "outbox" }}
-                className="text-primary text-sm font-medium underline-offset-4 hover:underline"
-                data-test="dashboard-sync-events-link"
-                onClick={() => setOpen(false)}
-              >
-                View sync events
-              </Link>
-            ) : null}
+            <div ref={setActivitySlot} data-test="sync-activity-slot" />
           </div>
         </DrawerContent>
       </Drawer>

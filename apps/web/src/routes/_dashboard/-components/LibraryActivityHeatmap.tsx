@@ -34,7 +34,12 @@ function calendarWindow(now = Date.now()) {
   const aligned = new Date(windowStart);
   aligned.setUTCDate(aligned.getUTCDate() - aligned.getUTCDay());
   const startMs = aligned.getTime();
-  return { startMs, endMs, endInclusiveMs: endMs + MS_PER_DAY - 1, calendarStart: new Date(startMs) };
+  return {
+    startMs,
+    endMs,
+    endInclusiveMs: endMs + MS_PER_DAY - 1,
+    calendarStart: new Date(startMs),
+  };
 }
 
 /** One count per résumé per calendar day from createdAt and/or updatedAt. */
@@ -74,8 +79,14 @@ export function LibraryActivityHeatmap() {
         .from({ resume: db.collections.resume })
         .where(({ resume }) =>
           or(
-            and(gte(resume.createdAt, window.startMs), lte(resume.createdAt, window.endInclusiveMs)),
-            and(gte(resume.updatedAt, window.startMs), lte(resume.updatedAt, window.endInclusiveMs)),
+            and(
+              gte(resume.createdAt, window.startMs),
+              lte(resume.createdAt, window.endInclusiveMs),
+            ),
+            and(
+              gte(resume.updatedAt, window.startMs),
+              lte(resume.updatedAt, window.endInclusiveMs),
+            ),
           ),
         )
         .select(({ resume }) => ({
@@ -101,18 +112,20 @@ export function LibraryActivityHeatmap() {
                 radius: 2,
               }),
             ],
-            x: {
-              scale: () => scaleBand<number>().paddingInner(0.06).paddingOuter(0.03),
-              axis: {
-                ticks: { format: (value) => `W${Number(value) + 1}` },
-                label: "Week",
+            scales: {
+              x: {
+                scale: () => scaleBand<number>().paddingInner(0.06).paddingOuter(0.03),
+                axis: {
+                  ticks: { format: (value) => `W${Number(value) + 1}` },
+                  label: "Week",
+                },
               },
-            },
-            y: {
-              scale: scaleBand<string>()
-                .domain([...WEEKDAYS])
-                .paddingInner(0.06)
-                .paddingOuter(0.03),
+              y: {
+                scale: scaleBand<string>()
+                  .domain([...WEEKDAYS])
+                  .paddingInner(0.06)
+                  .paddingOuter(0.03),
+              },
             },
             color: {
               scale: scaleSequential<string>,

@@ -18,6 +18,14 @@ const config = defineConfig({
     },
     tsconfigPaths: true,
   },
+  // Router 1.170 depends on @tanstack/react-store 0.11, which named-imports
+  // a CJS shim. Prebundle it so the browser doesn't evaluate that shim raw.
+  optimizeDeps: {
+    include: [
+      "@tanstack/react-router > @tanstack/react-store",
+      "@tanstack/react-router > @tanstack/react-store > use-sync-external-store/shim/with-selector",
+    ],
+  },
   plugins: [
     devtools(),
     nitro(),

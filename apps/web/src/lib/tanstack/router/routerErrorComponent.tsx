@@ -5,10 +5,17 @@ import { Check, Copy, RotateCw } from "lucide-react";
 import { useState } from "react";
 
 interface RouterErrorComponentProps {
-  error: Error;
+  error: unknown;
+}
+
+function toRouterError(error: unknown): Error {
+  if (error instanceof Error) return error;
+  if (typeof error === "string") return new Error(error);
+  return new Error("Unknown error");
 }
 
 export function RouterErrorComponent({ error }: RouterErrorComponentProps) {
+  const resolved = toRouterError(error);
   return (
     <div
       data-test="router-error"
@@ -27,7 +34,7 @@ export function RouterErrorComponent({ error }: RouterErrorComponentProps) {
           <RouterErrorProductionContent />
         </div>
 
-        {import.meta.env.DEV ? <RouterErrorDevelopmentPanel error={error} /> : null}
+        {import.meta.env.DEV ? <RouterErrorDevelopmentPanel error={resolved} /> : null}
       </div>
     </div>
   );
@@ -83,7 +90,7 @@ function RouterErrorProductionContent() {
   );
 }
 
-function RouterErrorDevelopmentPanel({ error }: RouterErrorComponentProps) {
+function RouterErrorDevelopmentPanel({ error }: { error: Error }) {
   const [copied, setCopied] = useState(false);
 
   const copyStackTrace = async () => {

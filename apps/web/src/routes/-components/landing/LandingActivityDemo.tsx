@@ -3,6 +3,9 @@ import { useState } from "react";
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
 const WEEKS = 16;
 
+const LEVELS = [0, 1, 2, 3, 4] as const;
+type ActivityLevel = (typeof LEVELS)[number];
+
 const LEVEL_CLASS = [
   "bg-base-content/10",
   "bg-primary/25",
@@ -11,7 +14,7 @@ const LEVEL_CLASS = [
   "bg-primary",
 ] as const;
 
-function seedLevel(week: number, day: number) {
+function seedLevel(week: number, day: number): ActivityLevel {
   const n = (week * 3 + day * 5) % 9;
   if (day === 0 || day === 6) return n > 6 ? 1 : 0;
   if (n < 2) return 0;
@@ -19,6 +22,10 @@ function seedLevel(week: number, day: number) {
   if (n < 6) return 2;
   if (n < 8) return 3;
   return 4;
+}
+
+function nextLevel(level: ActivityLevel): ActivityLevel {
+  return LEVELS[(LEVELS.indexOf(level) + 1) % LEVELS.length] ?? 0;
 }
 
 function initialGrid() {
@@ -34,15 +41,17 @@ export function LandingActivityDemo() {
     setGrid((current) =>
       current.map((row, dayIndex) =>
         dayIndex === day
-          ? row.map((level, weekIndex) => (weekIndex === week ? (level + 1) % LEVEL_CLASS.length : level))
+          ? row.map((level, weekIndex) => (weekIndex === week ? nextLevel(level) : level))
           : row,
       ),
     );
   }
 
-  const total = grid.reduce((sum, row) => sum + row.reduce((rowSum, level) => rowSum + level, 0), 0);
-  const selectedLevel =
-    selected === null ? null : grid[selected.day]?.[selected.week] ?? null;
+  const total = grid.reduce(
+    (sum, row) => sum + row.reduce((rowSum: number, level) => rowSum + level, 0),
+    0,
+  );
+  const selectedLevel = selected === null ? null : (grid[selected.day]?.[selected.week] ?? null);
 
   return (
     <div data-test="landing-heatmap" className="border border-border bg-base-100 p-5 md:p-6">
