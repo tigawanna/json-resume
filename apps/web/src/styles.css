@@ -382,8 +382,23 @@
   }
 }
 
+@keyframes hero-part-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-7px);
+  }
+}
+
+.hero-part-float {
+  animation: hero-part-float 7.5s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .animate-cell-ripple {
+  .animate-cell-ripple,
+  .hero-part-float {
     animation: none;
   }
 }

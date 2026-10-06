@@ -35,18 +35,15 @@ export function LandingNavbar() {
       className="sticky top-0 z-50 border-b border-border/50 bg-base-100/80 backdrop-blur-md transition-all duration-300"
     >
       <div className="mx-auto flex h-12 max-w-360 items-center justify-between border-x border-border/50">
-        {/* Logo */}
-        <Link to="/" className="flex h-full items-center border-r border-border/50 px-6">
-          <span className="font-mono text-xs font-bold uppercase tracking-widest text-base-content">
-            {AppConfig.wordmark}
-            <span className="text-primary">.</span>
-          </span>
+        <Link
+          to="/"
+          aria-label={AppConfig.name}
+          className="flex h-full items-center border-r border-border/50 px-4"
+        >
+          <img src="/logo.svg" alt="" className="size-7" />
         </Link>
 
-        {/* Status indicator — desktop */}
-        <div className="hidden flex-1 items-center border-r border-border/50 px-6 font-mono text-xs text-muted-foreground md:flex">
-          Local until you sync
-        </div>
+        <div className="flex-1" />
 
         {/* Right actions — desktop */}
         <div className="flex h-full items-center">
