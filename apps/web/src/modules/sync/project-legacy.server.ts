@@ -1,6 +1,7 @@
 import "@tanstack/react-start/server-only";
 
 import { db } from "@/lib/drizzle/client";
+import { unwrapUnknownError } from "@/utils/errors";
 import {
   resume,
   resumeAiChat,
@@ -16,6 +17,7 @@ import {
   resumeExperience,
   resumeExperienceBullet,
   resumeExperienceItem,
+  job,
   resumeLanguage,
   resumeLanguageItem,
   resumeLink,
@@ -38,10 +40,71 @@ import {
   syncBackend,
   syncEvent,
 } from "@/lib/drizzle/scheam";
-import { eq, getTableColumns, isNull } from "drizzle-orm";
-import type { SQLiteTable } from "drizzle-orm/sqlite-core";
+import { and, eq, getTableColumns, isNull, type SQL } from "drizzle-orm";
+import { log as standaloneLog, type RequestLogger } from "evlog";
+import { useRequest } from "nitro/context";
+import { isForeignKeyError, uniqueConstraintColumns } from "./projection-constraint";
+import type { SQLiteColumn, SQLiteTable } from "drizzle-orm/sqlite-core";
 
 const SKIP_COLLECTIONS = new Set(["settings"]);
+const PROJECTION_FAILURE_SAMPLE = 20;
+
+type ProjectionFailure = {
+  globalSeq: number;
+  collectionId: string;
+  type: string;
+  key: string;
+  reason: string;
+};
+
+function requestLog(): RequestLogger | null {
+  try {
+    const candidate = useRequest().context?.log;
+    if (
+      candidate &&
+      typeof candidate === "object" &&
+      "warn" in candidate &&
+      "set" in candidate &&
+      typeof candidate.warn === "function" &&
+      typeof candidate.set === "function"
+    ) {
+      return candidate as RequestLogger;
+    }
+  } catch {
+    // Projection can run without a Nitro request context.
+  }
+  return null;
+}
+
+function recordProjection(fields: {
+  pending: number;
+  projected: number;
+  failed: number;
+  deferred: number;
+  lastSeq: number | null;
+  durationMs: number;
+  failures: ProjectionFailure[];
+}) {
+  const syncProjection = {
+    pending: fields.pending,
+    projected: fields.projected,
+    failed: fields.failed,
+    deferred: fields.deferred,
+    lastSeq: fields.lastSeq,
+    durationMs: fields.durationMs,
+    failures: fields.failures.slice(0, PROJECTION_FAILURE_SAMPLE),
+  };
+  const message =
+    fields.failed > 0 ? "Sync projection finished with failures" : "Sync projection finished";
+  const current = requestLog();
+  if (current) {
+    current.set({ syncProjection });
+    if (fields.failed > 0) current.warn(message);
+    return;
+  }
+  const emit = fields.failed > 0 ? standaloneLog.warn : standaloneLog.info;
+  emit({ message, service: "agentic-json-resume", syncProjection });
+}
 
 const tablesByCollection = {
   resume,
@@ -77,6 +140,7 @@ const tablesByCollection = {
   resumeAiConversation,
   resumeAiMessage,
   savedProject,
+  job,
 } satisfies Record<string, SQLiteTable>;
 
 type ProjectableCollectionId = keyof typeof tablesByCollection;
@@ -101,6 +165,49 @@ function coerceColumnValue(columnName: string, value: unknown): unknown {
   return value;
 }
 
+function columnValue(column: SQLiteColumn, value: unknown): SQL {
+  return eq(column, value as never);
+}
+
+/**
+ * Insert or replace by primary key. A second unique index (one link row per
+ * résumé plus experience, for example) does not match `onConflictDoUpdate`
+ * on `id`, so the conflicting row is removed and the event's id is written.
+ */
+async function upsertById(
+  table: SQLiteTable,
+  idColumn: SQLiteColumn,
+  values: Record<string, unknown>,
+): Promise<void> {
+  const write = () =>
+    db
+      .insert(table)
+      .values(values as never)
+      .onConflictDoUpdate({
+        target: idColumn,
+        set: values as never,
+      });
+
+  try {
+    await write();
+  } catch (err: unknown) {
+    const sqlNames = uniqueConstraintColumns(err);
+    if (sqlNames == null) throw err;
+    const columns = getTableColumns(table);
+    const predicates: SQL[] = [];
+    for (const sqlName of sqlNames) {
+      const entry = Object.entries(columns).find(([, column]) => column.name === sqlName);
+      if (!entry) throw err;
+      const [jsName, column] = entry;
+      if (!(jsName in values)) throw err;
+      predicates.push(columnValue(column, values[jsName]));
+    }
+    if (predicates.length === 0) throw err;
+    await db.delete(table).where(and(...predicates));
+    await write();
+  }
+}
+
 function rowValuesForTable(
   table: SQLiteTable,
   payload: Record<string, unknown>,
@@ -123,7 +230,16 @@ function rowValuesForTable(
 async function applyEvent(row: typeof syncEvent.$inferSelect): Promise<void> {
   if (SKIP_COLLECTIONS.has(row.collectionId)) return;
   if (!isProjectableCollectionId(row.collectionId)) {
-    throw new Error(`Unknown collection for projection: ${row.collectionId}`);
+    const current = requestLog();
+    const skipped = { globalSeq: row.globalSeq, collectionId: row.collectionId };
+    if (current) current.set({ syncProjectionSkipped: [skipped] });
+    else
+      standaloneLog.info({
+        message: "Skipped unprojected collection",
+        service: "agentic-json-resume",
+        ...skipped,
+      });
+    return;
   }
 
   const table = tablesByCollection[row.collectionId];
@@ -141,13 +257,7 @@ async function applyEvent(row: typeof syncEvent.$inferSelect): Promise<void> {
   values.id = row.key;
 
   if (row.type === "insert") {
-    await db
-      .insert(table)
-      .values(values as never)
-      .onConflictDoUpdate({
-        target: idColumn,
-        set: values as never,
-      });
+    await upsertById(table, idColumn, values);
     return;
   }
 
@@ -157,7 +267,7 @@ async function applyEvent(row: typeof syncEvent.$inferSelect): Promise<void> {
     .where(eq(idColumn, row.key))
     .limit(1);
   if (existing.length === 0) {
-    await db.insert(table).values(values as never);
+    await upsertById(table, idColumn, values);
     return;
   }
   await db
@@ -168,8 +278,46 @@ async function applyEvent(row: typeof syncEvent.$inferSelect): Promise<void> {
 
 export type ProjectLegacyResult = {
   projected: number;
+  failed: number;
   lastSeq: number | null;
 };
+
+type SyncEventRow = typeof syncEvent.$inferSelect;
+
+async function stampProjected(event: SyncEventRow, lastSeq: number | null): Promise<number> {
+  const now = new Date();
+  await db
+    .update(syncEvent)
+    .set({ projectedAt: now })
+    .where(eq(syncEvent.globalSeq, event.globalSeq));
+  const next = lastSeq == null || event.globalSeq > lastSeq ? event.globalSeq : lastSeq;
+  if (next !== lastSeq) {
+    await db.update(syncBackend).set({ lastProjectedSeq: next }).where(eq(syncBackend.id, 1));
+  }
+  return next;
+}
+
+function failureFrom(event: SyncEventRow, err: unknown): ProjectionFailure {
+  return {
+    globalSeq: event.globalSeq,
+    collectionId: event.collectionId,
+    type: event.type,
+    key: event.key,
+    reason: unwrapUnknownError(err).message,
+  };
+}
+
+async function projectOne(
+  event: SyncEventRow,
+): Promise<{ outcome: "ok" | "foreign-key" | "failed"; failure?: ProjectionFailure }> {
+  try {
+    await applyEvent(event);
+    return { outcome: "ok" };
+  } catch (err: unknown) {
+    if (isForeignKeyError(err)) return { outcome: "foreign-key", failure: failureFrom(event, err) };
+    return { outcome: "failed", failure: failureFrom(event, err) };
+  }
+}
 
 export async function projectUnappliedSyncEvents(limit = 100): Promise<ProjectLegacyResult> {
   const pending = await db
@@ -180,22 +328,48 @@ export async function projectUnappliedSyncEvents(limit = 100): Promise<ProjectLe
     .limit(limit);
 
   let projected = 0;
+  let failed = 0;
   let lastSeq: number | null = null;
+  const deferred: SyncEventRow[] = [];
+  const failures: ProjectionFailure[] = [];
+  const started = Date.now();
 
   for (const event of pending) {
-    await applyEvent(event);
-    const now = new Date();
-    await db
-      .update(syncEvent)
-      .set({ projectedAt: now })
-      .where(eq(syncEvent.globalSeq, event.globalSeq));
-    await db
-      .update(syncBackend)
-      .set({ lastProjectedSeq: event.globalSeq })
-      .where(eq(syncBackend.id, 1));
-    projected += 1;
-    lastSeq = event.globalSeq;
+    const result = await projectOne(event);
+    if (result.outcome === "foreign-key") {
+      deferred.push(event);
+      continue;
+    }
+    lastSeq = await stampProjected(event, lastSeq);
+    if (result.outcome === "ok") projected += 1;
+    else {
+      failed += 1;
+      if (result.failure) failures.push(result.failure);
+    }
   }
 
-  return { projected, lastSeq };
+  // A child row can sit before its parent in this batch. Apply those again
+  // after the rest of the batch, then stamp them either way so one missing
+  // parent cannot pin the queue.
+  for (const event of deferred) {
+    const result = await projectOne(event);
+    lastSeq = await stampProjected(event, lastSeq);
+    if (result.outcome === "ok") projected += 1;
+    else {
+      failed += 1;
+      if (result.failure) failures.push(result.failure);
+    }
+  }
+
+  recordProjection({
+    pending: pending.length,
+    projected,
+    failed,
+    deferred: deferred.length,
+    lastSeq,
+    durationMs: Date.now() - started,
+    failures,
+  });
+
+  return { projected, failed, lastSeq };
 }

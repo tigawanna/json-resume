@@ -19,7 +19,6 @@ Mutations always append to the local **outbox**. `syncEnabled` starts false. Not
 `resume`, `saved_project`, and the rest of the existing Drizzle tables remain the surface for REST/MCP. They are a **projection** of `sync_event`, not a second source of truth.
 
 - After a successful push, a bounded projector applies unprojected events in `global_seq` order.
-- Catch-up: `POST /api/cron/project-sync-events` with `Authorization: Bearer $CRON_SECRET` (or `x-cron-secret`). Requires `CRON_SECRET` in the server env.
+- Catch-up: `GET` or `POST /api/cron/project-sync-events` with `Authorization: Bearer $CRON_SECRET` (or `x-cron-secret`). Requires `CRON_SECRET` in the server env.
+- Vercel Cron calls that path daily at 03:00 UTC (`apps/web/vercel.json`). One bad event is stamped and skipped so it cannot pin the queue.
 - The local `settings` collection is never projected.
-
-Schedule the cron daily (or more often) if you want a safety net when post-push projection fails.

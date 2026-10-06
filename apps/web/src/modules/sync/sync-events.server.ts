@@ -11,6 +11,7 @@ import type {
   PushResponse,
   ServerEvent,
 } from "event-sourced-collection";
+import { log as standaloneLog } from "evlog";
 import { z } from "zod";
 import { projectUnappliedSyncEvents } from "./project-legacy.server";
 
@@ -125,7 +126,11 @@ export async function pushSyncEvents(
   try {
     await projectUnappliedSyncEvents(50);
   } catch (err: unknown) {
-    console.error("[sync] post-push projection failed", err);
+    standaloneLog.error({
+      message: "Post-push projection threw",
+      service: "agentic-json-resume",
+      error: err instanceof Error ? err.message : "Unknown projection error",
+    });
   }
 
   return { confirmed, failed };

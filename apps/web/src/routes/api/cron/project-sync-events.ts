@@ -17,19 +17,23 @@ function isAuthorizedCron(request: Request): boolean {
   return token === secret;
 }
 
+async function projectSyncEvents(request: Request): Promise<Response> {
+  if (!serverEnv.CRON_SECRET) {
+    return json({ error: "CRON_SECRET is not configured" }, 503);
+  }
+  if (!isAuthorizedCron(request)) {
+    return json({ error: "Unauthorized" }, 401);
+  }
+  const result = await projectUnappliedSyncEvents(500);
+  return json(result);
+}
+
 export const Route = createFileRoute("/api/cron/project-sync-events")({
   server: {
     handlers: {
-      POST: async ({ request }: { request: Request }) => {
-        if (!serverEnv.CRON_SECRET) {
-          return json({ error: "CRON_SECRET is not configured" }, 503);
-        }
-        if (!isAuthorizedCron(request)) {
-          return json({ error: "Unauthorized" }, 401);
-        }
-        const result = await projectUnappliedSyncEvents(500);
-        return json(result);
-      },
+      // Vercel Cron invokes the path with GET and Authorization: Bearer $CRON_SECRET.
+      GET: async ({ request }: { request: Request }) => projectSyncEvents(request),
+      POST: async ({ request }: { request: Request }) => projectSyncEvents(request),
     },
   },
 });
