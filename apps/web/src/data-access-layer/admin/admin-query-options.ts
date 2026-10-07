@@ -6,6 +6,7 @@ import {
   getAdminStats,
   getAdminTablePage,
   getAdminTables,
+  getAdminTruncatePreview,
   getAdminUsers,
 } from "@/modules/admin/admin.functions";
 import type {
@@ -55,6 +56,16 @@ export function adminRowQueryOptions(input: { table: string; rowid: number }) {
   return queryOptions({
     queryKey: ["admin", "row", input],
     queryFn: () => getAdminRow({ data: input }),
+  });
+}
+
+export function adminTruncatePreviewQueryOptions(input: {
+  table: string;
+  cutoff?: { column: string; before: number };
+}) {
+  return queryOptions({
+    queryKey: ["admin", "truncate-preview", input],
+    queryFn: () => getAdminTruncatePreview({ data: input }),
   });
 }
 

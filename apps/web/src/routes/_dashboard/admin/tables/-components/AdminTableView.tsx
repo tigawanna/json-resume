@@ -15,6 +15,7 @@ import { KeyRound } from "lucide-react";
 import { useState } from "react";
 import { AdminPageHeader } from "../../-components/AdminPageHeader";
 import { AdminRowSheet } from "./AdminRowSheet";
+import { AdminTruncateDialog } from "./AdminTruncateDialog";
 
 const PAGE_SIZE = 50;
 
@@ -54,23 +55,26 @@ export function AdminTableView({ table, page, q }: AdminTableViewProps) {
           </span>
         }
         actions={
-          <form
-            className="flex gap-2"
-            onSubmit={(event) => {
-              event.preventDefault();
-              goTo(0, search.trim());
-            }}
-          >
-            <Input
-              placeholder="Search any column"
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              data-test="admin-table-search"
-            />
-            <button type="submit" className="btn btn-primary btn-sm h-9">
-              Search
-            </button>
-          </form>
+          <div className="flex flex-wrap gap-2">
+            <AdminTruncateDialog table={table} />
+            <form
+              className="flex gap-2"
+              onSubmit={(event) => {
+                event.preventDefault();
+                goTo(0, search.trim());
+              }}
+            >
+              <Input
+                placeholder="Search any column"
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                data-test="admin-table-search"
+              />
+              <button type="submit" className="btn btn-primary btn-sm h-9">
+                Search
+              </button>
+            </form>
+          </div>
         }
       />
 

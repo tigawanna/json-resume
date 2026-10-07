@@ -54,7 +54,7 @@ export type AdminRowField = {
 type DrizzleRow = Record<string, unknown>;
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
-function syncedCollectionFor(table: string): ProjectableCollectionId | null {
+export function syncedCollectionFor(table: string): ProjectableCollectionId | null {
   for (const id of Object.keys(tablesByCollection)) {
     if (!isProjectableCollectionId(id)) continue;
     if (LOCAL_ONLY_COLLECTIONS.includes(id)) continue;
@@ -63,7 +63,7 @@ function syncedCollectionFor(table: string): ProjectableCollectionId | null {
   return null;
 }
 
-function rowModeFor(table: string): AdminRowMode {
+export function rowModeFor(table: string): AdminRowMode {
   if (READ_ONLY_TABLES.has(table)) return "readonly";
   return syncedCollectionFor(table) ? "synced" : "direct";
 }
@@ -131,7 +131,7 @@ export async function readAdminRow(input: { table: string; rowid: number }) {
   return { table, rowid: input.rowid, mode, fields };
 }
 
-const NUMERIC_TYPE = /INT|REAL|NUM|DOUBLE|FLOAT|DEC|BOOL/;
+export const NUMERIC_TYPE = /INT|REAL|NUM|DOUBLE|FLOAT|DEC|BOOL/;
 
 function toSqlValue(column: AdminColumn, value: string | null): InValue {
   if (value === null) return null;
@@ -267,7 +267,7 @@ export async function updateAdminRow(input: {
 }
 
 /** Legacy pointer that SQLite nulls on delete; compaction moves it onto a join row anyway. */
-const SET_NULL_ON_DELETE = new Set(["resume_skill.group_id"]);
+export const SET_NULL_ON_DELETE = new Set(["resume_skill.group_id"]);
 
 /**
  * SQLite cascades would remove children without delete events, leaving them
@@ -294,7 +294,7 @@ async function assertNoChildren(table: string, row: LibsqlRow, handled: Set<stri
 }
 
 /** Every collection `rowsToDeleteWith` may read for this parent, following owned children. */
-function ruleCollections(collectionId: string, out = new Set<string>()): Set<string> {
+export function ruleCollections(collectionId: string, out = new Set<string>()): Set<string> {
   const rule = parentRules[collectionId];
   for (const ref of rule?.references ?? []) out.add(ref.collectionId);
   for (const owned of rule?.owned ?? []) {

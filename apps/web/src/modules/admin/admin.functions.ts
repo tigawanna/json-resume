@@ -10,6 +10,8 @@ import {
 import { deleteAdminRow, readAdminRow, updateAdminRow } from "./admin-row-edit.server";
 import { readAdminStats } from "./admin-stats.server";
 import { listAdminTables, readAdminTablePage } from "./admin-tables.server";
+import { previewTruncate, truncateAdminTable } from "./admin-truncate.server";
+import { dropEventLogBackup, restoreEventLogBackup } from "./event-log-backup.server";
 import { listAdminUsers } from "./admin-users.server";
 import { rebuildUserEventLog } from "./rebuild-event-log.server";
 
@@ -77,6 +79,40 @@ export const deleteAdminRowFn = createServerFn({ method: "POST" })
   .middleware([adminMiddleware])
   .inputValidator(rowRefSchema)
   .handler(async ({ data }) => deleteAdminRow(data));
+
+const truncateCutoffSchema = z
+  .object({ column: z.string().min(1), before: z.number().int() })
+  .optional();
+
+export const getAdminTruncatePreview = createServerFn({ method: "GET" })
+  .middleware([adminMiddleware])
+  .inputValidator(z.object({ table: z.string().min(1), cutoff: truncateCutoffSchema }))
+  .handler(async ({ data }) => previewTruncate(data));
+
+export const truncateAdminTableFn = createServerFn({ method: "POST" })
+  .middleware([adminMiddleware])
+  .inputValidator(
+    z.object({
+      table: z.string().min(1),
+      confirm: z.string(),
+      cutoff: truncateCutoffSchema,
+      rebuild: z.boolean().optional(),
+    }),
+  )
+  .handler(async ({ data }) => truncateAdminTable(data));
+
+export const restoreEventLogBackupFn = createServerFn({ method: "POST" })
+  .middleware([adminMiddleware])
+  .inputValidator(z.object({ table: z.string().min(1) }))
+  .handler(async ({ data }) => restoreEventLogBackup(data.table));
+
+export const dropEventLogBackupFn = createServerFn({ method: "POST" })
+  .middleware([adminMiddleware])
+  .inputValidator(z.object({ table: z.string().min(1), confirm: z.string() }))
+  .handler(async ({ data }) => {
+    if (data.confirm !== data.table) throw new Error("Type the backup name to confirm");
+    return dropEventLogBackup(data.table);
+  });
 
 export const rebuildEventLog = createServerFn({ method: "POST" })
   .middleware([adminMiddleware])

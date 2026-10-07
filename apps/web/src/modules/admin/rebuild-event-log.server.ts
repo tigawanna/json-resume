@@ -8,8 +8,19 @@ import {
   resumeExperience,
   resumeSkillGroup,
   syncEvent,
+  user,
 } from "@/lib/drizzle/scheam";
-import { and, count, eq, getTableColumns, inArray, isNull, or, type SQL } from "drizzle-orm";
+import {
+  and,
+  count,
+  eq,
+  getTableColumns,
+  inArray,
+  isNull,
+  notInArray,
+  or,
+  type SQL,
+} from "drizzle-orm";
 import type { SQLiteColumn, SQLiteTable } from "drizzle-orm/sqlite-core";
 import {
   isProjectableCollectionId,
@@ -128,8 +139,11 @@ export type RebuildEventLogResult = {
  * not yet applied is lost. A marker event changes the user's `backendId`, which
  * makes each of their devices wipe its local copy and pull the new log.
  */
-export async function rebuildUserEventLog(userId: string): Promise<RebuildEventLogResult> {
-  const projectedFirst = await catchUpProjection();
+export async function rebuildUserEventLog(
+  userId: string,
+  options: { projectFirst?: boolean } = {},
+): Promise<RebuildEventLogResult> {
+  const projectedFirst = options.projectFirst === false ? 0 : await catchUpProjection();
 
   const rowsByCollection = new Map<ProjectableCollectionId, Row[]>();
   for (const collectionId of Object.keys(tablesByCollection)) {
@@ -205,5 +219,41 @@ export async function rebuildUserEventLog(userId: string): Promise<RebuildEventL
     insertedEvents: values.length,
     projectedFirst,
     byCollection,
+  };
+}
+
+export type RebuildAllEventLogsResult = {
+  users: number;
+  previousEvents: number;
+  insertedEvents: number;
+  orphanEvents: number;
+  projectedFirst: number;
+};
+
+/**
+ * Rebuilds every user's log (see `rebuildUserEventLog`) so `sync_event` shrinks
+ * to one insert per live row, then drops events of users that no longer exist.
+ */
+export async function rebuildAllEventLogs(): Promise<RebuildAllEventLogsResult> {
+  const projectedFirst = await catchUpProjection();
+  const [before] = await db.select({ n: count() }).from(syncEvent);
+  const userIds = (await db.select({ id: user.id }).from(user)).map((row) => row.id);
+
+  let insertedEvents = 0;
+  for (const userId of userIds) {
+    const result = await rebuildUserEventLog(userId, { projectFirst: false });
+    insertedEvents += result.insertedEvents + 1;
+  }
+
+  const orphans = await db
+    .delete(syncEvent)
+    .where(notInArray(syncEvent.userId, db.select({ id: user.id }).from(user)));
+
+  return {
+    users: userIds.length,
+    previousEvents: before?.n ?? 0,
+    insertedEvents,
+    orphanEvents: orphans.rowsAffected,
+    projectedFirst,
   };
 }
