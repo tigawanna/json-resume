@@ -18,6 +18,15 @@ const config = defineConfig({
     },
     tsconfigPaths: true,
   },
+  build: {
+    rolldownOptions: {
+      // "use client" in deps (e.g. @base-ui) only matters for RSC, which this app doesn't use.
+      onLog(level, log, defaultHandler) {
+        if (log.code === "MODULE_LEVEL_DIRECTIVE") return;
+        defaultHandler(level, log);
+      },
+    },
+  },
   // Router 1.170 depends on @tanstack/react-store 0.11, which named-imports
   // a CJS shim. Prebundle it so the browser doesn't evaluate that shim raw.
   optimizeDeps: {
