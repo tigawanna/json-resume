@@ -25,7 +25,7 @@ import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
 import { Eraser } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { EventLogBackups } from "./EventLogBackups";
+import { EventLogBackups } from "../../-components/EventLogBackups";
 
 type Scope = "all" | "older";
 

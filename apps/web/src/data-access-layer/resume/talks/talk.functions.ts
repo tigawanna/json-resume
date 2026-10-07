@@ -4,7 +4,7 @@ import { deleteTalkForUser, listTalksForUserPaginated } from "./talk.server";
 
 export const listTalks = createServerFn({ method: "GET" })
   .middleware([viewerMiddleware])
-  .inputValidator(
+  .validator(
     (input?: { keyword?: string; cursor?: string; direction?: "after" | "before" }) => input,
   )
   .handler(async ({ context, data }) => {
@@ -17,7 +17,7 @@ export const listTalks = createServerFn({ method: "GET" })
 
 export const deleteTalkFn = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
-  .inputValidator((input: { id: string }) => input)
+  .validator((input: { id: string }) => input)
   .handler(async ({ context, data }) => {
     await deleteTalkForUser(data.id, context.viewer.user.id);
     return { success: true };

@@ -55,6 +55,9 @@ import {
   setResumeNotes,
   setResumeSummary,
   setSkillGroups,
+  swapEducationSortOrder,
+  swapProjectSortOrder,
+  swapTalkSortOrder,
   updateCertification,
   updateDuplicateContactsForUser,
   updateDuplicateLinksForUser,
@@ -67,16 +70,13 @@ import {
   updateSummaryItem,
   updateTalk,
   updateVolunteer,
-  swapEducationSortOrder,
-  swapProjectSortOrder,
-  swapTalkSortOrder,
 } from "./resume.server";
 
 // ─── List & Detail ─────────────────────────────────────────
 
 export const listResumes = createServerFn({ method: "GET" })
   .middleware([viewerMiddleware])
-  .inputValidator((input?: { id?: string; keyword?: string }) => input)
+  .validator((input?: { id?: string; keyword?: string }) => input)
   .handler(async ({ context, data }) => {
     return listResumesForUser({
       userId: context.viewer.user.id,
@@ -87,7 +87,7 @@ export const listResumes = createServerFn({ method: "GET" })
 
 export const listResumesPaginated = createServerFn({ method: "GET" })
   .middleware([viewerMiddleware])
-  .inputValidator(
+  .validator(
     (input?: { keyword?: string; cursor?: string; direction?: "after" | "before" }) => input,
   )
   .handler(async ({ context, data }) => {
@@ -100,7 +100,7 @@ export const listResumesPaginated = createServerFn({ method: "GET" })
 
 export const getResume = createServerFn({ method: "GET" })
   .middleware([viewerMiddleware])
-  .inputValidator((input: { id: string }) => input)
+  .validator((input: { id: string }) => input)
   .handler(async ({ context, data }) => {
     return getResumeDetail(data.id, context.viewer.user.id);
   });
@@ -109,7 +109,7 @@ export const getResume = createServerFn({ method: "GET" })
 
 export const createResume = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
-  .inputValidator(
+  .validator(
     (input: { name: string; description: string; jobDescription: string; doc: ResumeDocumentV1 }) =>
       input,
   )
@@ -122,7 +122,7 @@ export const createResume = createServerFn({ method: "POST" })
 
 export const updateResumeMeta = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
-  .inputValidator(
+  .validator(
     (input: {
       id: string;
       name?: string;
@@ -143,7 +143,7 @@ export const updateResumeMeta = createServerFn({ method: "POST" })
 
 export const replaceResumeDoc = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
-  .inputValidator((input: { id: string; doc: ResumeDocumentV1 }) => input)
+  .validator((input: { id: string; doc: ResumeDocumentV1 }) => input)
   .handler(async ({ context, data }) => {
     await replaceResumeContent(data.id, context.viewer.user.id, data.doc);
     return { success: true };
@@ -153,7 +153,7 @@ export const replaceResumeDoc = createServerFn({ method: "POST" })
 
 export const deleteResume = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
-  .inputValidator((input: { id: string }) => input)
+  .validator((input: { id: string }) => input)
   .handler(async ({ context, data }) => {
     await deleteResumeForUser(data.id, context.viewer.user.id);
     return { success: true };
@@ -163,7 +163,7 @@ export const deleteResume = createServerFn({ method: "POST" })
 
 export const updateSectionOrder = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
-  .inputValidator(
+  .validator(
     (input: {
       resumeId: string;
       sections: { key: string; enabled: boolean; sortOrder: number }[];
@@ -179,7 +179,7 @@ export const updateSectionOrder = createServerFn({ method: "POST" })
 
 export const updateContacts = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
-  .inputValidator(
+  .validator(
     (input: { resumeId: string; contacts: { type: string; value: string; label: string }[] }) =>
       input,
   )
@@ -193,7 +193,7 @@ export const updateContacts = createServerFn({ method: "POST" })
 
 export const updateLinks = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
-  .inputValidator(
+  .validator(
     (input: { resumeId: string; links: { label: string; url: string; icon?: string }[] }) => input,
   )
   .handler(async ({ context, data }) => {
@@ -204,7 +204,7 @@ export const updateLinks = createServerFn({ method: "POST" })
 
 export const createLink = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
-  .inputValidator(
+  .validator(
     (input: { resumeId?: string; label: string; url: string; icon?: string; sortOrder: number }) =>
       input,
   )
@@ -217,7 +217,7 @@ export const createLink = createServerFn({ method: "POST" })
 
 export const editLink = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
-  .inputValidator(
+  .validator(
     (input: { id: string; label?: string; url?: string; icon?: string; sortOrder?: number }) =>
       input,
   )
@@ -230,7 +230,7 @@ export const editLink = createServerFn({ method: "POST" })
 
 export const removeLink = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
-  .inputValidator((input: { id: string }) => input)
+  .validator((input: { id: string }) => input)
   .handler(async ({ context, data }) => {
     await assertLinkBelongsToUser(data.id, context.viewer.user.id);
     await deleteLinkById(data.id);
@@ -241,7 +241,7 @@ export const removeLink = createServerFn({ method: "POST" })
 
 export const updateSummary = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
-  .inputValidator((input: { resumeId: string; text: string }) => input)
+  .validator((input: { resumeId: string; text: string }) => input)
   .handler(async ({ context, data }) => {
     await assertResumeBelongsToUser(data.resumeId, context.viewer.user.id);
     await setResumeSummary(data.resumeId, context.viewer.user.id, data.text);
@@ -250,7 +250,7 @@ export const updateSummary = createServerFn({ method: "POST" })
 
 export const createSummaryItem = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
-  .inputValidator((input: { resumeId?: string; text: string; sortOrder: number }) => input)
+  .validator((input: { resumeId?: string; text: string; sortOrder: number }) => input)
   .handler(async ({ context, data }) => {
     const { resumeId, ...rest } = data;
     if (resumeId) await assertResumeBelongsToUser(resumeId, context.viewer.user.id);
@@ -260,7 +260,7 @@ export const createSummaryItem = createServerFn({ method: "POST" })
 
 export const editSummaryItem = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
-  .inputValidator((input: { id: string; text?: string; sortOrder?: number }) => input)
+  .validator((input: { id: string; text?: string; sortOrder?: number }) => input)
   .handler(async ({ context, data }) => {
     const { id, ...rest } = data;
     await assertSummaryBelongsToUser(id, context.viewer.user.id);
@@ -270,7 +270,7 @@ export const editSummaryItem = createServerFn({ method: "POST" })
 
 export const removeSummaryItem = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
-  .inputValidator((input: { id: string }) => input)
+  .validator((input: { id: string }) => input)
   .handler(async ({ context, data }) => {
     await assertSummaryBelongsToUser(data.id, context.viewer.user.id);
     await deleteSummaryById(data.id);
@@ -279,7 +279,7 @@ export const removeSummaryItem = createServerFn({ method: "POST" })
 
 export const updateNotes = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
-  .inputValidator((input: { resumeId: string; label: string; text: string }) => input)
+  .validator((input: { resumeId: string; label: string; text: string }) => input)
   .handler(async ({ context, data }) => {
     await assertResumeBelongsToUser(data.resumeId, context.viewer.user.id);
     await setResumeNotes(data.resumeId, context.viewer.user.id, {
@@ -293,7 +293,7 @@ export const updateNotes = createServerFn({ method: "POST" })
 
 export const createExperience = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
-  .inputValidator(
+  .validator(
     (input: {
       resumeId?: string;
       company: string;
@@ -314,7 +314,7 @@ export const createExperience = createServerFn({ method: "POST" })
 
 export const editExperience = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
-  .inputValidator(
+  .validator(
     (input: {
       id: string;
       company?: string;
@@ -334,7 +334,7 @@ export const editExperience = createServerFn({ method: "POST" })
 
 export const removeExperience = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
-  .inputValidator((input: { id: string }) => input)
+  .validator((input: { id: string }) => input)
   .handler(async ({ context, data }) => {
     await assertExperienceBelongsToUser(data.id, context.viewer.user.id);
     await deleteExperience(data.id);
@@ -343,7 +343,7 @@ export const removeExperience = createServerFn({ method: "POST" })
 
 export const updateExperienceBullets = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
-  .inputValidator((input: { experienceId: string; bullets: string[] }) => input)
+  .validator((input: { experienceId: string; bullets: string[] }) => input)
   .handler(async ({ context, data }) => {
     await assertExperienceBelongsToUser(data.experienceId, context.viewer.user.id);
     await setExperienceBullets(data.experienceId, data.bullets);
@@ -354,7 +354,7 @@ export const updateExperienceBullets = createServerFn({ method: "POST" })
 
 export const createEducation = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
-  .inputValidator(
+  .validator(
     (input: {
       resumeId?: string;
       school: string;
@@ -376,7 +376,7 @@ export const createEducation = createServerFn({ method: "POST" })
 
 export const editEducation = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
-  .inputValidator(
+  .validator(
     (input: {
       id: string;
       school?: string;
@@ -397,7 +397,7 @@ export const editEducation = createServerFn({ method: "POST" })
 
 export const removeEducation = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
-  .inputValidator((input: { id: string }) => input)
+  .validator((input: { id: string }) => input)
   .handler(async ({ context, data }) => {
     await assertEducationBelongsToUser(data.id, context.viewer.user.id);
     await deleteEducation(data.id);
@@ -406,7 +406,7 @@ export const removeEducation = createServerFn({ method: "POST" })
 
 export const reorderEducationFn = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
-  .inputValidator((input: { idA: string; idB: string }) => input)
+  .validator((input: { idA: string; idB: string }) => input)
   .handler(async ({ context, data }) => {
     await swapEducationSortOrder(context.viewer.user.id, data.idA, data.idB);
     return { success: true };
@@ -416,7 +416,7 @@ export const reorderEducationFn = createServerFn({ method: "POST" })
 
 export const createProject = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
-  .inputValidator(
+  .validator(
     (input: {
       resumeId?: string;
       name: string;
@@ -436,7 +436,7 @@ export const createProject = createServerFn({ method: "POST" })
 
 export const editProject = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
-  .inputValidator(
+  .validator(
     (input: {
       id: string;
       name?: string;
@@ -456,7 +456,7 @@ export const editProject = createServerFn({ method: "POST" })
 
 export const removeProject = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
-  .inputValidator((input: { id: string }) => input)
+  .validator((input: { id: string }) => input)
   .handler(async ({ context, data }) => {
     await assertProjectBelongsToUser(data.id, context.viewer.user.id);
     await deleteProject(data.id);
@@ -465,7 +465,7 @@ export const removeProject = createServerFn({ method: "POST" })
 
 export const reorderProjectFn = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
-  .inputValidator((input: { idA: string; idB: string }) => input)
+  .validator((input: { idA: string; idB: string }) => input)
   .handler(async ({ context, data }) => {
     await swapProjectSortOrder(context.viewer.user.id, data.idA, data.idB);
     return { success: true };
@@ -475,9 +475,7 @@ export const reorderProjectFn = createServerFn({ method: "POST" })
 
 export const updateSkillGroups = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
-  .inputValidator(
-    (input: { resumeId: string; groups: { name: string; items: string[] }[] }) => input,
-  )
+  .validator((input: { resumeId: string; groups: { name: string; items: string[] }[] }) => input)
   .handler(async ({ context, data }) => {
     await assertResumeBelongsToUser(data.resumeId, context.viewer.user.id);
     await setSkillGroups(data.resumeId, context.viewer.user.id, data.groups);
@@ -486,9 +484,7 @@ export const updateSkillGroups = createServerFn({ method: "POST" })
 
 export const editSkillGroup = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
-  .inputValidator(
-    (input: { id: string; name?: string; skills?: string[]; sortOrder?: number }) => input,
-  )
+  .validator((input: { id: string; name?: string; skills?: string[]; sortOrder?: number }) => input)
   .handler(async ({ context, data }) => {
     const { id, ...rest } = data;
     await assertSkillGroupBelongsToUser(id, context.viewer.user.id);
@@ -498,7 +494,7 @@ export const editSkillGroup = createServerFn({ method: "POST" })
 
 export const removeSkillGroup = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
-  .inputValidator((input: { id: string }) => input)
+  .validator((input: { id: string }) => input)
   .handler(async ({ context, data }) => {
     await assertSkillGroupBelongsToUser(data.id, context.viewer.user.id);
     await deleteSkillGroupById(data.id);
@@ -507,7 +503,7 @@ export const removeSkillGroup = createServerFn({ method: "POST" })
 
 export const createSkillGroup = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
-  .inputValidator(
+  .validator(
     (input: { resumeId?: string; name: string; skills: string[]; sortOrder: number }) => input,
   )
   .handler(async ({ context, data }) => {
@@ -521,7 +517,7 @@ export const createSkillGroup = createServerFn({ method: "POST" })
 
 export const editCertification = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
-  .inputValidator(
+  .validator(
     (input: {
       id: string;
       name?: string;
@@ -540,7 +536,7 @@ export const editCertification = createServerFn({ method: "POST" })
 
 export const removeCertification = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
-  .inputValidator((input: { id: string }) => input)
+  .validator((input: { id: string }) => input)
   .handler(async ({ context, data }) => {
     await assertCertificationBelongsToUser(data.id, context.viewer.user.id);
     await deleteCertification(data.id);
@@ -549,7 +545,7 @@ export const removeCertification = createServerFn({ method: "POST" })
 
 export const createCertification = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
-  .inputValidator(
+  .validator(
     (input: {
       resumeId?: string;
       name: string;
@@ -570,7 +566,7 @@ export const createCertification = createServerFn({ method: "POST" })
 
 export const editVolunteer = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
-  .inputValidator(
+  .validator(
     (input: {
       id: string;
       organization?: string;
@@ -590,7 +586,7 @@ export const editVolunteer = createServerFn({ method: "POST" })
 
 export const removeVolunteer = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
-  .inputValidator((input: { id: string }) => input)
+  .validator((input: { id: string }) => input)
   .handler(async ({ context, data }) => {
     await assertVolunteerBelongsToUser(data.id, context.viewer.user.id);
     await deleteVolunteerById(data.id);
@@ -599,7 +595,7 @@ export const removeVolunteer = createServerFn({ method: "POST" })
 
 export const createVolunteer = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
-  .inputValidator(
+  .validator(
     (input: {
       resumeId?: string;
       organization: string;
@@ -621,7 +617,7 @@ export const createVolunteer = createServerFn({ method: "POST" })
 
 export const editLanguage = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
-  .inputValidator(
+  .validator(
     (input: { id: string; name?: string; proficiency?: string; sortOrder?: number }) => input,
   )
   .handler(async ({ context, data }) => {
@@ -633,7 +629,7 @@ export const editLanguage = createServerFn({ method: "POST" })
 
 export const removeLanguage = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
-  .inputValidator((input: { id: string }) => input)
+  .validator((input: { id: string }) => input)
   .handler(async ({ context, data }) => {
     await assertLanguageBelongsToUser(data.id, context.viewer.user.id);
     await deleteLanguageById(data.id);
@@ -642,7 +638,7 @@ export const removeLanguage = createServerFn({ method: "POST" })
 
 export const createLanguage = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
-  .inputValidator(
+  .validator(
     (input: { resumeId?: string; name: string; proficiency?: string; sortOrder: number }) => input,
   )
   .handler(async ({ context, data }) => {
@@ -656,7 +652,7 @@ export const createLanguage = createServerFn({ method: "POST" })
 
 export const editContact = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
-  .inputValidator(
+  .validator(
     (input: { id: string; type?: string; value?: string; label?: string; sortOrder?: number }) =>
       input,
   )
@@ -669,7 +665,7 @@ export const editContact = createServerFn({ method: "POST" })
 
 export const removeContact = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
-  .inputValidator((input: { id: string }) => input)
+  .validator((input: { id: string }) => input)
   .handler(async ({ context, data }) => {
     await assertContactBelongsToUser(data.id, context.viewer.user.id);
     await deleteContactById(data.id);
@@ -678,7 +674,7 @@ export const removeContact = createServerFn({ method: "POST" })
 
 export const createContact = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
-  .inputValidator(
+  .validator(
     (input: {
       resumeId?: string;
       type: string;
@@ -698,7 +694,7 @@ export const createContact = createServerFn({ method: "POST" })
 
 export const createTalk = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
-  .inputValidator(
+  .validator(
     (input: {
       resumeId?: string;
       title: string;
@@ -718,7 +714,7 @@ export const createTalk = createServerFn({ method: "POST" })
 
 export const editTalk = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
-  .inputValidator(
+  .validator(
     (input: {
       id: string;
       title?: string;
@@ -738,7 +734,7 @@ export const editTalk = createServerFn({ method: "POST" })
 
 export const removeTalk = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
-  .inputValidator((input: { id: string }) => input)
+  .validator((input: { id: string }) => input)
   .handler(async ({ context, data }) => {
     await assertTalkBelongsToUser(data.id, context.viewer.user.id);
     await deleteTalk(data.id);
@@ -747,7 +743,7 @@ export const removeTalk = createServerFn({ method: "POST" })
 
 export const reorderTalkFn = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
-  .inputValidator((input: { idA: string; idB: string }) => input)
+  .validator((input: { idA: string; idB: string }) => input)
   .handler(async ({ context, data }) => {
     await swapTalkSortOrder(context.viewer.user.id, data.idA, data.idB);
     return { success: true };
@@ -757,42 +753,42 @@ export const reorderTalkFn = createServerFn({ method: "POST" })
 
 export const searchExperienceBullets = createServerFn({ method: "GET" })
   .middleware([viewerMiddleware])
-  .inputValidator((input: { query: string }) => input)
+  .validator((input: { query: string }) => input)
   .handler(async ({ context, data }) => {
     return searchUserExperienceBullets(context.viewer.user.id, data.query);
   });
 
 export const searchExperiences = createServerFn({ method: "GET" })
   .middleware([viewerMiddleware])
-  .inputValidator((input: { query: string }) => input)
+  .validator((input: { query: string }) => input)
   .handler(async ({ context, data }) => {
     return searchUserExperiences(context.viewer.user.id, data.query);
   });
 
 export const searchProjects = createServerFn({ method: "GET" })
   .middleware([viewerMiddleware])
-  .inputValidator((input: { query: string }) => input)
+  .validator((input: { query: string }) => input)
   .handler(async ({ context, data }) => {
     return searchUserProjects(context.viewer.user.id, data.query);
   });
 
 export const searchEducation = createServerFn({ method: "GET" })
   .middleware([viewerMiddleware])
-  .inputValidator((input: { query: string }) => input)
+  .validator((input: { query: string }) => input)
   .handler(async ({ context, data }) => {
     return searchUserEducation(context.viewer.user.id, data.query);
   });
 
 export const searchSkills = createServerFn({ method: "GET" })
   .middleware([viewerMiddleware])
-  .inputValidator((input: { query: string }) => input)
+  .validator((input: { query: string }) => input)
   .handler(async ({ context, data }) => {
     return searchUserSkills(context.viewer.user.id, data.query);
   });
 
 export const searchTalks = createServerFn({ method: "GET" })
   .middleware([viewerMiddleware])
-  .inputValidator((input: { query: string }) => input)
+  .validator((input: { query: string }) => input)
   .handler(async ({ context, data }) => {
     return searchUserTalks(context.viewer.user.id, data.query);
   });

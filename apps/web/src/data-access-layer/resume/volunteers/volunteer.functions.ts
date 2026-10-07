@@ -4,7 +4,7 @@ import { deleteVolunteerForUser, listVolunteersForUserPaginated } from "./volunt
 
 export const listVolunteers = createServerFn({ method: "GET" })
   .middleware([viewerMiddleware])
-  .inputValidator(
+  .validator(
     (input?: { keyword?: string; cursor?: string; direction?: "after" | "before" }) => input,
   )
   .handler(async ({ context, data }) => {
@@ -17,7 +17,7 @@ export const listVolunteers = createServerFn({ method: "GET" })
 
 export const deleteVolunteerFn = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
-  .inputValidator((input: { id: string }) => input)
+  .validator((input: { id: string }) => input)
   .handler(async ({ context, data }) => {
     await deleteVolunteerForUser(data.id, context.viewer.user.id);
     return { success: true };

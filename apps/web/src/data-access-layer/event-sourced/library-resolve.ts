@@ -1,5 +1,5 @@
 import { bulletKey, libraryKeys, skillGroupKey } from "@/modules/library/library-keys";
-import { rowsToDeleteWith } from "@/modules/library/library-references";
+import { resumeJoins, rowsToDeleteWith } from "@/modules/library/library-references";
 import { libraryRowBase, newId, nowMs } from "@/routes/_dashboard/-utils/row-helpers";
 import type { AppDb } from "./collection";
 import { skillsForGroup } from "./assemble-resume-detail";
@@ -235,6 +235,27 @@ function collectionOf(db: AppDb, collectionId: string): DeletableCollection | un
 function rowsOf(db: AppDb, collectionId: string): ReadonlyArray<Record<string, unknown>> {
   const rows = collectionOf(db, collectionId)?.toArray ?? [];
   return rows.map((row) => ({ ...row }));
+}
+
+/** Ids of every library row a résumé points at, including skills of its groups. */
+export function linkedEntityIds(db: AppDb, resumeId: string): Set<string> {
+  const ids = new Set<string>();
+  for (const join of resumeJoins) {
+    for (const row of rowsOf(db, join.collectionId)) {
+      if (row.resumeId !== resumeId) continue;
+      for (const [field, value] of Object.entries(row)) {
+        if (field !== "id" && field !== "resumeId" && field.endsWith("Id")) {
+          if (typeof value === "string") ids.add(value);
+        }
+      }
+    }
+  }
+  for (const link of rowsOf(db, "resumeSkillGroupSkill")) {
+    if (typeof link.groupId === "string" && ids.has(link.groupId)) {
+      if (typeof link.skillId === "string") ids.add(link.skillId);
+    }
+  }
+  return ids;
 }
 
 /**

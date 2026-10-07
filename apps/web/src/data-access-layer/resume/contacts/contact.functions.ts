@@ -4,7 +4,7 @@ import { deleteContactForUser, listContactsForUserPaginated } from "./contact.se
 
 export const listContacts = createServerFn({ method: "GET" })
   .middleware([viewerMiddleware])
-  .inputValidator(
+  .validator(
     (input?: { keyword?: string; cursor?: string; direction?: "after" | "before" }) => input,
   )
   .handler(async ({ context, data }) => {
@@ -17,7 +17,7 @@ export const listContacts = createServerFn({ method: "GET" })
 
 export const deleteContactFn = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
-  .inputValidator((input: { id: string }) => input)
+  .validator((input: { id: string }) => input)
   .handler(async ({ context, data }) => {
     await deleteContactForUser(data.id, context.viewer.user.id);
     return { success: true };

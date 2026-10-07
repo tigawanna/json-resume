@@ -4,7 +4,7 @@ import { deleteLinkForUser, listLinksForUserPaginated } from "./link.server";
 
 export const listLinks = createServerFn({ method: "GET" })
   .middleware([viewerMiddleware])
-  .inputValidator(
+  .validator(
     (input?: { keyword?: string; cursor?: string; direction?: "after" | "before" }) => input,
   )
   .handler(async ({ context, data }) => {
@@ -17,7 +17,7 @@ export const listLinks = createServerFn({ method: "GET" })
 
 export const deleteLinkFn = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
-  .inputValidator((input: { id: string }) => input)
+  .validator((input: { id: string }) => input)
   .handler(async ({ context, data }) => {
     await deleteLinkForUser(data.id, context.viewer.user.id);
     return { success: true };

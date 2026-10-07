@@ -3,6 +3,10 @@
     {
       "path": "/api/cron/project-sync-events",
       "schedule": "0 3 * * *"
+    },
+    {
+      "path": "/api/cron/squash-sync-events",
+      "schedule": "30 3 * * *"
     }
   ]
 }

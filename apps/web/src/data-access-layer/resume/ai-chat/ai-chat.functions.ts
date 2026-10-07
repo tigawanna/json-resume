@@ -10,7 +10,7 @@ import type { ResumeAiChatDTO } from "./ai-chat.types";
 
 export const getResumeAiChat = createServerFn({ method: "GET" })
   .middleware([viewerMiddleware])
-  .inputValidator((input: { resumeId: string }) => input)
+  .validator((input: { resumeId: string }) => input)
   .handler(async ({ context, data }) => {
     await assertResumeBelongsToUser(data.resumeId, context.viewer.user.id);
     return getResumeAiChatForUser(data.resumeId, context.viewer.user.id);
@@ -18,7 +18,7 @@ export const getResumeAiChat = createServerFn({ method: "GET" })
 
 export const saveResumeAiChat = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
-  .inputValidator(
+  .validator(
     (input: { resumeId: string; messages: ResumeAiChatDTO["messages"]; model?: string }) => input,
   )
   .handler(async ({ context, data }) => {
@@ -30,7 +30,7 @@ export const saveResumeAiChat = createServerFn({ method: "POST" })
 
 export const clearResumeAiChat = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
-  .inputValidator((input: { resumeId: string }) => input)
+  .validator((input: { resumeId: string }) => input)
   .handler(async ({ context, data }) => {
     await assertResumeBelongsToUser(data.resumeId, context.viewer.user.id);
     await clearResumeAiChatForUser(data.resumeId, context.viewer.user.id);

@@ -25,6 +25,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, Copy, Globe, GlobeLock, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { twMerge } from "tailwind-merge";
 
 function publicResumeUrl(id: string): string {
   if (typeof window === "undefined") return `/r/${id}`;
@@ -35,12 +36,14 @@ interface PublishResumeButtonProps {
   sourceResumeId: string;
   title: string;
   document: ResumeDocumentV1;
+  className?: string;
 }
 
 export function PublishResumeButton({
   sourceResumeId,
   title,
   document,
+  className,
 }: PublishResumeButtonProps) {
   const { viewer } = useViewer();
   const isAuthenticated = Boolean(viewer.user?.id);
@@ -107,7 +110,13 @@ export function PublishResumeButton({
 
   if (!isAuthenticated) {
     return (
-      <Button asChild variant="outline" size="sm" className="gap-2" data-test="publish-resume-signin">
+      <Button
+        asChild
+        variant="outline"
+        size="sm"
+        className={twMerge("gap-2", className)}
+        data-test="publish-resume-signin"
+      >
         <Link to="/auth" search={{ returnTo: `/resumes/${sourceResumeId}` }}>
           <Globe className="size-4" />
           Sign in to share
@@ -125,7 +134,7 @@ export function PublishResumeButton({
         type="button"
         variant="outline"
         size="sm"
-        className="gap-2"
+        className={twMerge("gap-2", className)}
         disabled={busy || statusQuery.isLoading}
         onClick={() => {
           if (published) {
@@ -158,7 +167,12 @@ export function PublishResumeButton({
 
           {shareUrl ? (
             <div className="flex gap-2">
-              <Input readOnly value={shareUrl} data-test="publish-resume-url" className="font-mono text-xs" />
+              <Input
+                readOnly
+                value={shareUrl}
+                data-test="publish-resume-url"
+                className="font-mono text-xs"
+              />
               <Button
                 type="button"
                 variant="secondary"
@@ -181,18 +195,11 @@ export function PublishResumeButton({
               onClick={() => void unpublishMutation.mutateAsync()}
               data-test="unpublish-resume-btn"
             >
-              {unpublishMutation.isPending ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : null}
+              {unpublishMutation.isPending ? <Loader2 className="size-4 animate-spin" /> : null}
               Unpublish
             </Button>
             <div className="flex gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                asChild
-              >
+              <Button type="button" variant="outline" size="sm" asChild>
                 <Link to="/public-resumes">Manage all</Link>
               </Button>
               <Button
@@ -203,9 +210,7 @@ export function PublishResumeButton({
                 onClick={() => void publishMutation.mutateAsync()}
                 data-test="republish-resume-btn"
               >
-                {publishMutation.isPending ? (
-                  <Loader2 className="size-4 animate-spin" />
-                ) : null}
+                {publishMutation.isPending ? <Loader2 className="size-4 animate-spin" /> : null}
                 Update snapshot
               </Button>
               <DialogClose asChild>

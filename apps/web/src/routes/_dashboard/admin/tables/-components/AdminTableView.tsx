@@ -15,6 +15,7 @@ import { KeyRound } from "lucide-react";
 import { useState } from "react";
 import { AdminPageHeader } from "../../-components/AdminPageHeader";
 import { AdminRowSheet } from "./AdminRowSheet";
+import { AdminSquashDialog } from "./AdminSquashDialog";
 import { AdminTruncateDialog } from "./AdminTruncateDialog";
 
 const PAGE_SIZE = 50;
@@ -56,6 +57,7 @@ export function AdminTableView({ table, page, q }: AdminTableViewProps) {
         }
         actions={
           <div className="flex flex-wrap gap-2">
+            {table === "sync_event" ? <AdminSquashDialog /> : null}
             <AdminTruncateDialog table={table} />
             <form
               className="flex gap-2"

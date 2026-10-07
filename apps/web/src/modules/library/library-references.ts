@@ -8,9 +8,10 @@
  */
 export type ReferenceRow = { collectionId: string; field: string };
 
-type ParentRule = { references: ReferenceRow[]; owned?: ReferenceRow[] };
+type ParentRule = { references: readonly ReferenceRow[]; owned?: readonly ReferenceRow[] };
 
-const resumeJoins: ReferenceRow[] = [
+/** Everything a résumé points at; deleting and cloning a résumé both walk this list. */
+export const resumeJoins = [
   { collectionId: "resumeSection", field: "resumeId" },
   { collectionId: "resumeContactItem", field: "resumeId" },
   { collectionId: "resumeLinkItem", field: "resumeId" },
@@ -25,7 +26,9 @@ const resumeJoins: ReferenceRow[] = [
   { collectionId: "resumeCertificationItem", field: "resumeId" },
   { collectionId: "resumeVolunteerItem", field: "resumeId" },
   { collectionId: "resumeLanguageItem", field: "resumeId" },
-];
+] as const satisfies readonly ReferenceRow[];
+
+export type ResumeJoinCollectionId = (typeof resumeJoins)[number]["collectionId"];
 
 export const parentRules: Record<string, ParentRule> = {
   resume: { references: resumeJoins },

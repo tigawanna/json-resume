@@ -7,7 +7,7 @@ import {
 
 export const listResumeProjects = createServerFn({ method: "GET" })
   .middleware([viewerMiddleware])
-  .inputValidator(
+  .validator(
     (input?: { keyword?: string; cursor?: string; direction?: "after" | "before" }) => input,
   )
   .handler(async ({ context, data }) => {
@@ -20,7 +20,7 @@ export const listResumeProjects = createServerFn({ method: "GET" })
 
 export const deleteResumeProjectFn = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
-  .inputValidator((input: { id: string }) => input)
+  .validator((input: { id: string }) => input)
   .handler(async ({ context, data }) => {
     await deleteResumeProjectForUser(data.id, context.viewer.user.id);
     return { success: true };

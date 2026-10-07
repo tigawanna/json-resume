@@ -2,6 +2,7 @@ import {
   assembleResumeDetail,
   asTemplateId,
 } from "@/data-access-layer/event-sourced/assemble-resume-detail";
+import { cloneResume } from "@/data-access-layer/event-sourced/clone-resume";
 import type { AppDb } from "@/data-access-layer/event-sourced/collection";
 import { createEventSourcedResumeWorkspace } from "@/data-access-layer/event-sourced/event-sourced-resume-workspace";
 import { snapshotEventSourcedResume } from "@/data-access-layer/event-sourced/snapshot-resume";
@@ -16,7 +17,7 @@ import type {
   SearchResumeBlocksToolOutput,
   UpdateResumeDocumentToolOutput,
 } from "@/features/agentic-tools/resume-tool-schemas";
-import { joinSearchable, libraryRowBase, newId, nowMs } from "../../-utils/row-helpers";
+import { joinSearchable, libraryRowBase, nowMs } from "../../-utils/row-helpers";
 
 export type EventSourcedResumeAiContext = {
   db: AppDb;
@@ -54,24 +55,6 @@ function parseTech(tech: string): string[] {
         .filter(Boolean);
   }
   return [];
-}
-
-function copyResumeScopedRows<T extends { id: string; resumeId: string }>(
-  collection: { toArray: ReadonlyArray<T>; insert: (row: T) => void },
-  sourceResumeId: string,
-  targetResumeId: string,
-) {
-  const ts = nowMs();
-  for (const row of collection.toArray) {
-    if (row.resumeId !== sourceResumeId) continue;
-    collection.insert({
-      ...row,
-      id: newId(),
-      resumeId: targetResumeId,
-      ...("createdAt" in row ? { createdAt: ts } : {}),
-      ...("updatedAt" in row ? { updatedAt: ts } : {}),
-    });
-  }
 }
 
 export function getLocalResumeDocument(
@@ -215,52 +198,8 @@ export function cloneLocalResume(
   },
 ): CloneResumeToolOutput {
   const sourceResumeId = input.sourceResumeId ?? ctx.resumeId;
-  const { detail } = requireDetail(ctx.db, sourceResumeId);
-  const base = libraryRowBase(ctx.userId);
-  const name = input.name?.trim() || `${detail.name} (copy)`;
-  const description = input.description ?? detail.description;
-  const jobDescription = input.jobDescription ?? detail.jobDescription;
-
-  ctx.db.collections.resume.insert({
-    id: base.id,
-    userId: ctx.userId,
-    name,
-    fullName: detail.fullName,
-    headline: detail.headline,
-    description,
-    jobDescription,
-    jobId: detail.jobId ?? null,
-    templateId: asTemplateId(detail.templateId),
-    experienceOrder: detail.experiences.map((experience) => experience.id),
-    educationOrder: detail.education.map((education) => education.id),
-    projectOrder: detail.projects.map((project) => project.id),
-    talkOrder: detail.talks.map((talk) => talk.id),
-    searchableText: joinSearchable(name, detail.fullName, detail.headline, description),
-    embedding: null,
-    embeddingModel: null,
-    createdAt: base.createdAt,
-    updatedAt: base.updatedAt,
-  });
-
-  copyResumeScopedRows(ctx.db.collections.resumeSection, sourceResumeId, base.id);
-  copyResumeScopedRows(ctx.db.collections.resumeContactItem, sourceResumeId, base.id);
-  copyResumeScopedRows(ctx.db.collections.resumeLinkItem, sourceResumeId, base.id);
-  copyResumeScopedRows(ctx.db.collections.resumeSummaryItem, sourceResumeId, base.id);
-  copyResumeScopedRows(ctx.db.collections.resumeNoteItem, sourceResumeId, base.id);
-  copyResumeScopedRows(ctx.db.collections.resumeExperienceItem, sourceResumeId, base.id);
-  copyResumeScopedRows(ctx.db.collections.resumeEducationItem, sourceResumeId, base.id);
-  copyResumeScopedRows(ctx.db.collections.resumeProjectItem, sourceResumeId, base.id);
-  copyResumeScopedRows(ctx.db.collections.resumeSkillGroupItem, sourceResumeId, base.id);
-  copyResumeScopedRows(ctx.db.collections.resumeTalkItem, sourceResumeId, base.id);
-  copyResumeScopedRows(ctx.db.collections.resumeCertificationItem, sourceResumeId, base.id);
-  copyResumeScopedRows(ctx.db.collections.resumeVolunteerItem, sourceResumeId, base.id);
-  copyResumeScopedRows(ctx.db.collections.resumeLanguageItem, sourceResumeId, base.id);
-
-  return {
-    sourceResumeId,
-    resumeId: base.id,
-    name,
-  };
+  const { resumeId, name } = cloneResume(ctx.db, sourceResumeId, input);
+  return { sourceResumeId, resumeId, name };
 }
 
 export async function createLocalResumeFromDocument(

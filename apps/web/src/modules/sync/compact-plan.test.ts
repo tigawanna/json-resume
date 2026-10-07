@@ -116,6 +116,20 @@ describe("planCompaction", () => {
     expect(repoint).toBeLessThan(index("delete", "resumeExperience", loser));
   });
 
+  it("keeps links to entities that were not loaded (legacy rows without user_id)", () => {
+    const partial = {
+      resume: [{ id: "r1", userId: "u", ...at(1) }],
+      resumeProject: [],
+      resumeProjectItem: [
+        { id: "pi1", resumeId: "r1", projectId: "p-legacy", sortOrder: 0, ...at(1) },
+      ],
+      resumeTalk: [],
+      resumeTalkItem: [{ id: "ti1", resumeId: "r1", talkId: "t-legacy", sortOrder: 0, ...at(1) }],
+    };
+    const ops = planCompaction(partial, { userId: "u", now }).ops;
+    expect(ops.filter((op) => op.type === "delete")).toEqual([]);
+  });
+
   it("does nothing once the data is already unique", () => {
     const settled = Object.fromEntries(
       Object.entries(state).map(([id, rows]) => [id, [...rows.values()]]),

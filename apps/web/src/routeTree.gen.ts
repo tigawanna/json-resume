@@ -48,6 +48,7 @@ import { Route as ApiAiPersonaWriterRouteImport } from './routes/api/ai/persona-
 import { Route as ApiAiResumeTailorRouteImport } from './routes/api/ai/resume-tailor'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ApiCronProjectSyncEventsRouteImport } from './routes/api/cron/project-sync-events'
+import { Route as ApiCronSquashSyncEventsRouteImport } from './routes/api/cron/squash-sync-events'
 import { Route as ApiSyncCompactRouteImport } from './routes/api/sync/compact'
 import { Route as ApiSyncEventsRouteImport } from './routes/api/sync/events'
 import { Route as RPublicIdIndexRouteImport } from './routes/r/$publicId/index'
@@ -58,6 +59,7 @@ import { Route as DashboardResumesResumeIdIndexRouteImport } from './routes/_das
 import { Route as ApiAgenticOpenapiJsonRouteImport } from './routes/api/agentic/openapi.json'
 import { Route as ApiAgenticRpcSplatRouteImport } from './routes/api/agentic/rpc/$'
 import { Route as DashboardAdminTablesTableIndexRouteImport } from './routes/_dashboard/admin/tables/$table/index'
+import { Route as DashboardResumesResumeIdEventsIndexRouteImport } from './routes/_dashboard/resumes/$resumeId/events/index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -262,6 +264,11 @@ const ApiCronProjectSyncEventsRoute =
     path: '/api/cron/project-sync-events',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiCronSquashSyncEventsRoute = ApiCronSquashSyncEventsRouteImport.update({
+  id: '/api/cron/squash-sync-events',
+  path: '/api/cron/squash-sync-events',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiSyncCompactRoute = ApiSyncCompactRouteImport.update({
   id: '/api/sync/compact',
   path: '/api/sync/compact',
@@ -316,6 +323,12 @@ const DashboardAdminTablesTableIndexRoute =
     path: '/admin/tables/$table/',
     getParentRoute: () => DashboardLayoutRoute,
   } as any)
+const DashboardResumesResumeIdEventsIndexRoute =
+  DashboardResumesResumeIdEventsIndexRouteImport.update({
+    id: '/resumes/$resumeId/events/',
+    path: '/resumes/$resumeId/events/',
+    getParentRoute: () => DashboardLayoutRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -335,6 +348,7 @@ export interface FileRoutesByFullPath {
   '/api/ai/resume-tailor': typeof ApiAiResumeTailorRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/cron/project-sync-events': typeof ApiCronProjectSyncEventsRoute
+  '/api/cron/squash-sync-events': typeof ApiCronSquashSyncEventsRoute
   '/api/sync/compact': typeof ApiSyncCompactRoute
   '/api/sync/events': typeof ApiSyncEventsRoute
   '/admin/': typeof DashboardAdminIndexRoute
@@ -366,6 +380,7 @@ export interface FileRoutesByFullPath {
   '/admin/users/': typeof DashboardAdminUsersIndexRoute
   '/resumes/$resumeId/': typeof DashboardResumesResumeIdIndexRoute
   '/admin/tables/$table/': typeof DashboardAdminTablesTableIndexRoute
+  '/resumes/$resumeId/events/': typeof DashboardResumesResumeIdEventsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -384,6 +399,7 @@ export interface FileRoutesByTo {
   '/api/ai/resume-tailor': typeof ApiAiResumeTailorRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/cron/project-sync-events': typeof ApiCronProjectSyncEventsRoute
+  '/api/cron/squash-sync-events': typeof ApiCronSquashSyncEventsRoute
   '/api/sync/compact': typeof ApiSyncCompactRoute
   '/api/sync/events': typeof ApiSyncEventsRoute
   '/admin': typeof DashboardAdminIndexRoute
@@ -415,6 +431,7 @@ export interface FileRoutesByTo {
   '/admin/users': typeof DashboardAdminUsersIndexRoute
   '/resumes/$resumeId': typeof DashboardResumesResumeIdIndexRoute
   '/admin/tables/$table': typeof DashboardAdminTablesTableIndexRoute
+  '/resumes/$resumeId/events': typeof DashboardResumesResumeIdEventsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -436,6 +453,7 @@ export interface FileRoutesById {
   '/api/ai/resume-tailor': typeof ApiAiResumeTailorRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/cron/project-sync-events': typeof ApiCronProjectSyncEventsRoute
+  '/api/cron/squash-sync-events': typeof ApiCronSquashSyncEventsRoute
   '/api/sync/compact': typeof ApiSyncCompactRoute
   '/api/sync/events': typeof ApiSyncEventsRoute
   '/_dashboard/admin/': typeof DashboardAdminIndexRoute
@@ -467,6 +485,7 @@ export interface FileRoutesById {
   '/_dashboard/admin/users/': typeof DashboardAdminUsersIndexRoute
   '/_dashboard/resumes/$resumeId/': typeof DashboardResumesResumeIdIndexRoute
   '/_dashboard/admin/tables/$table/': typeof DashboardAdminTablesTableIndexRoute
+  '/_dashboard/resumes/$resumeId/events/': typeof DashboardResumesResumeIdEventsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -488,6 +507,7 @@ export interface FileRouteTypes {
     | '/api/ai/resume-tailor'
     | '/api/auth/$'
     | '/api/cron/project-sync-events'
+    | '/api/cron/squash-sync-events'
     | '/api/sync/compact'
     | '/api/sync/events'
     | '/admin/'
@@ -519,6 +539,7 @@ export interface FileRouteTypes {
     | '/admin/users/'
     | '/resumes/$resumeId/'
     | '/admin/tables/$table/'
+    | '/resumes/$resumeId/events/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -537,6 +558,7 @@ export interface FileRouteTypes {
     | '/api/ai/resume-tailor'
     | '/api/auth/$'
     | '/api/cron/project-sync-events'
+    | '/api/cron/squash-sync-events'
     | '/api/sync/compact'
     | '/api/sync/events'
     | '/admin'
@@ -568,6 +590,7 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/resumes/$resumeId'
     | '/admin/tables/$table'
+    | '/resumes/$resumeId/events'
   id:
     | '__root__'
     | '/'
@@ -588,6 +611,7 @@ export interface FileRouteTypes {
     | '/api/ai/resume-tailor'
     | '/api/auth/$'
     | '/api/cron/project-sync-events'
+    | '/api/cron/squash-sync-events'
     | '/api/sync/compact'
     | '/api/sync/events'
     | '/_dashboard/admin/'
@@ -619,6 +643,7 @@ export interface FileRouteTypes {
     | '/_dashboard/admin/users/'
     | '/_dashboard/resumes/$resumeId/'
     | '/_dashboard/admin/tables/$table/'
+    | '/_dashboard/resumes/$resumeId/events/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -635,6 +660,7 @@ export interface RootRouteChildren {
   ApiAiResumeTailorRoute: typeof ApiAiResumeTailorRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiCronProjectSyncEventsRoute: typeof ApiCronProjectSyncEventsRoute
+  ApiCronSquashSyncEventsRoute: typeof ApiCronSquashSyncEventsRoute
   ApiSyncCompactRoute: typeof ApiSyncCompactRoute
   ApiSyncEventsRoute: typeof ApiSyncEventsRoute
   RPublicIdIndexRoute: typeof RPublicIdIndexRoute
@@ -916,6 +942,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiCronProjectSyncEventsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/cron/squash-sync-events': {
+      id: '/api/cron/squash-sync-events'
+      path: '/api/cron/squash-sync-events'
+      fullPath: '/api/cron/squash-sync-events'
+      preLoaderRoute: typeof ApiCronSquashSyncEventsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/sync/compact': {
       id: '/api/sync/compact'
       path: '/api/sync/compact'
@@ -986,6 +1019,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardAdminTablesTableIndexRouteImport
       parentRoute: typeof DashboardLayoutRoute
     }
+    '/_dashboard/resumes/$resumeId/events/': {
+      id: '/_dashboard/resumes/$resumeId/events/'
+      path: '/resumes/$resumeId/events'
+      fullPath: '/resumes/$resumeId/events/'
+      preLoaderRoute: typeof DashboardResumesResumeIdEventsIndexRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
   }
 }
 
@@ -1018,6 +1058,7 @@ interface DashboardLayoutRouteChildren {
   DashboardAdminUsersIndexRoute: typeof DashboardAdminUsersIndexRoute
   DashboardResumesResumeIdIndexRoute: typeof DashboardResumesResumeIdIndexRoute
   DashboardAdminTablesTableIndexRoute: typeof DashboardAdminTablesTableIndexRoute
+  DashboardResumesResumeIdEventsIndexRoute: typeof DashboardResumesResumeIdEventsIndexRoute
 }
 
 const DashboardLayoutRouteChildren: DashboardLayoutRouteChildren = {
@@ -1049,6 +1090,8 @@ const DashboardLayoutRouteChildren: DashboardLayoutRouteChildren = {
   DashboardAdminUsersIndexRoute: DashboardAdminUsersIndexRoute,
   DashboardResumesResumeIdIndexRoute: DashboardResumesResumeIdIndexRoute,
   DashboardAdminTablesTableIndexRoute: DashboardAdminTablesTableIndexRoute,
+  DashboardResumesResumeIdEventsIndexRoute:
+    DashboardResumesResumeIdEventsIndexRoute,
 }
 
 const DashboardLayoutRouteWithChildren = DashboardLayoutRoute._addFileChildren(
@@ -1096,6 +1139,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAiResumeTailorRoute: ApiAiResumeTailorRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiCronProjectSyncEventsRoute: ApiCronProjectSyncEventsRoute,
+  ApiCronSquashSyncEventsRoute: ApiCronSquashSyncEventsRoute,
   ApiSyncCompactRoute: ApiSyncCompactRoute,
   ApiSyncEventsRoute: ApiSyncEventsRoute,
   RPublicIdIndexRoute: RPublicIdIndexRoute,

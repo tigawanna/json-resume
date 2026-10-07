@@ -20,7 +20,7 @@ const publishInputSchema = z.object({
 
 /** Anonymous: load a published snapshot by public id. */
 export const getPublicResume = createServerFn({ method: "GET" })
-  .inputValidator((input: { id: string }) => z.object({ id: z.string().min(1) }).parse(input))
+  .validator((input: { id: string }) => z.object({ id: z.string().min(1) }).parse(input))
   .handler(async ({ data }) => {
     return getPublicResumeById(data.id);
   });
@@ -28,7 +28,7 @@ export const getPublicResume = createServerFn({ method: "GET" })
 /** Auth: whether this local résumé already has a public link. */
 export const getMyPublicResume = createServerFn({ method: "GET" })
   .middleware([viewerMiddleware])
-  .inputValidator((input: { sourceResumeId: string }) =>
+  .validator((input: { sourceResumeId: string }) =>
     z.object({ sourceResumeId: z.string().min(1) }).parse(input),
   )
   .handler(async ({ context, data }) => {
@@ -38,7 +38,7 @@ export const getMyPublicResume = createServerFn({ method: "GET" })
 /** Auth: list + search the signed-in user's public snapshots. */
 export const listMyPublicResumes = createServerFn({ method: "GET" })
   .middleware([viewerMiddleware])
-  .inputValidator((input?: { keyword?: string; limit?: number; offset?: number }) =>
+  .validator((input?: { keyword?: string; limit?: number; offset?: number }) =>
     z
       .object({
         keyword: z.string().optional(),
@@ -60,7 +60,7 @@ export const listMyPublicResumes = createServerFn({ method: "GET" })
 /** Auth: publish or refresh the public snapshot (direct DB write, not sync). */
 export const publishPublicResume = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
-  .inputValidator((input: z.infer<typeof publishInputSchema>) => publishInputSchema.parse(input))
+  .validator((input: z.infer<typeof publishInputSchema>) => publishInputSchema.parse(input))
   .handler(async ({ context, data }) => {
     return upsertPublicResume({
       userId: context.viewer.user.id,
@@ -73,7 +73,7 @@ export const publishPublicResume = createServerFn({ method: "POST" })
 /** Auth: rename the public listing title (does not change the document). */
 export const renamePublicResume = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
-  .inputValidator((input: { id: string; title: string }) =>
+  .validator((input: { id: string; title: string }) =>
     z.object({ id: z.string().min(1), title: z.string().min(1) }).parse(input),
   )
   .handler(async ({ context, data }) => {
@@ -89,21 +89,18 @@ export const renamePublicResume = createServerFn({ method: "POST" })
 /** Auth: remove the public snapshot for this local résumé. */
 export const unpublishPublicResume = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
-  .inputValidator((input: { sourceResumeId: string }) =>
+  .validator((input: { sourceResumeId: string }) =>
     z.object({ sourceResumeId: z.string().min(1) }).parse(input),
   )
   .handler(async ({ context, data }) => {
-    const removed = await deletePublicResumeForSource(
-      context.viewer.user.id,
-      data.sourceResumeId,
-    );
+    const removed = await deletePublicResumeForSource(context.viewer.user.id, data.sourceResumeId);
     return { success: removed };
   });
 
 /** Auth: remove a public snapshot by its public id. */
 export const unpublishPublicResumeById = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
-  .inputValidator((input: { id: string }) => z.object({ id: z.string().min(1) }).parse(input))
+  .validator((input: { id: string }) => z.object({ id: z.string().min(1) }).parse(input))
   .handler(async ({ context, data }) => {
     const removed = await deletePublicResumeById(context.viewer.user.id, data.id);
     return { success: removed };

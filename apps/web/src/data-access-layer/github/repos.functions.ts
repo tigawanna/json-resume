@@ -29,7 +29,7 @@ function normalizeSearchParams(input?: SearchRepositoriesParams): SearchReposito
 
 export const getGithubRepos = createServerFn({ method: "GET" })
   .middleware([viewerMiddleware])
-  .inputValidator(
+  .validator(
     (input?: {
       query?: string;
       language?: string;
@@ -64,7 +64,7 @@ export const getGithubRepos = createServerFn({ method: "GET" })
 
 export const searchGithubRepos = createServerFn({ method: "GET" })
   .middleware([viewerMiddleware])
-  .inputValidator(
+  .validator(
     (input?: {
       query?: string;
       language?: string;

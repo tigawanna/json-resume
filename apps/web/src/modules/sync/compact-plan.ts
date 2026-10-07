@@ -92,6 +92,11 @@ class WorkingSet {
     return this.table(collectionId).has(id);
   }
 
+  /** Loaded and then deleted by this plan; a row that was never loaded is not "removed". */
+  removed(collectionId: string, id: string) {
+    return Boolean(this.original.get(collectionId)?.has(id)) && !this.has(collectionId, id);
+  }
+
   set(collectionId: string, id: string, patch: Row) {
     const table = this.table(collectionId);
     const current = table.get(id);
@@ -175,7 +180,11 @@ function mergeBy(
   return merged;
 }
 
-/** After repointing, keep one join row per (owner, entity) and drop rows to missing parents. */
+/**
+ * After repointing, keep one join row per (owner, entity) and drop rows whose
+ * entity this plan deleted. Entities outside the loaded set (e.g. legacy rows
+ * with a null `user_id`) are not missing, so their joins stay.
+ */
 function dedupeJoins(state: WorkingSet, parents: Record<string, string>) {
   for (const join of JOINS) {
     const seen = new Set<string>();
@@ -186,7 +195,7 @@ function dedupeJoins(state: WorkingSet, parents: Record<string, string>) {
       if (
         entityCollection &&
         typeof entityId === "string" &&
-        !state.has(entityCollection, entityId)
+        state.removed(entityCollection, entityId)
       ) {
         state.delete(join.collectionId, row.id);
         continue;
@@ -201,7 +210,9 @@ function dedupeJoins(state: WorkingSet, parents: Record<string, string>) {
 /** Skills used to belong to one group through `groupId`; give each a group link instead. */
 function migrateLegacySkills(state: WorkingSet, userId: string) {
   const linked = new Set(
-    state.rows("resumeSkillGroupSkill").map((link) => `${link.groupId}\u241f${link.skillId}`),
+    state
+      .rows("resumeSkillGroupSkill")
+      .map((link) => `${String(link.groupId)}\u241f${String(link.skillId)}`),
   );
   for (const skill of state.rows("resumeSkill")) {
     if (typeof skill.id !== "string") continue;

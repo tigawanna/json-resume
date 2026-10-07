@@ -1,5 +1,5 @@
-import { auth } from "@/lib/auth";
 import { viewerMiddleware } from "@/data-access-layer/auth/viewer";
+import { auth } from "@/lib/auth";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
@@ -19,7 +19,7 @@ const PERMISSION_MAP: Record<z.infer<typeof permissionLevelSchema>, Record<strin
 
 export const createApiKeyFn = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
-  .inputValidator((input: CreateApiKeyInput) => createApiKeyInputSchema.parse(input))
+  .validator((input: CreateApiKeyInput) => createApiKeyInputSchema.parse(input))
   .handler(async ({ data, context }) => {
     const { name, permission } = data;
     const userId = context.viewer.user.id;

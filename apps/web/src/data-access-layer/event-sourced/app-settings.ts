@@ -1,5 +1,7 @@
+import { DEFAULT_RETENTION_MS } from "@/modules/sync/squash-plan";
 import { BackendMismatchError } from "event-sourced-collection";
 import type { AppDb } from "./collection";
+import { mergeEventHistory, squashLocalEvents } from "./event-history";
 import { wipeLocalDatabase } from "./local-reset";
 import type { AppSettings } from "./schemas";
 import { beginSyncProgress, finishSyncProgress } from "./sync-progress";
@@ -37,12 +39,14 @@ export function applyManagedSyncGate(db: AppDb, isAuthenticated: boolean): AppSe
 /** Coalesce concurrent kickers (nested providers) into one in-flight sync. */
 let managedSyncInFlight: Promise<void> | null = null;
 
-/** Recent synced outbox/inbox rows kept for the Events page; older ones are pruned. */
-const SYNCED_EVENTS_KEPT = 50;
+/** Synced events older than this leave the device entirely; the server keeps its own copy. */
+const LOCAL_EVENT_HORIZON_MS = 7 * 24 * 60 * 60 * 1000;
 
 /**
  * One library sync: it pushes the outbox batch by batch until drained, then
- * pulls every page. Synced outbox rows are left for `pruneSyncedEvents`.
+ * pulls every page. Afterwards synced events replaced by a later event for the
+ * same row are squashed once they leave the retention window, and anything past
+ * the horizon is pruned. Restore can reach back as far as what is left.
  */
 export async function runManagedSync(db: AppDb, mode: "background" | "manual") {
   beginSyncProgress(db.getSyncStatus().pendingCount);
@@ -53,7 +57,12 @@ export async function runManagedSync(db: AppDb, mode: "background" | "manual") {
       await wipeLocalDatabase({ resumeSync: true });
     }
     if (!result.deferred && result.errors.length === 0) {
-      await db.pruneSyncedEvents({ keepLast: SYNCED_EVENTS_KEPT });
+      const history = mergeEventHistory(
+        db.collections.outbox.toArray,
+        db.collections.inbox.toArray,
+      );
+      await squashLocalEvents(db, history, Date.now() - DEFAULT_RETENTION_MS);
+      await db.pruneSyncedEvents({ olderThanMs: LOCAL_EVENT_HORIZON_MS });
     }
     return {
       pushed: result.pushed,

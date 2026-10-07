@@ -18,7 +18,7 @@ export const ensureSession = createServerFn({ method: "GET" }).handler(async () 
 });
 
 export const deleteAccount = createServerFn({ method: "POST" })
-  .inputValidator((input: { userId: string }) => input)
+  .validator((input: { userId: string }) => input)
   .handler(async ({ data }) => {
     const headers = getRequestHeaders();
     await auth.api.removeUser({ body: { userId: data.userId }, headers });

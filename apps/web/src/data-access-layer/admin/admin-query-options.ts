@@ -8,6 +8,8 @@ import {
   getAdminTables,
   getAdminTruncatePreview,
   getAdminUsers,
+  getEventLogBackups,
+  squashEventLogFn,
 } from "@/modules/admin/admin.functions";
 import type {
   adminEventFilterSchema,
@@ -66,6 +68,18 @@ export function adminTruncatePreviewQueryOptions(input: {
   return queryOptions({
     queryKey: ["admin", "truncate-preview", input],
     queryFn: () => getAdminTruncatePreview({ data: input }),
+  });
+}
+
+export const adminEventLogBackupsQueryOptions = queryOptions({
+  queryKey: ["admin", "event-log-backups"],
+  queryFn: () => getEventLogBackups(),
+});
+
+export function adminSquashPreviewQueryOptions(input: { userId?: string; retentionMs: number }) {
+  return queryOptions({
+    queryKey: ["admin", "squash-preview", input],
+    queryFn: () => squashEventLogFn({ data: { ...input, dryRun: true } }),
   });
 }
 

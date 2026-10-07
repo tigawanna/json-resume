@@ -10,7 +10,7 @@ export const getSavedProjects = createServerFn({ method: "GET" })
 
 export const saveGithubProject = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
-  .inputValidator(
+  .validator(
     (input: {
       name: string;
       url: string;
@@ -25,7 +25,7 @@ export const saveGithubProject = createServerFn({ method: "POST" })
 
 export const unsaveGithubProject = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
-  .inputValidator((input: { url: string }) => input)
+  .validator((input: { url: string }) => input)
   .handler(async ({ context, data }) => {
     await unsaveProjectByUrl(context.viewer.user.id, data.url);
     return { success: true };

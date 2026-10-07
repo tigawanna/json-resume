@@ -8,7 +8,7 @@ import {
 
 export const listExperiences = createServerFn({ method: "GET" })
   .middleware([viewerMiddleware])
-  .inputValidator(
+  .validator(
     (input?: { keyword?: string; cursor?: string; direction?: "after" | "before" }) => input,
   )
   .handler(async ({ context, data }) => {
@@ -21,7 +21,7 @@ export const listExperiences = createServerFn({ method: "GET" })
 
 export const deleteExperienceFn = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
-  .inputValidator((input: { id: string }) => input)
+  .validator((input: { id: string }) => input)
   .handler(async ({ context, data }) => {
     await deleteExperienceForUser(data.id, context.viewer.user.id);
     return { success: true };
@@ -29,7 +29,7 @@ export const deleteExperienceFn = createServerFn({ method: "POST" })
 
 export const reorderExperienceFn = createServerFn({ method: "POST" })
   .middleware([viewerMiddleware])
-  .inputValidator((input: { idA: string; idB: string }) => input)
+  .validator((input: { idA: string; idB: string }) => input)
   .handler(async ({ context, data }) => {
     await swapExperienceSortOrder(context.viewer.user.id, data.idA, data.idB);
     return { success: true };

@@ -1,7 +1,7 @@
 import "@tanstack/react-start/server-only";
 
 import { db } from "@/lib/drizzle/client";
-import { syncEvent } from "@/lib/drizzle/scheam";
+import { syncEvent, user } from "@/lib/drizzle/scheam";
 import { log as standaloneLog } from "evlog";
 import { catchUpProjection, ownerFilter, toPayload } from "../admin/rebuild-event-log.server";
 import { planCompaction } from "./compact-plan";
@@ -80,4 +80,18 @@ export function compactUserLibrary(userId: string): Promise<CompactResult> {
   const next = compact(userId).finally(() => running.delete(userId));
   running.set(userId, next);
   return next;
+}
+
+/** Runs {@link compactUserLibrary} for every user, one at a time. */
+export async function compactAllLibraries(): Promise<CompactResult & { users: number }> {
+  const userIds = (await db.select({ id: user.id }).from(user)).map((row) => row.id);
+  const total: CompactResult & { users: number } = { users: userIds.length, events: 0, merged: {} };
+  for (const userId of userIds) {
+    const result = await compactUserLibrary(userId);
+    total.events += result.events;
+    for (const [collectionId, n] of Object.entries(result.merged)) {
+      total.merged[collectionId] = (total.merged[collectionId] ?? 0) + n;
+    }
+  }
+  return total;
 }
