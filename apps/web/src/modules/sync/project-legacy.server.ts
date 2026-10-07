@@ -43,8 +43,8 @@ import {
   syncEvent,
 } from "@/lib/drizzle/scheam";
 import { and, eq, getTableColumns, isNull, type SQL } from "drizzle-orm";
-import { log as standaloneLog, type RequestLogger } from "evlog";
-import { useRequest } from "nitro/context";
+import { requestLog } from "@/lib/evlog/request-log";
+import { log as standaloneLog } from "evlog";
 import { isForeignKeyError, uniqueConstraintColumns } from "./projection-constraint";
 import type { SQLiteColumn, SQLiteTable } from "drizzle-orm/sqlite-core";
 
@@ -58,25 +58,6 @@ type ProjectionFailure = {
   key: string;
   reason: string;
 };
-
-function requestLog(): RequestLogger | null {
-  try {
-    const candidate = useRequest().context?.log;
-    if (
-      candidate &&
-      typeof candidate === "object" &&
-      "warn" in candidate &&
-      "set" in candidate &&
-      typeof candidate.warn === "function" &&
-      typeof candidate.set === "function"
-    ) {
-      return candidate as RequestLogger;
-    }
-  } catch {
-    // Projection can run without a Nitro request context.
-  }
-  return null;
-}
 
 function recordProjection(fields: {
   pending: number;

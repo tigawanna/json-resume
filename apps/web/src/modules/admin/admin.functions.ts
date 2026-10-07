@@ -3,6 +3,7 @@ import { createMiddleware, createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { compactAllLibraries, compactUserLibrary } from "../sync/compact.server";
 import { squashSyncEvents } from "../sync/squash.server";
+import { auditAdminAction } from "./admin-audit.server";
 import { adminEventFilterSchema, adminEventListSchema } from "./admin-event-filters";
 import {
   readAdminEvents,
@@ -16,6 +17,7 @@ import { previewTruncate, truncateAdminTable } from "./admin-truncate.server";
 import { listAdminUsers } from "./admin-users.server";
 import {
   backupAndEmptyEventLog,
+  backupEventLog,
   dropEventLogBackup,
   EVENT_LOG_TABLE,
   listEventLogBackups,
@@ -85,12 +87,22 @@ export const getAdminRow = createServerFn({ method: "GET" })
 export const updateAdminRowFn = createServerFn({ method: "POST" })
   .middleware([adminMiddleware])
   .validator(rowRefSchema.extend({ values: z.record(z.string(), z.string().nullable()) }))
-  .handler(async ({ data }) => updateAdminRow(data));
+  .handler(async ({ data, context }) =>
+    auditAdminAction(
+      "update-row",
+      context.viewer.user,
+      // Cell values can be large or sensitive; the column names are enough to trace an edit.
+      { table: data.table, rowid: data.rowid, columns: Object.keys(data.values) },
+      () => updateAdminRow(data),
+    ),
+  );
 
 export const deleteAdminRowFn = createServerFn({ method: "POST" })
   .middleware([adminMiddleware])
   .validator(rowRefSchema)
-  .handler(async ({ data }) => deleteAdminRow(data));
+  .handler(async ({ data, context }) =>
+    auditAdminAction("delete-row", context.viewer.user, data, () => deleteAdminRow(data)),
+  );
 
 const truncateCutoffSchema = z
   .object({ column: z.string().min(1), before: z.number().int() })
@@ -111,20 +123,38 @@ export const truncateAdminTableFn = createServerFn({ method: "POST" })
       rebuild: z.boolean().optional(),
     }),
   )
-  .handler(async ({ data }) => truncateAdminTable(data));
+  .handler(async ({ data, context }) =>
+    auditAdminAction(
+      "truncate-table",
+      context.viewer.user,
+      { table: data.table, cutoff: data.cutoff, rebuild: data.rebuild },
+      () => truncateAdminTable(data),
+    ),
+  );
 
 export const restoreEventLogBackupFn = createServerFn({ method: "POST" })
   .middleware([adminMiddleware])
   .validator(z.object({ table: z.string().min(1) }))
-  .handler(async ({ data }) => restoreEventLogBackup(data.table));
+  .handler(async ({ data, context }) =>
+    auditAdminAction("restore-event-log-backup", context.viewer.user, data, () =>
+      restoreEventLogBackup(data.table),
+    ),
+  );
 
 export const dropEventLogBackupFn = createServerFn({ method: "POST" })
   .middleware([adminMiddleware])
   .validator(z.object({ table: z.string().min(1), confirm: z.string() }))
-  .handler(async ({ data }) => {
-    if (data.confirm !== data.table) throw new Error("Type the backup name to confirm");
-    return dropEventLogBackup(data.table);
-  });
+  .handler(async ({ data, context }) =>
+    auditAdminAction(
+      "drop-event-log-backup",
+      context.viewer.user,
+      { table: data.table },
+      async () => {
+        if (data.confirm !== data.table) throw new Error("Type the backup name to confirm");
+        return dropEventLogBackup(data.table);
+      },
+    ),
+  );
 
 export const squashEventLogFn = createServerFn({ method: "POST" })
   .middleware([adminMiddleware])
@@ -135,22 +165,49 @@ export const squashEventLogFn = createServerFn({ method: "POST" })
       dryRun: z.boolean().optional(),
     }),
   )
-  .handler(async ({ data }) => squashSyncEvents(data));
+  .handler(async ({ data, context }) =>
+    auditAdminAction("squash-event-log", context.viewer.user, data, () => squashSyncEvents(data)),
+  );
 
 export const projectPendingEventsFn = createServerFn({ method: "POST" })
   .middleware([adminMiddleware])
-  .handler(async () => ({ projected: await catchUpProjection() }));
+  .handler(async ({ context }) =>
+    auditAdminAction("project-pending-events", context.viewer.user, {}, async () => ({
+      projected: await catchUpProjection(),
+    })),
+  );
 
 export const compactLibraryFn = createServerFn({ method: "POST" })
   .middleware([adminMiddleware])
   .inputValidator(z.object({ userId: z.string().min(1).optional() }))
-  .handler(async ({ data }) =>
-    data.userId ? { users: 1, ...(await compactUserLibrary(data.userId)) } : compactAllLibraries(),
+  .handler(async ({ data, context }) =>
+    auditAdminAction("compact-library", context.viewer.user, data, async () =>
+      data.userId
+        ? { users: 1, ...(await compactUserLibrary(data.userId)) }
+        : compactAllLibraries(),
+    ),
+  );
+
+export const pruneLibraryFn = createServerFn({ method: "POST" })
+  .middleware([adminMiddleware])
+  .validator(z.object({ userId: z.string().min(1).optional() }))
+  .handler(async ({ data, context }) =>
+    auditAdminAction("prune-library", context.viewer.user, data, async () => {
+      const { backup } = await backupEventLog();
+      const result = data.userId
+        ? { users: 1, ...(await compactUserLibrary(data.userId, { prune: true })) }
+        : await compactAllLibraries({ prune: true });
+      return { backup, ...result };
+    }),
   );
 
 export const rebuildAllEventLogsFn = createServerFn({ method: "POST" })
   .middleware([adminMiddleware])
-  .handler(async () => rebuildAllEventLogs());
+  .handler(async ({ context }) =>
+    auditAdminAction("rebuild-all-event-logs", context.viewer.user, {}, () =>
+      rebuildAllEventLogs(),
+    ),
+  );
 
 export const getEventLogBackups = createServerFn({ method: "GET" })
   .middleware([adminMiddleware])
@@ -159,18 +216,31 @@ export const getEventLogBackups = createServerFn({ method: "GET" })
 export const backupAndEmptyEventLogFn = createServerFn({ method: "POST" })
   .middleware([adminMiddleware])
   .inputValidator(z.object({ confirm: z.string(), rebuild: z.boolean().optional() }))
-  .handler(async ({ data }) => {
-    if (data.confirm !== EVENT_LOG_TABLE) throw new Error(`Type ${EVENT_LOG_TABLE} to confirm`);
-    const emptied = await backupAndEmptyEventLog();
-    const rebuilt = data.rebuild ? await rebuildAllEventLogs() : null;
-    return {
-      ...emptied,
-      rebuiltEvents: rebuilt?.insertedEvents ?? 0,
-      rebuiltUsers: rebuilt?.users ?? 0,
-    };
-  });
+  .handler(async ({ data, context }) =>
+    auditAdminAction(
+      "backup-and-empty-event-log",
+      context.viewer.user,
+      { rebuild: data.rebuild },
+      async () => {
+        if (data.confirm !== EVENT_LOG_TABLE) {
+          throw new Error(`Type ${EVENT_LOG_TABLE} to confirm`);
+        }
+        const emptied = await backupAndEmptyEventLog();
+        const rebuilt = data.rebuild ? await rebuildAllEventLogs() : null;
+        return {
+          ...emptied,
+          rebuiltEvents: rebuilt?.insertedEvents ?? 0,
+          rebuiltUsers: rebuilt?.users ?? 0,
+        };
+      },
+    ),
+  );
 
 export const rebuildEventLog = createServerFn({ method: "POST" })
   .middleware([adminMiddleware])
   .validator(z.object({ userId: z.string().min(1) }))
-  .handler(async ({ data }) => rebuildUserEventLog(data.userId));
+  .handler(async ({ data, context }) =>
+    auditAdminAction("rebuild-event-log", context.viewer.user, data, () =>
+      rebuildUserEventLog(data.userId),
+    ),
+  );

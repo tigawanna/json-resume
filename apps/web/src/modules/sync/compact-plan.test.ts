@@ -137,3 +137,95 @@ describe("planCompaction", () => {
     expect(planCompaction(settled, { userId: "u", now }).ops).toEqual([]);
   });
 });
+
+describe("planCompaction with prune", () => {
+  const input = {
+    resume: [{ id: "r1", userId: "u", ...at(1) }],
+    resumeExperience: [
+      { id: "e1", userId: "u", company: "Acme", role: "Dev", startDate: "2020", ...at(1) },
+      { id: "e2", userId: "u", company: "Old", role: "Dev", startDate: "2010", ...at(1) },
+    ],
+    resumeExperienceItem: [
+      { id: "ei1", resumeId: "r1", experienceId: "e1", sortOrder: 0, ...at(1) },
+    ],
+    resumeExperienceBullet: [
+      { id: "b1", experienceId: "e1", text: "Shipped X", sortOrder: 0, ...at(1) },
+      { id: "b2", experienceId: "e1", text: "Unused draft", sortOrder: 1, ...at(1) },
+      { id: "b3", experienceId: "e2", text: "Old work", sortOrder: 0, ...at(1) },
+    ],
+    resumeExperienceBulletItem: [
+      { id: "bi1", resumeId: "r1", bulletId: "b1", sortOrder: 0, ...at(1) },
+    ],
+    resumeSkillGroup: [
+      { id: "g1", userId: "u", name: "Frontend", ...at(1) },
+      { id: "g2", userId: "u", name: "Frontend", ...at(1) },
+    ],
+    resumeSkillGroupItem: [{ id: "gi1", resumeId: "r1", groupId: "g1", sortOrder: 0, ...at(1) }],
+    resumeSkill: [
+      { id: "s1", userId: "u", name: "React", ...at(1) },
+      { id: "s2", userId: "u", name: "Vue", ...at(1) },
+      { id: "s3", userId: "u", name: "Unlinked", ...at(1) },
+    ],
+    resumeSkillGroupSkill: [
+      { id: "l1", groupId: "g1", skillId: "s1", sortOrder: 0, ...at(1) },
+      { id: "l2", groupId: "g2", skillId: "s1", sortOrder: 0, ...at(1) },
+      { id: "l3", groupId: "g2", skillId: "s2", sortOrder: 1, ...at(1) },
+    ],
+    resumeSummary: [
+      { id: "su1", userId: "u", text: "Used", ...at(1) },
+      { id: "su2", userId: "u", text: "Unused", ...at(1) },
+    ],
+    resumeSummaryItem: [{ id: "sui1", resumeId: "r1", summaryId: "su1", sortOrder: 0, ...at(1) }],
+  };
+
+  const plan = planCompaction(input, { userId: "u", now, prune: true });
+  const state = apply(input, plan.ops);
+  const ids = (collectionId: string) => [...(state[collectionId]?.keys() ?? [])].sort();
+
+  it("deletes every library row no résumé reaches, with its links", () => {
+    expect(ids("resumeExperience")).toEqual(["e1"]);
+    expect(ids("resumeExperienceBullet")).toEqual(["b1"]);
+    expect(ids("resumeSkillGroup")).toEqual(["g1"]);
+    expect(ids("resumeSkillGroupSkill")).toEqual(["l1"]);
+    expect(ids("resumeSkill")).toEqual(["s1"]);
+    expect(ids("resumeSummary")).toEqual(["su1"]);
+  });
+
+  it("leaves the résumé showing exactly what it showed before", () => {
+    expect(bulletsShown(state, "r1")).toEqual(["Shipped X"]);
+    expect(skillsShown(state, "r1")).toEqual([["React"]]);
+    expect(ids("resumeExperienceItem")).toEqual(["ei1"]);
+    expect(ids("resumeSummaryItem")).toEqual(["sui1"]);
+  });
+
+  it("reports what it removed and sends the full row with each delete", () => {
+    expect(plan.pruned).toEqual({
+      resumeExperience: 1,
+      resumeExperienceBullet: 2,
+      resumeSkillGroup: 1,
+      resumeSkillGroupSkill: 2,
+      resumeSkill: 2,
+      resumeSummary: 1,
+    });
+    const deleted = plan.ops.find((op) => op.type === "delete" && op.id === "su2");
+    expect(deleted?.row.text).toBe("Unused");
+  });
+
+  it("deletes links before the rows they point at", () => {
+    const position = (id: string) => plan.ops.findIndex((op) => op.id === id);
+    expect(position("l3")).toBeLessThan(position("g2"));
+    expect(position("l3")).toBeLessThan(position("s2"));
+  });
+
+  it("prunes nothing without the flag", () => {
+    const plain = planCompaction(input, { userId: "u", now });
+    expect(plain.pruned).toEqual({});
+    expect(plain.ops.filter((op) => op.type === "delete")).toEqual([]);
+  });
+
+  it("leaves a collection alone when its résumé join was not loaded", () => {
+    const { resumeSummaryItem: _items, ...withoutJoin } = input;
+    const partial = planCompaction(withoutJoin, { userId: "u", now, prune: true });
+    expect(partial.pruned.resumeSummary).toBeUndefined();
+  });
+});

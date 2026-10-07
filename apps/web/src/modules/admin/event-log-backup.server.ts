@@ -48,6 +48,20 @@ async function requireBackup(table: string): Promise<string> {
   return table;
 }
 
+function newBackupName(): string {
+  return `${BACKUP_PREFIX}${new Date().toISOString().replace(/\D/g, "").slice(0, 14)}`;
+}
+
+/** Copies every `sync_event` row into a new backup table, leaving the log as it is. */
+export async function backupEventLog(): Promise<{ backup: string; rows: number }> {
+  const backup = newBackupName();
+  await db.$client.execute(
+    `create table ${quoteIdent(backup)} as select * from ${quoteIdent(EVENT_LOG_TABLE)}`,
+  );
+  const counted = await db.$client.execute(`select count(*) as n from ${quoteIdent(backup)}`);
+  return { backup, rows: Number(counted.rows[0]?.n ?? 0) };
+}
+
 /**
  * Copies every `sync_event` row into a new backup table and empties
  * `sync_event`, in one write transaction. Pending events are projected first so
@@ -55,7 +69,7 @@ async function requireBackup(table: string): Promise<string> {
  */
 export async function backupAndEmptyEventLog(): Promise<{ backup: string; deleted: number }> {
   await catchUpProjection();
-  const backup = `${BACKUP_PREFIX}${new Date().toISOString().replace(/\D/g, "").slice(0, 14)}`;
+  const backup = newBackupName();
   const [, emptied] = await db.$client.batch(
     [
       `create table ${quoteIdent(backup)} as select * from ${quoteIdent(EVENT_LOG_TABLE)}`,

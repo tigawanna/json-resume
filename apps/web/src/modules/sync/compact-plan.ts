@@ -1,5 +1,5 @@
 import { bulletKey, libraryKeys, skillGroupKey } from "@/modules/library/library-keys";
-import { parentRules } from "@/modules/library/library-references";
+import { parentRules, rowsToDeleteWith } from "@/modules/library/library-references";
 
 type Row = Record<string, unknown>;
 
@@ -13,6 +13,8 @@ export type CompactionOp = {
 export type CompactionPlan = {
   ops: CompactionOp[];
   merged: Record<string, number>;
+  /** Rows removed because no résumé reaches them, per collection (only with `prune`). */
+  pruned: Record<string, number>;
 };
 
 /** Join tables and the pair that must be unique in each. */
@@ -58,7 +60,7 @@ function bySortOrder(a: Row, b: Row) {
 
 class WorkingSet {
   private readonly tables = new Map<string, Map<string, Row>>();
-  private readonly original = new Map<string, Set<string>>();
+  private readonly original = new Map<string, Map<string, Row>>();
   private readonly dirty = new Map<string, Set<string>>();
 
   constructor(
@@ -70,7 +72,7 @@ class WorkingSet {
       const table = new Map<string, Row>();
       for (const row of rows) if (typeof row.id === "string") table.set(row.id, { ...row });
       this.tables.set(collectionId, table);
-      this.original.set(collectionId, new Set(table.keys()));
+      this.original.set(collectionId, new Map(table));
     }
   }
 
@@ -79,13 +81,21 @@ class WorkingSet {
     if (!table) {
       table = new Map();
       this.tables.set(collectionId, table);
-      this.original.set(collectionId, new Set());
+      this.original.set(collectionId, new Map());
     }
     return table;
   }
 
+  collections(): string[] {
+    return [...this.tables.keys()];
+  }
+
   rows(collectionId: string): Row[] {
     return [...this.table(collectionId).values()];
+  }
+
+  size(collectionId: string) {
+    return this.table(collectionId).size;
   }
 
   has(collectionId: string, id: string) {
@@ -121,10 +131,11 @@ class WorkingSet {
     const updates: CompactionOp[] = [];
     const inserts: CompactionOp[] = [];
     for (const [collectionId, table] of this.tables) {
-      const before = this.original.get(collectionId) ?? new Set<string>();
+      const before = this.original.get(collectionId) ?? new Map<string, Row>();
       const dirty = this.dirty.get(collectionId) ?? new Set<string>();
-      for (const id of before) {
-        if (!table.has(id)) deletes.push({ collectionId, type: "delete", id, row: { id } });
+      // Deletes carry the full row, like client deletes, so a backup of the log can restore it.
+      for (const [id, row] of before) {
+        if (!table.has(id)) deletes.push({ collectionId, type: "delete", id, row });
       }
       for (const [id, row] of table) {
         if (!before.has(id)) inserts.push({ collectionId, type: "insert", id, row });
@@ -303,14 +314,60 @@ const ENTITY_FOR_FIELD: Record<string, string> = {
   skillId: "resumeSkill",
 };
 
+function idsReached(
+  state: WorkingSet,
+  joinId: string,
+  owners: Set<string>,
+  ownerField: string,
+  field: string,
+): Set<string> {
+  return new Set(
+    state
+      .rows(joinId)
+      .filter((row) => owners.has(String(row[ownerField])))
+      .map((row) => String(row[field])),
+  );
+}
+
+/**
+ * Deletes library rows no résumé reaches, with the links and owned rows that
+ * go with them. A collection is only pruned when it and its join were both
+ * loaded; otherwise a missing join would look like "nothing reaches it".
+ * Skills are reached through a surviving group, so they go last.
+ */
+function pruneUnreferenced(state: WorkingSet, loaded: Set<string>) {
+  function drop(collectionId: string, keep: Set<string>) {
+    for (const row of state.rows(collectionId)) {
+      if (typeof row.id !== "string" || keep.has(row.id)) continue;
+      for (const dependent of rowsToDeleteWith(collectionId, row.id, (c) => state.rows(c))) {
+        state.delete(dependent.collectionId, dependent.id);
+      }
+      state.delete(collectionId, row.id);
+    }
+  }
+
+  if (!loaded.has("resume")) return;
+  const resumes = new Set(state.rows("resume").map((row) => String(row.id)));
+  for (const join of JOINS) {
+    if (join.owner !== "resumeId") continue;
+    const collectionId = ENTITY_FOR_FIELD[join.entity];
+    if (!collectionId || !loaded.has(collectionId) || !loaded.has(join.collectionId)) continue;
+    drop(collectionId, idsReached(state, join.collectionId, resumes, "resumeId", join.entity));
+  }
+  if (loaded.has("resumeSkill") && loaded.has("resumeSkillGroupSkill")) {
+    const groups = new Set(state.rows("resumeSkillGroup").map((row) => String(row.id)));
+    drop("resumeSkill", idsReached(state, "resumeSkillGroupSkill", groups, "groupId", "skillId"));
+  }
+}
+
 /**
  * One user's rows in, the events that collapse them to unique library rows
- * out. Ordered so each event projects cleanly: join deletes free unique
+ * out. With `prune`, rows no résumé reaches are deleted as well. Ordered so each event projects cleanly: join deletes free unique
  * slots, updates repoint children before their old parent is deleted.
  */
 export function planCompaction(
   input: Record<string, ReadonlyArray<Row>>,
-  options: { userId: string; now?: Date; newId?: () => string },
+  options: { userId: string; now?: Date; newId?: () => string; prune?: boolean },
 ): CompactionPlan {
   const state = new WorkingSet(
     input,
@@ -335,6 +392,16 @@ export function planCompaction(
     typeof row.name === "string" ? skillGroupKey(row.name, groupSkillIds(state, row.id)) : null,
   );
   dedupeJoins(state, ENTITY_FOR_FIELD);
+
+  const pruned: Record<string, number> = {};
+  if (options.prune) {
+    const sizes = new Map(state.collections().map((id) => [id, state.size(id)]));
+    pruneUnreferenced(state, new Set(Object.keys(input)));
+    for (const [collectionId, size] of sizes) {
+      const removed = size - state.size(collectionId);
+      if (removed > 0) pruned[collectionId] = removed;
+    }
+  }
 
   const first = state.diff();
   const touched = new Set<string>();
@@ -363,5 +430,6 @@ export function planCompaction(
       ...deletes.filter((op) => !isJoin(op)).sort(bulletsFirst),
     ],
     merged,
+    pruned,
   };
 }

@@ -2,8 +2,8 @@ import "@tanstack/react-start/server-only";
 
 import { db } from "@/lib/drizzle/client";
 import { syncEvent } from "@/lib/drizzle/scheam";
+import { logFields } from "@/lib/evlog/request-log";
 import { eq, inArray } from "drizzle-orm";
-import { log as standaloneLog } from "evlog";
 import { catchUpProjection } from "../admin/rebuild-event-log.server";
 import { DEFAULT_RETENTION_MS, planSquash, type SquashReason } from "./squash-plan";
 import { SYNC_RESET_COLLECTION } from "./sync-reset";
@@ -63,6 +63,7 @@ async function squashUser(userId: string, before: number, dryRun: boolean) {
 export async function squashSyncEvents(
   options: { userId?: string; retentionMs?: number; dryRun?: boolean } = {},
 ): Promise<SquashSyncEventsResult> {
+  const startedAt = Date.now();
   const dryRun = options.dryRun ?? false;
   const retentionMs = Math.max(
     options.retentionMs ?? DEFAULT_RETENTION_MS,
@@ -93,10 +94,8 @@ export async function squashSyncEvents(
   }
 
   if (!dryRun) {
-    standaloneLog.info({
-      message: "Squashed sync events",
-      service: "agentic-json-resume",
-      ...result,
+    logFields("Squashed sync events", {
+      squashSyncEvents: { ...result, retentionMs, durationMs: Date.now() - startedAt },
     });
   }
   return result;

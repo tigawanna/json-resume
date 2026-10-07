@@ -13,6 +13,7 @@ import { SquashEventLogForm } from "../../-components/SquashEventLogForm";
 import { CompactLibraryAction } from "./CompactLibraryAction";
 import { EventLogResetAction } from "./EventLogResetAction";
 import { ProjectionAction } from "./ProjectionAction";
+import { PruneLibraryAction } from "./PruneLibraryAction";
 import { RebuildEventLogAction } from "./RebuildEventLogAction";
 
 export function DataActionsSheet() {
@@ -44,6 +45,7 @@ export function DataActionsSheet() {
             <CompactLibraryAction />
           </ActionGroup>
           <ActionGroup title="Destructive">
+            <PruneLibraryAction />
             <RebuildEventLogAction />
             <EventLogResetAction />
           </ActionGroup>

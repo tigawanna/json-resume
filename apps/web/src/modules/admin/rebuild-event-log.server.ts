@@ -1,6 +1,7 @@
 import "@tanstack/react-start/server-only";
 
 import { db } from "@/lib/drizzle/client";
+import { logFields } from "@/lib/evlog/request-log";
 import {
   resume,
   resumeAiConversation,
@@ -143,7 +144,9 @@ export async function rebuildUserEventLog(
   userId: string,
   options: { projectFirst?: boolean } = {},
 ): Promise<RebuildEventLogResult> {
+  const startedAt = Date.now();
   const projectedFirst = options.projectFirst === false ? 0 : await catchUpProjection();
+  const projectedAt = Date.now();
 
   const rowsByCollection = new Map<ProjectableCollectionId, Row[]>();
   for (const collectionId of Object.keys(tablesByCollection)) {
@@ -153,6 +156,7 @@ export async function rebuildUserEventLog(
     const rows: Row[] = await db.select().from(table).where(ownerFilter(collectionId, userId));
     rowsByCollection.set(collectionId, rows);
   }
+  const loadedAt = Date.now();
 
   for (const row of rowsByCollection.get("resume") ?? []) {
     for (const [field, source] of Object.entries(resumeOrderSources)) {
@@ -214,12 +218,31 @@ export async function rebuildUserEventLog(
     db.insert(syncEvent).values(marker),
   ]);
 
-  return {
+  const result: RebuildEventLogResult = {
     previousEvents: previous?.n ?? 0,
     insertedEvents: values.length,
     projectedFirst,
     byCollection,
   };
+  logFields("Rebuilt user event log", {
+    rebuildEventLog: {
+      users: [
+        {
+          userId,
+          txId,
+          previousEvents: result.previousEvents,
+          insertedEvents: result.insertedEvents,
+          projectedFirst,
+          byCollection,
+          projectMs: projectedAt - startedAt,
+          loadMs: loadedAt - projectedAt,
+          writeMs: Date.now() - loadedAt,
+          durationMs: Date.now() - startedAt,
+        },
+      ],
+    },
+  });
+  return result;
 }
 
 export type RebuildAllEventLogsResult = {
@@ -235,6 +258,7 @@ export type RebuildAllEventLogsResult = {
  * to one insert per live row, then drops events of users that no longer exist.
  */
 export async function rebuildAllEventLogs(): Promise<RebuildAllEventLogsResult> {
+  const startedAt = Date.now();
   const projectedFirst = await catchUpProjection();
   const [before] = await db.select({ n: count() }).from(syncEvent);
   const userIds = (await db.select({ id: user.id }).from(user)).map((row) => row.id);
@@ -249,11 +273,15 @@ export async function rebuildAllEventLogs(): Promise<RebuildAllEventLogsResult> 
     .delete(syncEvent)
     .where(notInArray(syncEvent.userId, db.select({ id: user.id }).from(user)));
 
-  return {
+  const result: RebuildAllEventLogsResult = {
     users: userIds.length,
     previousEvents: before?.n ?? 0,
     insertedEvents,
     orphanEvents: orphans.rowsAffected,
     projectedFirst,
   };
+  logFields("Rebuilt every event log", {
+    rebuildEventLog: { all: { ...result, durationMs: Date.now() - startedAt } },
+  });
+  return result;
 }

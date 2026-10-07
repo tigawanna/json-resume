@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth";
 import { unwrapUnknownError } from "@/utils/errors";
-import { log as standaloneLog, type RequestLogger } from "evlog";
-import { useRequest } from "nitro/context";
+import { requestLog } from "@/lib/evlog/request-log";
+import { log as standaloneLog } from "evlog";
 
 const SESSION_ATTEMPTS = 2;
 const SESSION_TIMEOUT_MS = 3_000;
@@ -34,26 +34,6 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
 
 type SessionLookupOutcome = "retry" | "logged_out";
 
-function getRequestLog(): RequestLogger | null {
-  try {
-    const candidate = useRequest().context?.log;
-    if (
-      candidate &&
-      typeof candidate === "object" &&
-      "warn" in candidate &&
-      "set" in candidate &&
-      typeof candidate.warn === "function" &&
-      typeof candidate.set === "function"
-    ) {
-      // Runtime-checked subset of RequestLogger; Nitro context types it as unknown.
-      return candidate as RequestLogger;
-    }
-  } catch {
-    // No Nitro async request context (e.g. tests / background work).
-  }
-  return null;
-}
-
 function captureSessionLookupFailure(fields: {
   attempt: number;
   outcome: SessionLookupOutcome;
@@ -74,11 +54,11 @@ function captureSessionLookupFailure(fields: {
     error: errorMessage,
   };
 
-  const requestLog = getRequestLog();
-  if (requestLog) {
-    requestLog.warn(message, { auth: { sessionLookup } });
+  const log = requestLog();
+  if (log) {
+    log.warn(message, { auth: { sessionLookup } });
     // Array values concatenate on set(), so each failure appends a row.
-    requestLog.set({
+    log.set({
       authSessionRetries: [
         {
           attempt: fields.attempt,

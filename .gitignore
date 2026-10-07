@@ -42,7 +42,11 @@ minio/
 apps/site/db.sqlite
 apps/site/*.sqlite
 apps/site/*.sqlite3
-apps/site/*.db
+
+*.db
+*.db-shm
+*.db-wal
+
 *.sqlite
 *.sqlite3
 *.tsbuildinfo
