@@ -15,6 +15,7 @@ import {
   Mic,
   Notebook,
   Settings,
+  Shield,
   StickyNote,
   Wrench,
 } from "lucide-react";
@@ -23,7 +24,9 @@ export const dashboard_account_routes = [
   { title: "Settings", href: "/settings", icon: Settings },
 ] satisfies SidebarItem[];
 
-export const dashboard_admin_routes = [] satisfies SidebarItem[];
+export const dashboard_admin_routes = [
+  { title: "Admin", href: "/admin", icon: Shield },
+] satisfies SidebarItem[];
 
 export function getDashboardPrimaryRoutes(): SidebarItem[] {
   return [
@@ -58,5 +61,4 @@ export function getDashboardPrimaryRoutes(): SidebarItem[] {
 export const dashboard_routes = [
   ...getDashboardPrimaryRoutes(),
   ...dashboard_account_routes,
-  ...dashboard_admin_routes,
 ] satisfies SidebarItem[];

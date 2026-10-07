@@ -19,6 +19,8 @@ import { Route as AuthIndexRouteImport } from './routes/auth/index'
 import { Route as AuthGithubRouteImport } from './routes/auth/github'
 import { Route as AuthSignupRouteImport } from './routes/auth/signup'
 import { Route as TestIndexRouteImport } from './routes/test/index'
+import { Route as DashboardAdminIndexRouteImport } from './routes/_dashboard/admin/index'
+import { Route as DashboardAdminRouteRouteImport } from './routes/_dashboard/admin/route'
 import { Route as DashboardCertificationsIndexRouteImport } from './routes/_dashboard/certifications/index'
 import { Route as DashboardContactsIndexRouteImport } from './routes/_dashboard/contacts/index'
 import { Route as DashboardEducationIndexRouteImport } from './routes/_dashboard/education/index'
@@ -51,6 +53,7 @@ import { Route as RPublicIdIndexRouteImport } from './routes/r/$publicId/index'
 import { Route as DashboardResumesResumeIdIndexRouteImport } from './routes/_dashboard/resumes/$resumeId/index'
 import { Route as ApiAgenticOpenapiJsonRouteImport } from './routes/api/agentic/openapi.json'
 import { Route as ApiAgenticRpcSplatRouteImport } from './routes/api/agentic/rpc/$'
+import { Route as DashboardAdminTablesTableIndexRouteImport } from './routes/_dashboard/admin/tables/$table/index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -100,6 +103,16 @@ const TestIndexRoute = TestIndexRouteImport.update({
   id: '/test/',
   path: '/test/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardAdminIndexRoute = DashboardAdminIndexRouteImport.update({
+  id: '/admin/',
+  path: '/admin/',
+  getParentRoute: () => DashboardLayoutRoute,
+} as any)
+const DashboardAdminRouteRoute = DashboardAdminRouteRouteImport.update({
+  id: '/admin/route',
+  path: '/admin/route',
+  getParentRoute: () => DashboardLayoutRoute,
 } as any)
 const DashboardCertificationsIndexRoute =
   DashboardCertificationsIndexRouteImport.update({
@@ -271,6 +284,12 @@ const ApiAgenticRpcSplatRoute = ApiAgenticRpcSplatRouteImport.update({
   path: '/api/agentic/rpc/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardAdminTablesTableIndexRoute =
+  DashboardAdminTablesTableIndexRouteImport.update({
+    id: '/admin/tables/$table/',
+    path: '/admin/tables/$table/',
+    getParentRoute: () => DashboardLayoutRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -282,6 +301,7 @@ export interface FileRoutesByFullPath {
   '/auth/signup': typeof AuthSignupRoute
   '/auth/': typeof AuthIndexRoute
   '/test/': typeof TestIndexRoute
+  '/admin/route': typeof DashboardAdminRouteRoute
   '/api/agentic/$': typeof ApiAgenticSplatRoute
   '/api/agentic/openapi': typeof ApiAgenticOpenapiRouteWithChildren
   '/api/ai/event-sourced-resume-tailor': typeof ApiAiEventSourcedResumeTailorRoute
@@ -290,6 +310,7 @@ export interface FileRoutesByFullPath {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/cron/project-sync-events': typeof ApiCronProjectSyncEventsRoute
   '/api/sync/events': typeof ApiSyncEventsRoute
+  '/admin/': typeof DashboardAdminIndexRoute
   '/certifications/': typeof DashboardCertificationsIndexRoute
   '/contacts/': typeof DashboardContactsIndexRoute
   '/education/': typeof DashboardEducationIndexRoute
@@ -314,6 +335,7 @@ export interface FileRoutesByFullPath {
   '/api/agentic/openapi/json': typeof ApiAgenticOpenapiJsonRoute
   '/api/agentic/rpc/$': typeof ApiAgenticRpcSplatRoute
   '/resumes/$resumeId/': typeof DashboardResumesResumeIdIndexRoute
+  '/admin/tables/$table/': typeof DashboardAdminTablesTableIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -324,6 +346,7 @@ export interface FileRoutesByTo {
   '/auth/signup': typeof AuthSignupRoute
   '/auth': typeof AuthIndexRoute
   '/test': typeof TestIndexRoute
+  '/admin/route': typeof DashboardAdminRouteRoute
   '/api/agentic/$': typeof ApiAgenticSplatRoute
   '/api/agentic/openapi': typeof ApiAgenticOpenapiRouteWithChildren
   '/api/ai/event-sourced-resume-tailor': typeof ApiAiEventSourcedResumeTailorRoute
@@ -332,6 +355,7 @@ export interface FileRoutesByTo {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/cron/project-sync-events': typeof ApiCronProjectSyncEventsRoute
   '/api/sync/events': typeof ApiSyncEventsRoute
+  '/admin': typeof DashboardAdminIndexRoute
   '/certifications': typeof DashboardCertificationsIndexRoute
   '/contacts': typeof DashboardContactsIndexRoute
   '/education': typeof DashboardEducationIndexRoute
@@ -356,6 +380,7 @@ export interface FileRoutesByTo {
   '/api/agentic/openapi/json': typeof ApiAgenticOpenapiJsonRoute
   '/api/agentic/rpc/$': typeof ApiAgenticRpcSplatRoute
   '/resumes/$resumeId': typeof DashboardResumesResumeIdIndexRoute
+  '/admin/tables/$table': typeof DashboardAdminTablesTableIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -369,6 +394,7 @@ export interface FileRoutesById {
   '/auth/signup': typeof AuthSignupRoute
   '/auth/': typeof AuthIndexRoute
   '/test/': typeof TestIndexRoute
+  '/_dashboard/admin/route': typeof DashboardAdminRouteRoute
   '/api/agentic/$': typeof ApiAgenticSplatRoute
   '/api/agentic/openapi': typeof ApiAgenticOpenapiRouteWithChildren
   '/api/ai/event-sourced-resume-tailor': typeof ApiAiEventSourcedResumeTailorRoute
@@ -377,6 +403,7 @@ export interface FileRoutesById {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/cron/project-sync-events': typeof ApiCronProjectSyncEventsRoute
   '/api/sync/events': typeof ApiSyncEventsRoute
+  '/_dashboard/admin/': typeof DashboardAdminIndexRoute
   '/_dashboard/certifications/': typeof DashboardCertificationsIndexRoute
   '/_dashboard/contacts/': typeof DashboardContactsIndexRoute
   '/_dashboard/education/': typeof DashboardEducationIndexRoute
@@ -401,6 +428,7 @@ export interface FileRoutesById {
   '/api/agentic/openapi/json': typeof ApiAgenticOpenapiJsonRoute
   '/api/agentic/rpc/$': typeof ApiAgenticRpcSplatRoute
   '/_dashboard/resumes/$resumeId/': typeof DashboardResumesResumeIdIndexRoute
+  '/_dashboard/admin/tables/$table/': typeof DashboardAdminTablesTableIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -414,6 +442,7 @@ export interface FileRouteTypes {
     | '/auth/signup'
     | '/auth/'
     | '/test/'
+    | '/admin/route'
     | '/api/agentic/$'
     | '/api/agentic/openapi'
     | '/api/ai/event-sourced-resume-tailor'
@@ -422,6 +451,7 @@ export interface FileRouteTypes {
     | '/api/auth/$'
     | '/api/cron/project-sync-events'
     | '/api/sync/events'
+    | '/admin/'
     | '/certifications/'
     | '/contacts/'
     | '/education/'
@@ -446,6 +476,7 @@ export interface FileRouteTypes {
     | '/api/agentic/openapi/json'
     | '/api/agentic/rpc/$'
     | '/resumes/$resumeId/'
+    | '/admin/tables/$table/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -456,6 +487,7 @@ export interface FileRouteTypes {
     | '/auth/signup'
     | '/auth'
     | '/test'
+    | '/admin/route'
     | '/api/agentic/$'
     | '/api/agentic/openapi'
     | '/api/ai/event-sourced-resume-tailor'
@@ -464,6 +496,7 @@ export interface FileRouteTypes {
     | '/api/auth/$'
     | '/api/cron/project-sync-events'
     | '/api/sync/events'
+    | '/admin'
     | '/certifications'
     | '/contacts'
     | '/education'
@@ -488,6 +521,7 @@ export interface FileRouteTypes {
     | '/api/agentic/openapi/json'
     | '/api/agentic/rpc/$'
     | '/resumes/$resumeId'
+    | '/admin/tables/$table'
   id:
     | '__root__'
     | '/'
@@ -500,6 +534,7 @@ export interface FileRouteTypes {
     | '/auth/signup'
     | '/auth/'
     | '/test/'
+    | '/_dashboard/admin/route'
     | '/api/agentic/$'
     | '/api/agentic/openapi'
     | '/api/ai/event-sourced-resume-tailor'
@@ -508,6 +543,7 @@ export interface FileRouteTypes {
     | '/api/auth/$'
     | '/api/cron/project-sync-events'
     | '/api/sync/events'
+    | '/_dashboard/admin/'
     | '/_dashboard/certifications/'
     | '/_dashboard/contacts/'
     | '/_dashboard/education/'
@@ -532,6 +568,7 @@ export interface FileRouteTypes {
     | '/api/agentic/openapi/json'
     | '/api/agentic/rpc/$'
     | '/_dashboard/resumes/$resumeId/'
+    | '/_dashboard/admin/tables/$table/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -624,6 +661,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/test/'
       preLoaderRoute: typeof TestIndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_dashboard/admin/': {
+      id: '/_dashboard/admin/'
+      path: '/admin'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof DashboardAdminIndexRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
+    '/_dashboard/admin/route': {
+      id: '/_dashboard/admin/route'
+      path: '/admin/route'
+      fullPath: '/admin/route'
+      preLoaderRoute: typeof DashboardAdminRouteRouteImport
+      parentRoute: typeof DashboardLayoutRoute
     }
     '/_dashboard/certifications/': {
       id: '/_dashboard/certifications/'
@@ -849,11 +900,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAgenticRpcSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_dashboard/admin/tables/$table/': {
+      id: '/_dashboard/admin/tables/$table/'
+      path: '/admin/tables/$table'
+      fullPath: '/admin/tables/$table/'
+      preLoaderRoute: typeof DashboardAdminTablesTableIndexRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
   }
 }
 
 interface DashboardLayoutRouteChildren {
   DashboardDashboardRoute: typeof DashboardDashboardRoute
+  DashboardAdminRouteRoute: typeof DashboardAdminRouteRoute
+  DashboardAdminIndexRoute: typeof DashboardAdminIndexRoute
   DashboardCertificationsIndexRoute: typeof DashboardCertificationsIndexRoute
   DashboardContactsIndexRoute: typeof DashboardContactsIndexRoute
   DashboardEducationIndexRoute: typeof DashboardEducationIndexRoute
@@ -875,10 +935,13 @@ interface DashboardLayoutRouteChildren {
   DashboardTalksIndexRoute: typeof DashboardTalksIndexRoute
   DashboardVolunteersIndexRoute: typeof DashboardVolunteersIndexRoute
   DashboardResumesResumeIdIndexRoute: typeof DashboardResumesResumeIdIndexRoute
+  DashboardAdminTablesTableIndexRoute: typeof DashboardAdminTablesTableIndexRoute
 }
 
 const DashboardLayoutRouteChildren: DashboardLayoutRouteChildren = {
   DashboardDashboardRoute: DashboardDashboardRoute,
+  DashboardAdminRouteRoute: DashboardAdminRouteRoute,
+  DashboardAdminIndexRoute: DashboardAdminIndexRoute,
   DashboardCertificationsIndexRoute: DashboardCertificationsIndexRoute,
   DashboardContactsIndexRoute: DashboardContactsIndexRoute,
   DashboardEducationIndexRoute: DashboardEducationIndexRoute,
@@ -900,6 +963,7 @@ const DashboardLayoutRouteChildren: DashboardLayoutRouteChildren = {
   DashboardTalksIndexRoute: DashboardTalksIndexRoute,
   DashboardVolunteersIndexRoute: DashboardVolunteersIndexRoute,
   DashboardResumesResumeIdIndexRoute: DashboardResumesResumeIdIndexRoute,
+  DashboardAdminTablesTableIndexRoute: DashboardAdminTablesTableIndexRoute,
 }
 
 const DashboardLayoutRouteWithChildren = DashboardLayoutRoute._addFileChildren(

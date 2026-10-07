@@ -1,4 +1,6 @@
+import { BackendMismatchError } from "event-sourced-collection";
 import type { AppDb } from "./collection";
+import { wipeLocalDatabase } from "./local-reset";
 import type { AppSettings } from "./schemas";
 import { beginSyncProgress, finishSyncProgress } from "./sync-progress";
 
@@ -46,6 +48,10 @@ export async function runManagedSync(db: AppDb, mode: "background" | "manual") {
   beginSyncProgress(db.getSyncStatus().pendingCount);
   try {
     const result = mode === "manual" ? await db.manualSync() : await db.sync();
+    const rebuiltOnServer = result.errors.some((err) => err instanceof BackendMismatchError);
+    if (rebuiltOnServer && db.getSyncStatus().pendingCount === 0) {
+      await wipeLocalDatabase({ resumeSync: true });
+    }
     if (!result.deferred && result.errors.length === 0) {
       await db.pruneSyncedEvents({ keepLast: SYNCED_EVENTS_KEPT });
     }

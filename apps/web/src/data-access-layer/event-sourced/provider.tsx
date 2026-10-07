@@ -1,7 +1,8 @@
 import { createContext, useContext, useEffect, type ReactNode } from "react";
 import { useEnsureDb } from "event-sourced-collection/react";
 import { useViewer } from "@/data-access-layer/auth/viewer";
-import { applyManagedSyncGate, kickManagedSync } from "./app-settings";
+import { applyManagedSyncGate, kickManagedSync, setManagedSyncEnabled } from "./app-settings";
+import { consumeResyncAfterReset } from "./local-reset";
 import { db as dbProxy, ensureDb, type AppDb } from "./collection";
 import {
   canAutoReloadForOpfsRecovery,
@@ -47,6 +48,9 @@ export function EventSourcedDbProvider({
     ensureDb,
     deps: [isAuthenticated],
     onReady: (db) => {
+      if (isAuthenticated && consumeResyncAfterReset()) {
+        setManagedSyncEnabled(db, true, true);
+      }
       applyManagedSyncGate(db, isAuthenticated);
       // Background: do not block the shell on network sync.
       kickManagedSync(db);

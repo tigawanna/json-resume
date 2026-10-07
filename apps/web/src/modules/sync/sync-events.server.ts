@@ -2,7 +2,7 @@ import "@tanstack/react-start/server-only";
 
 import { db } from "@/lib/drizzle/client";
 import { syncBackend, syncEvent } from "@/lib/drizzle/scheam/sync-event";
-import { and, eq, gt, lte, notInArray, sql } from "drizzle-orm";
+import { and, eq, gt, lte, max, notInArray, sql } from "drizzle-orm";
 import type {
   OutboundEvent,
   PullResponse,
@@ -14,6 +14,7 @@ import type {
 import { log as standaloneLog } from "evlog";
 import { z } from "zod";
 import { projectUnappliedSyncEvents } from "./project-legacy.server";
+import { SYNC_RESET_COLLECTION, userBackendId } from "./sync-reset";
 
 export const outboundEventSchema = z.object({
   eventId: z.string().min(1),
@@ -32,7 +33,7 @@ export const outboundEventSchema = z.object({
 export const outboundEventBatchSchema = z.array(outboundEventSchema);
 
 /** Kept in the browser only (`localOnly` in the client registry); never stored or served. */
-const LOCAL_ONLY_COLLECTIONS: string[] = [
+export const LOCAL_ONLY_COLLECTIONS: string[] = [
   "resumeAiChat",
   "resumeAiConversation",
   "resumeAiMessage",
@@ -83,8 +84,19 @@ export async function pushSyncEvents(
   const confirmed: PushConfirmation[] = events
     .filter((event) => LOCAL_ONLY_COLLECTIONS.includes(event.collectionId))
     .map((event) => ({ eventId: event.eventId, globalSeq: 0 }));
-  const failed: PushFailure[] = [];
-  const stored = events.filter((event) => !LOCAL_ONLY_COLLECTIONS.includes(event.collectionId));
+  const failed: PushFailure[] = events
+    .filter((event) => event.collectionId === SYNC_RESET_COLLECTION)
+    .map((event) => ({
+      eventId: event.eventId,
+      message: "Reserved collection",
+      code: "RESERVED_COLLECTION",
+      retryable: false,
+    }));
+  const stored = events.filter(
+    (event) =>
+      !LOCAL_ONLY_COLLECTIONS.includes(event.collectionId) &&
+      event.collectionId !== SYNC_RESET_COLLECTION,
+  );
 
   for (const group of groupByTxId(stored)) {
     try {
@@ -166,7 +178,7 @@ export async function pullSyncEvents(userId: string, since: number): Promise<Pul
   const pageFilter = and(
     eq(syncEvent.userId, userId),
     gt(syncEvent.globalSeq, safeSince),
-    notInArray(syncEvent.collectionId, LOCAL_ONLY_COLLECTIONS),
+    notInArray(syncEvent.collectionId, [...LOCAL_ONLY_COLLECTIONS, SYNC_RESET_COLLECTION]),
   );
 
   // Size the page before loading payloads: rows can be hundreds of KB, and
@@ -223,6 +235,14 @@ export async function pullSyncEvents(userId: string, since: number): Promise<Pul
     events,
     cursor: last ? last.cursor : String(safeSince),
     hasMore: truncated || sizes.length === PULL_LIMIT,
-    backendId: backend.backendId,
+    backendId: userBackendId(backend.backendId, await latestResetSeq(userId)),
   };
+}
+
+export async function latestResetSeq(userId: string): Promise<number | null> {
+  const [row] = await db
+    .select({ seq: max(syncEvent.globalSeq) })
+    .from(syncEvent)
+    .where(and(eq(syncEvent.collectionId, SYNC_RESET_COLLECTION), eq(syncEvent.key, userId)));
+  return row?.seq ?? null;
 }

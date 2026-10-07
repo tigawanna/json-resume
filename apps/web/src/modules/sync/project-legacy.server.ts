@@ -102,11 +102,12 @@ function recordProjection(fields: {
     if (fields.failed > 0) current.warn(message);
     return;
   }
-  const emit = fields.failed > 0 ? standaloneLog.warn : standaloneLog.info;
-  emit({ message, service: "agentic-json-resume", syncProjection });
+  const event = { message, service: "agentic-json-resume", syncProjection };
+  if (fields.failed > 0) standaloneLog.warn(event);
+  else standaloneLog.info(event);
 }
 
-const tablesByCollection = {
+export const tablesByCollection = {
   resume,
   resumeSection,
   resumeExperience,
@@ -143,9 +144,9 @@ const tablesByCollection = {
   job,
 } satisfies Record<string, SQLiteTable>;
 
-type ProjectableCollectionId = keyof typeof tablesByCollection;
+export type ProjectableCollectionId = keyof typeof tablesByCollection;
 
-function isProjectableCollectionId(id: string): id is ProjectableCollectionId {
+export function isProjectableCollectionId(id: string): id is ProjectableCollectionId {
   return id in tablesByCollection;
 }
 

@@ -142,6 +142,10 @@ const {
   recordLocalEchoes: false,
   sync: createCookieSyncTransport(),
   syncPreset: "vercel",
+  // A rebuilt server log has no delete events for rows it dropped, so a device
+  // must start from an empty database rather than requeue its old outbox.
+  // `runManagedSync` wipes and reloads on BackendMismatchError.
+  backendMismatch: "fail",
 
   collections: {
     resume: {
