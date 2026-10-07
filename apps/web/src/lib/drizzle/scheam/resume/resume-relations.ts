@@ -9,13 +9,19 @@ import { resumeEducation, resumeEducationBullet, resumeEducationItem } from "./r
 import {
   resumeExperience,
   resumeExperienceBullet,
+  resumeExperienceBulletItem,
   resumeExperienceItem,
 } from "./resume-experience";
 import { resumeLanguage, resumeLanguageItem } from "./resume-language";
 import { resumeLink, resumeLinkItem } from "./resume-link";
 import { resumeNote, resumeNoteItem } from "./resume-note";
 import { resumeProject, resumeProjectItem } from "./resume-project";
-import { resumeSkill, resumeSkillGroup, resumeSkillGroupItem } from "./resume-skill";
+import {
+  resumeSkill,
+  resumeSkillGroup,
+  resumeSkillGroupItem,
+  resumeSkillGroupSkill,
+} from "./resume-skill";
 import { resumeSummary, resumeSummaryItem } from "./resume-summary";
 import { resumeTalk, resumeTalkItem } from "./resume-talk";
 import { resumeVolunteer, resumeVolunteerItem } from "./resume-volunteer";
@@ -125,12 +131,27 @@ export const resumeExperienceItemRelations = relations(resumeExperienceItem, ({ 
   }),
 }));
 
-export const resumeExperienceBulletRelations = relations(resumeExperienceBullet, ({ one }) => ({
-  experience: one(resumeExperience, {
-    fields: [resumeExperienceBullet.experienceId],
-    references: [resumeExperience.id],
+export const resumeExperienceBulletRelations = relations(
+  resumeExperienceBullet,
+  ({ one, many }) => ({
+    experience: one(resumeExperience, {
+      fields: [resumeExperienceBullet.experienceId],
+      references: [resumeExperience.id],
+    }),
+    resumes: many(resumeExperienceBulletItem),
   }),
-}));
+);
+
+export const resumeExperienceBulletItemRelations = relations(
+  resumeExperienceBulletItem,
+  ({ one }) => ({
+    resume: one(resume, { fields: [resumeExperienceBulletItem.resumeId], references: [resume.id] }),
+    bullet: one(resumeExperienceBullet, {
+      fields: [resumeExperienceBulletItem.bulletId],
+      references: [resumeExperienceBullet.id],
+    }),
+  }),
+);
 
 export const resumeEducationRelations = relations(resumeEducation, ({ one, many }) => ({
   user: one(user, { fields: [resumeEducation.userId], references: [user.id] }),
@@ -170,6 +191,7 @@ export const resumeSkillGroupRelations = relations(resumeSkillGroup, ({ one, man
   user: one(user, { fields: [resumeSkillGroup.userId], references: [user.id] }),
   resumes: many(resumeSkillGroupItem),
   skills: many(resumeSkill),
+  skillLinks: many(resumeSkillGroupSkill),
 }));
 
 export const resumeSkillGroupItemRelations = relations(resumeSkillGroupItem, ({ one }) => ({
@@ -180,10 +202,23 @@ export const resumeSkillGroupItemRelations = relations(resumeSkillGroupItem, ({ 
   }),
 }));
 
-export const resumeSkillRelations = relations(resumeSkill, ({ one }) => ({
+export const resumeSkillRelations = relations(resumeSkill, ({ one, many }) => ({
+  user: one(user, { fields: [resumeSkill.userId], references: [user.id] }),
   group: one(resumeSkillGroup, {
     fields: [resumeSkill.groupId],
     references: [resumeSkillGroup.id],
+  }),
+  groups: many(resumeSkillGroupSkill),
+}));
+
+export const resumeSkillGroupSkillRelations = relations(resumeSkillGroupSkill, ({ one }) => ({
+  group: one(resumeSkillGroup, {
+    fields: [resumeSkillGroupSkill.groupId],
+    references: [resumeSkillGroup.id],
+  }),
+  skill: one(resumeSkill, {
+    fields: [resumeSkillGroupSkill.skillId],
+    references: [resumeSkill.id],
   }),
 }));
 

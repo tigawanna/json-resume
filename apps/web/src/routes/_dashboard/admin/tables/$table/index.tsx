@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
-import { AdminTableView } from "../../-components/AdminTableView";
+import { AdminTableView } from "../-components/AdminTableView";
 
 const tableSearchSchema = z.object({
   page: z.number().int().min(0).catch(0),

@@ -13,6 +13,7 @@ import {
   resumeEducationItem,
   resumeExperience,
   resumeExperienceBullet,
+  resumeExperienceBulletItem,
   resumeExperienceItem,
   resumeLanguage,
   resumeLanguageItem,
@@ -26,6 +27,7 @@ import {
   resumeSkill,
   resumeSkillGroup,
   resumeSkillGroupItem,
+  resumeSkillGroupSkill,
   resumeSummary,
   resumeSummaryItem,
   resumeTalk,
@@ -33,6 +35,10 @@ import {
   resumeVolunteer,
   resumeVolunteerItem,
 } from "@/lib/drizzle/scheam";
+import {
+  bulletsForResume,
+  skillsForGroup,
+} from "@/data-access-layer/event-sourced/assemble-resume-detail";
 import { savedProject } from "@/lib/drizzle/scheam/saved-project-schema";
 import { and, asc, desc, eq, gt, inArray, isNull, like, lt, or } from "drizzle-orm";
 import { DEFAULT_PAGE_SIZE } from "../pagination.types";
@@ -382,7 +388,7 @@ export async function getResumeDetail(
 
   const experiences: ResumeDetailDTO["experiences"] = [];
   for (const ex of experienceRows) {
-    const bullets = await db
+    const library = await db
       .select({
         id: resumeExperienceBullet.id,
         experienceId: resumeExperienceBullet.experienceId,
@@ -390,9 +396,24 @@ export async function getResumeDetail(
         sortOrder: resumeExperienceBullet.sortOrder,
       })
       .from(resumeExperienceBullet)
-      .where(eq(resumeExperienceBullet.experienceId, ex.id))
-      .orderBy(asc(resumeExperienceBullet.sortOrder));
-    experiences.push({ ...ex, bullets });
+      .where(eq(resumeExperienceBullet.experienceId, ex.id));
+    const links =
+      library.length === 0
+        ? []
+        : await db
+            .select({
+              resumeId: resumeExperienceBulletItem.resumeId,
+              bulletId: resumeExperienceBulletItem.bulletId,
+              sortOrder: resumeExperienceBulletItem.sortOrder,
+            })
+            .from(resumeExperienceBulletItem)
+            .where(
+              inArray(
+                resumeExperienceBulletItem.bulletId,
+                library.map((bullet) => bullet.id),
+              ),
+            );
+    experiences.push({ ...ex, bullets: bulletsForResume(resumeId, ex.id, library, links) });
   }
 
   const educationRows = await db
@@ -457,7 +478,15 @@ export async function getResumeDetail(
 
   const skillGroups: ResumeDetailDTO["skillGroups"] = [];
   for (const group of skillGroupRows) {
-    const skills = await db
+    const links = await db
+      .select({
+        groupId: resumeSkillGroupSkill.groupId,
+        skillId: resumeSkillGroupSkill.skillId,
+        sortOrder: resumeSkillGroupSkill.sortOrder,
+      })
+      .from(resumeSkillGroupSkill)
+      .where(eq(resumeSkillGroupSkill.groupId, group.id));
+    const skillRows = await db
       .select({
         id: resumeSkill.id,
         groupId: resumeSkill.groupId,
@@ -466,8 +495,18 @@ export async function getResumeDetail(
         sortOrder: resumeSkill.sortOrder,
       })
       .from(resumeSkill)
-      .where(eq(resumeSkill.groupId, group.id))
-      .orderBy(asc(resumeSkill.sortOrder));
+      .where(
+        links.length > 0
+          ? inArray(
+              resumeSkill.id,
+              links.map((link) => link.skillId),
+            )
+          : eq(resumeSkill.groupId, group.id),
+      );
+    const skills = skillsForGroup(group.id, skillRows, links).map((skill) => ({
+      ...skill,
+      groupId: group.id,
+    }));
     skillGroups.push({ ...group, skills });
   }
 

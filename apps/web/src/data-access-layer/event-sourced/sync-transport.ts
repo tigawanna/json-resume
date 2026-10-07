@@ -14,6 +14,21 @@ import {
 } from "./sync-progress";
 
 const SYNC_URL = "/api/sync/events";
+const COMPACT_URL = "/api/sync/compact";
+/** Pushes arrive in bursts; compact once after the burst settles. */
+const COMPACT_DEBOUNCE_MS = 4_000;
+
+let compactTimer: ReturnType<typeof setTimeout> | null = null;
+
+function scheduleCompaction() {
+  if (compactTimer) clearTimeout(compactTimer);
+  compactTimer = setTimeout(() => {
+    compactTimer = null;
+    fetch(COMPACT_URL, { method: "POST", credentials: "include" }).catch((err: unknown) => {
+      console.warn("[sync compact] request failed", err);
+    });
+  }, COMPACT_DEBOUNCE_MS);
+}
 
 export type PushOutcome = { events: number; bytes: number; status: "ok" | "too-large" };
 
@@ -105,6 +120,7 @@ export function createCookieSyncTransport(): SyncTransport {
       const result = parsePushResponse(await readJson(response));
       pushObserver?.({ events: events.length, bytes, status: "ok" });
       noteUploaded(result.confirmed.length + (result.failed?.length ?? 0));
+      if (result.confirmed.length > 0) scheduleCompaction();
       return result;
     },
     async pull(since) {

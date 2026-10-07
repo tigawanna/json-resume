@@ -43,6 +43,10 @@ export function useEventSourcedResumeDetail(resumeId: string) {
     (q) => q.from({ row: db.collections.resumeExperienceBullet }),
     [],
   );
+  const experienceBulletItemsQuery = useLiveQuery(
+    (q) => q.from({ row: db.collections.resumeExperienceBulletItem }),
+    [],
+  );
   const educationQuery = useLiveQuery((q) => q.from({ row: db.collections.resumeEducation }), []);
   const educationItemsQuery = useLiveQuery(
     (q) => q.from({ row: db.collections.resumeEducationItem }),
@@ -66,6 +70,10 @@ export function useEventSourcedResumeDetail(resumeId: string) {
     [],
   );
   const skillsQuery = useLiveQuery((q) => q.from({ row: db.collections.resumeSkill }), []);
+  const skillGroupSkillsQuery = useLiveQuery(
+    (q) => q.from({ row: db.collections.resumeSkillGroupSkill }),
+    [],
+  );
   const talksQuery = useLiveQuery((q) => q.from({ row: db.collections.resumeTalk }), []);
   const talkItemsQuery = useLiveQuery((q) => q.from({ row: db.collections.resumeTalkItem }), []);
   const certificationsQuery = useLiveQuery(
@@ -102,6 +110,7 @@ export function useEventSourcedResumeDetail(resumeId: string) {
     experiences: asRows(experiencesQuery.data),
     experienceItems: asRows(experienceItemsQuery.data),
     experienceBullets: asRows(experienceBulletsQuery.data),
+    experienceBulletItems: asRows(experienceBulletItemsQuery.data),
     education: asRows(educationQuery.data),
     educationItems: asRows(educationItemsQuery.data),
     educationBullets: asRows(educationBulletsQuery.data),
@@ -110,6 +119,7 @@ export function useEventSourcedResumeDetail(resumeId: string) {
     skillGroups: asRows(skillGroupsQuery.data),
     skillGroupItems: asRows(skillGroupItemsQuery.data),
     skills: asRows(skillsQuery.data),
+    skillGroupSkills: asRows(skillGroupSkillsQuery.data),
     talks: asRows(talksQuery.data),
     talkItems: asRows(talkItemsQuery.data),
     certifications: asRows(certificationsQuery.data),

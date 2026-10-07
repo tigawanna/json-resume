@@ -1,10 +1,8 @@
 import { Badge } from "@/components/ui/badge";
+import { deleteWithReferences } from "@/data-access-layer/event-sourced/library-resolve";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
-import {
-  searchGithubRepos,
-  type GithubRepo,
-} from "@/data-access-layer/github/repos.functions";
+import { searchGithubRepos, type GithubRepo } from "@/data-access-layer/github/repos.functions";
 import { useViewer } from "@/data-access-layer/auth/viewer";
 import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
 import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
@@ -13,15 +11,7 @@ import { unwrapUnknownError } from "@/utils/errors";
 import { eq, useLiveQuery } from "@tanstack/react-db";
 import { queryOptions, useMutation, useQuery } from "@tanstack/react-query";
 import { getRouteApi } from "@tanstack/react-router";
-import {
-  AlertCircle,
-  Bookmark,
-  BookmarkCheck,
-  Code2,
-  Github,
-  Loader,
-  Star,
-} from "lucide-react";
+import { AlertCircle, Bookmark, BookmarkCheck, Code2, Github, Loader, Star } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { adoptSavedProjects } from "../../-utils/adopt-saved-projects";
@@ -174,7 +164,7 @@ function RepoCard({ repo }: { repo: GithubRepo }) {
   const unsaveMutation = useMutation({
     mutationFn: async () => {
       if (!savedProject) return;
-      db.collections.resumeProject.delete(savedProject.id);
+      deleteWithReferences(db, "resumeProject", savedProject.id);
     },
     onSuccess() {
       toast.success("Project removed", { description: "Removed from your shortlist" });

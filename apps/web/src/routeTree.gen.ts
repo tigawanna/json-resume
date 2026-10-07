@@ -48,8 +48,12 @@ import { Route as ApiAiPersonaWriterRouteImport } from './routes/api/ai/persona-
 import { Route as ApiAiResumeTailorRouteImport } from './routes/api/ai/resume-tailor'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ApiCronProjectSyncEventsRouteImport } from './routes/api/cron/project-sync-events'
+import { Route as ApiSyncCompactRouteImport } from './routes/api/sync/compact'
 import { Route as ApiSyncEventsRouteImport } from './routes/api/sync/events'
 import { Route as RPublicIdIndexRouteImport } from './routes/r/$publicId/index'
+import { Route as DashboardAdminDataIndexRouteImport } from './routes/_dashboard/admin/data/index'
+import { Route as DashboardAdminTablesIndexRouteImport } from './routes/_dashboard/admin/tables/index'
+import { Route as DashboardAdminUsersIndexRouteImport } from './routes/_dashboard/admin/users/index'
 import { Route as DashboardResumesResumeIdIndexRouteImport } from './routes/_dashboard/resumes/$resumeId/index'
 import { Route as ApiAgenticOpenapiJsonRouteImport } from './routes/api/agentic/openapi.json'
 import { Route as ApiAgenticRpcSplatRouteImport } from './routes/api/agentic/rpc/$'
@@ -258,6 +262,11 @@ const ApiCronProjectSyncEventsRoute =
     path: '/api/cron/project-sync-events',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiSyncCompactRoute = ApiSyncCompactRouteImport.update({
+  id: '/api/sync/compact',
+  path: '/api/sync/compact',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiSyncEventsRoute = ApiSyncEventsRouteImport.update({
   id: '/api/sync/events',
   path: '/api/sync/events',
@@ -268,6 +277,23 @@ const RPublicIdIndexRoute = RPublicIdIndexRouteImport.update({
   path: '/r/$publicId/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardAdminDataIndexRoute = DashboardAdminDataIndexRouteImport.update({
+  id: '/admin/data/',
+  path: '/admin/data/',
+  getParentRoute: () => DashboardLayoutRoute,
+} as any)
+const DashboardAdminTablesIndexRoute =
+  DashboardAdminTablesIndexRouteImport.update({
+    id: '/admin/tables/',
+    path: '/admin/tables/',
+    getParentRoute: () => DashboardLayoutRoute,
+  } as any)
+const DashboardAdminUsersIndexRoute =
+  DashboardAdminUsersIndexRouteImport.update({
+    id: '/admin/users/',
+    path: '/admin/users/',
+    getParentRoute: () => DashboardLayoutRoute,
+  } as any)
 const DashboardResumesResumeIdIndexRoute =
   DashboardResumesResumeIdIndexRouteImport.update({
     id: '/resumes/$resumeId/',
@@ -309,6 +335,7 @@ export interface FileRoutesByFullPath {
   '/api/ai/resume-tailor': typeof ApiAiResumeTailorRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/cron/project-sync-events': typeof ApiCronProjectSyncEventsRoute
+  '/api/sync/compact': typeof ApiSyncCompactRoute
   '/api/sync/events': typeof ApiSyncEventsRoute
   '/admin/': typeof DashboardAdminIndexRoute
   '/certifications/': typeof DashboardCertificationsIndexRoute
@@ -334,6 +361,9 @@ export interface FileRoutesByFullPath {
   '/r/$publicId/': typeof RPublicIdIndexRoute
   '/api/agentic/openapi/json': typeof ApiAgenticOpenapiJsonRoute
   '/api/agentic/rpc/$': typeof ApiAgenticRpcSplatRoute
+  '/admin/data/': typeof DashboardAdminDataIndexRoute
+  '/admin/tables/': typeof DashboardAdminTablesIndexRoute
+  '/admin/users/': typeof DashboardAdminUsersIndexRoute
   '/resumes/$resumeId/': typeof DashboardResumesResumeIdIndexRoute
   '/admin/tables/$table/': typeof DashboardAdminTablesTableIndexRoute
 }
@@ -354,6 +384,7 @@ export interface FileRoutesByTo {
   '/api/ai/resume-tailor': typeof ApiAiResumeTailorRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/cron/project-sync-events': typeof ApiCronProjectSyncEventsRoute
+  '/api/sync/compact': typeof ApiSyncCompactRoute
   '/api/sync/events': typeof ApiSyncEventsRoute
   '/admin': typeof DashboardAdminIndexRoute
   '/certifications': typeof DashboardCertificationsIndexRoute
@@ -379,6 +410,9 @@ export interface FileRoutesByTo {
   '/r/$publicId': typeof RPublicIdIndexRoute
   '/api/agentic/openapi/json': typeof ApiAgenticOpenapiJsonRoute
   '/api/agentic/rpc/$': typeof ApiAgenticRpcSplatRoute
+  '/admin/data': typeof DashboardAdminDataIndexRoute
+  '/admin/tables': typeof DashboardAdminTablesIndexRoute
+  '/admin/users': typeof DashboardAdminUsersIndexRoute
   '/resumes/$resumeId': typeof DashboardResumesResumeIdIndexRoute
   '/admin/tables/$table': typeof DashboardAdminTablesTableIndexRoute
 }
@@ -402,6 +436,7 @@ export interface FileRoutesById {
   '/api/ai/resume-tailor': typeof ApiAiResumeTailorRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/cron/project-sync-events': typeof ApiCronProjectSyncEventsRoute
+  '/api/sync/compact': typeof ApiSyncCompactRoute
   '/api/sync/events': typeof ApiSyncEventsRoute
   '/_dashboard/admin/': typeof DashboardAdminIndexRoute
   '/_dashboard/certifications/': typeof DashboardCertificationsIndexRoute
@@ -427,6 +462,9 @@ export interface FileRoutesById {
   '/r/$publicId/': typeof RPublicIdIndexRoute
   '/api/agentic/openapi/json': typeof ApiAgenticOpenapiJsonRoute
   '/api/agentic/rpc/$': typeof ApiAgenticRpcSplatRoute
+  '/_dashboard/admin/data/': typeof DashboardAdminDataIndexRoute
+  '/_dashboard/admin/tables/': typeof DashboardAdminTablesIndexRoute
+  '/_dashboard/admin/users/': typeof DashboardAdminUsersIndexRoute
   '/_dashboard/resumes/$resumeId/': typeof DashboardResumesResumeIdIndexRoute
   '/_dashboard/admin/tables/$table/': typeof DashboardAdminTablesTableIndexRoute
 }
@@ -450,6 +488,7 @@ export interface FileRouteTypes {
     | '/api/ai/resume-tailor'
     | '/api/auth/$'
     | '/api/cron/project-sync-events'
+    | '/api/sync/compact'
     | '/api/sync/events'
     | '/admin/'
     | '/certifications/'
@@ -475,6 +514,9 @@ export interface FileRouteTypes {
     | '/r/$publicId/'
     | '/api/agentic/openapi/json'
     | '/api/agentic/rpc/$'
+    | '/admin/data/'
+    | '/admin/tables/'
+    | '/admin/users/'
     | '/resumes/$resumeId/'
     | '/admin/tables/$table/'
   fileRoutesByTo: FileRoutesByTo
@@ -495,6 +537,7 @@ export interface FileRouteTypes {
     | '/api/ai/resume-tailor'
     | '/api/auth/$'
     | '/api/cron/project-sync-events'
+    | '/api/sync/compact'
     | '/api/sync/events'
     | '/admin'
     | '/certifications'
@@ -520,6 +563,9 @@ export interface FileRouteTypes {
     | '/r/$publicId'
     | '/api/agentic/openapi/json'
     | '/api/agentic/rpc/$'
+    | '/admin/data'
+    | '/admin/tables'
+    | '/admin/users'
     | '/resumes/$resumeId'
     | '/admin/tables/$table'
   id:
@@ -542,6 +588,7 @@ export interface FileRouteTypes {
     | '/api/ai/resume-tailor'
     | '/api/auth/$'
     | '/api/cron/project-sync-events'
+    | '/api/sync/compact'
     | '/api/sync/events'
     | '/_dashboard/admin/'
     | '/_dashboard/certifications/'
@@ -567,6 +614,9 @@ export interface FileRouteTypes {
     | '/r/$publicId/'
     | '/api/agentic/openapi/json'
     | '/api/agentic/rpc/$'
+    | '/_dashboard/admin/data/'
+    | '/_dashboard/admin/tables/'
+    | '/_dashboard/admin/users/'
     | '/_dashboard/resumes/$resumeId/'
     | '/_dashboard/admin/tables/$table/'
   fileRoutesById: FileRoutesById
@@ -585,6 +635,7 @@ export interface RootRouteChildren {
   ApiAiResumeTailorRoute: typeof ApiAiResumeTailorRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiCronProjectSyncEventsRoute: typeof ApiCronProjectSyncEventsRoute
+  ApiSyncCompactRoute: typeof ApiSyncCompactRoute
   ApiSyncEventsRoute: typeof ApiSyncEventsRoute
   RPublicIdIndexRoute: typeof RPublicIdIndexRoute
   ApiAgenticRpcSplatRoute: typeof ApiAgenticRpcSplatRoute
@@ -865,6 +916,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiCronProjectSyncEventsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/sync/compact': {
+      id: '/api/sync/compact'
+      path: '/api/sync/compact'
+      fullPath: '/api/sync/compact'
+      preLoaderRoute: typeof ApiSyncCompactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/sync/events': {
       id: '/api/sync/events'
       path: '/api/sync/events'
@@ -878,6 +936,27 @@ declare module '@tanstack/react-router' {
       fullPath: '/r/$publicId/'
       preLoaderRoute: typeof RPublicIdIndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_dashboard/admin/data/': {
+      id: '/_dashboard/admin/data/'
+      path: '/admin/data'
+      fullPath: '/admin/data/'
+      preLoaderRoute: typeof DashboardAdminDataIndexRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
+    '/_dashboard/admin/tables/': {
+      id: '/_dashboard/admin/tables/'
+      path: '/admin/tables'
+      fullPath: '/admin/tables/'
+      preLoaderRoute: typeof DashboardAdminTablesIndexRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
+    '/_dashboard/admin/users/': {
+      id: '/_dashboard/admin/users/'
+      path: '/admin/users'
+      fullPath: '/admin/users/'
+      preLoaderRoute: typeof DashboardAdminUsersIndexRouteImport
+      parentRoute: typeof DashboardLayoutRoute
     }
     '/_dashboard/resumes/$resumeId/': {
       id: '/_dashboard/resumes/$resumeId/'
@@ -934,6 +1013,9 @@ interface DashboardLayoutRouteChildren {
   DashboardSummariesIndexRoute: typeof DashboardSummariesIndexRoute
   DashboardTalksIndexRoute: typeof DashboardTalksIndexRoute
   DashboardVolunteersIndexRoute: typeof DashboardVolunteersIndexRoute
+  DashboardAdminDataIndexRoute: typeof DashboardAdminDataIndexRoute
+  DashboardAdminTablesIndexRoute: typeof DashboardAdminTablesIndexRoute
+  DashboardAdminUsersIndexRoute: typeof DashboardAdminUsersIndexRoute
   DashboardResumesResumeIdIndexRoute: typeof DashboardResumesResumeIdIndexRoute
   DashboardAdminTablesTableIndexRoute: typeof DashboardAdminTablesTableIndexRoute
 }
@@ -962,6 +1044,9 @@ const DashboardLayoutRouteChildren: DashboardLayoutRouteChildren = {
   DashboardSummariesIndexRoute: DashboardSummariesIndexRoute,
   DashboardTalksIndexRoute: DashboardTalksIndexRoute,
   DashboardVolunteersIndexRoute: DashboardVolunteersIndexRoute,
+  DashboardAdminDataIndexRoute: DashboardAdminDataIndexRoute,
+  DashboardAdminTablesIndexRoute: DashboardAdminTablesIndexRoute,
+  DashboardAdminUsersIndexRoute: DashboardAdminUsersIndexRoute,
   DashboardResumesResumeIdIndexRoute: DashboardResumesResumeIdIndexRoute,
   DashboardAdminTablesTableIndexRoute: DashboardAdminTablesTableIndexRoute,
 }
@@ -1011,6 +1096,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAiResumeTailorRoute: ApiAiResumeTailorRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiCronProjectSyncEventsRoute: ApiCronProjectSyncEventsRoute,
+  ApiSyncCompactRoute: ApiSyncCompactRoute,
   ApiSyncEventsRoute: ApiSyncEventsRoute,
   RPublicIdIndexRoute: RPublicIdIndexRoute,
   ApiAgenticRpcSplatRoute: ApiAgenticRpcSplatRoute,

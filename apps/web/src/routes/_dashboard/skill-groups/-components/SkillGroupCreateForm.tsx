@@ -16,8 +16,10 @@ import { formOptions } from "@tanstack/react-form";
 import { X } from "lucide-react";
 import { useState, type KeyboardEvent } from "react";
 import { toast } from "sonner";
-import { findExistingByExactTitle } from "../../-utils/find-existing";
-import { joinSearchable, libraryRowBase, newId, nowMs } from "../../-utils/row-helpers";
+import {
+  resolveSkillGroup,
+  resolveSkillIds,
+} from "@/data-access-layer/event-sourced/library-resolve";
 
 const createOpts = formOptions({
   defaultValues: { name: "" },
@@ -39,41 +41,11 @@ export function SkillGroupCreateForm({ onSuccess }: SkillGroupCreateFormProps) {
     onSubmit: async ({ value }) => {
       setPending(true);
       try {
-        const existing = findExistingByExactTitle(
-          db.collections.resumeSkillGroup,
-          value.name,
-          (row) => row.name,
-        );
-        if (existing) {
-          toast.success("Skill group already in library");
-          onSuccess?.();
-          return;
-        }
-        const base = libraryRowBase(viewer.user?.id);
-        const searchableText = joinSearchable(value.name, ...skills);
-        db.collections.resumeSkillGroup.insert({
-          ...base,
-          name: value.name,
-          searchableText,
-        });
-
-        skills.forEach((skillName, index) => {
-          const ts = nowMs();
-          db.collections.resumeSkill.insert({
-            id: newId(),
-            groupId: base.id,
-            name: skillName,
-            level: null,
-            sortOrder: index,
-            searchableText: skillName,
-            embedding: null,
-            embeddingModel: null,
-            createdAt: ts,
-            updatedAt: ts,
-          });
-        });
-
-        toast.success("Skill group created");
+        const userId = viewer.user?.id ?? "";
+        const before = db.collections.resumeSkillGroup.toArray.length;
+        resolveSkillGroup(db, userId, value.name, resolveSkillIds(db, userId, skills));
+        const created = db.collections.resumeSkillGroup.toArray.length > before;
+        toast.success(created ? "Skill group created" : "Skill group already in library");
         onSuccess?.();
       } catch (err: unknown) {
         toast.error("Failed to create skill group", {

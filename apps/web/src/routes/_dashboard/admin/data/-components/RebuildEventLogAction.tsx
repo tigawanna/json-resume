@@ -9,8 +9,13 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useViewer } from "@/data-access-layer/auth/viewer";
 import { runManagedSync } from "@/data-access-layer/event-sourced/app-settings";
 import { wipeLocalDatabase } from "@/data-access-layer/event-sourced/local-reset";
@@ -21,11 +26,11 @@ import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 
-type RebuildEventLogCardProps = {
+type RebuildEventLogActionProps = {
   users: { id: string; name: string; email: string; events: number }[];
 };
 
-export function RebuildEventLogCard({ users }: RebuildEventLogCardProps) {
+export function RebuildEventLogAction({ users }: RebuildEventLogActionProps) {
   const db = useEventSourcedDb();
   const { viewer } = useViewer();
   const [userId, setUserId] = useState(viewer.user?.id ?? users[0]?.id ?? "");
@@ -61,60 +66,60 @@ export function RebuildEventLogCard({ users }: RebuildEventLogCardProps) {
   const selected = users.find((user) => user.id === userId);
 
   return (
-    <Card data-test="admin-rebuild-card">
-      <CardHeader>
-        <CardTitle>Rebuild event log</CardTitle>
-        <CardDescription>
+    <section
+      className="flex flex-col gap-3 rounded-lg border border-base-300 p-4"
+      data-test="admin-rebuild-action"
+    >
+      <div className="flex flex-col gap-1">
+        <h3 className="font-medium">Rebuild event log</h3>
+        <p className="text-sm text-base-content/70">
           Replaces a user's sync events with one insert per row currently in the tables. Their
           devices drop local data and pull the rebuilt log on next sync.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-3 md:flex-row md:items-center">
-        <NativeSelect
-          value={userId}
-          onChange={(event) => setUserId(event.target.value)}
-          data-test="admin-rebuild-user"
-        >
-          {users.map((user) => (
-            <NativeSelectOption key={user.id} value={user.id}>
-              {user.name} ({user.email}) · {user.events} events
-            </NativeSelectOption>
-          ))}
-        </NativeSelect>
+        </p>
+      </div>
 
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <button
-              className="btn btn-error btn-sm"
-              disabled={!userId || mutation.isPending}
-              data-test="admin-rebuild-open"
-            >
-              {mutation.isPending ? "Rebuilding…" : "Reset & rebuild"}
-            </button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>
-                Rebuild {selected?.name ?? "this user"}'s event log?
-              </AlertDialogTitle>
-              <AlertDialogDescription>
-                All {selected?.events ?? 0} sync events are deleted and regenerated from the current
-                table rows. History is lost.
-                {isSelf ? " This tab will wipe its local copy and reload." : ""}
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={() => mutation.mutate()}
-                data-test="admin-rebuild-confirm"
-              >
-                Rebuild
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      </CardContent>
-    </Card>
+      <Select value={userId} onValueChange={setUserId}>
+        <SelectTrigger className="w-full" data-test="admin-rebuild-user">
+          <SelectValue placeholder="Choose a user" />
+        </SelectTrigger>
+        <SelectContent>
+          {users.map((user) => (
+            <SelectItem key={user.id} value={user.id}>
+              {user.name} ({user.email}) · {user.events} events
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+      <AlertDialog>
+        <AlertDialogTrigger asChild>
+          <button
+            className="btn btn-error btn-sm self-start"
+            disabled={!userId || mutation.isPending}
+            data-test="admin-rebuild-open"
+          >
+            {mutation.isPending ? "Rebuilding…" : "Reset & rebuild"}
+          </button>
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Rebuild {selected?.name ?? "this user"}'s event log?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              All {selected?.events ?? 0} sync events are deleted and regenerated from the current
+              table rows. History is lost.
+              {isSelf ? " This tab will wipe its local copy and reload." : ""}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => mutation.mutate()} data-test="admin-rebuild-confirm">
+              Rebuild
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </section>
   );
 }

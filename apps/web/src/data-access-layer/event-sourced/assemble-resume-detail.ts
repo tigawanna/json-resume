@@ -11,6 +11,7 @@ import type {
   ResumeEducationItem,
   ResumeExperience,
   ResumeExperienceBullet,
+  ResumeExperienceBulletItem,
   ResumeExperienceItem,
   ResumeLanguage,
   ResumeLanguageItem,
@@ -24,6 +25,7 @@ import type {
   ResumeSkill,
   ResumeSkillGroup,
   ResumeSkillGroupItem,
+  ResumeSkillGroupSkill,
   ResumeSummary,
   ResumeSummaryItem,
   ResumeTalk,
@@ -49,6 +51,7 @@ export type EventSourcedResumeSnapshots = {
   experiences: ResumeExperience[];
   experienceItems: ResumeExperienceItem[];
   experienceBullets: ResumeExperienceBullet[];
+  experienceBulletItems: ResumeExperienceBulletItem[];
   education: ResumeEducation[];
   educationItems: ResumeEducationItem[];
   educationBullets: ResumeEducationBullet[];
@@ -57,6 +60,7 @@ export type EventSourcedResumeSnapshots = {
   skillGroups: ResumeSkillGroup[];
   skillGroupItems: ResumeSkillGroupItem[];
   skills: ResumeSkill[];
+  skillGroupSkills: ResumeSkillGroupSkill[];
   talks: ResumeTalk[];
   talkItems: ResumeTalkItem[];
   certifications: ResumeCertification[];
@@ -76,7 +80,7 @@ function iso(ms: number) {
   return new Date(ms).toISOString();
 }
 
-function byId<T extends { id: string }>(rows: T[]) {
+function byId<T extends { id: string }>(rows: ReadonlyArray<T>) {
   return new Map(rows.map((row) => [row.id, row]));
 }
 
@@ -92,6 +96,56 @@ function joinSorted<TItem extends { resumeId: string; sortOrder: number }, TRow>
     if (!row) return [];
     return [{ item, row, sortOrder: index }];
   });
+}
+
+/**
+ * The résumé's linked bullets for one experience. An experience none of whose
+ * bullets are linked anywhere predates bullet links, so all of them show.
+ */
+export function bulletsForResume<
+  B extends Pick<ResumeExperienceBullet, "id" | "experienceId" | "sortOrder">,
+>(
+  resumeId: string,
+  experienceId: string,
+  bullets: ReadonlyArray<B>,
+  bulletItems: ReadonlyArray<
+    Pick<ResumeExperienceBulletItem, "resumeId" | "bulletId" | "sortOrder">
+  >,
+): B[] {
+  const own = bullets.filter((bullet) => bullet.experienceId === experienceId);
+  const ownIds = new Set(own.map((bullet) => bullet.id));
+  const links = bulletItems.filter((item) => ownIds.has(item.bulletId));
+  if (links.length === 0) return own.slice().sort((a, b) => a.sortOrder - b.sortOrder);
+  const rows = byId(own);
+  return links
+    .filter((item) => item.resumeId === resumeId)
+    .sort((a, b) => a.sortOrder - b.sortOrder)
+    .flatMap((item) => {
+      const row = rows.get(item.bulletId);
+      return row ? [{ ...row, sortOrder: item.sortOrder }] : [];
+    });
+}
+
+/** A group's skills in link order; groups without links still use legacy `groupId`. */
+export function skillsForGroup<S extends Pick<ResumeSkill, "id" | "groupId" | "sortOrder">>(
+  groupId: string,
+  skills: ReadonlyArray<S>,
+  groupSkills: ReadonlyArray<Pick<ResumeSkillGroupSkill, "groupId" | "skillId" | "sortOrder">>,
+): S[] {
+  const links = groupSkills.filter((link) => link.groupId === groupId);
+  if (links.length === 0) {
+    return skills
+      .filter((skill) => skill.groupId === groupId)
+      .sort((a, b) => a.sortOrder - b.sortOrder);
+  }
+  const rows = byId(skills);
+  return links
+    .slice()
+    .sort((a, b) => a.sortOrder - b.sortOrder)
+    .flatMap((link) => {
+      const row = rows.get(link.skillId);
+      return row ? [{ ...row, sortOrder: link.sortOrder }] : [];
+    });
 }
 
 export function assembleResumeDetail(
@@ -193,16 +247,17 @@ export function assembleResumeDetail(
     endDate: row.endDate,
     location: row.location,
     sortOrder,
-    bullets: snapshots.experienceBullets
-      .filter((bullet) => bullet.experienceId === row.id)
-      .slice()
-      .sort((a, b) => a.sortOrder - b.sortOrder)
-      .map((bullet) => ({
-        id: bullet.id,
-        experienceId: bullet.experienceId,
-        text: bullet.text,
-        sortOrder: bullet.sortOrder,
-      })),
+    bullets: bulletsForResume(
+      resumeId,
+      row.id,
+      snapshots.experienceBullets,
+      snapshots.experienceBulletItems,
+    ).map((bullet) => ({
+      id: bullet.id,
+      experienceId: bullet.experienceId,
+      text: bullet.text,
+      sortOrder: bullet.sortOrder,
+    })),
   }));
 
   const education = joinSorted(
@@ -260,17 +315,13 @@ export function assembleResumeDetail(
     resumeId,
     name: row.name,
     sortOrder,
-    skills: snapshots.skills
-      .filter((skill) => skill.groupId === row.id)
-      .slice()
-      .sort((a, b) => a.sortOrder - b.sortOrder)
-      .map((skill) => ({
-        id: skill.id,
-        groupId: skill.groupId,
-        name: skill.name,
-        level: skill.level ?? null,
-        sortOrder: skill.sortOrder,
-      })),
+    skills: skillsForGroup(row.id, snapshots.skills, snapshots.skillGroupSkills).map((skill) => ({
+      id: skill.id,
+      groupId: row.id,
+      name: skill.name,
+      level: skill.level ?? null,
+      sortOrder: skill.sortOrder,
+    })),
   }));
 
   const talks = joinSorted(

@@ -22,6 +22,20 @@ import {
 } from "./resume-item-order";
 import { attachJobToResume } from "./job-rows";
 import {
+  contactIndex,
+  deleteUnlinkedGroups,
+  educationIndex,
+  experienceIndex,
+  linkIndex,
+  noteIndex,
+  projectIndex,
+  resolveSkillGroup,
+  resolveSkillIds,
+  setResumeBullets,
+  summaryIndex,
+  talkIndex,
+} from "./library-resolve";
+import {
   joinSearchable,
   libraryRowBase,
   newId,
@@ -34,14 +48,18 @@ function matchQuery(query: string, ...parts: Array<string | null | undefined>) {
   return parts.some((part) => (part ?? "").toLowerCase().includes(needle));
 }
 
-function deleteResumeItems<T extends { id: string; resumeId: string }>(
-  collection: { delete: (id: string) => void },
-  items: T[],
+/** Reads the live collection: rows deleted earlier in the same edit are already gone. */
+function deleteResumeItems(
+  collection: {
+    delete: (id: string) => unknown;
+    toArray: ReadonlyArray<{ id: string; resumeId: string }>;
+  },
   resumeId: string,
 ) {
-  for (const item of items) {
-    if (item.resumeId === resumeId) collection.delete(item.id);
-  }
+  const ids = collection.toArray
+    .filter((item) => item.resumeId === resumeId)
+    .map((item) => item.id);
+  for (const id of ids) collection.delete(id);
 }
 
 function junctionFields(resumeId: string, sortOrder: number) {
@@ -55,6 +73,15 @@ function junctionFields(resumeId: string, sortOrder: number) {
   };
 }
 
+function isLinked<T extends { resumeId: string }>(
+  items: ReadonlyArray<T>,
+  resumeId: string,
+  entityOf: (item: T) => string,
+  entityId: string,
+) {
+  return items.some((item) => item.resumeId === resumeId && entityOf(item) === entityId);
+}
+
 export function createEventSourcedResumeWorkspace(
   db: AppDb,
   detail: ResumeDetailDTO,
@@ -62,6 +89,81 @@ export function createEventSourcedResumeWorkspace(
 ): ResumeWorkspaceAdapter {
   const resumeId = detail.id;
   const userId = detail.userId;
+
+  function resolveExperience(values: ExperienceDraft) {
+    return experienceIndex(db, userId).resolve(
+      { company: values.company, role: values.role, startDate: values.startDate },
+      () => {
+        const base = libraryRowBase(userId);
+        db.collections.resumeExperience.insert({
+          ...base,
+          ...values,
+          searchableText: joinSearchable(values.company, values.role, values.location),
+        });
+        return base.id;
+      },
+    );
+  }
+
+  function resolveEducation(values: EducationDraft) {
+    return educationIndex(db, userId).resolve(
+      { school: values.school, degree: values.degree, field: values.field },
+      () => {
+        const base = libraryRowBase(userId);
+        db.collections.resumeEducation.insert({
+          ...base,
+          ...values,
+          searchableText: joinSearchable(values.school, values.degree, values.field),
+        });
+        return base.id;
+      },
+    );
+  }
+
+  function resolveProject(values: Omit<ProjectDraft, "tech"> & { tech: string }) {
+    return projectIndex(db, userId).resolve({ name: values.name, url: values.url }, () => {
+      const base = libraryRowBase(userId);
+      db.collections.resumeProject.insert({
+        ...base,
+        name: values.name,
+        url: values.url,
+        homepageUrl: values.homepageUrl,
+        description: values.description,
+        tech: values.tech,
+        searchableText: joinSearchable(values.name, values.description, values.url),
+      });
+      return base.id;
+    });
+  }
+
+  function resolveTalk(values: Omit<TalkDraft, "links"> & { links: string }) {
+    return talkIndex(db, userId).resolve({ title: values.title, event: values.event }, () => {
+      const base = libraryRowBase(userId);
+      db.collections.resumeTalk.insert({
+        ...base,
+        title: values.title,
+        event: values.event,
+        date: values.date,
+        description: values.description,
+        links: values.links,
+        searchableText: joinSearchable(values.title, values.event, values.description),
+      });
+      return base.id;
+    });
+  }
+
+  /** Drops this résumé's links to an experience's bullets; the bullets stay in the library. */
+  function unlinkBullets(experienceId: string) {
+    const ownIds = new Set(
+      db.collections.resumeExperienceBullet.toArray
+        .filter((bullet) => bullet.experienceId === experienceId)
+        .map((bullet) => bullet.id),
+    );
+    const ids = db.collections.resumeExperienceBulletItem.toArray
+      .filter((item) => item.resumeId === resumeId && ownIds.has(item.bulletId))
+      .map((item) => item.id);
+    for (const id of ids) db.collections.resumeExperienceBulletItem.delete(id);
+  }
 
   return {
     mode: "local",
@@ -106,16 +208,10 @@ export function createEventSourcedResumeWorkspace(
             homepageUrl: row.homepageUrl,
             tech: row.tech,
           })),
-      skills: async (query) => {
-        const groups = new Map(snapshots.skillGroups.map((group) => [group.id, group.name]));
-        return snapshots.skills
-          .filter((row) => matchQuery(query, row.name, groups.get(row.groupId)))
-          .map((row) => ({
-            id: row.id,
-            name: row.name,
-            groupName: groups.get(row.groupId),
-          }));
-      },
+      skills: async (query) =>
+        snapshots.skills
+          .filter((row) => matchQuery(query, row.name))
+          .map((row) => ({ id: row.id, name: row.name })),
       talks: async (query) =>
         snapshots.talks
           .filter((row) => matchQuery(query, row.title, row.event, row.description))
@@ -153,126 +249,126 @@ export function createEventSourcedResumeWorkspace(
       }
     },
     async updateContacts(contacts: ContactDraft[]) {
-      deleteResumeItems(db.collections.resumeContactItem, snapshots.contactItems, resumeId);
-      contacts.forEach((contact, index) => {
-        const base = libraryRowBase(userId);
-        db.collections.resumeContact.insert({
-          ...base,
-          type: contact.type,
-          value: contact.value,
-          label: contact.label,
-          sortOrder: index,
-          searchableText: joinSearchable(contact.type, contact.value, contact.label),
+      deleteResumeItems(db.collections.resumeContactItem, resumeId);
+      const index = contactIndex(db, userId);
+      const linked = new Set<string>();
+      for (const contact of contacts) {
+        const contactId = index.resolve({ type: contact.type, value: contact.value }, () => {
+          const base = libraryRowBase(userId);
+          db.collections.resumeContact.insert({
+            ...base,
+            type: contact.type,
+            value: contact.value,
+            label: contact.label,
+            searchableText: joinSearchable(contact.type, contact.value, contact.label),
+          });
+          return base.id;
         });
+        if (linked.has(contactId)) continue;
         db.collections.resumeContactItem.insert({
-          ...junctionFields(resumeId, index),
-          contactId: base.id,
+          ...junctionFields(resumeId, linked.size),
+          contactId,
         });
-      });
+        linked.add(contactId);
+      }
     },
     async updateLinks(links: LinkDraft[]) {
-      deleteResumeItems(db.collections.resumeLinkItem, snapshots.linkItems, resumeId);
-      links.forEach((link, index) => {
-        const base = libraryRowBase(userId);
-        db.collections.resumeLink.insert({
-          ...base,
-          label: link.label,
-          url: link.url,
-          icon: link.icon ?? null,
-          sortOrder: index,
-          searchableText: joinSearchable(link.label, link.url),
+      deleteResumeItems(db.collections.resumeLinkItem, resumeId);
+      const index = linkIndex(db, userId);
+      const linked = new Set<string>();
+      for (const link of links) {
+        const linkId = index.resolve({ url: link.url }, () => {
+          const base = libraryRowBase(userId);
+          db.collections.resumeLink.insert({
+            ...base,
+            label: link.label,
+            url: link.url,
+            icon: link.icon ?? null,
+            searchableText: joinSearchable(link.label, link.url),
+          });
+          return base.id;
         });
+        if (linked.has(linkId)) continue;
         db.collections.resumeLinkItem.insert({
-          ...junctionFields(resumeId, index),
-          linkId: base.id,
+          ...junctionFields(resumeId, linked.size),
+          linkId,
         });
-      });
+        linked.add(linkId);
+      }
     },
     async updateSummary(text: string) {
-      deleteResumeItems(db.collections.resumeSummaryItem, snapshots.summaryItems, resumeId);
+      deleteResumeItems(db.collections.resumeSummaryItem, resumeId);
       if (!text.trim()) return;
-      const base = libraryRowBase(userId);
-      db.collections.resumeSummary.insert({
-        ...base,
-        text,
-        sortOrder: 0,
-        searchableText: text,
+      const summaryId = summaryIndex(db, userId).resolve({ text }, () => {
+        const base = libraryRowBase(userId);
+        db.collections.resumeSummary.insert({ ...base, text, searchableText: text });
+        return base.id;
       });
-      db.collections.resumeSummaryItem.insert({
-        ...junctionFields(resumeId, 0),
-        summaryId: base.id,
-      });
+      db.collections.resumeSummaryItem.insert({ ...junctionFields(resumeId, 0), summaryId });
     },
     async updateNotes(values: { label: string; text: string }) {
-      deleteResumeItems(db.collections.resumeNoteItem, snapshots.noteItems, resumeId);
+      deleteResumeItems(db.collections.resumeNoteItem, resumeId);
       if (!values.text.trim()) return;
-      const base = libraryRowBase(userId);
-      db.collections.resumeNote.insert({
-        ...base,
-        label: values.label.trim() || "Notes",
-        text: values.text,
-        sortOrder: 0,
-        searchableText: joinSearchable(values.label, values.text),
+      const label = values.label.trim() || "Notes";
+      const noteId = noteIndex(db, userId).resolve({ label, text: values.text }, () => {
+        const base = libraryRowBase(userId);
+        db.collections.resumeNote.insert({
+          ...base,
+          label,
+          text: values.text,
+          searchableText: joinSearchable(label, values.text),
+        });
+        return base.id;
       });
-      db.collections.resumeNoteItem.insert({
-        ...junctionFields(resumeId, 0),
-        noteId: base.id,
-      });
+      db.collections.resumeNoteItem.insert({ ...junctionFields(resumeId, 0), noteId });
     },
     async updateSkillGroups(groups: SkillGroupDraft[]) {
-      deleteResumeItems(db.collections.resumeSkillGroupItem, snapshots.skillGroupItems, resumeId);
-      groups.forEach((group, groupIndex) => {
-        const base = libraryRowBase(userId);
-        db.collections.resumeSkillGroup.insert({
-          ...base,
-          name: group.name,
-          sortOrder: groupIndex,
-          searchableText: joinSearchable(group.name, ...group.items),
-        });
+      const previous = db.collections.resumeSkillGroupItem.toArray
+        .filter((item) => item.resumeId === resumeId)
+        .map((item) => item.groupId);
+      deleteResumeItems(db.collections.resumeSkillGroupItem, resumeId);
+      const linked = new Set<string>();
+      for (const group of groups) {
+        const skillIds = resolveSkillIds(db, userId, group.items);
+        const groupId = resolveSkillGroup(db, userId, group.name, skillIds);
+        if (linked.has(groupId)) continue;
         db.collections.resumeSkillGroupItem.insert({
-          ...junctionFields(resumeId, groupIndex),
-          groupId: base.id,
+          ...junctionFields(resumeId, linked.size),
+          groupId,
         });
-        group.items.forEach((name, skillIndex) => {
-          const skillBase = libraryRowBase(userId);
-          db.collections.resumeSkill.insert({
-            id: skillBase.id,
-            groupId: base.id,
-            name,
-            level: null,
-            sortOrder: skillIndex,
-            searchableText: name,
-            embedding: null,
-            embeddingModel: null,
-            createdAt: skillBase.createdAt,
-            updatedAt: skillBase.updatedAt,
-          });
-        });
-      });
+        linked.add(groupId);
+      }
+      const stillLinked = new Set(
+        db.collections.resumeSkillGroupItem.toArray.map((item) => item.groupId),
+      );
+      deleteUnlinkedGroups(db, previous, stillLinked);
     },
     async createExperience(values: ExperienceDraft) {
-      const base = libraryRowBase(userId);
-      const sortOrder = snapshots.experienceItems.filter(
-        (item) => item.resumeId === resumeId,
-      ).length;
-      db.collections.resumeExperience.insert({
-        ...base,
-        ...values,
-        sortOrder,
-        searchableText: joinSearchable(values.company, values.role, values.location),
-      });
-      db.collections.resumeExperienceItem.insert({
-        ...junctionFields(resumeId, sortOrder),
-        experienceId: base.id,
-      });
-      appendResumeItemOrder(
-        db,
-        resumeId,
-        "experienceOrder",
-        base.id,
-        junctionEntityIds(snapshots.experienceItems, resumeId, "experienceId"),
-      );
-      return { id: base.id };
+      const id = resolveExperience(values);
+      if (
+        !isLinked(
+          db.collections.resumeExperienceItem.toArray,
+          resumeId,
+          (item) => item.experienceId,
+          id,
+        )
+      ) {
+        const sortOrder = db.collections.resumeExperienceItem.toArray.filter(
+          (item) => item.resumeId === resumeId,
+        ).length;
+        db.collections.resumeExperienceItem.insert({
+          ...junctionFields(resumeId, sortOrder),
+          experienceId: id,
+        });
+        appendResumeItemOrder(
+          db,
+          resumeId,
+          "experienceOrder",
+          id,
+          junctionEntityIds(snapshots.experienceItems, resumeId, "experienceId"),
+        );
+      }
+      return { id };
     },
     async updateExperience(id: string, values: ExperienceDraft) {
       db.collections.resumeExperience.update(id, (draft) => {
@@ -286,11 +382,11 @@ export function createEventSourcedResumeWorkspace(
       });
     },
     async deleteExperience(id: string) {
-      for (const item of snapshots.experienceItems) {
-        if (item.resumeId === resumeId && item.experienceId === id) {
-          db.collections.resumeExperienceItem.delete(item.id);
-        }
-      }
+      unlinkBullets(id);
+      const items = db.collections.resumeExperienceItem.toArray
+        .filter((item) => item.resumeId === resumeId && item.experienceId === id)
+        .map((item) => item.id);
+      for (const itemId of items) db.collections.resumeExperienceItem.delete(itemId);
       removeResumeItemOrder(db, resumeId, "experienceOrder", id);
     },
     async reorderExperience(idA: string, idB: string) {
@@ -306,49 +402,34 @@ export function createEventSourcedResumeWorkspace(
       );
     },
     async updateExperienceBullets(experienceId: string, bullets: string[]) {
-      for (const bullet of snapshots.experienceBullets) {
-        if (bullet.experienceId === experienceId) {
-          db.collections.resumeExperienceBullet.delete(bullet.id);
-        }
-      }
-      bullets.forEach((text, index) => {
-        const base = libraryRowBase(userId);
-        db.collections.resumeExperienceBullet.insert({
-          id: base.id,
-          experienceId,
-          text,
-          sortOrder: index,
-          searchableText: text,
-          embedding: null,
-          embeddingModel: null,
-          createdAt: base.createdAt,
-          updatedAt: base.updatedAt,
-        });
-      });
+      setResumeBullets(db, resumeId, experienceId, bullets);
     },
     async createEducation(values: EducationDraft) {
-      const base = libraryRowBase(userId);
-      const sortOrder = snapshots.educationItems.filter(
-        (item) => item.resumeId === resumeId,
-      ).length;
-      db.collections.resumeEducation.insert({
-        ...base,
-        ...values,
-        sortOrder,
-        searchableText: joinSearchable(values.school, values.degree, values.field),
-      });
-      db.collections.resumeEducationItem.insert({
-        ...junctionFields(resumeId, sortOrder),
-        educationId: base.id,
-      });
-      appendResumeItemOrder(
-        db,
-        resumeId,
-        "educationOrder",
-        base.id,
-        junctionEntityIds(snapshots.educationItems, resumeId, "educationId"),
-      );
-      return { id: base.id };
+      const id = resolveEducation(values);
+      if (
+        !isLinked(
+          db.collections.resumeEducationItem.toArray,
+          resumeId,
+          (item) => item.educationId,
+          id,
+        )
+      ) {
+        const sortOrder = db.collections.resumeEducationItem.toArray.filter(
+          (item) => item.resumeId === resumeId,
+        ).length;
+        db.collections.resumeEducationItem.insert({
+          ...junctionFields(resumeId, sortOrder),
+          educationId: id,
+        });
+        appendResumeItemOrder(
+          db,
+          resumeId,
+          "educationOrder",
+          id,
+          junctionEntityIds(snapshots.educationItems, resumeId, "educationId"),
+        );
+      }
+      return { id };
     },
     async updateEducation(id: string, values: EducationDraft) {
       db.collections.resumeEducation.update(id, (draft) => {
@@ -383,30 +464,26 @@ export function createEventSourcedResumeWorkspace(
       );
     },
     async createProject(values: ProjectDraft) {
-      const base = libraryRowBase(userId);
-      const sortOrder = snapshots.projectItems.filter((item) => item.resumeId === resumeId).length;
-      db.collections.resumeProject.insert({
-        ...base,
-        name: values.name,
-        url: values.url,
-        homepageUrl: values.homepageUrl,
-        description: values.description,
-        tech: JSON.stringify(values.tech),
-        sortOrder,
-        searchableText: joinSearchable(values.name, values.description, values.url),
-      });
-      db.collections.resumeProjectItem.insert({
-        ...junctionFields(resumeId, sortOrder),
-        projectId: base.id,
-      });
-      appendResumeItemOrder(
-        db,
-        resumeId,
-        "projectOrder",
-        base.id,
-        junctionEntityIds(snapshots.projectItems, resumeId, "projectId"),
-      );
-      return { id: base.id };
+      const id = resolveProject({ ...values, tech: JSON.stringify(values.tech) });
+      if (
+        !isLinked(db.collections.resumeProjectItem.toArray, resumeId, (item) => item.projectId, id)
+      ) {
+        const sortOrder = db.collections.resumeProjectItem.toArray.filter(
+          (item) => item.resumeId === resumeId,
+        ).length;
+        db.collections.resumeProjectItem.insert({
+          ...junctionFields(resumeId, sortOrder),
+          projectId: id,
+        });
+        appendResumeItemOrder(
+          db,
+          resumeId,
+          "projectOrder",
+          id,
+          junctionEntityIds(snapshots.projectItems, resumeId, "projectId"),
+        );
+      }
+      return { id };
     },
     async updateProject(id: string, values: ProjectDraft) {
       db.collections.resumeProject.update(id, (draft) => {
@@ -440,30 +517,24 @@ export function createEventSourcedResumeWorkspace(
       );
     },
     async createTalk(values: TalkDraft) {
-      const base = libraryRowBase(userId);
-      const sortOrder = snapshots.talkItems.filter((item) => item.resumeId === resumeId).length;
-      db.collections.resumeTalk.insert({
-        ...base,
-        title: values.title,
-        event: values.event,
-        date: values.date,
-        description: values.description,
-        links: JSON.stringify(values.links ?? []),
-        sortOrder,
-        searchableText: joinSearchable(values.title, values.event, values.description),
-      });
-      db.collections.resumeTalkItem.insert({
-        ...junctionFields(resumeId, sortOrder),
-        talkId: base.id,
-      });
-      appendResumeItemOrder(
-        db,
-        resumeId,
-        "talkOrder",
-        base.id,
-        junctionEntityIds(snapshots.talkItems, resumeId, "talkId"),
-      );
-      return { id: base.id };
+      const id = resolveTalk({ ...values, links: JSON.stringify(values.links ?? []) });
+      if (!isLinked(db.collections.resumeTalkItem.toArray, resumeId, (item) => item.talkId, id)) {
+        const sortOrder = db.collections.resumeTalkItem.toArray.filter(
+          (item) => item.resumeId === resumeId,
+        ).length;
+        db.collections.resumeTalkItem.insert({
+          ...junctionFields(resumeId, sortOrder),
+          talkId: id,
+        });
+        appendResumeItemOrder(
+          db,
+          resumeId,
+          "talkOrder",
+          id,
+          junctionEntityIds(snapshots.talkItems, resumeId, "talkId"),
+        );
+      }
+      return { id };
     },
     async updateTalk(id: string, values: TalkDraft) {
       db.collections.resumeTalk.update(id, (draft) => {
@@ -496,30 +567,18 @@ export function createEventSourcedResumeWorkspace(
         db.collections.resumeTalkItem,
       );
     },
+    /**
+     * Rewrites the résumé from a document by linking to existing library rows
+     * wherever one matches, so a regenerated résumé adds only what is new.
+     */
     async replaceDocument(doc: ResumeDocumentV1) {
       const data = documentToInsertData(resumeId, userId, doc);
       const ts = nowMs();
 
-      db.collections.resume.update(resumeId, (draft) => {
-        draft.fullName = data.resume.fullName;
-        draft.headline = data.resume.headline;
-        draft.templateId = data.resume.templateId;
-        draft.experienceOrder = data.experiences.map((experience) => experience.id);
-        draft.educationOrder = data.education.map((education) => education.id);
-        draft.projectOrder = data.projects.map((project) => project.id);
-        draft.talkOrder = data.talks.map((talk) => talk.id);
-        draft.searchableText = joinSearchable(
-          draft.name,
-          data.resume.fullName,
-          data.resume.headline,
-          draft.description,
-        );
-        draft.updatedAt = ts;
-      });
-
-      for (const section of snapshots.sections) {
-        if (section.resumeId === resumeId) db.collections.resumeSection.delete(section.id);
-      }
+      const sectionIds = db.collections.resumeSection.toArray
+        .filter((section) => section.resumeId === resumeId)
+        .map((section) => section.id);
+      for (const id of sectionIds) db.collections.resumeSection.delete(id);
       for (const section of data.sections) {
         db.collections.resumeSection.insert({
           id: section.id,
@@ -562,113 +621,99 @@ export function createEventSourcedResumeWorkspace(
         })),
       );
 
-      deleteResumeItems(db.collections.resumeExperienceItem, snapshots.experienceItems, resumeId);
-      deleteResumeItems(db.collections.resumeEducationItem, snapshots.educationItems, resumeId);
-      deleteResumeItems(db.collections.resumeProjectItem, snapshots.projectItems, resumeId);
-      deleteResumeItems(db.collections.resumeTalkItem, snapshots.talkItems, resumeId);
+      const previousExperiences = db.collections.resumeExperienceItem.toArray
+        .filter((item) => item.resumeId === resumeId)
+        .map((item) => item.experienceId);
+      deleteResumeItems(db.collections.resumeExperienceItem, resumeId);
+      deleteResumeItems(db.collections.resumeEducationItem, resumeId);
+      deleteResumeItems(db.collections.resumeProjectItem, resumeId);
+      deleteResumeItems(db.collections.resumeTalkItem, resumeId);
 
+      const experienceOrder: string[] = [];
       for (const experience of data.experiences) {
-        const base = libraryRowBase(userId);
-        const id = experience.id;
-        db.collections.resumeExperience.insert({
-          ...base,
-          id,
+        const id = resolveExperience({
           company: experience.company,
           role: experience.role,
           startDate: experience.startDate,
           endDate: experience.endDate,
           location: experience.location,
-          sortOrder: experience.sortOrder,
-          searchableText: joinSearchable(experience.company, experience.role, experience.location),
         });
+        if (experienceOrder.includes(id)) continue;
         db.collections.resumeExperienceItem.insert({
-          ...junctionFields(resumeId, experience.sortOrder),
+          ...junctionFields(resumeId, experienceOrder.length),
           experienceId: id,
         });
+        experienceOrder.push(id);
+        setResumeBullets(
+          db,
+          resumeId,
+          id,
+          data.experienceBullets
+            .filter((bullet) => bullet.experienceId === experience.id)
+            .sort((a, b) => a.sortOrder - b.sortOrder)
+            .map((bullet) => bullet.text),
+        );
       }
-      for (const bullet of data.experienceBullets) {
-        const base = libraryRowBase(userId);
-        db.collections.resumeExperienceBullet.insert({
-          id: bullet.id,
-          experienceId: bullet.experienceId,
-          text: bullet.text,
-          sortOrder: bullet.sortOrder,
-          searchableText: bullet.text,
-          embedding: null,
-          embeddingModel: null,
-          createdAt: base.createdAt,
-          updatedAt: base.updatedAt,
-        });
+      for (const experienceId of previousExperiences) {
+        if (!experienceOrder.includes(experienceId)) unlinkBullets(experienceId);
       }
 
+      const educationOrder: string[] = [];
       for (const education of data.education) {
-        db.collections.resumeEducation.insert({
-          ...libraryRowBase(userId),
-          id: education.id,
+        const id = resolveEducation({
           school: education.school,
           degree: education.degree,
           field: education.field,
           startDate: education.startDate,
           endDate: education.endDate,
           description: education.description,
-          sortOrder: education.sortOrder,
-          searchableText: joinSearchable(education.school, education.degree, education.field),
         });
+        if (educationOrder.includes(id)) continue;
         db.collections.resumeEducationItem.insert({
-          ...junctionFields(resumeId, education.sortOrder),
-          educationId: education.id,
+          ...junctionFields(resumeId, educationOrder.length),
+          educationId: id,
         });
-      }
-      for (const bullet of data.educationBullets) {
-        const base = libraryRowBase(userId);
-        db.collections.resumeEducationBullet.insert({
-          id: bullet.id,
-          educationId: bullet.educationId,
-          text: bullet.text,
-          sortOrder: bullet.sortOrder,
-          searchableText: bullet.text,
-          embedding: null,
-          embeddingModel: null,
-          createdAt: base.createdAt,
-          updatedAt: base.updatedAt,
-        });
+        educationOrder.push(id);
       }
 
+      const projectOrder: string[] = [];
       for (const project of data.projects) {
-        db.collections.resumeProject.insert({
-          ...libraryRowBase(userId),
-          id: project.id,
-          name: project.name,
-          url: project.url,
-          homepageUrl: project.homepageUrl,
-          description: project.description,
-          tech: project.tech,
-          sortOrder: project.sortOrder,
-          searchableText: joinSearchable(project.name, project.description, project.url),
-        });
+        const id = resolveProject(project);
+        if (projectOrder.includes(id)) continue;
         db.collections.resumeProjectItem.insert({
-          ...junctionFields(resumeId, project.sortOrder),
-          projectId: project.id,
+          ...junctionFields(resumeId, projectOrder.length),
+          projectId: id,
         });
+        projectOrder.push(id);
       }
 
+      const talkOrder: string[] = [];
       for (const talk of data.talks) {
-        db.collections.resumeTalk.insert({
-          ...libraryRowBase(userId),
-          id: talk.id,
-          title: talk.title,
-          event: talk.event,
-          date: talk.date,
-          description: talk.description,
-          links: talk.links,
-          sortOrder: talk.sortOrder,
-          searchableText: joinSearchable(talk.title, talk.event, talk.description),
-        });
+        const id = resolveTalk(talk);
+        if (talkOrder.includes(id)) continue;
         db.collections.resumeTalkItem.insert({
-          ...junctionFields(resumeId, talk.sortOrder),
-          talkId: talk.id,
+          ...junctionFields(resumeId, talkOrder.length),
+          talkId: id,
         });
+        talkOrder.push(id);
       }
+
+      db.collections.resume.update(resumeId, (draft) => {
+        draft.fullName = data.resume.fullName;
+        draft.headline = data.resume.headline;
+        draft.templateId = data.resume.templateId;
+        draft.experienceOrder = experienceOrder;
+        draft.educationOrder = educationOrder;
+        draft.projectOrder = projectOrder;
+        draft.talkOrder = talkOrder;
+        draft.searchableText = joinSearchable(
+          draft.name,
+          data.resume.fullName,
+          data.resume.headline,
+          draft.description,
+        );
+        draft.updatedAt = ts;
+      });
     },
   };
 }

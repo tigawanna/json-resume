@@ -1,4 +1,5 @@
 import { ADMIN_LIST_PER_PAGE } from "@/components/pagination/constants";
+import { deleteWithReferences } from "@/data-access-layer/event-sourced/library-resolve";
 import { usePageSearchQuery } from "@/components/search/use-page-search-query";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -111,7 +112,7 @@ export function ExperienceList() {
 
   function handleDelete(id: string) {
     try {
-      db.collections.resumeExperience.delete(id);
+      deleteWithReferences(db, "resumeExperience", id);
       toast.success("Experience deleted");
     } catch (err: unknown) {
       toast.error("Failed to delete", { description: unwrapUnknownError(err).message });

@@ -109,6 +109,15 @@ export const resumeExperienceBulletSchema = z.object({
 });
 export type ResumeExperienceBullet = z.infer<typeof resumeExperienceBulletSchema>;
 
+export const resumeExperienceBulletItemSchema = z.object({
+  id: z.string(),
+  resumeId: z.string(),
+  bulletId: z.string(),
+  sortOrder: z.number(),
+  ...timestampsSchema.shape,
+});
+export type ResumeExperienceBulletItem = z.infer<typeof resumeExperienceBulletItemSchema>;
+
 // --- education ---
 
 export const resumeEducationSchema = z.object({
@@ -166,9 +175,12 @@ export const resumeSkillGroupItemSchema = z.object({
 });
 export type ResumeSkillGroupItem = z.infer<typeof resumeSkillGroupItemSchema>;
 
+/** Library row: one per distinct skill name. Groups link to it via `resumeSkillGroupSkill`. */
 export const resumeSkillSchema = z.object({
   id: z.string(),
-  groupId: z.string(),
+  userId: z.string().nullable().optional(),
+  /** Legacy owner group, cleared by server compaction. */
+  groupId: z.string().nullable().optional(),
   name: z.string(),
   level: z.string().nullable().optional(),
   sortOrder: z.number(),
@@ -176,6 +188,15 @@ export const resumeSkillSchema = z.object({
   ...timestampsSchema.shape,
 });
 export type ResumeSkill = z.infer<typeof resumeSkillSchema>;
+
+export const resumeSkillGroupSkillSchema = z.object({
+  id: z.string(),
+  groupId: z.string(),
+  skillId: z.string(),
+  sortOrder: z.number(),
+  ...timestampsSchema.shape,
+});
+export type ResumeSkillGroupSkill = z.infer<typeof resumeSkillGroupSkillSchema>;
 
 // --- contact ---
 

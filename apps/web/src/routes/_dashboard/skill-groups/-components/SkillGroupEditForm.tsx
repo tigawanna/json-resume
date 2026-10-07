@@ -10,7 +10,8 @@ import { formOptions } from "@tanstack/react-form";
 import { X } from "lucide-react";
 import { useState, type KeyboardEvent } from "react";
 import { toast } from "sonner";
-import { joinSearchable, newId, nowMs, touchUpdatedAt } from "../../-utils/row-helpers";
+import { resolveSkillIds, setGroupSkills } from "@/data-access-layer/event-sourced/library-resolve";
+import { joinSearchable, touchUpdatedAt } from "../../-utils/row-helpers";
 
 const editOpts = formOptions({
   defaultValues: { name: "" },
@@ -44,25 +45,7 @@ export function SkillGroupEditForm({
           draft.updatedAt = touchUpdatedAt();
         });
 
-        for (const existing of initialSkills) {
-          db.collections.resumeSkill.delete(existing.id);
-        }
-
-        skills.forEach((skillName, index) => {
-          const ts = nowMs();
-          db.collections.resumeSkill.insert({
-            id: newId(),
-            groupId: group.id,
-            name: skillName,
-            level: null,
-            sortOrder: index,
-            searchableText: skillName,
-            embedding: null,
-            embeddingModel: null,
-            createdAt: ts,
-            updatedAt: ts,
-          });
-        });
+        setGroupSkills(db, group.id, resolveSkillIds(db, group.userId ?? "", skills));
 
         toast.success("Skill group saved");
         onSuccess?.();

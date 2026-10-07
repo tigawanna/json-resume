@@ -25,6 +25,7 @@ import type {
   ResumeEducationItem,
   ResumeExperience,
   ResumeExperienceBullet,
+  ResumeExperienceBulletItem,
   ResumeExperienceItem,
   ResumeLanguage,
   ResumeLanguageItem,
@@ -38,6 +39,7 @@ import type {
   ResumeSkill,
   ResumeSkillGroup,
   ResumeSkillGroupItem,
+  ResumeSkillGroupSkill,
   ResumeSummary,
   ResumeSummaryItem,
   ResumeTalk,
@@ -59,6 +61,7 @@ export type AppCollectionDefs = {
   resumeExperience: CollectionDef<ResumeExperience, string>;
   resumeExperienceItem: CollectionDef<ResumeExperienceItem, string>;
   resumeExperienceBullet: CollectionDef<ResumeExperienceBullet, string>;
+  resumeExperienceBulletItem: CollectionDef<ResumeExperienceBulletItem, string>;
 
   resumeEducation: CollectionDef<ResumeEducation, string>;
   resumeEducationItem: CollectionDef<ResumeEducationItem, string>;
@@ -67,6 +70,7 @@ export type AppCollectionDefs = {
   resumeSkillGroup: CollectionDef<ResumeSkillGroup, string>;
   resumeSkillGroupItem: CollectionDef<ResumeSkillGroupItem, string>;
   resumeSkill: CollectionDef<ResumeSkill, string>;
+  resumeSkillGroupSkill: CollectionDef<ResumeSkillGroupSkill, string>;
 
   resumeContact: CollectionDef<ResumeContact, string>;
   resumeContactItem: CollectionDef<ResumeContactItem, string>;
@@ -184,6 +188,14 @@ const {
         { select: (r) => r.experienceId, indexType: BasicIndex, name: "by-experience" },
       ],
     },
+    resumeExperienceBulletItem: {
+      getKey: (row) => row.id,
+      indexes: [
+        byId<ResumeExperienceBulletItem>(),
+        byResumeId<ResumeExperienceBulletItem>(),
+        { select: (r) => r.bulletId, indexType: BasicIndex, name: "by-bullet" },
+      ],
+    },
 
     resumeEducation: {
       getKey: (row) => row.id,
@@ -219,9 +231,14 @@ const {
     },
     resumeSkill: {
       getKey: (row) => row.id,
+      indexes: [byId<ResumeSkill>(), byUserId<ResumeSkill>()],
+    },
+    resumeSkillGroupSkill: {
+      getKey: (row) => row.id,
       indexes: [
-        byId<ResumeSkill>(),
+        byId<ResumeSkillGroupSkill>(),
         { select: (r) => r.groupId, indexType: BasicIndex, name: "by-group" },
+        { select: (r) => r.skillId, indexType: BasicIndex, name: "by-skill" },
       ],
     },
 

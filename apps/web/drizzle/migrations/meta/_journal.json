@@ -43,6 +43,20 @@
       "when": 1788869414022,
       "tag": "0005_boring_ezekiel",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1791364821904,
+      "tag": "0006_condemned_jazinda",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1791364842297,
+      "tag": "0007_fancy_vengeance",
+      "breakpoints": true
     }
   ]
 }

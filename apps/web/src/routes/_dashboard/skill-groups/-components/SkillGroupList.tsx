@@ -6,7 +6,9 @@ import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
 import type { ResumeSkill, ResumeSkillGroup } from "@/data-access-layer/event-sourced/schemas";
 import { RouterPendingComponent } from "@/lib/tanstack/router/RouterPendingComponent";
 import { unwrapUnknownError } from "@/utils/errors";
-import { count, eq, queryOnce, toArray, useLiveQuery } from "@tanstack/react-db";
+import { count, useLiveQuery } from "@tanstack/react-db";
+import { skillsForGroup } from "@/data-access-layer/event-sourced/assemble-resume-detail";
+import { deleteWithReferences } from "@/data-access-layer/event-sourced/library-resolve";
 import { Plus, Wrench } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -54,7 +56,7 @@ export function SkillGroupList() {
     />
   );
 
-  const { data: items, isLoading } = useLiveQuery(
+  const { data: groups, isLoading } = useLiveQuery(
     (query) => {
       const base = query.from({ row: db.collections.resumeSkillGroup });
       const filtered = keyword
@@ -63,19 +65,22 @@ export function SkillGroupList() {
       return filtered
         .orderBy(({ row }) => listOrderByRef(row, sortBy, "updatedAt"), sortDir)
         .limit(ADMIN_LIST_PER_PAGE)
-        .offset(offset)
-        .select(({ row }) => ({
-          ...row,
-          skills: toArray(
-            query
-              .from({ skill: db.collections.resumeSkill })
-              .where(({ skill }) => eq(skill.groupId, row.id))
-              .orderBy(({ skill }) => skill.sortOrder, "asc"),
-          ),
-        }));
+        .offset(offset);
     },
     [keyword, offset, sortBy, sortDir],
   );
+  const { data: skillRows } = useLiveQuery(
+    (query) => query.from({ skill: db.collections.resumeSkill }),
+    [],
+  );
+  const { data: groupSkillRows } = useLiveQuery(
+    (query) => query.from({ link: db.collections.resumeSkillGroupSkill }),
+    [],
+  );
+  const items: SkillGroupRow[] = groups.map((group) => ({
+    ...group,
+    skills: skillsForGroup(group.id, skillRows, groupSkillRows),
+  }));
 
   const { data: totals } = useLiveQuery(
     (query) => {
@@ -92,17 +97,9 @@ export function SkillGroupList() {
   const totalPages = totalPagesFromCount(totalItems);
   const hasSearch = keyword.length > 0;
 
-  async function handleDelete(groupId: string) {
+  function handleDelete(groupId: string) {
     try {
-      const related = await queryOnce((query) =>
-        query
-          .from({ skill: db.collections.resumeSkill })
-          .where(({ skill }) => eq(skill.groupId, groupId)),
-      );
-      for (const skill of related) {
-        db.collections.resumeSkill.delete(skill.id);
-      }
-      db.collections.resumeSkillGroup.delete(groupId);
+      deleteWithReferences(db, "resumeSkillGroup", groupId);
       toast.success("Skill group deleted");
     } catch (err: unknown) {
       toast.error("Failed to delete", { description: unwrapUnknownError(err).message });

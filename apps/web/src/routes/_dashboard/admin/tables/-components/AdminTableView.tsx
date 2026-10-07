@@ -10,9 +10,11 @@ import {
 } from "@/components/ui/table";
 import { adminTablePageQueryOptions } from "@/data-access-layer/admin/admin-query-options";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, KeyRound } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
+import { KeyRound } from "lucide-react";
 import { useState } from "react";
+import { AdminPageHeader } from "../../-components/AdminPageHeader";
+import { AdminRowSheet } from "./AdminRowSheet";
 
 const PAGE_SIZE = 50;
 
@@ -25,6 +27,7 @@ type AdminTableViewProps = {
 export function AdminTableView({ table, page, q }: AdminTableViewProps) {
   const navigate = useNavigate();
   const [search, setSearch] = useState(q ?? "");
+  const [selectedRowid, setSelectedRowid] = useState<number | null>(null);
   const query = useQuery({
     ...adminTablePageQueryOptions({ table, page, pageSize: PAGE_SIZE, q }),
     placeholderData: keepPreviousData,
@@ -42,32 +45,34 @@ export function AdminTableView({ table, page, q }: AdminTableViewProps) {
 
   return (
     <div className="flex min-w-0 flex-col gap-4 p-4 md:p-6" data-test="admin-table-view">
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div className="flex items-center gap-3">
-          <Link to="/admin" className="btn btn-ghost btn-sm" data-test="admin-table-back">
-            <ArrowLeft className="size-4" />
-          </Link>
-          <h1 className="font-mono text-xl font-semibold">{table}</h1>
-          {data ? <Badge variant="secondary">{data.total.toLocaleString()} rows</Badge> : null}
-        </div>
-        <form
-          className="flex gap-2"
-          onSubmit={(event) => {
-            event.preventDefault();
-            goTo(0, search.trim());
-          }}
-        >
-          <Input
-            placeholder="Search any column"
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            data-test="admin-table-search"
-          />
-          <button type="submit" className="btn btn-primary btn-sm h-9">
-            Search
-          </button>
-        </form>
-      </div>
+      <AdminPageHeader
+        backTo="/admin/tables"
+        title={
+          <span className="flex items-center gap-3">
+            <span className="font-mono">{table}</span>
+            {data ? <Badge variant="secondary">{data.total.toLocaleString()} rows</Badge> : null}
+          </span>
+        }
+        actions={
+          <form
+            className="flex gap-2"
+            onSubmit={(event) => {
+              event.preventDefault();
+              goTo(0, search.trim());
+            }}
+          >
+            <Input
+              placeholder="Search any column"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              data-test="admin-table-search"
+            />
+            <button type="submit" className="btn btn-primary btn-sm h-9">
+              Search
+            </button>
+          </form>
+        }
+      />
 
       {query.error ? (
         <p className="text-sm text-error" data-test="admin-table-error">
@@ -102,10 +107,15 @@ export function AdminTableView({ table, page, q }: AdminTableViewProps) {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  data.rows.map((row, index) => (
-                    <TableRow key={index} data-test="admin-table-row">
+                  data.rows.map((row) => (
+                    <TableRow
+                      key={row.rowid}
+                      className="cursor-pointer"
+                      onClick={() => setSelectedRowid(row.rowid)}
+                      data-test="admin-table-row"
+                    >
                       {data.columns.map((column) => {
-                        const value = row[column.name];
+                        const value = row.cells[column.name];
                         return (
                           <TableCell
                             key={column.name}
@@ -150,6 +160,8 @@ export function AdminTableView({ table, page, q }: AdminTableViewProps) {
           </div>
         </>
       ) : null}
+
+      <AdminRowSheet table={table} rowid={selectedRowid} onClose={() => setSelectedRowid(null)} />
     </div>
   );
 }

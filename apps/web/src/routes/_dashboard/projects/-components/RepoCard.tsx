@@ -1,4 +1,5 @@
 import { Badge } from "@/components/ui/badge";
+import { deleteWithReferences } from "@/data-access-layer/event-sourced/library-resolve";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import type { RepositoryResponse } from "@/data-access-layer/github/repos.octo";
 import { useViewer } from "@/data-access-layer/auth/viewer";
@@ -52,7 +53,7 @@ export default function RepoCard({ repo, savedProject }: RepoCardProps) {
   const unsaveMutation = useMutation({
     mutationFn: async () => {
       if (!savedProject) return;
-      db.collections.resumeProject.delete(savedProject.id);
+      deleteWithReferences(db, "resumeProject", savedProject.id);
     },
     onSuccess() {
       toast.success(`Removed "${repo.name}" from saved projects`);

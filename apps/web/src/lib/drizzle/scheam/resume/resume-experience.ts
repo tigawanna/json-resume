@@ -60,3 +60,26 @@ export const resumeExperienceBullet = sqliteTable(
   },
   (table) => [index("resume_exp_bullet_experienceId_idx").on(table.experienceId)],
 );
+
+/** Which of an experience's library bullets a résumé shows, in its own order. */
+export const resumeExperienceBulletItem = sqliteTable(
+  "resume_experience_bullet_item",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => uuidv7()),
+    resumeId: text("resume_id")
+      .notNull()
+      .references(() => resume.id, { onDelete: "cascade" }),
+    bulletId: text("bullet_id")
+      .notNull()
+      .references(() => resumeExperienceBullet.id, { onDelete: "cascade" }),
+    sortOrder: integer("sort_order").default(0).notNull(),
+    ...timestamps,
+  },
+  (table) => [
+    index("resume_exp_bullet_item_resumeId_idx").on(table.resumeId),
+    index("resume_exp_bullet_item_bulletId_idx").on(table.bulletId),
+    uniqueIndex("resume_exp_bullet_item_unique_idx").on(table.resumeId, table.bulletId),
+  ],
+);
