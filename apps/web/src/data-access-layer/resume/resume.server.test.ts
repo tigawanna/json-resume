@@ -1,8 +1,7 @@
 // @vitest-environment node
 
-import { sql } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import { createDefaultResume, type ResumeDocumentV1 } from "@/features/resume/resume-schema";
+import { emptyResumeLayout, type ResumeLayout } from "@/features/resume/resume-layout";
 import { createMigratedTestDatabase, stubTestServerEnv, type TestDatabase } from "@/test/test-db";
 
 let testDatabase: TestDatabase;
@@ -19,32 +18,18 @@ async function createUser(input: { id: string; email: string; role?: string }): 
   });
 }
 
-async function createResume(input: { id: string; userId: string; name: string }): Promise<void> {
+async function createResume(input: {
+  id: string;
+  userId: string;
+  name: string;
+  layout?: ResumeLayout;
+}): Promise<void> {
   await db.insert(schema.resume).values({
     id: input.id,
     userId: input.userId,
     name: input.name,
     fullName: input.name,
-  });
-}
-
-async function createLink(input: {
-  id: string;
-  userId: string;
-  resumeId: string;
-  label: string;
-}): Promise<void> {
-  await db.insert(schema.resumeLink).values({
-    id: input.id,
-    userId: input.userId,
-    label: input.label,
-    url: `https://example.com/${input.id}`,
-    sortOrder: 0,
-  });
-  await db.insert(schema.resumeLinkItem).values({
-    resumeId: input.resumeId,
-    linkId: input.id,
-    sortOrder: 0,
+    layout: input.layout,
   });
 }
 
@@ -70,16 +55,8 @@ describe("resume data access ownership", () => {
   it("does not list another user's resume even when the id is supplied", async () => {
     await createUser({ id: "list-user-a", email: "list-a@example.com" });
     await createUser({ id: "list-user-b", email: "list-b@example.com" });
-    await createResume({
-      id: "list-resume-a",
-      userId: "list-user-a",
-      name: "Alice Resume",
-    });
-    await createResume({
-      id: "list-resume-b",
-      userId: "list-user-b",
-      name: "Bob Resume",
-    });
+    await createResume({ id: "list-resume-a", userId: "list-user-a", name: "Alice Resume" });
+    await createResume({ id: "list-resume-b", userId: "list-user-b", name: "Bob Resume" });
 
     const visible = await resumeDal.listResumesForUser({ userId: "list-user-a" });
     const guessed = await resumeDal.listResumesForUser({
@@ -92,175 +69,85 @@ describe("resume data access ownership", () => {
     expect(guessed).toEqual([]);
   });
 
-  it("rejects cross-owner child ids", async () => {
-    await createUser({ id: "child-user-a", email: "child-a@example.com" });
-    await createUser({ id: "child-user-b", email: "child-b@example.com" });
-    await createResume({
-      id: "child-resume-a",
-      userId: "child-user-a",
-      name: "Child A",
-    });
-    await createResume({
-      id: "child-resume-b",
-      userId: "child-user-b",
-      name: "Child B",
-    });
-    await createLink({
-      id: "child-link-b",
-      userId: "child-user-b",
-      resumeId: "child-resume-b",
-      label: "Private Link",
-    });
-
-    await expect(resumeDal.assertLinkBelongsToUser("child-link-b", "child-user-a")).rejects.toThrow(
-      "Link not found",
-    );
-  });
-
   it("does not let admin role bypass personal resume ownership", async () => {
-    await createUser({
-      id: "role-admin",
-      email: "role-admin@example.com",
-      role: "admin",
-    });
+    await createUser({ id: "role-admin", email: "role-admin@example.com", role: "admin" });
     await createUser({ id: "role-owner", email: "role-owner@example.com" });
-    await createResume({
-      id: "role-owner-resume",
-      userId: "role-owner",
-      name: "Owner Resume",
-    });
+    await createResume({ id: "role-owner-resume", userId: "role-owner", name: "Owner Resume" });
 
     await expect(
       resumeDal.assertResumeBelongsToUser("role-owner-resume", "role-admin"),
     ).rejects.toThrow("Resume not found");
+    await expect(resumeDal.getResumeDetail("role-owner-resume", "role-admin")).resolves.toBeNull();
   });
+});
 
-  it("reuses matching imported blocks for the same user", async () => {
-    await createUser({ id: "import-dedupe-user", email: "import-dedupe@example.com" });
-    const doc = createDefaultResume();
-
-    const firstResumeId = await resumeDal.createResumeForUser("import-dedupe-user", {
-      name: "First import",
-      description: "",
-      jobDescription: "",
-      doc,
-    });
-    const secondResumeId = await resumeDal.createResumeForUser("import-dedupe-user", {
-      name: "Second import",
-      description: "",
-      jobDescription: "",
-      doc,
-    });
-
-    const summaries = await db
-      .select({ id: schema.resumeSummary.id })
-      .from(schema.resumeSummary)
-      .where(sql`${schema.resumeSummary.userId} = ${"import-dedupe-user"}`);
-    const experiences = await db
-      .select({ id: schema.resumeExperience.id })
-      .from(schema.resumeExperience)
-      .where(sql`${schema.resumeExperience.userId} = ${"import-dedupe-user"}`);
-    const projects = await db
-      .select({ id: schema.resumeProject.id })
-      .from(schema.resumeProject)
-      .where(sql`${schema.resumeProject.userId} = ${"import-dedupe-user"}`);
-    const skillGroups = await db
-      .select({ id: schema.resumeSkillGroup.id })
-      .from(schema.resumeSkillGroup)
-      .where(sql`${schema.resumeSkillGroup.userId} = ${"import-dedupe-user"}`);
-
-    expect(summaries).toHaveLength(1);
-    expect(experiences).toHaveLength(doc.experience.items.length);
-    expect(projects).toHaveLength(doc.projects.items.length);
-    expect(skillGroups).toHaveLength(doc.skills.groups.length);
-
-    const summaryItems = await db
-      .select({
-        resumeId: schema.resumeSummaryItem.resumeId,
-        summaryId: schema.resumeSummaryItem.summaryId,
-      })
-      .from(schema.resumeSummaryItem)
-      .where(sql`${schema.resumeSummaryItem.resumeId} in (${firstResumeId}, ${secondResumeId})`);
-    const firstSummaryItem = summaryItems.find((item) => item.resumeId === firstResumeId);
-    const secondSummaryItem = summaryItems.find((item) => item.resumeId === secondResumeId);
-
-    expect(firstSummaryItem?.summaryId).toBeDefined();
-    expect(secondSummaryItem?.summaryId).toBe(firstSummaryItem?.summaryId);
-  });
-
-  it("does not reuse another user's matching imported blocks", async () => {
-    await createUser({ id: "import-owner-a", email: "import-owner-a@example.com" });
-    await createUser({ id: "import-owner-b", email: "import-owner-b@example.com" });
-    const doc = createDefaultResume();
-
-    const firstResumeId = await resumeDal.createResumeForUser("import-owner-a", {
-      name: "Owner A import",
-      description: "",
-      jobDescription: "",
-      doc,
-    });
-    const secondResumeId = await resumeDal.createResumeForUser("import-owner-b", {
-      name: "Owner B import",
-      description: "",
-      jobDescription: "",
-      doc,
-    });
-
-    const summaryItems = await db
-      .select({
-        resumeId: schema.resumeSummaryItem.resumeId,
-        summaryId: schema.resumeSummaryItem.summaryId,
-      })
-      .from(schema.resumeSummaryItem)
-      .where(sql`${schema.resumeSummaryItem.resumeId} in (${firstResumeId}, ${secondResumeId})`);
-    const firstSummaryItem = summaryItems.find((item) => item.resumeId === firstResumeId);
-    const secondSummaryItem = summaryItems.find((item) => item.resumeId === secondResumeId);
-
-    expect(firstSummaryItem?.summaryId).toBeDefined();
-    expect(secondSummaryItem?.summaryId).toBeDefined();
-    expect(secondSummaryItem?.summaryId).not.toBe(firstSummaryItem?.summaryId);
-  });
-
-  it("does not replace another user's resume content or delete its children", async () => {
-    await createUser({ id: "replace-owner", email: "replace-owner@example.com" });
-    await createUser({ id: "replace-attacker", email: "replace-attacker@example.com" });
+describe("getResumeDetail", () => {
+  it("renders the stored layout in its order with the chosen bullets and skills", async () => {
+    await createUser({ id: "detail-user", email: "detail@example.com" });
+    await db.insert(schema.resumeExperience).values([
+      { id: "exp-1", userId: "detail-user", company: "Acme", role: "Engineer" },
+      { id: "exp-2", userId: "detail-user", company: "Beta", role: "Lead" },
+    ]);
+    await db.insert(schema.resumeExperienceBullet).values([
+      { id: "b-1", experienceId: "exp-1", text: "Shipped A", sortOrder: 0 },
+      { id: "b-2", experienceId: "exp-1", text: "Shipped B", sortOrder: 1 },
+      { id: "b-3", experienceId: "exp-2", text: "Led C", sortOrder: 0 },
+    ]);
+    await db
+      .insert(schema.resumeSkillGroup)
+      .values({ id: "g-1", userId: "detail-user", name: "Frontend" });
+    await db.insert(schema.resumeSkill).values([
+      { id: "s-1", userId: "detail-user", name: "React" },
+      { id: "s-2", userId: "detail-user", name: "Vue" },
+    ]);
     await createResume({
-      id: "replace-owner-resume",
-      userId: "replace-owner",
-      name: "Keep Me",
-    });
-    await createLink({
-      id: "replace-owner-link",
-      userId: "replace-owner",
-      resumeId: "replace-owner-resume",
-      label: "Keep Link",
-    });
-
-    const replacement: ResumeDocumentV1 = {
-      ...createDefaultResume(),
-      header: {
-        ...createDefaultResume().header,
-        fullName: "Unexpected Replacement",
-        links: [],
+      id: "detail-resume",
+      userId: "detail-user",
+      name: "Detail",
+      layout: {
+        ...emptyResumeLayout(),
+        experiences: [
+          { id: "exp-2", bullets: ["b-3"] },
+          { id: "exp-1", bullets: ["b-2"] },
+        ],
+        skillGroups: [{ id: "g-1", skills: ["s-2", "s-1"] }],
       },
-    };
+    });
 
-    await expect(
-      resumeDal.replaceResumeContent("replace-owner-resume", "replace-attacker", replacement),
-    ).rejects.toThrow("Resume not found");
+    const detail = await resumeDal.getResumeDetail("detail-resume", "detail-user");
 
-    const [resumeAfter] = await db
-      .select({ fullName: schema.resume.fullName })
-      .from(schema.resume)
-      .where(sql`${schema.resume.id} = ${"replace-owner-resume"}`)
-      .limit(1);
-    const [linkAfter] = await db
-      .select({ id: schema.resumeLink.id })
-      .from(schema.resumeLink)
-      .where(sql`${schema.resumeLink.id} = ${"replace-owner-link"}`)
-      .limit(1);
+    expect(detail?.experiences.map((row) => [row.company, row.bullets.map((b) => b.text)])).toEqual(
+      [
+        ["Beta", ["Led C"]],
+        ["Acme", ["Shipped B"]],
+      ],
+    );
+    expect(detail?.skillGroups).toEqual([
+      expect.objectContaining({
+        name: "Frontend",
+        skills: [
+          expect.objectContaining({ name: "Vue", sortOrder: 0 }),
+          expect.objectContaining({ name: "React", sortOrder: 1 }),
+        ],
+      }),
+    ]);
+  });
 
-    expect(resumeAfter?.fullName).toBe("Keep Me");
-    expect(linkAfter?.id).toBe("replace-owner-link");
+  it("skips ids that point at another user's library rows", async () => {
+    await createUser({ id: "victim", email: "victim@example.com" });
+    await createUser({ id: "prober", email: "prober@example.com" });
+    await db
+      .insert(schema.resumeSummary)
+      .values({ id: "victim-summary", userId: "victim", text: "Private summary" });
+    await createResume({
+      id: "prober-resume",
+      userId: "prober",
+      name: "Prober",
+      layout: { ...emptyResumeLayout(), summaries: ["victim-summary"] },
+    });
+
+    const detail = await resumeDal.getResumeDetail("prober-resume", "prober");
+
+    expect(detail?.summaries).toEqual([]);
   });
 });

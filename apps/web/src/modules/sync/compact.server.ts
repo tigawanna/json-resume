@@ -42,11 +42,7 @@ async function loadUserRows(userId: string): Promise<Record<string, Row[]>> {
 async function compact(userId: string, options: CompactOptions): Promise<CompactResult> {
   await catchUpProjection();
   const now = new Date();
-  const plan = planCompaction(await loadUserRows(userId), {
-    userId,
-    now,
-    prune: options.prune,
-  });
+  const plan = planCompaction(await loadUserRows(userId), { now, prune: options.prune });
   if (plan.ops.length === 0) return { events: 0, merged: plan.merged, pruned: plan.pruned };
 
   const txId = `compact-${crypto.randomUUID()}`;

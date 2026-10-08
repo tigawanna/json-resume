@@ -11,9 +11,10 @@ import { listSkillGroups } from "@/data-access-layer/resume/skill-groups/skill-g
 import { listSummaries } from "@/data-access-layer/resume/summaries/summary.functions";
 import { listTalks } from "@/data-access-layer/resume/talks/talk.functions";
 import { listVolunteers } from "@/data-access-layer/resume/volunteers/volunteer.functions";
+import { resolveSkillIds } from "@/data-access-layer/event-sourced/library-resolve";
 import { findExistingByExactTitle, normalizeTitle } from "../find-existing";
 import { attachResumeDetail, insertImportedResume, purgeLocalResumes } from "./resume-import";
-import { joinSearchable, newId } from "../row-helpers";
+import { joinSearchable } from "../row-helpers";
 import {
   emptyStats,
   fetchAllCursorPages,
@@ -362,19 +363,7 @@ export async function importSkillGroupsFromLegacy(ctx: SeedCtx): Promise<ImportS
         embeddingModel: null,
         ...timestamps(label, item.id, item.createdAt, item.updatedAt),
       });
-      skillNames.forEach((name, index) => {
-        ctx.db.collections.resumeSkill.insert({
-          id: newId(),
-          groupId: item.id,
-          name,
-          level: null,
-          sortOrder: index,
-          searchableText: name,
-          embedding: null,
-          embeddingModel: null,
-          ...timestamps(label, item.id, item.createdAt, item.updatedAt),
-        });
-      });
+      resolveSkillIds(ctx.db, ctx.userId, skillNames);
       stats.inserted += 1;
     } catch (err: unknown) {
       stats.failed += 1;

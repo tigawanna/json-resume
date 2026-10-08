@@ -20,57 +20,30 @@ export const reusablePartCountQueries = [
   ["education", "select count(*) as count from resume_education where user_id = ?"],
   ["projects", "select count(*) as count from resume_project where user_id = ?"],
   ["skillGroups", "select count(*) as count from resume_skill_group where user_id = ?"],
-  [
-    "skills",
-    `select count(*) as count
-     from resume_skill skill
-     inner join resume_skill_group skill_group on skill_group.id = skill.group_id
-     where skill_group.user_id = ?`,
-  ],
+  ["skills", "select count(*) as count from resume_skill where user_id = ?"],
   ["talks", "select count(*) as count from resume_talk where user_id = ?"],
 ] as const;
 
-export const resumeAssociationCountQueries = [
-  [
-    "contactItems",
-    "select count(*) as count from resume_contact_item item inner join resume r on r.id = item.resume_id where r.user_id = ?",
-  ],
-  [
-    "linkItems",
-    "select count(*) as count from resume_link_item item inner join resume r on r.id = item.resume_id where r.user_id = ?",
-  ],
-  [
-    "summaryItems",
-    "select count(*) as count from resume_summary_item item inner join resume r on r.id = item.resume_id where r.user_id = ?",
-  ],
-  [
-    "experienceItems",
-    "select count(*) as count from resume_experience_item item inner join resume r on r.id = item.resume_id where r.user_id = ?",
-  ],
-  [
-    "educationItems",
-    "select count(*) as count from resume_education_item item inner join resume r on r.id = item.resume_id where r.user_id = ?",
-  ],
-  [
-    "projectItems",
-    "select count(*) as count from resume_project_item item inner join resume r on r.id = item.resume_id where r.user_id = ?",
-  ],
-  [
-    "skillGroupItems",
-    "select count(*) as count from resume_skill_group_item item inner join resume r on r.id = item.resume_id where r.user_id = ?",
-  ],
-  [
-    "talkItems",
-    "select count(*) as count from resume_talk_item item inner join resume r on r.id = item.resume_id where r.user_id = ?",
-  ],
-] as const;
-
-export const resumeOwnedCountQueries = [
+/** How many entries all of the user's résumé layouts hold, per layout list. */
+export const resumeLayoutCountQueries = (
   [
     "sections",
-    "select count(*) as count from resume_section section inner join resume r on r.id = section.resume_id where r.user_id = ?",
-  ],
-] as const;
+    "contacts",
+    "links",
+    "summaries",
+    "experiences",
+    "education",
+    "projects",
+    "skillGroups",
+    "talks",
+  ] as const
+).map(
+  (key) =>
+    [
+      key,
+      `select coalesce(sum(json_array_length(layout, '$.${key}')), 0) as count from resume where user_id = ?`,
+    ] as const,
+);
 
 export async function getUserIdByEmail(email: string) {
   const client = createClient({ url: databaseUrl, authToken: "" });

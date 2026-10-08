@@ -7,71 +7,46 @@ import {
   resumeAiChatSchema,
   resumeAiConversationSchema,
   resumeAiMessageSchema,
-  resumeCertificationItemSchema,
   resumeCertificationSchema,
-  resumeContactItemSchema,
   resumeContactSchema,
   resumeEducationBulletSchema,
-  resumeEducationItemSchema,
   resumeEducationSchema,
   resumeExperienceBulletSchema,
-  resumeExperienceItemSchema,
   resumeExperienceSchema,
-  resumeLanguageItemSchema,
   resumeLanguageSchema,
-  resumeLinkItemSchema,
   resumeLinkSchema,
-  resumeNoteItemSchema,
   resumeNoteSchema,
-  resumeProjectItemSchema,
   resumeProjectSchema,
   resumeSchema,
-  resumeSectionSchema,
-  resumeSkillGroupItemSchema,
   resumeSkillGroupSchema,
   resumeSkillSchema,
-  resumeSummaryItemSchema,
   resumeSummarySchema,
-  resumeTalkItemSchema,
   resumeTalkSchema,
-  resumeVolunteerItemSchema,
   resumeVolunteerSchema,
   savedProjectSchema,
 } from "./schemas";
+import { isLegacyCollectionId, upgradeLegacySnapshot } from "./legacy-backup";
 
 export const LOCAL_BACKUP_FORMAT = "agentic-json-resume-event-backup" as const;
 export const LOCAL_BACKUP_FORMAT_VERSION = 1;
 
 const userCollectionIds = [
   "resume",
-  "resumeSection",
   "resumeExperience",
-  "resumeExperienceItem",
   "resumeExperienceBullet",
   "resumeEducation",
-  "resumeEducationItem",
   "resumeEducationBullet",
   "resumeSkillGroup",
-  "resumeSkillGroupItem",
   "resumeSkill",
   "resumeContact",
-  "resumeContactItem",
   "resumeProject",
-  "resumeProjectItem",
   "resumeSummary",
-  "resumeSummaryItem",
   "resumeNote",
-  "resumeNoteItem",
   "resumeLink",
-  "resumeLinkItem",
   "resumeLanguage",
-  "resumeLanguageItem",
   "resumeCertification",
-  "resumeCertificationItem",
   "resumeVolunteer",
-  "resumeVolunteerItem",
   "resumeTalk",
-  "resumeTalkItem",
   "resumeAiChat",
   "resumeAiConversation",
   "resumeAiMessage",
@@ -85,34 +60,21 @@ const userCollectionIdSet = new Set<string>(userCollectionIds);
 
 const rowSchemaByCollection = {
   resume: resumeSchema,
-  resumeSection: resumeSectionSchema,
   resumeExperience: resumeExperienceSchema,
-  resumeExperienceItem: resumeExperienceItemSchema,
   resumeExperienceBullet: resumeExperienceBulletSchema,
   resumeEducation: resumeEducationSchema,
-  resumeEducationItem: resumeEducationItemSchema,
   resumeEducationBullet: resumeEducationBulletSchema,
   resumeSkillGroup: resumeSkillGroupSchema,
-  resumeSkillGroupItem: resumeSkillGroupItemSchema,
   resumeSkill: resumeSkillSchema,
   resumeContact: resumeContactSchema,
-  resumeContactItem: resumeContactItemSchema,
   resumeProject: resumeProjectSchema,
-  resumeProjectItem: resumeProjectItemSchema,
   resumeSummary: resumeSummarySchema,
-  resumeSummaryItem: resumeSummaryItemSchema,
   resumeNote: resumeNoteSchema,
-  resumeNoteItem: resumeNoteItemSchema,
   resumeLink: resumeLinkSchema,
-  resumeLinkItem: resumeLinkItemSchema,
   resumeLanguage: resumeLanguageSchema,
-  resumeLanguageItem: resumeLanguageItemSchema,
   resumeCertification: resumeCertificationSchema,
-  resumeCertificationItem: resumeCertificationItemSchema,
   resumeVolunteer: resumeVolunteerSchema,
-  resumeVolunteerItem: resumeVolunteerItemSchema,
   resumeTalk: resumeTalkSchema,
-  resumeTalkItem: resumeTalkItemSchema,
   resumeAiChat: resumeAiChatSchema,
   resumeAiConversation: resumeAiConversationSchema,
   resumeAiMessage: resumeAiMessageSchema,
@@ -260,10 +222,19 @@ function applySnapshotRow(
   return "applied";
 }
 
+/** Backups from before `resume.layout` still carry link rows; those restore from the converted snapshot. */
+function isLegacyBackup(backup: LocalBackupFile): boolean {
+  return (
+    backup.events.some((event) => isLegacyCollectionId(event.collectionId)) ||
+    Object.keys(backup.collections).some(isLegacyCollectionId)
+  );
+}
+
 export function restoreLocalBackup(db: AppDb, backup: LocalBackupFile): LocalBackupRestoreStats {
   const stats: LocalBackupRestoreStats = { applied: 0, skipped: 0, failed: 0 };
+  const legacy = isLegacyBackup(backup);
 
-  if (backup.events.length > 0) {
+  if (backup.events.length > 0 && !legacy) {
     for (const event of backup.events) {
       try {
         const result = applyEvent(db, event);
@@ -277,7 +248,8 @@ export function restoreLocalBackup(db: AppDb, backup: LocalBackupFile): LocalBac
     return stats;
   }
 
-  for (const [collectionId, rows] of Object.entries(backup.collections)) {
+  const collections = legacy ? upgradeLegacySnapshot(backup.collections) : backup.collections;
+  for (const [collectionId, rows] of Object.entries(collections)) {
     for (const row of rows) {
       try {
         const result = applySnapshotRow(db, collectionId, row);

@@ -1,5 +1,15 @@
 import { documentToInsertData } from "@/data-access-layer/resume/resume-converters";
 import type { ResumeDetailDTO } from "@/data-access-layer/resume/resume.types";
+import {
+  addEntity,
+  layoutIds,
+  removeEntity,
+  setEntities,
+  setExperienceBullets,
+  swapEntities,
+  type LayoutEntityKey,
+  type ResumeLayout,
+} from "@/features/resume/resume-layout";
 import type { ResumeDocumentV1 } from "@/features/resume/resume-schema";
 import type {
   ContactDraft,
@@ -14,72 +24,28 @@ import type {
 } from "@/components/resume/resume-workspace/resume-workspace-types";
 import type { AppDb } from "./collection";
 import type { EventSourcedResumeSnapshots } from "./assemble-resume-detail";
-import {
-  appendResumeItemOrder,
-  junctionEntityIds,
-  removeResumeItemOrder,
-  reorderResumeItems,
-} from "./resume-item-order";
 import { attachJobToResume } from "./job-rows";
 import {
   contactIndex,
-  deleteUnlinkedGroups,
   educationIndex,
   experienceIndex,
+  libraryBulletIds,
   linkIndex,
   noteIndex,
   projectIndex,
+  resolveBulletIds,
   resolveSkillGroup,
   resolveSkillIds,
-  setResumeBullets,
   summaryIndex,
   talkIndex,
 } from "./library-resolve";
-import {
-  joinSearchable,
-  libraryRowBase,
-  newId,
-  nowMs,
-} from "@/routes/_dashboard/-utils/row-helpers";
+import { currentLayout, editLayout } from "./resume-layout-rows";
+import { joinSearchable, libraryRowBase, nowMs } from "@/routes/_dashboard/-utils/row-helpers";
 
 function matchQuery(query: string, ...parts: Array<string | null | undefined>) {
   const needle = query.trim().toLowerCase();
   if (!needle) return true;
   return parts.some((part) => (part ?? "").toLowerCase().includes(needle));
-}
-
-/** Reads the live collection: rows deleted earlier in the same edit are already gone. */
-function deleteResumeItems(
-  collection: {
-    delete: (id: string) => unknown;
-    toArray: ReadonlyArray<{ id: string; resumeId: string }>;
-  },
-  resumeId: string,
-) {
-  const ids = collection.toArray
-    .filter((item) => item.resumeId === resumeId)
-    .map((item) => item.id);
-  for (const id of ids) collection.delete(id);
-}
-
-function junctionFields(resumeId: string, sortOrder: number) {
-  const ts = nowMs();
-  return {
-    id: newId(),
-    resumeId,
-    sortOrder,
-    createdAt: ts,
-    updatedAt: ts,
-  };
-}
-
-function isLinked<T extends { resumeId: string }>(
-  items: ReadonlyArray<T>,
-  resumeId: string,
-  entityOf: (item: T) => string,
-  entityId: string,
-) {
-  return items.some((item) => item.resumeId === resumeId && entityOf(item) === entityId);
 }
 
 export function createEventSourcedResumeWorkspace(
@@ -89,6 +55,10 @@ export function createEventSourcedResumeWorkspace(
 ): ResumeWorkspaceAdapter {
   const resumeId = detail.id;
   const userId = detail.userId;
+
+  function edit(change: (layout: ResumeLayout) => ResumeLayout) {
+    editLayout(db, resumeId, change);
+  }
 
   function resolveExperience(values: ExperienceDraft) {
     return experienceIndex(db, userId).resolve(
@@ -152,17 +122,88 @@ export function createEventSourcedResumeWorkspace(
     });
   }
 
-  /** Drops this résumé's links to an experience's bullets; the bullets stay in the library. */
-  function unlinkBullets(experienceId: string) {
-    const ownIds = new Set(
-      db.collections.resumeExperienceBullet.toArray
-        .filter((bullet) => bullet.experienceId === experienceId)
-        .map((bullet) => bullet.id),
+  function contactIds(contacts: ContactDraft[]) {
+    const index = contactIndex(db, userId);
+    return contacts.map((contact) =>
+      index.resolve({ type: contact.type, value: contact.value }, () => {
+        const base = libraryRowBase(userId);
+        db.collections.resumeContact.insert({
+          ...base,
+          type: contact.type,
+          value: contact.value,
+          label: contact.label,
+          searchableText: joinSearchable(contact.type, contact.value, contact.label),
+        });
+        return base.id;
+      }),
     );
-    const ids = db.collections.resumeExperienceBulletItem.toArray
-      .filter((item) => item.resumeId === resumeId && ownIds.has(item.bulletId))
-      .map((item) => item.id);
-    for (const id of ids) db.collections.resumeExperienceBulletItem.delete(id);
+  }
+
+  function linkIds(links: LinkDraft[]) {
+    const index = linkIndex(db, userId);
+    return links.map((link) =>
+      index.resolve({ url: link.url }, () => {
+        const base = libraryRowBase(userId);
+        db.collections.resumeLink.insert({
+          ...base,
+          label: link.label,
+          url: link.url,
+          icon: link.icon ?? null,
+          searchableText: joinSearchable(link.label, link.url),
+        });
+        return base.id;
+      }),
+    );
+  }
+
+  function summaryIds(text: string) {
+    if (!text.trim()) return [];
+    return [
+      summaryIndex(db, userId).resolve({ text }, () => {
+        const base = libraryRowBase(userId);
+        db.collections.resumeSummary.insert({ ...base, text, searchableText: text });
+        return base.id;
+      }),
+    ];
+  }
+
+  function noteIds(values: { label: string; text: string }) {
+    if (!values.text.trim()) return [];
+    const label = values.label.trim() || "Notes";
+    return [
+      noteIndex(db, userId).resolve({ label, text: values.text }, () => {
+        const base = libraryRowBase(userId);
+        db.collections.resumeNote.insert({
+          ...base,
+          label,
+          text: values.text,
+          searchableText: joinSearchable(label, values.text),
+        });
+        return base.id;
+      }),
+    ];
+  }
+
+  /** Groups resolve by name; two drafts with the same name become one group with both skill lists. */
+  function skillGroupEntries(groups: SkillGroupDraft[]): ResumeLayout["skillGroups"] {
+    const skillsByGroup = new Map<string, string[]>();
+    for (const group of groups) {
+      const groupId = resolveSkillGroup(db, userId, group.name);
+      const skillIds = resolveSkillIds(db, userId, group.items);
+      const existing = skillsByGroup.get(groupId) ?? [];
+      skillsByGroup.set(groupId, [...new Set([...existing, ...skillIds])]);
+    }
+    return [...skillsByGroup].map(([id, skills]) => ({ id, skills }));
+  }
+
+  /** Adds a library row to one list; a newly added experience starts with all its library bullets. */
+  function addToLayout(key: LayoutEntityKey, id: string) {
+    edit((layout) => {
+      if (layoutIds(layout, key).includes(id)) return layout;
+      return key === "experiences"
+        ? setExperienceBullets(layout, id, libraryBulletIds(db, id))
+        : addEntity(layout, key, id);
+    });
   }
 
   return {
@@ -249,125 +290,28 @@ export function createEventSourcedResumeWorkspace(
       }
     },
     async updateContacts(contacts: ContactDraft[]) {
-      deleteResumeItems(db.collections.resumeContactItem, resumeId);
-      const index = contactIndex(db, userId);
-      const linked = new Set<string>();
-      for (const contact of contacts) {
-        const contactId = index.resolve({ type: contact.type, value: contact.value }, () => {
-          const base = libraryRowBase(userId);
-          db.collections.resumeContact.insert({
-            ...base,
-            type: contact.type,
-            value: contact.value,
-            label: contact.label,
-            searchableText: joinSearchable(contact.type, contact.value, contact.label),
-          });
-          return base.id;
-        });
-        if (linked.has(contactId)) continue;
-        db.collections.resumeContactItem.insert({
-          ...junctionFields(resumeId, linked.size),
-          contactId,
-        });
-        linked.add(contactId);
-      }
+      const ids = contactIds(contacts);
+      edit((layout) => setEntities(layout, "contacts", ids));
     },
     async updateLinks(links: LinkDraft[]) {
-      deleteResumeItems(db.collections.resumeLinkItem, resumeId);
-      const index = linkIndex(db, userId);
-      const linked = new Set<string>();
-      for (const link of links) {
-        const linkId = index.resolve({ url: link.url }, () => {
-          const base = libraryRowBase(userId);
-          db.collections.resumeLink.insert({
-            ...base,
-            label: link.label,
-            url: link.url,
-            icon: link.icon ?? null,
-            searchableText: joinSearchable(link.label, link.url),
-          });
-          return base.id;
-        });
-        if (linked.has(linkId)) continue;
-        db.collections.resumeLinkItem.insert({
-          ...junctionFields(resumeId, linked.size),
-          linkId,
-        });
-        linked.add(linkId);
-      }
+      const ids = linkIds(links);
+      edit((layout) => setEntities(layout, "links", ids));
     },
     async updateSummary(text: string) {
-      deleteResumeItems(db.collections.resumeSummaryItem, resumeId);
-      if (!text.trim()) return;
-      const summaryId = summaryIndex(db, userId).resolve({ text }, () => {
-        const base = libraryRowBase(userId);
-        db.collections.resumeSummary.insert({ ...base, text, searchableText: text });
-        return base.id;
-      });
-      db.collections.resumeSummaryItem.insert({ ...junctionFields(resumeId, 0), summaryId });
+      const ids = summaryIds(text);
+      edit((layout) => setEntities(layout, "summaries", ids));
     },
     async updateNotes(values: { label: string; text: string }) {
-      deleteResumeItems(db.collections.resumeNoteItem, resumeId);
-      if (!values.text.trim()) return;
-      const label = values.label.trim() || "Notes";
-      const noteId = noteIndex(db, userId).resolve({ label, text: values.text }, () => {
-        const base = libraryRowBase(userId);
-        db.collections.resumeNote.insert({
-          ...base,
-          label,
-          text: values.text,
-          searchableText: joinSearchable(label, values.text),
-        });
-        return base.id;
-      });
-      db.collections.resumeNoteItem.insert({ ...junctionFields(resumeId, 0), noteId });
+      const ids = noteIds(values);
+      edit((layout) => setEntities(layout, "notes", ids));
     },
     async updateSkillGroups(groups: SkillGroupDraft[]) {
-      const previous = db.collections.resumeSkillGroupItem.toArray
-        .filter((item) => item.resumeId === resumeId)
-        .map((item) => item.groupId);
-      deleteResumeItems(db.collections.resumeSkillGroupItem, resumeId);
-      const linked = new Set<string>();
-      for (const group of groups) {
-        const skillIds = resolveSkillIds(db, userId, group.items);
-        const groupId = resolveSkillGroup(db, userId, group.name, skillIds);
-        if (linked.has(groupId)) continue;
-        db.collections.resumeSkillGroupItem.insert({
-          ...junctionFields(resumeId, linked.size),
-          groupId,
-        });
-        linked.add(groupId);
-      }
-      const stillLinked = new Set(
-        db.collections.resumeSkillGroupItem.toArray.map((item) => item.groupId),
-      );
-      deleteUnlinkedGroups(db, previous, stillLinked);
+      const skillGroups = skillGroupEntries(groups);
+      edit((layout) => ({ ...layout, skillGroups }));
     },
     async createExperience(values: ExperienceDraft) {
       const id = resolveExperience(values);
-      if (
-        !isLinked(
-          db.collections.resumeExperienceItem.toArray,
-          resumeId,
-          (item) => item.experienceId,
-          id,
-        )
-      ) {
-        const sortOrder = db.collections.resumeExperienceItem.toArray.filter(
-          (item) => item.resumeId === resumeId,
-        ).length;
-        db.collections.resumeExperienceItem.insert({
-          ...junctionFields(resumeId, sortOrder),
-          experienceId: id,
-        });
-        appendResumeItemOrder(
-          db,
-          resumeId,
-          "experienceOrder",
-          id,
-          junctionEntityIds(snapshots.experienceItems, resumeId, "experienceId"),
-        );
-      }
+      addToLayout("experiences", id);
       return { id };
     },
     async updateExperience(id: string, values: ExperienceDraft) {
@@ -382,53 +326,18 @@ export function createEventSourcedResumeWorkspace(
       });
     },
     async deleteExperience(id: string) {
-      unlinkBullets(id);
-      const items = db.collections.resumeExperienceItem.toArray
-        .filter((item) => item.resumeId === resumeId && item.experienceId === id)
-        .map((item) => item.id);
-      for (const itemId of items) db.collections.resumeExperienceItem.delete(itemId);
-      removeResumeItemOrder(db, resumeId, "experienceOrder", id);
+      edit((layout) => removeEntity(layout, "experiences", id));
     },
     async reorderExperience(idA: string, idB: string) {
-      reorderResumeItems(
-        db,
-        resumeId,
-        "experienceOrder",
-        idA,
-        idB,
-        snapshots.experienceItems,
-        "experienceId",
-        db.collections.resumeExperienceItem,
-      );
+      edit((layout) => swapEntities(layout, "experiences", idA, idB));
     },
     async updateExperienceBullets(experienceId: string, bullets: string[]) {
-      setResumeBullets(db, resumeId, experienceId, bullets);
+      const ids = resolveBulletIds(db, experienceId, bullets);
+      edit((layout) => setExperienceBullets(layout, experienceId, ids));
     },
     async createEducation(values: EducationDraft) {
       const id = resolveEducation(values);
-      if (
-        !isLinked(
-          db.collections.resumeEducationItem.toArray,
-          resumeId,
-          (item) => item.educationId,
-          id,
-        )
-      ) {
-        const sortOrder = db.collections.resumeEducationItem.toArray.filter(
-          (item) => item.resumeId === resumeId,
-        ).length;
-        db.collections.resumeEducationItem.insert({
-          ...junctionFields(resumeId, sortOrder),
-          educationId: id,
-        });
-        appendResumeItemOrder(
-          db,
-          resumeId,
-          "educationOrder",
-          id,
-          junctionEntityIds(snapshots.educationItems, resumeId, "educationId"),
-        );
-      }
+      addToLayout("education", id);
       return { id };
     },
     async updateEducation(id: string, values: EducationDraft) {
@@ -444,45 +353,14 @@ export function createEventSourcedResumeWorkspace(
       });
     },
     async deleteEducation(id: string) {
-      for (const item of snapshots.educationItems) {
-        if (item.resumeId === resumeId && item.educationId === id) {
-          db.collections.resumeEducationItem.delete(item.id);
-        }
-      }
-      removeResumeItemOrder(db, resumeId, "educationOrder", id);
+      edit((layout) => removeEntity(layout, "education", id));
     },
     async reorderEducation(idA: string, idB: string) {
-      reorderResumeItems(
-        db,
-        resumeId,
-        "educationOrder",
-        idA,
-        idB,
-        snapshots.educationItems,
-        "educationId",
-        db.collections.resumeEducationItem,
-      );
+      edit((layout) => swapEntities(layout, "education", idA, idB));
     },
     async createProject(values: ProjectDraft) {
       const id = resolveProject({ ...values, tech: JSON.stringify(values.tech) });
-      if (
-        !isLinked(db.collections.resumeProjectItem.toArray, resumeId, (item) => item.projectId, id)
-      ) {
-        const sortOrder = db.collections.resumeProjectItem.toArray.filter(
-          (item) => item.resumeId === resumeId,
-        ).length;
-        db.collections.resumeProjectItem.insert({
-          ...junctionFields(resumeId, sortOrder),
-          projectId: id,
-        });
-        appendResumeItemOrder(
-          db,
-          resumeId,
-          "projectOrder",
-          id,
-          junctionEntityIds(snapshots.projectItems, resumeId, "projectId"),
-        );
-      }
+      addToLayout("projects", id);
       return { id };
     },
     async updateProject(id: string, values: ProjectDraft) {
@@ -497,43 +375,14 @@ export function createEventSourcedResumeWorkspace(
       });
     },
     async deleteProject(id: string) {
-      for (const item of snapshots.projectItems) {
-        if (item.resumeId === resumeId && item.projectId === id) {
-          db.collections.resumeProjectItem.delete(item.id);
-        }
-      }
-      removeResumeItemOrder(db, resumeId, "projectOrder", id);
+      edit((layout) => removeEntity(layout, "projects", id));
     },
     async reorderProject(idA: string, idB: string) {
-      reorderResumeItems(
-        db,
-        resumeId,
-        "projectOrder",
-        idA,
-        idB,
-        snapshots.projectItems,
-        "projectId",
-        db.collections.resumeProjectItem,
-      );
+      edit((layout) => swapEntities(layout, "projects", idA, idB));
     },
     async createTalk(values: TalkDraft) {
       const id = resolveTalk({ ...values, links: JSON.stringify(values.links ?? []) });
-      if (!isLinked(db.collections.resumeTalkItem.toArray, resumeId, (item) => item.talkId, id)) {
-        const sortOrder = db.collections.resumeTalkItem.toArray.filter(
-          (item) => item.resumeId === resumeId,
-        ).length;
-        db.collections.resumeTalkItem.insert({
-          ...junctionFields(resumeId, sortOrder),
-          talkId: id,
-        });
-        appendResumeItemOrder(
-          db,
-          resumeId,
-          "talkOrder",
-          id,
-          junctionEntityIds(snapshots.talkItems, resumeId, "talkId"),
-        );
-      }
+      addToLayout("talks", id);
       return { id };
     },
     async updateTalk(id: string, values: TalkDraft) {
@@ -548,88 +397,21 @@ export function createEventSourcedResumeWorkspace(
       });
     },
     async deleteTalk(id: string) {
-      for (const item of snapshots.talkItems) {
-        if (item.resumeId === resumeId && item.talkId === id) {
-          db.collections.resumeTalkItem.delete(item.id);
-        }
-      }
-      removeResumeItemOrder(db, resumeId, "talkOrder", id);
+      edit((layout) => removeEntity(layout, "talks", id));
     },
     async reorderTalk(idA: string, idB: string) {
-      reorderResumeItems(
-        db,
-        resumeId,
-        "talkOrder",
-        idA,
-        idB,
-        snapshots.talkItems,
-        "talkId",
-        db.collections.resumeTalkItem,
-      );
+      edit((layout) => swapEntities(layout, "talks", idA, idB));
     },
     /**
      * Rewrites the résumé from a document by linking to existing library rows
      * wherever one matches, so a regenerated résumé adds only what is new.
+     * The whole layout is written in one résumé update.
      */
     async replaceDocument(doc: ResumeDocumentV1) {
       const data = documentToInsertData(resumeId, userId, doc);
-      const ts = nowMs();
-
-      const sectionIds = db.collections.resumeSection.toArray
-        .filter((section) => section.resumeId === resumeId)
-        .map((section) => section.id);
-      for (const id of sectionIds) db.collections.resumeSection.delete(id);
-      for (const section of data.sections) {
-        db.collections.resumeSection.insert({
-          id: section.id,
-          resumeId,
-          key: section.key,
-          title: section.title,
-          enabled: section.enabled,
-          sortOrder: section.sortOrder,
-          createdAt: ts,
-          updatedAt: ts,
-        });
-      }
-
-      await this.updateContacts(
-        data.contacts.map((contact) => ({
-          type: contact.type,
-          value: contact.value,
-          label: contact.label,
-        })),
-      );
-      await this.updateLinks(
-        data.links.map((link) => ({
-          label: link.label,
-          url: link.url,
-          icon: link.icon ?? undefined,
-        })),
-      );
-      await this.updateSummary(data.summaries[0]?.text ?? "");
       const note = data.notes[0];
-      await this.updateNotes({
-        label: note?.label ?? "Notes",
-        text: note?.text ?? "",
-      });
-      await this.updateSkillGroups(
-        data.skillGroups.map((group) => ({
-          name: group.name,
-          items: data.skills
-            .filter((skill) => skill.groupId === group.id)
-            .map((skill) => skill.name),
-        })),
-      );
 
-      const previousExperiences = db.collections.resumeExperienceItem.toArray
-        .filter((item) => item.resumeId === resumeId)
-        .map((item) => item.experienceId);
-      deleteResumeItems(db.collections.resumeExperienceItem, resumeId);
-      deleteResumeItems(db.collections.resumeEducationItem, resumeId);
-      deleteResumeItems(db.collections.resumeProjectItem, resumeId);
-      deleteResumeItems(db.collections.resumeTalkItem, resumeId);
-
-      const experienceOrder: string[] = [];
+      const experiences: ResumeLayout["experiences"] = [];
       for (const experience of data.experiences) {
         const id = resolveExperience({
           company: experience.company,
@@ -638,81 +420,73 @@ export function createEventSourcedResumeWorkspace(
           endDate: experience.endDate,
           location: experience.location,
         });
-        if (experienceOrder.includes(id)) continue;
-        db.collections.resumeExperienceItem.insert({
-          ...junctionFields(resumeId, experienceOrder.length),
-          experienceId: id,
-        });
-        experienceOrder.push(id);
-        setResumeBullets(
-          db,
-          resumeId,
-          id,
-          data.experienceBullets
-            .filter((bullet) => bullet.experienceId === experience.id)
-            .sort((a, b) => a.sortOrder - b.sortOrder)
-            .map((bullet) => bullet.text),
-        );
-      }
-      for (const experienceId of previousExperiences) {
-        if (!experienceOrder.includes(experienceId)) unlinkBullets(experienceId);
+        if (experiences.some((entry) => entry.id === id)) continue;
+        const bulletTexts = data.experienceBullets
+          .filter((bullet) => bullet.experienceId === experience.id)
+          .sort((a, b) => a.sortOrder - b.sortOrder)
+          .map((bullet) => bullet.text);
+        experiences.push({ id, bullets: resolveBulletIds(db, id, bulletTexts) });
       }
 
-      const educationOrder: string[] = [];
-      for (const education of data.education) {
-        const id = resolveEducation({
-          school: education.school,
-          degree: education.degree,
-          field: education.field,
-          startDate: education.startDate,
-          endDate: education.endDate,
-          description: education.description,
-        });
-        if (educationOrder.includes(id)) continue;
-        db.collections.resumeEducationItem.insert({
-          ...junctionFields(resumeId, educationOrder.length),
-          educationId: id,
-        });
-        educationOrder.push(id);
-      }
-
-      const projectOrder: string[] = [];
-      for (const project of data.projects) {
-        const id = resolveProject(project);
-        if (projectOrder.includes(id)) continue;
-        db.collections.resumeProjectItem.insert({
-          ...junctionFields(resumeId, projectOrder.length),
-          projectId: id,
-        });
-        projectOrder.push(id);
-      }
-
-      const talkOrder: string[] = [];
-      for (const talk of data.talks) {
-        const id = resolveTalk(talk);
-        if (talkOrder.includes(id)) continue;
-        db.collections.resumeTalkItem.insert({
-          ...junctionFields(resumeId, talkOrder.length),
-          talkId: id,
-        });
-        talkOrder.push(id);
-      }
+      const next: ResumeLayout = {
+        ...currentLayout(db, resumeId),
+        sections: data.sections
+          .slice()
+          .sort((a, b) => a.sortOrder - b.sortOrder)
+          .map((section) => ({ key: section.key, title: section.title, enabled: section.enabled })),
+        contacts: [...new Set(contactIds(data.contacts))],
+        links: [
+          ...new Set(
+            linkIds(
+              data.links.map((link) => ({
+                label: link.label,
+                url: link.url,
+                icon: link.icon ?? undefined,
+              })),
+            ),
+          ),
+        ],
+        summaries: summaryIds(data.summaries[0]?.text ?? ""),
+        notes: noteIds({ label: note?.label ?? "Notes", text: note?.text ?? "" }),
+        skillGroups: skillGroupEntries(
+          data.skillGroups.map((group) => ({
+            name: group.name,
+            items: data.skills
+              .filter((skill) => skill.groupId === group.id)
+              .map((skill) => skill.name),
+          })),
+        ),
+        experiences,
+        education: [
+          ...new Set(
+            data.education.map((education) =>
+              resolveEducation({
+                school: education.school,
+                degree: education.degree,
+                field: education.field,
+                startDate: education.startDate,
+                endDate: education.endDate,
+                description: education.description,
+              }),
+            ),
+          ),
+        ],
+        projects: [...new Set(data.projects.map((project) => resolveProject(project)))],
+        talks: [...new Set(data.talks.map((talk) => resolveTalk(talk)))],
+      };
 
       db.collections.resume.update(resumeId, (draft) => {
         draft.fullName = data.resume.fullName;
         draft.headline = data.resume.headline;
         draft.templateId = data.resume.templateId;
-        draft.experienceOrder = experienceOrder;
-        draft.educationOrder = educationOrder;
-        draft.projectOrder = projectOrder;
-        draft.talkOrder = talkOrder;
+        draft.layout = next;
         draft.searchableText = joinSearchable(
           draft.name,
           data.resume.fullName,
           data.resume.headline,
           draft.description,
         );
-        draft.updatedAt = ts;
+        draft.updatedAt = nowMs();
       });
     },
   };

@@ -13,13 +13,9 @@ import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
 import { useAppForm } from "@/lib/tanstack/form";
 import { unwrapUnknownError } from "@/utils/errors";
 import { formOptions } from "@tanstack/react-form";
-import { X } from "lucide-react";
-import { useState, type KeyboardEvent } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
-import {
-  resolveSkillGroup,
-  resolveSkillIds,
-} from "@/data-access-layer/event-sourced/library-resolve";
+import { resolveSkillGroup } from "@/data-access-layer/event-sourced/library-resolve";
 
 const createOpts = formOptions({
   defaultValues: { name: "" },
@@ -29,12 +25,11 @@ interface SkillGroupCreateFormProps {
   onSuccess?: () => void;
 }
 
+/** A group is a reusable name; each résumé picks which skills it shows under it. */
 export function SkillGroupCreateForm({ onSuccess }: SkillGroupCreateFormProps) {
   const db = useEventSourcedDb();
   const { viewer } = useViewer();
   const [pending, setPending] = useState(false);
-  const [skills, setSkills] = useState<string[]>([]);
-  const [skillInput, setSkillInput] = useState("");
 
   const form = useAppForm({
     ...createOpts,
@@ -43,7 +38,7 @@ export function SkillGroupCreateForm({ onSuccess }: SkillGroupCreateFormProps) {
       try {
         const userId = viewer.user?.id ?? "";
         const before = db.collections.resumeSkillGroup.toArray.length;
-        resolveSkillGroup(db, userId, value.name, resolveSkillIds(db, userId, skills));
+        resolveSkillGroup(db, userId, value.name);
         const created = db.collections.resumeSkillGroup.toArray.length > before;
         toast.success(created ? "Skill group created" : "Skill group already in library");
         onSuccess?.();
@@ -57,15 +52,6 @@ export function SkillGroupCreateForm({ onSuccess }: SkillGroupCreateFormProps) {
     },
   });
 
-  function handleSkillKeyDown(e: KeyboardEvent<HTMLInputElement>) {
-    if ((e.key === "Enter" || e.key === ",") && skillInput.trim()) {
-      e.preventDefault();
-      const val = skillInput.trim().replace(/,$/g, "");
-      if (val && !skills.includes(val)) setSkills((prev) => [...prev, val]);
-      setSkillInput("");
-    }
-  }
-
   return (
     <form
       onSubmit={(e) => {
@@ -74,6 +60,7 @@ export function SkillGroupCreateForm({ onSuccess }: SkillGroupCreateFormProps) {
         void form.handleSubmit();
       }}
       className="flex flex-col gap-3"
+      data-test="skill-group-create-form"
     >
       <form.AppField
         name="name"
@@ -88,53 +75,18 @@ export function SkillGroupCreateForm({ onSuccess }: SkillGroupCreateFormProps) {
               value={field.state.value}
               onChange={(e) => field.handleChange(e.target.value)}
               className="mt-1"
+              data-test="skill-group-name-input"
             />
+            <p className="text-base-content/60 mt-1 text-xs">
+              Skills are picked per résumé in the editor.
+            </p>
           </div>
         )}
       </form.AppField>
-      <div>
-        <Label className="text-xs">Skills</Label>
-        <Input
-          value={skillInput}
-          onChange={(e) => setSkillInput(e.target.value)}
-          onKeyDown={handleSkillKeyDown}
-          placeholder="Type a skill and press Enter"
-          className="mt-1"
-        />
-        {skills.length > 0 ? (
-          <div className="mt-2 flex flex-wrap gap-1.5">
-            {skills.map((skill) => (
-              <span
-                key={skill}
-                className="bg-muted inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs"
-              >
-                {skill}
-                <button
-                  type="button"
-                  onClick={() => setSkills((prev) => prev.filter((s) => s !== skill))}
-                  className="hover:text-destructive"
-                  aria-label={`Remove ${skill}`}
-                >
-                  <X className="size-3" />
-                </button>
-              </span>
-            ))}
-          </div>
-        ) : null}
-      </div>
       <form.Subscribe selector={(s) => s.values}>
         {(values) => (
           <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => {
-                form.reset();
-                setSkills([]);
-                setSkillInput("");
-              }}
-              disabled={pending}
-            >
+            <Button type="button" variant="outline" onClick={() => form.reset()} disabled={pending}>
               Reset
             </Button>
             <Button

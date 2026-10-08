@@ -4,9 +4,8 @@ import {
   getCounts,
   getResumeCount,
   getUserIdByEmail,
-  resumeOwnedCountQueries,
+  resumeLayoutCountQueries,
   reusablePartCountQueries,
-  resumeAssociationCountQueries,
 } from "./support/database";
 import { expectDefaultResumeItems } from "./support/resume-editor-sections";
 import { createResumeFromDashboard } from "./support/resume-workflow";
@@ -21,8 +20,7 @@ test("creating another default resume reuses available parts instead of duplicat
 
   const userId = await getUserIdByEmail(email);
   const reusableCountsAfterFirstResume = await getCounts(reusablePartCountQueries, userId);
-  const associationCountsAfterFirstResume = await getCounts(resumeAssociationCountQueries, userId);
-  const ownedCountsAfterFirstResume = await getCounts(resumeOwnedCountQueries, userId);
+  const layoutCountsAfterFirstResume = await getCounts(resumeLayoutCountQueries, userId);
 
   await page.goto("/resumes");
   await expect(page.getByTestId("resume-list-page")).toBeVisible();
@@ -31,19 +29,14 @@ test("creating another default resume reuses available parts instead of duplicat
   await expectDefaultResumeItems(page);
 
   const reusableCountsAfterSecondResume = await getCounts(reusablePartCountQueries, userId);
-  const associationCountsAfterSecondResume = await getCounts(resumeAssociationCountQueries, userId);
-  const ownedCountsAfterSecondResume = await getCounts(resumeOwnedCountQueries, userId);
+  const layoutCountsAfterSecondResume = await getCounts(resumeLayoutCountQueries, userId);
 
   expect(await getResumeCount(userId)).toBe(2);
   expect([...reusableCountsAfterSecondResume.entries()]).toEqual([
     ...reusableCountsAfterFirstResume.entries(),
   ]);
 
-  for (const [key, countAfterFirstResume] of associationCountsAfterFirstResume) {
-    expect(associationCountsAfterSecondResume.get(key)).toBe(countAfterFirstResume * 2);
-  }
-
-  for (const [key, countAfterFirstResume] of ownedCountsAfterFirstResume) {
-    expect(ownedCountsAfterSecondResume.get(key)).toBe(countAfterFirstResume * 2);
+  for (const [key, countAfterFirstResume] of layoutCountsAfterFirstResume) {
+    expect(layoutCountsAfterSecondResume.get(key)).toBe(countAfterFirstResume * 2);
   }
 });

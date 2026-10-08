@@ -1,10 +1,48 @@
 import "@tanstack/react-start/server-only";
 
 import { db } from "@/lib/drizzle/client";
-import { resumeSkill, resumeSkillGroup } from "@/lib/drizzle/scheam";
+import { resume, resumeSkill, resumeSkillGroup } from "@/lib/drizzle/scheam";
+import { resumeLayoutSchema } from "@/features/resume/resume-layout";
 import { and, asc, desc, eq, gt, like, lt, or } from "drizzle-orm";
 import { DEFAULT_PAGE_SIZE, type PaginatedResult } from "../../pagination.types";
 import type { SkillGroupListItemDTO } from "./skill-group.types";
+
+/** Skill names picked under each group across the user's résumé layouts, first use first. */
+async function skillNamesByGroup(userId: string): Promise<Map<string, string[]>> {
+  const [resumes, skills] = await Promise.all([
+    db
+      .select({ layout: resume.layout })
+      .from(resume)
+      .where(eq(resume.userId, userId))
+      .orderBy(desc(resume.updatedAt)),
+    db
+      .select({ id: resumeSkill.id, name: resumeSkill.name })
+      .from(resumeSkill)
+      .where(eq(resumeSkill.userId, userId)),
+  ]);
+  const skillNames = new Map(skills.map((skill) => [skill.id, skill.name]));
+  const skillIdsByGroup = new Map<string, Set<string>>();
+  for (const row of resumes) {
+    const parsed = resumeLayoutSchema.safeParse(row.layout);
+    if (!parsed.success) continue;
+    for (const entry of parsed.data.skillGroups) {
+      const ids = skillIdsByGroup.get(entry.id) ?? new Set<string>();
+      for (const skillId of entry.skills) ids.add(skillId);
+      skillIdsByGroup.set(entry.id, ids);
+    }
+  }
+  const result = new Map<string, string[]>();
+  for (const [groupId, ids] of skillIdsByGroup) {
+    result.set(
+      groupId,
+      [...ids].flatMap((id) => {
+        const name = skillNames.get(id);
+        return name === undefined ? [] : [name];
+      }),
+    );
+  }
+  return result;
+}
 
 export async function listSkillGroupsForUser(
   userId: string,
@@ -28,21 +66,13 @@ export async function listSkillGroupsForUser(
     .where(and(...conditions))
     .orderBy(desc(resumeSkillGroup.updatedAt));
 
-  const result: SkillGroupListItemDTO[] = [];
-  for (const g of groups) {
-    const skills = await db
-      .select({ name: resumeSkill.name })
-      .from(resumeSkill)
-      .where(eq(resumeSkill.groupId, g.id))
-      .orderBy(asc(resumeSkill.sortOrder));
-    result.push({
-      ...g,
-      skills: JSON.stringify(skills.map((s) => s.name)),
-      createdAt: g.createdAt.toISOString(),
-      updatedAt: g.updatedAt.toISOString(),
-    });
-  }
-  return result;
+  const namesByGroup = await skillNamesByGroup(userId);
+  return groups.map((g) => ({
+    ...g,
+    skills: JSON.stringify(namesByGroup.get(g.id) ?? []),
+    createdAt: g.createdAt.toISOString(),
+    updatedAt: g.updatedAt.toISOString(),
+  }));
 }
 
 export async function listSkillGroupsForUserPaginated(
@@ -84,20 +114,13 @@ export async function listSkillGroupsForUserPaginated(
       ? groups.slice(0, DEFAULT_PAGE_SIZE).reverse()
       : groups.slice(0, DEFAULT_PAGE_SIZE);
 
-  const items: SkillGroupListItemDTO[] = [];
-  for (const g of orderedGroups) {
-    const skills = await db
-      .select({ name: resumeSkill.name })
-      .from(resumeSkill)
-      .where(eq(resumeSkill.groupId, g.id))
-      .orderBy(asc(resumeSkill.sortOrder));
-    items.push({
-      ...g,
-      skills: JSON.stringify(skills.map((s) => s.name)),
-      createdAt: g.createdAt.toISOString(),
-      updatedAt: g.updatedAt.toISOString(),
-    });
-  }
+  const namesByGroup = await skillNamesByGroup(userId);
+  const items: SkillGroupListItemDTO[] = orderedGroups.map((g) => ({
+    ...g,
+    skills: JSON.stringify(namesByGroup.get(g.id) ?? []),
+    createdAt: g.createdAt.toISOString(),
+    updatedAt: g.updatedAt.toISOString(),
+  }));
 
   let nextCursor: string | undefined;
   let previousCursor: string | undefined;

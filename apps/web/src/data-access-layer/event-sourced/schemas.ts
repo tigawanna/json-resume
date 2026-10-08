@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { resumeLayoutSchema } from "@/features/resume/resume-layout";
 
 /**
  * Zod row shapes mirroring `apps/web/src/lib/drizzle/scheam` resume + saved_project tables.
@@ -54,25 +55,12 @@ export const resumeSchema = z.object({
   /** Linked row in the independent `job` collection, if any. */
   jobId: z.string().nullable().optional(),
   templateId: z.string(),
-  experienceOrder: z.array(z.string()).optional(),
-  educationOrder: z.array(z.string()).optional(),
-  projectOrder: z.array(z.string()).optional(),
-  talkOrder: z.array(z.string()).optional(),
+  /** What the résumé shows from the library, in order; readers treat a missing one as empty. */
+  layout: resumeLayoutSchema.nullable().optional(),
   ...embeddableSchema.shape,
   ...timestampsSchema.shape,
 });
 export type Resume = z.infer<typeof resumeSchema>;
-
-export const resumeSectionSchema = z.object({
-  id: z.string(),
-  resumeId: z.string(),
-  key: z.string(),
-  title: z.string(),
-  enabled: z.boolean(),
-  sortOrder: z.number(),
-  ...timestampsSchema.shape,
-});
-export type ResumeSection = z.infer<typeof resumeSectionSchema>;
 
 // --- experience ---
 
@@ -90,15 +78,6 @@ export const resumeExperienceSchema = z.object({
 });
 export type ResumeExperience = z.infer<typeof resumeExperienceSchema>;
 
-export const resumeExperienceItemSchema = z.object({
-  id: z.string(),
-  resumeId: z.string(),
-  experienceId: z.string(),
-  sortOrder: z.number(),
-  ...timestampsSchema.shape,
-});
-export type ResumeExperienceItem = z.infer<typeof resumeExperienceItemSchema>;
-
 export const resumeExperienceBulletSchema = z.object({
   id: z.string(),
   experienceId: z.string(),
@@ -108,15 +87,6 @@ export const resumeExperienceBulletSchema = z.object({
   ...timestampsSchema.shape,
 });
 export type ResumeExperienceBullet = z.infer<typeof resumeExperienceBulletSchema>;
-
-export const resumeExperienceBulletItemSchema = z.object({
-  id: z.string(),
-  resumeId: z.string(),
-  bulletId: z.string(),
-  sortOrder: z.number(),
-  ...timestampsSchema.shape,
-});
-export type ResumeExperienceBulletItem = z.infer<typeof resumeExperienceBulletItemSchema>;
 
 // --- education ---
 
@@ -134,15 +104,6 @@ export const resumeEducationSchema = z.object({
   ...timestampsSchema.shape,
 });
 export type ResumeEducation = z.infer<typeof resumeEducationSchema>;
-
-export const resumeEducationItemSchema = z.object({
-  id: z.string(),
-  resumeId: z.string(),
-  educationId: z.string(),
-  sortOrder: z.number(),
-  ...timestampsSchema.shape,
-});
-export type ResumeEducationItem = z.infer<typeof resumeEducationItemSchema>;
 
 export const resumeEducationBulletSchema = z.object({
   id: z.string(),
@@ -166,21 +127,10 @@ export const resumeSkillGroupSchema = z.object({
 });
 export type ResumeSkillGroup = z.infer<typeof resumeSkillGroupSchema>;
 
-export const resumeSkillGroupItemSchema = z.object({
-  id: z.string(),
-  resumeId: z.string(),
-  groupId: z.string(),
-  sortOrder: z.number(),
-  ...timestampsSchema.shape,
-});
-export type ResumeSkillGroupItem = z.infer<typeof resumeSkillGroupItemSchema>;
-
-/** Library row: one per distinct skill name. Groups link to it via `resumeSkillGroupSkill`. */
+/** Library row: one per distinct skill name. Each résumé layout picks skills per group. */
 export const resumeSkillSchema = z.object({
   id: z.string(),
   userId: z.string().nullable().optional(),
-  /** Legacy owner group, cleared by server compaction. */
-  groupId: z.string().nullable().optional(),
   name: z.string(),
   level: z.string().nullable().optional(),
   sortOrder: z.number(),
@@ -188,15 +138,6 @@ export const resumeSkillSchema = z.object({
   ...timestampsSchema.shape,
 });
 export type ResumeSkill = z.infer<typeof resumeSkillSchema>;
-
-export const resumeSkillGroupSkillSchema = z.object({
-  id: z.string(),
-  groupId: z.string(),
-  skillId: z.string(),
-  sortOrder: z.number(),
-  ...timestampsSchema.shape,
-});
-export type ResumeSkillGroupSkill = z.infer<typeof resumeSkillGroupSkillSchema>;
 
 // --- contact ---
 
@@ -211,15 +152,6 @@ export const resumeContactSchema = z.object({
   ...timestampsSchema.shape,
 });
 export type ResumeContact = z.infer<typeof resumeContactSchema>;
-
-export const resumeContactItemSchema = z.object({
-  id: z.string(),
-  resumeId: z.string(),
-  contactId: z.string(),
-  sortOrder: z.number(),
-  ...timestampsSchema.shape,
-});
-export type ResumeContactItem = z.infer<typeof resumeContactItemSchema>;
 
 // --- project ---
 
@@ -238,15 +170,6 @@ export const resumeProjectSchema = z.object({
 });
 export type ResumeProject = z.infer<typeof resumeProjectSchema>;
 
-export const resumeProjectItemSchema = z.object({
-  id: z.string(),
-  resumeId: z.string(),
-  projectId: z.string(),
-  sortOrder: z.number(),
-  ...timestampsSchema.shape,
-});
-export type ResumeProjectItem = z.infer<typeof resumeProjectItemSchema>;
-
 // --- summary ---
 
 export const resumeSummarySchema = z.object({
@@ -258,15 +181,6 @@ export const resumeSummarySchema = z.object({
   ...timestampsSchema.shape,
 });
 export type ResumeSummary = z.infer<typeof resumeSummarySchema>;
-
-export const resumeSummaryItemSchema = z.object({
-  id: z.string(),
-  resumeId: z.string(),
-  summaryId: z.string(),
-  sortOrder: z.number(),
-  ...timestampsSchema.shape,
-});
-export type ResumeSummaryItem = z.infer<typeof resumeSummaryItemSchema>;
 
 // --- notes (footer copy: cover letter, addendum, …) ---
 
@@ -280,15 +194,6 @@ export const resumeNoteSchema = z.object({
   ...timestampsSchema.shape,
 });
 export type ResumeNote = z.infer<typeof resumeNoteSchema>;
-
-export const resumeNoteItemSchema = z.object({
-  id: z.string(),
-  resumeId: z.string(),
-  noteId: z.string(),
-  sortOrder: z.number(),
-  ...timestampsSchema.shape,
-});
-export type ResumeNoteItem = z.infer<typeof resumeNoteItemSchema>;
 
 // --- link ---
 
@@ -304,15 +209,6 @@ export const resumeLinkSchema = z.object({
 });
 export type ResumeLink = z.infer<typeof resumeLinkSchema>;
 
-export const resumeLinkItemSchema = z.object({
-  id: z.string(),
-  resumeId: z.string(),
-  linkId: z.string(),
-  sortOrder: z.number(),
-  ...timestampsSchema.shape,
-});
-export type ResumeLinkItem = z.infer<typeof resumeLinkItemSchema>;
-
 // --- language ---
 
 export const resumeLanguageSchema = z.object({
@@ -325,15 +221,6 @@ export const resumeLanguageSchema = z.object({
   ...timestampsSchema.shape,
 });
 export type ResumeLanguage = z.infer<typeof resumeLanguageSchema>;
-
-export const resumeLanguageItemSchema = z.object({
-  id: z.string(),
-  resumeId: z.string(),
-  languageId: z.string(),
-  sortOrder: z.number(),
-  ...timestampsSchema.shape,
-});
-export type ResumeLanguageItem = z.infer<typeof resumeLanguageItemSchema>;
 
 // --- certification ---
 
@@ -349,15 +236,6 @@ export const resumeCertificationSchema = z.object({
   ...timestampsSchema.shape,
 });
 export type ResumeCertification = z.infer<typeof resumeCertificationSchema>;
-
-export const resumeCertificationItemSchema = z.object({
-  id: z.string(),
-  resumeId: z.string(),
-  certificationId: z.string(),
-  sortOrder: z.number(),
-  ...timestampsSchema.shape,
-});
-export type ResumeCertificationItem = z.infer<typeof resumeCertificationItemSchema>;
 
 // --- volunteer ---
 
@@ -375,15 +253,6 @@ export const resumeVolunteerSchema = z.object({
 });
 export type ResumeVolunteer = z.infer<typeof resumeVolunteerSchema>;
 
-export const resumeVolunteerItemSchema = z.object({
-  id: z.string(),
-  resumeId: z.string(),
-  volunteerId: z.string(),
-  sortOrder: z.number(),
-  ...timestampsSchema.shape,
-});
-export type ResumeVolunteerItem = z.infer<typeof resumeVolunteerItemSchema>;
-
 // --- talk ---
 
 export const resumeTalkSchema = z.object({
@@ -400,15 +269,6 @@ export const resumeTalkSchema = z.object({
   ...timestampsSchema.shape,
 });
 export type ResumeTalk = z.infer<typeof resumeTalkSchema>;
-
-export const resumeTalkItemSchema = z.object({
-  id: z.string(),
-  resumeId: z.string(),
-  talkId: z.string(),
-  sortOrder: z.number(),
-  ...timestampsSchema.shape,
-});
-export type ResumeTalkItem = z.infer<typeof resumeTalkItemSchema>;
 
 // --- AI chat ---
 

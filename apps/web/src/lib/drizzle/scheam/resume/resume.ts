@@ -1,4 +1,5 @@
-import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { index, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import type { ResumeLayout } from "@/features/resume/resume-layout";
 import { user } from "../auth-schema";
 import { embeddable, timestamps } from "./shared-columns";
 
@@ -24,6 +25,8 @@ export const resume = sqliteTable(
     jobId: text("job_id"),
     /** Template used for rendering (classic, sidebar, accent, modern) */
     templateId: text("template_id").default("classic").notNull(),
+    /** Sections and which library rows this résumé shows, in order (array position is the order) */
+    layout: text("layout", { mode: "json" }).$type<ResumeLayout>(),
     ...embeddable,
     ...timestamps,
   },
@@ -31,28 +34,5 @@ export const resume = sqliteTable(
     index("resume_userId_idx").on(table.userId),
     index("resume_updatedAt_idx").on(table.updatedAt),
     index("resume_jobId_idx").on(table.jobId),
-  ],
-);
-
-export const resumeSection = sqliteTable(
-  "resume_section",
-  {
-    id: text("id")
-      .primaryKey()
-      .$defaultFn(() => crypto.randomUUID()),
-    resumeId: text("resume_id")
-      .notNull()
-      .references(() => resume.id, { onDelete: "cascade" }),
-    /** Section key: summary, experience, education, projects, skills, talks, certifications, etc. */
-    key: text("key").notNull(),
-    /** Custom display title (defaults to section key titlecased) */
-    title: text("title").notNull(),
-    enabled: integer("enabled", { mode: "boolean" }).default(true).notNull(),
-    sortOrder: integer("sort_order").default(0).notNull(),
-    ...timestamps,
-  },
-  (table) => [
-    index("resume_section_resumeId_idx").on(table.resumeId),
-    index("resume_section_resumeId_key_idx").on(table.resumeId, table.key),
   ],
 );

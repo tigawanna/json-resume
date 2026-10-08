@@ -2,16 +2,15 @@
 
 This folder is the shared server-only tool layer for agentic resume workflows.
 
-The current implementation exposes these Drizzle-backed tools through MCP, oRPC, OpenAPI-compatible HTTP routes, and the first TanStack AI chat workflow:
+The current implementation exposes these read-only, Drizzle-backed tools through MCP, oRPC and OpenAPI-compatible HTTP routes:
 
 - `list_resumes`
 - `get_resume_document`
 - `search_resume_blocks`
-- `add_experience_bullet`
-- `replace_experience_bullets`
-- `create_resume_from_document`
 
-Do not duplicate the query or mutation logic for future work. Add thin adapters that validate input, authenticate the caller, and call the functions in `resume-tools.server.ts`, or go through the typed server-side oRPC client when you already have a trusted user id.
+Résumé documents are assembled from each résumé's `layout` column (see `todos/resume-layout.md`). There are no server write tools: résumé edits happen in the browser's local collections and sync to the server as events, so a server-side write would bypass the event log.
+
+Do not duplicate the query logic for future work. Add thin adapters that validate input, authenticate the caller, and call the functions in `resume-tools.server.ts`, or go through the typed server-side oRPC client when you already have a trusted user id.
 
 ## Existing Files
 
@@ -19,7 +18,7 @@ Do not duplicate the query or mutation logic for future work. Add thin adapters 
   Shared Zod input and output schemas. Use these schemas for MCP, oRPC procedures, OpenAPI generation, and TanStack AI tool wrappers.
 
 - `resume-tools.server.ts`
-  Server-only implementations. These functions take `{ userId }` plus a validated input object, enforce ownership where needed, and query/mutate Drizzle.
+  Server-only implementations. These functions take `{ userId }` plus a validated input object, enforce ownership, and query Drizzle.
 
 - `resume-orpc.server.ts`
   The shared oRPC router, auth middleware, RPC/OpenAPI handlers, OpenAPI generator, and internal typed server client factory.
@@ -30,8 +29,8 @@ Do not duplicate the query or mutation logic for future work. Add thin adapters 
 - `resume-mcp.server.ts`
   MCP-specific adapter. It registers the shared functions as MCP tools and now calls the typed server-side oRPC client instead of bespoke glue.
 
-- `resume-agent.server.ts`
-  TanStack AI orchestration for the first in-app resume assistant. It uses OpenRouter plus server tools backed by the typed oRPC client.
+- `resume-chat-tool-definitions.ts`
+  Tool definitions for the in-app assistant. The tools run in the browser against the local collections (`routes/_dashboard/-ai/-utils/local-resume-tools.ts`, `local-job-tools.ts`).
 
 - `src/routes/api/mcp.ts`
   Streamable HTTP MCP endpoint protected by Better Auth MCP OAuth via `withMcpAuth`.
@@ -45,8 +44,8 @@ Do not duplicate the query or mutation logic for future work. Add thin adapters 
 - `src/routes/api/agentic/openapi.json.ts`
   Generated OpenAPI spec endpoint.
 
-- `src/routes/api/ai/resume-tailor.ts`
-  Session-protected TanStack AI SSE route used by the resume workbench AI tab.
+- `src/routes/api/ai/event-sourced-resume-tailor.ts`
+  Session-protected TanStack AI SSE route used by the resume workbench AI tab (`stream-resume-chat.server.ts`).
 
 - `src/lib/better-auth/api-key.server.ts`
   Helper for API-key auth. It accepts `x-api-key` or `Authorization: Bearer ...`, verifies via Better Auth API key plugin, and returns the user id.
@@ -59,9 +58,6 @@ OpenAPI-compatible endpoints:
 POST /api/agentic/resumes/list
 POST /api/agentic/resumes/document
 POST /api/agentic/resume-blocks/search
-POST /api/agentic/experience-bullets/add
-POST /api/agentic/experience-bullets/replace
-POST /api/agentic/resumes/create-from-document
 ```
 
 All routes also support:
@@ -100,17 +96,7 @@ const resumeReadPermission = { resumes: ["read"] };
 const resumeWritePermission = { resumes: ["write"] };
 ```
 
-Use read permission for:
-
-- list resumes
-- get resume document
-- search resume blocks
-
-Use write permission for:
-
-- add experience bullet
-- replace experience bullets
-- create resume from document
+Every current procedure uses read permission (list resumes, get resume document, search resume blocks). `resumeWriteProcedure` is kept for future server writes, which would have to go through the event log.
 
 Do not enable Better Auth `enableSessionForAPIKeys` unless deliberately changing the auth model. The helper verifies API keys directly and avoids pretending API keys are cookie sessions.
 
@@ -127,18 +113,18 @@ curl -X POST "$APP_URL/api/agentic/resume-blocks/search" \
 
 The first slice is implemented:
 
-- `resume-agent.server.ts` — TanStack AI orchestration; builds the adapter and defines the tool loop.
+- `src/routes/_dashboard/-ai/-utils/stream-resume-chat.server.ts` — TanStack AI orchestration; builds the adapter and streams the chat. Tools are declared without server implementations.
 - `openrouter-models.ts` — full `OPENROUTER_MODELS` runtime array + derived `OpenRouterModel` type. The `@tanstack/ai-openrouter` package ships the model list only in TypeScript source (not in the compiled dist), so this file is the runtime source of truth.
 - `AiSettingsPanel.tsx` — collapsible settings card rendered inside the AI tab. Houses the API key input, searchable model combobox, and storage type toggle.
-- `src/routes/api/ai/resume-tailor.ts` — session-protected SSE route; extracts `apiKey` and `model` from the request body and forwards them to `streamResumeAgentChat`.
-- `src/routes/_dashboard/resumes/$resumeId/-components/ResumeAiTab.tsx` — uses `useAiSettings` to read credentials from the browser, passes them in the `useChat` body on every request.
+- `src/routes/api/ai/event-sourced-resume-tailor.ts` — session-protected SSE route; extracts `apiKey` and `model` from the request body and forwards them to `streamEventSourcedResumeAgentChat`.
+- `src/routes/_dashboard/-ai/-components/EventSourcedResumeAiTab.tsx` — reads credentials from the browser and passes them in the `useChat` body on every request.
 
-Current AI tools are optimized for the active resume rather than the raw public API shape:
+Current AI tools (`resume-chat-tool-definitions.ts`) work on the active résumé and run in the browser against the local collections (`local-resume-tools.ts`, `local-job-tools.ts`), so edits sync as events like any other change:
 
-- `get_current_resume_document`
-- `search_current_resume_blocks`
-
-These tools are backed by the typed server-side oRPC client, not raw fetches.
+- `get_current_resume_document`, `search_current_resume_blocks`
+- `update_current_resume_document`, `clone_current_resume`, `create_resume_from_document`
+- `refresh_resume_preview`, `navigate_to_resume`
+- `save_job`, `list_jobs`
 
 ### API Key Architecture
 
@@ -149,8 +135,8 @@ Browser (AiSettingsPanel)
   → localStorage / sessionStorage  (key + model stored here)
   → useAiSettings hook              (reads storage on mount)
   → useChat body { apiKey, model }  (sent with every POST)
-  → /api/ai/resume-tailor           (extracts from body, validates with Zod)
-  → streamResumeAgentChat           (passes to buildTextAdapter)
+  → /api/ai/event-sourced-resume-tailor  (extracts from body, validates with Zod)
+  → streamEventSourcedResumeAgentChat    (passes to buildTextAdapter)
   → OpenRouter API                  (key used here, never persisted)
 ```
 
@@ -216,10 +202,6 @@ The current assistant is intentionally conservative:
 
 Add these only when the first API and agent loop are working:
 
-- `update_summary`
-- `add_project`
-- `replace_project`
-- `upsert_skill_group`
 - `rank_resume_blocks_for_job`
 - `create_tailored_resume_draft`
 - `diff_resume_documents`

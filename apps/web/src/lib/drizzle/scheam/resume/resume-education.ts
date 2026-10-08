@@ -1,5 +1,4 @@
-import { index, integer, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
-import { resume } from "./resume";
+import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { embeddable, timestamps } from "./shared-columns";
 import { uuidv7 } from "uuidv7";
 
@@ -21,28 +20,6 @@ export const resumeEducation = sqliteTable(
     userId: text("user_id"),
   },
   (table) => [index("resume_education_userId_idx").on(table.userId)],
-);
-
-export const resumeEducationItem = sqliteTable(
-  "resume_education_item",
-  {
-    id: text("id")
-      .primaryKey()
-      .$defaultFn(() => uuidv7()),
-    resumeId: text("resume_id")
-      .notNull()
-      .references(() => resume.id, { onDelete: "cascade" }),
-    educationId: text("education_id")
-      .notNull()
-      .references(() => resumeEducation.id, { onDelete: "cascade" }),
-    sortOrder: integer("sort_order").default(0).notNull(),
-    ...timestamps,
-  },
-  (table) => [
-    index("resume_education_item_resumeId_idx").on(table.resumeId),
-    index("resume_education_item_educationId_idx").on(table.educationId),
-    uniqueIndex("resume_education_item_unique_idx").on(table.resumeId, table.educationId),
-  ],
 );
 
 export const resumeEducationBullet = sqliteTable(

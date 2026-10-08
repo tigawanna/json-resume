@@ -17,35 +17,20 @@ import type {
   ResumeAiConversation,
   ResumeAiMessage,
   ResumeCertification,
-  ResumeCertificationItem,
   ResumeContact,
-  ResumeContactItem,
   ResumeEducation,
   ResumeEducationBullet,
-  ResumeEducationItem,
   ResumeExperience,
   ResumeExperienceBullet,
-  ResumeExperienceBulletItem,
-  ResumeExperienceItem,
   ResumeLanguage,
-  ResumeLanguageItem,
   ResumeLink,
-  ResumeLinkItem,
   ResumeNote,
-  ResumeNoteItem,
   ResumeProject,
-  ResumeProjectItem,
-  ResumeSection,
   ResumeSkill,
   ResumeSkillGroup,
-  ResumeSkillGroupItem,
-  ResumeSkillGroupSkill,
   ResumeSummary,
-  ResumeSummaryItem,
   ResumeTalk,
-  ResumeTalkItem,
   ResumeVolunteer,
-  ResumeVolunteerItem,
   SavedProject,
   Job,
 } from "./schemas";
@@ -56,48 +41,25 @@ import type {
  */
 export type AppCollectionDefs = {
   resume: CollectionDef<Resume, string>;
-  resumeSection: CollectionDef<ResumeSection, string>;
 
   resumeExperience: CollectionDef<ResumeExperience, string>;
-  resumeExperienceItem: CollectionDef<ResumeExperienceItem, string>;
   resumeExperienceBullet: CollectionDef<ResumeExperienceBullet, string>;
-  resumeExperienceBulletItem: CollectionDef<ResumeExperienceBulletItem, string>;
 
   resumeEducation: CollectionDef<ResumeEducation, string>;
-  resumeEducationItem: CollectionDef<ResumeEducationItem, string>;
   resumeEducationBullet: CollectionDef<ResumeEducationBullet, string>;
 
   resumeSkillGroup: CollectionDef<ResumeSkillGroup, string>;
-  resumeSkillGroupItem: CollectionDef<ResumeSkillGroupItem, string>;
   resumeSkill: CollectionDef<ResumeSkill, string>;
-  resumeSkillGroupSkill: CollectionDef<ResumeSkillGroupSkill, string>;
 
   resumeContact: CollectionDef<ResumeContact, string>;
-  resumeContactItem: CollectionDef<ResumeContactItem, string>;
-
   resumeProject: CollectionDef<ResumeProject, string>;
-  resumeProjectItem: CollectionDef<ResumeProjectItem, string>;
-
   resumeSummary: CollectionDef<ResumeSummary, string>;
-  resumeSummaryItem: CollectionDef<ResumeSummaryItem, string>;
-
   resumeNote: CollectionDef<ResumeNote, string>;
-  resumeNoteItem: CollectionDef<ResumeNoteItem, string>;
-
   resumeLink: CollectionDef<ResumeLink, string>;
-  resumeLinkItem: CollectionDef<ResumeLinkItem, string>;
-
   resumeLanguage: CollectionDef<ResumeLanguage, string>;
-  resumeLanguageItem: CollectionDef<ResumeLanguageItem, string>;
-
   resumeCertification: CollectionDef<ResumeCertification, string>;
-  resumeCertificationItem: CollectionDef<ResumeCertificationItem, string>;
-
   resumeVolunteer: CollectionDef<ResumeVolunteer, string>;
-  resumeVolunteerItem: CollectionDef<ResumeVolunteerItem, string>;
-
   resumeTalk: CollectionDef<ResumeTalk, string>;
-  resumeTalkItem: CollectionDef<ResumeTalkItem, string>;
 
   resumeAiChat: CollectionDef<ResumeAiChat, string>;
   resumeAiConversation: CollectionDef<ResumeAiConversation, string>;
@@ -160,26 +122,10 @@ const {
         { select: (r) => r.updatedAt, indexType: BasicIndex, name: "by-updated" },
       ],
     },
-    resumeSection: {
-      getKey: (row) => row.id,
-      indexes: [
-        byId<ResumeSection>(),
-        byResumeId<ResumeSection>(),
-        { select: (r) => r.key, indexType: BasicIndex, name: "by-key" },
-      ],
-    },
 
     resumeExperience: {
       getKey: (row) => row.id,
       indexes: [byId<ResumeExperience>(), byUserId<ResumeExperience>()],
-    },
-    resumeExperienceItem: {
-      getKey: (row) => row.id,
-      indexes: [
-        byId<ResumeExperienceItem>(),
-        byResumeId<ResumeExperienceItem>(),
-        { select: (r) => r.experienceId, indexType: BasicIndex, name: "by-experience" },
-      ],
     },
     resumeExperienceBullet: {
       getKey: (row) => row.id,
@@ -188,26 +134,10 @@ const {
         { select: (r) => r.experienceId, indexType: BasicIndex, name: "by-experience" },
       ],
     },
-    resumeExperienceBulletItem: {
-      getKey: (row) => row.id,
-      indexes: [
-        byId<ResumeExperienceBulletItem>(),
-        byResumeId<ResumeExperienceBulletItem>(),
-        { select: (r) => r.bulletId, indexType: BasicIndex, name: "by-bullet" },
-      ],
-    },
 
     resumeEducation: {
       getKey: (row) => row.id,
       indexes: [byId<ResumeEducation>(), byUserId<ResumeEducation>()],
-    },
-    resumeEducationItem: {
-      getKey: (row) => row.id,
-      indexes: [
-        byId<ResumeEducationItem>(),
-        byResumeId<ResumeEducationItem>(),
-        { select: (r) => r.educationId, indexType: BasicIndex, name: "by-education" },
-      ],
     },
     resumeEducationBullet: {
       getKey: (row) => row.id,
@@ -221,142 +151,54 @@ const {
       getKey: (row) => row.id,
       indexes: [byId<ResumeSkillGroup>(), byUserId<ResumeSkillGroup>()],
     },
-    resumeSkillGroupItem: {
-      getKey: (row) => row.id,
-      indexes: [
-        byId<ResumeSkillGroupItem>(),
-        byResumeId<ResumeSkillGroupItem>(),
-        { select: (r) => r.groupId, indexType: BasicIndex, name: "by-group" },
-      ],
-    },
     resumeSkill: {
       getKey: (row) => row.id,
       indexes: [byId<ResumeSkill>(), byUserId<ResumeSkill>()],
-    },
-    resumeSkillGroupSkill: {
-      getKey: (row) => row.id,
-      indexes: [
-        byId<ResumeSkillGroupSkill>(),
-        { select: (r) => r.groupId, indexType: BasicIndex, name: "by-group" },
-        { select: (r) => r.skillId, indexType: BasicIndex, name: "by-skill" },
-      ],
     },
 
     resumeContact: {
       getKey: (row) => row.id,
       indexes: [byId<ResumeContact>(), byUserId<ResumeContact>()],
     },
-    resumeContactItem: {
-      getKey: (row) => row.id,
-      indexes: [
-        byId<ResumeContactItem>(),
-        byResumeId<ResumeContactItem>(),
-        { select: (r) => r.contactId, indexType: BasicIndex, name: "by-contact" },
-      ],
-    },
 
     resumeProject: {
       getKey: (row) => row.id,
       indexes: [byId<ResumeProject>(), byUserId<ResumeProject>()],
-    },
-    resumeProjectItem: {
-      getKey: (row) => row.id,
-      indexes: [
-        byId<ResumeProjectItem>(),
-        byResumeId<ResumeProjectItem>(),
-        { select: (r) => r.projectId, indexType: BasicIndex, name: "by-project" },
-      ],
     },
 
     resumeSummary: {
       getKey: (row) => row.id,
       indexes: [byId<ResumeSummary>(), byUserId<ResumeSummary>()],
     },
-    resumeSummaryItem: {
-      getKey: (row) => row.id,
-      indexes: [
-        byId<ResumeSummaryItem>(),
-        byResumeId<ResumeSummaryItem>(),
-        { select: (r) => r.summaryId, indexType: BasicIndex, name: "by-summary" },
-      ],
-    },
 
     resumeNote: {
       getKey: (row) => row.id,
       indexes: [byId<ResumeNote>(), byUserId<ResumeNote>()],
-    },
-    resumeNoteItem: {
-      getKey: (row) => row.id,
-      indexes: [
-        byId<ResumeNoteItem>(),
-        byResumeId<ResumeNoteItem>(),
-        { select: (r) => r.noteId, indexType: BasicIndex, name: "by-note" },
-      ],
     },
 
     resumeLink: {
       getKey: (row) => row.id,
       indexes: [byId<ResumeLink>(), byUserId<ResumeLink>()],
     },
-    resumeLinkItem: {
-      getKey: (row) => row.id,
-      indexes: [
-        byId<ResumeLinkItem>(),
-        byResumeId<ResumeLinkItem>(),
-        { select: (r) => r.linkId, indexType: BasicIndex, name: "by-link" },
-      ],
-    },
 
     resumeLanguage: {
       getKey: (row) => row.id,
       indexes: [byId<ResumeLanguage>(), byUserId<ResumeLanguage>()],
-    },
-    resumeLanguageItem: {
-      getKey: (row) => row.id,
-      indexes: [
-        byId<ResumeLanguageItem>(),
-        byResumeId<ResumeLanguageItem>(),
-        { select: (r) => r.languageId, indexType: BasicIndex, name: "by-language" },
-      ],
     },
 
     resumeCertification: {
       getKey: (row) => row.id,
       indexes: [byId<ResumeCertification>(), byUserId<ResumeCertification>()],
     },
-    resumeCertificationItem: {
-      getKey: (row) => row.id,
-      indexes: [
-        byId<ResumeCertificationItem>(),
-        byResumeId<ResumeCertificationItem>(),
-        { select: (r) => r.certificationId, indexType: BasicIndex, name: "by-certification" },
-      ],
-    },
 
     resumeVolunteer: {
       getKey: (row) => row.id,
       indexes: [byId<ResumeVolunteer>(), byUserId<ResumeVolunteer>()],
     },
-    resumeVolunteerItem: {
-      getKey: (row) => row.id,
-      indexes: [
-        byId<ResumeVolunteerItem>(),
-        byResumeId<ResumeVolunteerItem>(),
-        { select: (r) => r.volunteerId, indexType: BasicIndex, name: "by-volunteer" },
-      ],
-    },
 
     resumeTalk: {
       getKey: (row) => row.id,
       indexes: [byId<ResumeTalk>(), byUserId<ResumeTalk>()],
-    },
-    resumeTalkItem: {
-      getKey: (row) => row.id,
-      indexes: [
-        byId<ResumeTalkItem>(),
-        byResumeId<ResumeTalkItem>(),
-        { select: (r) => r.talkId, indexType: BasicIndex, name: "by-talk" },
-      ],
     },
 
     resumeAiChat: {

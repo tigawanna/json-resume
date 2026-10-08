@@ -1,5 +1,4 @@
-import { index, integer, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
-import { resume } from "./resume";
+import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { embeddable, timestamps } from "./shared-columns";
 import { uuidv7 } from "uuidv7";
 
@@ -22,28 +21,6 @@ export const resumeExperience = sqliteTable(
   (table) => [index("resume_experience_userId_idx").on(table.userId)],
 );
 
-export const resumeExperienceItem = sqliteTable(
-  "resume_experience_item",
-  {
-    id: text("id")
-      .primaryKey()
-      .$defaultFn(() => uuidv7()),
-    resumeId: text("resume_id")
-      .notNull()
-      .references(() => resume.id, { onDelete: "cascade" }),
-    experienceId: text("experience_id")
-      .notNull()
-      .references(() => resumeExperience.id, { onDelete: "cascade" }),
-    sortOrder: integer("sort_order").default(0).notNull(),
-    ...timestamps,
-  },
-  (table) => [
-    index("resume_experience_item_resumeId_idx").on(table.resumeId),
-    index("resume_experience_item_experienceId_idx").on(table.experienceId),
-    uniqueIndex("resume_experience_item_unique_idx").on(table.resumeId, table.experienceId),
-  ],
-);
-
 export const resumeExperienceBullet = sqliteTable(
   "resume_experience_bullet",
   {
@@ -59,27 +36,4 @@ export const resumeExperienceBullet = sqliteTable(
     ...timestamps,
   },
   (table) => [index("resume_exp_bullet_experienceId_idx").on(table.experienceId)],
-);
-
-/** Which of an experience's library bullets a résumé shows, in its own order. */
-export const resumeExperienceBulletItem = sqliteTable(
-  "resume_experience_bullet_item",
-  {
-    id: text("id")
-      .primaryKey()
-      .$defaultFn(() => uuidv7()),
-    resumeId: text("resume_id")
-      .notNull()
-      .references(() => resume.id, { onDelete: "cascade" }),
-    bulletId: text("bullet_id")
-      .notNull()
-      .references(() => resumeExperienceBullet.id, { onDelete: "cascade" }),
-    sortOrder: integer("sort_order").default(0).notNull(),
-    ...timestamps,
-  },
-  (table) => [
-    index("resume_exp_bullet_item_resumeId_idx").on(table.resumeId),
-    index("resume_exp_bullet_item_bulletId_idx").on(table.bulletId),
-    uniqueIndex("resume_exp_bullet_item_unique_idx").on(table.resumeId, table.bulletId),
-  ],
 );

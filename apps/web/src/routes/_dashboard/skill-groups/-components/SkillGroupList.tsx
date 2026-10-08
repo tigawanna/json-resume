@@ -7,8 +7,8 @@ import type { ResumeSkill, ResumeSkillGroup } from "@/data-access-layer/event-so
 import { RouterPendingComponent } from "@/lib/tanstack/router/RouterPendingComponent";
 import { unwrapUnknownError } from "@/utils/errors";
 import { count, useLiveQuery } from "@tanstack/react-db";
-import { skillsForGroup } from "@/data-access-layer/event-sourced/assemble-resume-detail";
 import { deleteWithReferences } from "@/data-access-layer/event-sourced/library-resolve";
+import { skillsUsedUnderGroup } from "../-utils/group-skills";
 import { Plus, Wrench } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -73,13 +73,13 @@ export function SkillGroupList() {
     (query) => query.from({ skill: db.collections.resumeSkill }),
     [],
   );
-  const { data: groupSkillRows } = useLiveQuery(
-    (query) => query.from({ link: db.collections.resumeSkillGroupSkill }),
+  const { data: resumeRows } = useLiveQuery(
+    (query) => query.from({ resume: db.collections.resume }),
     [],
   );
   const items: SkillGroupRow[] = groups.map((group) => ({
     ...group,
-    skills: skillsForGroup(group.id, skillRows, groupSkillRows),
+    skills: skillsUsedUnderGroup(group.id, resumeRows, skillRows),
   }));
 
   const { data: totals } = useLiveQuery(
@@ -212,11 +212,7 @@ export function SkillGroupList() {
             <DialogTitle>Edit Skill Group</DialogTitle>
           </DialogHeader>
           {editing ? (
-            <SkillGroupEditForm
-              group={editing}
-              skills={editing.skills}
-              onSuccess={() => setEditing(null)}
-            />
+            <SkillGroupEditForm group={editing} onSuccess={() => setEditing(null)} />
           ) : null}
         </DialogContent>
       </Dialog>

@@ -4,12 +4,6 @@ export interface ExperienceBulletDTO {
   sortOrder: number;
 }
 
-export interface ExperienceResumeUsageDTO {
-  resumeId: string;
-  resumeName: string;
-  sortOrder: number;
-}
-
 export interface ExperienceListItemDTO {
   id: string;
   company: string;
@@ -21,5 +15,4 @@ export interface ExperienceListItemDTO {
   createdAt: string;
   updatedAt: string;
   bullets: ExperienceBulletDTO[];
-  resumeUsage: ExperienceResumeUsageDTO[];
 }

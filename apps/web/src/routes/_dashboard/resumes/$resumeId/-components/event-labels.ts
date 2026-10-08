@@ -14,7 +14,7 @@ const LABEL_FIELDS = [
 ];
 const UNCOMPARED_FIELDS = new Set(["updatedAt", "searchableText", "embedding"]);
 
-/** "resumeExperienceBulletItem" → "Experience bullet item" */
+/** "resumeExperienceBullet" → "Experience bullet" */
 export function collectionLabel(collectionId: string): string {
   const words = collectionId
     .replace(/^resume(?=[A-Z])/, "")

@@ -1,0 +1,1 @@
+ALTER TABLE `resume_skill` DROP COLUMN `group_id`;

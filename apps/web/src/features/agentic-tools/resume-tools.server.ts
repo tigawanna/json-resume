@@ -1,45 +1,27 @@
 import "@tanstack/react-start/server-only";
 
 import { resumeDetailToDocument } from "@/data-access-layer/resume/resume-converters";
-import {
-  createResumeForUser,
-  getResumeDetail,
-  replaceResumeContent,
-  setExperienceBullets,
-} from "@/data-access-layer/resume/resume.server";
+import { getResumeDetail } from "@/data-access-layer/resume/resume.server";
+import { emptyResumeLayout, resumeLayoutSchema } from "@/features/resume/resume-layout";
 import { db } from "@/lib/drizzle/client";
 import {
   resume,
   resumeExperience,
   resumeExperienceBullet,
-  resumeExperienceItem,
   resumeProject,
-  resumeProjectItem,
   resumeSkill,
   resumeSkillGroup,
-  resumeSkillGroupItem,
   resumeSummary,
-  resumeSummaryItem,
 } from "@/lib/drizzle/scheam";
-import { and, asc, desc, eq, gte, like, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, like, or } from "drizzle-orm";
 import {
-  addExperienceBulletToolInputSchema,
-  cloneResumeToolInputSchema,
-  createResumeFromDocumentToolInputSchema,
   getResumeDocumentToolInputSchema,
   listResumesToolInputSchema,
-  replaceExperienceBulletsToolInputSchema,
   searchResumeBlocksToolInputSchema,
-  updateResumeDocumentToolInputSchema,
-  type AddExperienceBulletToolInput,
-  type CloneResumeToolInput,
-  type CreateResumeFromDocumentToolInput,
   type GetResumeDocumentToolInput,
   type ListResumesToolInput,
-  type ReplaceExperienceBulletsToolInput,
   type ResumeBlockType,
   type SearchResumeBlocksToolInput,
-  type UpdateResumeDocumentToolInput,
 } from "./resume-tool-schemas";
 
 type ToolContext = {
@@ -105,6 +87,10 @@ const defaultBlockTypes: ResumeBlockType[] = [
   "skill",
 ];
 
+const REUSABLE: Usage = { resumeId: "", resumeName: "Reusable item" };
+
+type Usage = { resumeId: string; resumeName: string };
+
 function keywordPattern(keyword: string | undefined): string | undefined {
   return keyword ? `%${keyword}%` : undefined;
 }
@@ -120,16 +106,35 @@ function parseJsonStringArray(raw: string): string[] {
   }
 }
 
-async function assertUserOwnsExperience(userId: string, experienceId: string): Promise<void> {
+/** Which résumé (most recently updated first) uses each library id, read from layouts. */
+async function layoutUsage(userId: string, resumeId: string | undefined) {
   const rows = await db
-    .select({ id: resumeExperience.id })
-    .from(resumeExperience)
-    .where(and(eq(resumeExperience.id, experienceId), eq(resumeExperience.userId, userId)))
-    .limit(1);
+    .select({ id: resume.id, name: resume.name, layout: resume.layout })
+    .from(resume)
+    .where(and(eq(resume.userId, userId), resumeId ? eq(resume.id, resumeId) : undefined))
+    .orderBy(desc(resume.updatedAt));
 
-  if (rows.length === 0) {
-    throw new Error("Experience not found");
+  const byId = new Map<string, Usage>();
+  const skillPairs: Array<Usage & { groupId: string; skillId: string }> = [];
+  const note = (id: string, usage: Usage) => {
+    if (!byId.has(id)) byId.set(id, usage);
+  };
+
+  for (const row of rows) {
+    const parsed = resumeLayoutSchema.safeParse(row.layout);
+    const layout = parsed.success ? parsed.data : emptyResumeLayout();
+    const usage = { resumeId: row.id, resumeName: row.name };
+    for (const id of layout.summaries) note(id, usage);
+    for (const id of layout.projects) note(id, usage);
+    for (const entry of layout.experiences) {
+      note(entry.id, usage);
+      for (const bullet of entry.bullets) note(bullet, usage);
+    }
+    for (const entry of layout.skillGroups) {
+      for (const skillId of entry.skills) skillPairs.push({ ...usage, groupId: entry.id, skillId });
+    }
   }
+  return { byId, skillPairs };
 }
 
 export async function listResumesTool(ctx: ToolContext, input: ListResumesToolInput) {
@@ -192,45 +197,45 @@ export async function getResumeDocumentTool(ctx: ToolContext, input: GetResumeDo
   };
 }
 
+/**
+ * Library rows matching the keyword, labelled with the résumé that uses them.
+ * With `resumeId`, only rows that résumé's layout shows; otherwise unused rows
+ * come back as "Reusable item".
+ */
 export async function searchResumeBlocksTool(ctx: ToolContext, input: SearchResumeBlocksToolInput) {
   const data = searchResumeBlocksToolInputSchema.parse(input);
   const blockTypes = data.blockTypes ?? defaultBlockTypes;
   const pattern = keywordPattern(data.keyword);
-  const summaryScope = data.resumeId ? eq(resumeSummaryItem.resumeId, data.resumeId) : undefined;
-  const experienceScope = data.resumeId
-    ? eq(resumeExperienceItem.resumeId, data.resumeId)
-    : undefined;
-  const projectScope = data.resumeId ? eq(resumeProjectItem.resumeId, data.resumeId) : undefined;
-  const skillScope = data.resumeId ? eq(resumeSkillGroupItem.resumeId, data.resumeId) : undefined;
+  const scoped = data.resumeId !== undefined;
+  const { byId, skillPairs } = await layoutUsage(ctx.userId, data.resumeId);
+
+  function labelled<T extends { id: string }>(rows: T[]): Array<T & Usage> {
+    return rows
+      .flatMap((row) => {
+        const usage = byId.get(row.id);
+        if (usage) return [{ ...row, ...usage }];
+        return scoped ? [] : [{ ...row, ...REUSABLE }];
+      })
+      .slice(0, data.limitPerType);
+  }
 
   const summariesPromise = blockTypes.includes("summary")
     ? db
-        .select({
-          id: resumeSummary.id,
-          resumeId: resumeSummaryItem.resumeId,
-          resumeName: resume.name,
-          text: resumeSummary.text,
-        })
+        .select({ id: resumeSummary.id, text: resumeSummary.text })
         .from(resumeSummary)
-        .leftJoin(resumeSummaryItem, eq(resumeSummaryItem.summaryId, resumeSummary.id))
-        .leftJoin(resume, eq(resumeSummaryItem.resumeId, resume.id))
         .where(
           and(
             eq(resumeSummary.userId, ctx.userId),
-            summaryScope,
             pattern ? like(resumeSummary.text, pattern) : undefined,
           ),
         )
         .orderBy(asc(resumeSummary.sortOrder), asc(resumeSummary.id))
-        .limit(data.limitPerType)
     : Promise.resolve([]);
 
   const experiencesPromise = blockTypes.includes("experience")
     ? db
         .select({
           id: resumeExperience.id,
-          resumeId: resumeExperienceItem.resumeId,
-          resumeName: resume.name,
           company: resumeExperience.company,
           role: resumeExperience.role,
           startDate: resumeExperience.startDate,
@@ -238,12 +243,9 @@ export async function searchResumeBlocksTool(ctx: ToolContext, input: SearchResu
           location: resumeExperience.location,
         })
         .from(resumeExperience)
-        .leftJoin(resumeExperienceItem, eq(resumeExperienceItem.experienceId, resumeExperience.id))
-        .leftJoin(resume, eq(resumeExperienceItem.resumeId, resume.id))
         .where(
           and(
             eq(resumeExperience.userId, ctx.userId),
-            experienceScope,
             pattern
               ? or(
                   like(resumeExperience.company, pattern),
@@ -254,7 +256,6 @@ export async function searchResumeBlocksTool(ctx: ToolContext, input: SearchResu
           ),
         )
         .orderBy(desc(resumeExperience.sortOrder), desc(resumeExperience.id))
-        .limit(data.limitPerType)
     : Promise.resolve([]);
 
   const bulletsPromise = blockTypes.includes("experience_bullet")
@@ -262,8 +263,6 @@ export async function searchResumeBlocksTool(ctx: ToolContext, input: SearchResu
         .select({
           id: resumeExperienceBullet.id,
           experienceId: resumeExperience.id,
-          resumeId: resumeExperienceItem.resumeId,
-          resumeName: resume.name,
           company: resumeExperience.company,
           role: resumeExperience.role,
           text: resumeExperienceBullet.text,
@@ -271,12 +270,9 @@ export async function searchResumeBlocksTool(ctx: ToolContext, input: SearchResu
         })
         .from(resumeExperienceBullet)
         .innerJoin(resumeExperience, eq(resumeExperienceBullet.experienceId, resumeExperience.id))
-        .leftJoin(resumeExperienceItem, eq(resumeExperienceItem.experienceId, resumeExperience.id))
-        .leftJoin(resume, eq(resumeExperienceItem.resumeId, resume.id))
         .where(
           and(
             eq(resumeExperience.userId, ctx.userId),
-            experienceScope,
             pattern
               ? or(
                   like(resumeExperienceBullet.text, pattern),
@@ -287,15 +283,12 @@ export async function searchResumeBlocksTool(ctx: ToolContext, input: SearchResu
           ),
         )
         .orderBy(desc(resumeExperience.sortOrder), asc(resumeExperienceBullet.sortOrder))
-        .limit(data.limitPerType)
     : Promise.resolve([]);
 
   const projectsPromise = blockTypes.includes("project")
     ? db
         .select({
           id: resumeProject.id,
-          resumeId: resumeProjectItem.resumeId,
-          resumeName: resume.name,
           name: resumeProject.name,
           description: resumeProject.description,
           tech: resumeProject.tech,
@@ -303,12 +296,9 @@ export async function searchResumeBlocksTool(ctx: ToolContext, input: SearchResu
           homepageUrl: resumeProject.homepageUrl,
         })
         .from(resumeProject)
-        .leftJoin(resumeProjectItem, eq(resumeProjectItem.projectId, resumeProject.id))
-        .leftJoin(resume, eq(resumeProjectItem.resumeId, resume.id))
         .where(
           and(
             eq(resumeProject.userId, ctx.userId),
-            projectScope,
             pattern
               ? or(
                   like(resumeProject.name, pattern),
@@ -319,191 +309,93 @@ export async function searchResumeBlocksTool(ctx: ToolContext, input: SearchResu
           ),
         )
         .orderBy(asc(resumeProject.sortOrder), asc(resumeProject.id))
-        .limit(data.limitPerType)
     : Promise.resolve([]);
 
-  const skillsPromise = blockTypes.includes("skill")
-    ? db
-        .select({
-          id: resumeSkill.id,
-          groupId: resumeSkillGroup.id,
-          resumeId: resumeSkillGroupItem.resumeId,
-          resumeName: resume.name,
-          groupName: resumeSkillGroup.name,
-          name: resumeSkill.name,
-        })
-        .from(resumeSkill)
-        .innerJoin(resumeSkillGroup, eq(resumeSkill.groupId, resumeSkillGroup.id))
-        .leftJoin(resumeSkillGroupItem, eq(resumeSkillGroupItem.groupId, resumeSkillGroup.id))
-        .leftJoin(resume, eq(resumeSkillGroupItem.resumeId, resume.id))
-        .where(
-          and(
-            eq(resumeSkillGroup.userId, ctx.userId),
-            skillScope,
-            pattern
-              ? or(like(resumeSkill.name, pattern), like(resumeSkillGroup.name, pattern))
-              : undefined,
-          ),
-        )
-        .orderBy(asc(resumeSkillGroup.sortOrder), asc(resumeSkill.sortOrder), asc(resumeSkill.id))
-        .limit(data.limitPerType)
-    : Promise.resolve([]);
+  const skillRowsPromise = blockTypes.includes("skill")
+    ? Promise.all([
+        db
+          .select({ id: resumeSkill.id, name: resumeSkill.name })
+          .from(resumeSkill)
+          .where(eq(resumeSkill.userId, ctx.userId))
+          .orderBy(asc(resumeSkill.sortOrder), asc(resumeSkill.id)),
+        db
+          .select({ id: resumeSkillGroup.id, name: resumeSkillGroup.name })
+          .from(resumeSkillGroup)
+          .where(eq(resumeSkillGroup.userId, ctx.userId)),
+      ])
+    : Promise.resolve(null);
 
-  const [summaries, experiences, bullets, projects, skills] = await Promise.all([
+  const [summaries, experiences, bullets, projects, skillRows] = await Promise.all([
     summariesPromise,
     experiencesPromise,
     bulletsPromise,
     projectsPromise,
-    skillsPromise,
+    skillRowsPromise,
   ]);
 
-  const withResumeLabel = <T extends { resumeId: string | null; resumeName: string | null }>(
-    row: T,
-  ) => ({
-    ...row,
-    resumeId: row.resumeId ?? "",
-    resumeName: row.resumeName ?? "Reusable item",
-  });
-
   const blocks: ResumeSearchBlock[] = [
-    ...summaries.map((row) => ({ type: "summary" as const, ...withResumeLabel(row) })),
-    ...experiences.map((row) => ({ type: "experience" as const, ...withResumeLabel(row) })),
-    ...bullets.map((row) => ({ type: "experience_bullet" as const, ...withResumeLabel(row) })),
-    ...projects.map((row) => ({
+    ...labelled(summaries).map((row) => ({ type: "summary" as const, ...row })),
+    ...labelled(experiences).map((row) => ({ type: "experience" as const, ...row })),
+    ...labelled(bullets).map((row) => ({ type: "experience_bullet" as const, ...row })),
+    ...labelled(projects).map((row) => ({
       type: "project" as const,
-      ...withResumeLabel(row),
+      ...row,
       tech: parseJsonStringArray(row.tech),
     })),
-    ...skills.map((row) => ({ type: "skill" as const, ...withResumeLabel(row) })),
+    ...(skillRows ? skillBlocks(skillRows, skillPairs, data.keyword, scoped) : []).slice(
+      0,
+      data.limitPerType,
+    ),
   ];
 
   return { blocks };
 }
 
-export async function addExperienceBulletTool(
-  ctx: ToolContext,
-  input: AddExperienceBulletToolInput,
-) {
-  const data = addExperienceBulletToolInputSchema.parse(input);
-  await assertUserOwnsExperience(ctx.userId, data.experienceId);
+/** Skills are picked per résumé inside a group, so each block is one (group, skill) pair from a layout. */
+function skillBlocks(
+  [skills, groups]: [Array<{ id: string; name: string }>, Array<{ id: string; name: string }>],
+  pairs: Array<Usage & { groupId: string; skillId: string }>,
+  keyword: string | undefined,
+  scoped: boolean,
+): ResumeSearchBlock[] {
+  const skillName = new Map(skills.map((skill) => [skill.id, skill.name]));
+  const groupName = new Map(groups.map((group) => [group.id, group.name]));
+  const needle = keyword?.toLowerCase();
+  const matches = (...values: string[]) =>
+    !needle || values.some((value) => value.toLowerCase().includes(needle));
 
-  let sortOrder: number;
-
-  if (data.afterBulletId) {
-    const rows = await db
-      .select({ sortOrder: resumeExperienceBullet.sortOrder })
-      .from(resumeExperienceBullet)
-      .where(
-        and(
-          eq(resumeExperienceBullet.id, data.afterBulletId),
-          eq(resumeExperienceBullet.experienceId, data.experienceId),
-        ),
-      )
-      .limit(1);
-
-    if (rows.length === 0) {
-      throw new Error("Anchor bullet not found");
-    }
-
-    sortOrder = rows[0]!.sortOrder + 1;
-    await db
-      .update(resumeExperienceBullet)
-      .set({ sortOrder: sql`${resumeExperienceBullet.sortOrder} + 1` })
-      .where(
-        and(
-          eq(resumeExperienceBullet.experienceId, data.experienceId),
-          gte(resumeExperienceBullet.sortOrder, sortOrder),
-        ),
-      );
-  } else {
-    const rows = await db
-      .select({ sortOrder: resumeExperienceBullet.sortOrder })
-      .from(resumeExperienceBullet)
-      .where(eq(resumeExperienceBullet.experienceId, data.experienceId))
-      .orderBy(desc(resumeExperienceBullet.sortOrder))
-      .limit(1);
-
-    sortOrder = (rows[0]?.sortOrder ?? -1) + 1;
+  const blocks: ResumeSearchBlock[] = [];
+  const seen = new Set<string>();
+  for (const pair of pairs) {
+    const name = skillName.get(pair.skillId);
+    const group = groupName.get(pair.groupId);
+    const key = `${pair.groupId}\u241f${pair.skillId}`;
+    if (name === undefined || group === undefined || seen.has(key)) continue;
+    seen.add(key);
+    if (!matches(name, group)) continue;
+    blocks.push({
+      type: "skill",
+      id: pair.skillId,
+      groupId: pair.groupId,
+      groupName: group,
+      name,
+      resumeId: pair.resumeId,
+      resumeName: pair.resumeName,
+    });
   }
+  if (scoped) return blocks;
 
-  const id = crypto.randomUUID();
-  await db.insert(resumeExperienceBullet).values({
-    id,
-    experienceId: data.experienceId,
-    text: data.text,
-    sortOrder,
-  });
-
-  return {
-    bullet: {
-      id,
-      experienceId: data.experienceId,
-      text: data.text,
-      sortOrder,
-    },
-  };
-}
-
-export async function replaceExperienceBulletsTool(
-  ctx: ToolContext,
-  input: ReplaceExperienceBulletsToolInput,
-) {
-  const data = replaceExperienceBulletsToolInputSchema.parse(input);
-  await assertUserOwnsExperience(ctx.userId, data.experienceId);
-  await setExperienceBullets(data.experienceId, data.bullets);
-
-  return {
-    experienceId: data.experienceId,
-    bulletCount: data.bullets.length,
-  };
-}
-
-export async function createResumeFromDocumentTool(
-  ctx: ToolContext,
-  input: CreateResumeFromDocumentToolInput,
-) {
-  const data = createResumeFromDocumentToolInputSchema.parse(input);
-  const resumeId = await createResumeForUser(ctx.userId, {
-    name: data.name,
-    description: data.description,
-    jobDescription: data.jobDescription,
-    doc: data.document,
-  });
-
-  return { resumeId, name: data.name };
-}
-
-export async function updateResumeDocumentTool(
-  ctx: ToolContext,
-  input: UpdateResumeDocumentToolInput,
-) {
-  const data = updateResumeDocumentToolInputSchema.parse(input);
-  await replaceResumeContent(data.resumeId, ctx.userId, data.document);
-  return {
-    resumeId: data.resumeId,
-    updatedAt: new Date().toISOString(),
-  };
-}
-
-export async function cloneResumeTool(ctx: ToolContext, input: CloneResumeToolInput) {
-  const data = cloneResumeToolInputSchema.parse(input);
-  const detail = await getResumeDetail(data.sourceResumeId, ctx.userId);
-
-  if (!detail) {
-    throw new Error("Source resume not found");
+  const used = new Set(pairs.map((pair) => pair.skillId));
+  for (const skill of skills) {
+    if (used.has(skill.id) || !matches(skill.name)) continue;
+    blocks.push({
+      type: "skill",
+      id: skill.id,
+      groupId: "",
+      groupName: "",
+      name: skill.name,
+      ...REUSABLE,
+    });
   }
-
-  const name = data.name ?? `${detail.name} Copy`;
-  const resumeId = await createResumeForUser(ctx.userId, {
-    name,
-    description: data.description ?? detail.description,
-    jobDescription: data.jobDescription ?? detail.jobDescription,
-    doc: resumeDetailToDocument(detail),
-  });
-
-  return {
-    sourceResumeId: data.sourceResumeId,
-    resumeId,
-    name,
-  };
+  return blocks;
 }

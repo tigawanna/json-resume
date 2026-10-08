@@ -40,8 +40,3 @@ export function bulletKey(row: { experienceId: string; text: string }): string |
   const text = norm(row.text);
   return text ? `${row.experienceId}\u241f${text}` : null;
 }
-
-/** A group is its name plus its ordered skills; same name with other skills is a separate group. */
-export function skillGroupKey(name: string, skillKeys: ReadonlyArray<string | null>): string {
-  return [norm(name), ...skillKeys.map((skill) => skill ?? "")].join("\u241f");
-}

@@ -17,7 +17,7 @@ import { formOptions } from "@tanstack/react-form";
 import { useState } from "react";
 import { toast } from "sonner";
 import { joinSearchable, libraryRowBase } from "../../-utils/row-helpers";
-import { emptyResumeItemOrder } from "@/data-access-layer/event-sourced/resume-item-order";
+import { emptyResumeLayout } from "@/features/resume/resume-layout";
 
 const createOpts = formOptions({
   defaultValues: {
@@ -61,7 +61,7 @@ export function ResumeCreateForm({ onSuccess }: ResumeCreateFormProps) {
           jobDescription: value.jobDescription,
           jobId: null,
           templateId: value.templateId || "default",
-          ...emptyResumeItemOrder,
+          layout: emptyResumeLayout(),
           searchableText: joinSearchable(
             value.name,
             value.fullName,

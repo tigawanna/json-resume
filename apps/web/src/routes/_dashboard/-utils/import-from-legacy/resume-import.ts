@@ -1,8 +1,12 @@
 import type { AppDb } from "@/data-access-layer/event-sourced/collection";
-import { emptyResumeItemOrder } from "@/data-access-layer/event-sourced/resume-item-order";
+import {
+  libraryBulletIds,
+  resolveSkillIds,
+} from "@/data-access-layer/event-sourced/library-resolve";
 import type { ResumeDetailDTO } from "@/data-access-layer/resume/resume.types";
+import { emptyResumeLayout, FLAT_LAYOUT_KEYS, setEntities } from "@/features/resume/resume-layout";
 import { normalizeTitle } from "../find-existing";
-import { joinSearchable, newId, nowMs } from "../row-helpers";
+import { joinSearchable, nowMs } from "../row-helpers";
 
 type SeedCtx = {
   db: AppDb;
@@ -22,22 +26,9 @@ function clearCollection(collection: {
   }
 }
 
-/** Drop local résumé shells and join rows so a re-import can rebuild associations. */
+/** Drop local résumés (and with them their layouts) so a re-import starts clean. */
 export function purgeLocalResumes(db: AppDb) {
   clearCollection(db.collections.resume);
-  clearCollection(db.collections.resumeSection);
-  clearCollection(db.collections.resumeContactItem);
-  clearCollection(db.collections.resumeLinkItem);
-  clearCollection(db.collections.resumeSummaryItem);
-  clearCollection(db.collections.resumeNoteItem);
-  clearCollection(db.collections.resumeExperienceItem);
-  clearCollection(db.collections.resumeEducationItem);
-  clearCollection(db.collections.resumeProjectItem);
-  clearCollection(db.collections.resumeSkillGroupItem);
-  clearCollection(db.collections.resumeTalkItem);
-  clearCollection(db.collections.resumeCertificationItem);
-  clearCollection(db.collections.resumeVolunteerItem);
-  clearCollection(db.collections.resumeLanguageItem);
 }
 
 function resolveId<T extends Identified>(
@@ -58,20 +49,8 @@ function titleMatch(left: string, right: string) {
   return normalizeTitle(left) === normalizeTitle(right);
 }
 
-function junction<TExtra extends Record<string, string>>(
-  resumeId: string,
-  sortOrder: number,
-  extra: TExtra,
-) {
-  const ts = nowMs();
-  return {
-    id: newId(),
-    resumeId,
-    sortOrder,
-    createdAt: ts,
-    updatedAt: ts,
-    ...extra,
-  };
+function bySortOrder<T extends { sortOrder: number }>(rows: readonly T[]): T[] {
+  return rows.slice().sort((a, b) => a.sortOrder - b.sortOrder);
 }
 
 function libraryMeta(userId: string, searchableText: string, sortOrder: number) {
@@ -91,22 +70,16 @@ export function attachResumeDetail(ctx: SeedCtx, detail: ResumeDetailDTO) {
   const { db, userId } = ctx;
   const resumeId = detail.id;
   const ts = nowMs();
-
-  for (const section of detail.sections) {
-    db.collections.resumeSection.insert({
-      id: section.id,
-      resumeId,
+  const layout = emptyResumeLayout();
+  if (detail.sections.length > 0) {
+    layout.sections = bySortOrder(detail.sections).map((section) => ({
       key: section.key,
       title: section.title,
       enabled: section.enabled,
-      sortOrder: section.sortOrder,
-      createdAt: ts,
-      updatedAt: ts,
-    });
+    }));
   }
 
-  const experienceOrder: string[] = [];
-  for (const item of detail.experiences) {
+  for (const item of bySortOrder(detail.experiences)) {
     const title = `${item.role} @ ${item.company}`;
     const { id: experienceId, created } = resolveId(
       db.collections.resumeExperience,
@@ -141,14 +114,12 @@ export function attachResumeDetail(ctx: SeedCtx, detail: ResumeDetailDTO) {
         });
       }
     }
-    db.collections.resumeExperienceItem.insert(
-      junction(resumeId, item.sortOrder, { experienceId }),
-    );
-    experienceOrder.push(experienceId);
+    if (!layout.experiences.some((entry) => entry.id === experienceId)) {
+      layout.experiences.push({ id: experienceId, bullets: libraryBulletIds(db, experienceId) });
+    }
   }
 
-  const educationOrder: string[] = [];
-  for (const item of detail.education) {
+  for (const item of bySortOrder(detail.education)) {
     const title = `${item.school} ${item.degree}`;
     const { id: educationId, created } = resolveId(
       db.collections.resumeEducation,
@@ -184,12 +155,10 @@ export function attachResumeDetail(ctx: SeedCtx, detail: ResumeDetailDTO) {
         });
       }
     }
-    db.collections.resumeEducationItem.insert(junction(resumeId, item.sortOrder, { educationId }));
-    educationOrder.push(educationId);
+    layout.education.push(educationId);
   }
 
-  const projectOrder: string[] = [];
-  for (const item of detail.projects) {
+  for (const item of bySortOrder(detail.projects)) {
     const { id: projectId } = resolveId(
       db.collections.resumeProject,
       (row) => titleMatch(row.name, item.name),
@@ -208,12 +177,10 @@ export function attachResumeDetail(ctx: SeedCtx, detail: ResumeDetailDTO) {
         ),
       }),
     );
-    db.collections.resumeProjectItem.insert(junction(resumeId, item.sortOrder, { projectId }));
-    projectOrder.push(projectId);
+    layout.projects.push(projectId);
   }
 
-  const talkOrder: string[] = [];
-  for (const item of detail.talks) {
+  for (const item of bySortOrder(detail.talks)) {
     const { id: talkId } = resolveId(
       db.collections.resumeTalk,
       (row) => titleMatch(row.title, item.title),
@@ -232,12 +199,11 @@ export function attachResumeDetail(ctx: SeedCtx, detail: ResumeDetailDTO) {
         ),
       }),
     );
-    db.collections.resumeTalkItem.insert(junction(resumeId, item.sortOrder, { talkId }));
-    talkOrder.push(talkId);
+    layout.talks.push(talkId);
   }
 
-  for (const item of detail.skillGroups) {
-    const { id: groupId, created } = resolveId(
+  for (const item of bySortOrder(detail.skillGroups)) {
+    const { id: groupId } = resolveId(
       db.collections.resumeSkillGroup,
       (row) => titleMatch(row.name, item.name),
       item.id,
@@ -251,26 +217,17 @@ export function attachResumeDetail(ctx: SeedCtx, detail: ResumeDetailDTO) {
         ),
       }),
     );
-    if (created) {
-      for (const skill of item.skills) {
-        db.collections.resumeSkill.insert({
-          id: skill.id,
-          groupId,
-          name: skill.name,
-          level: skill.level,
-          sortOrder: skill.sortOrder,
-          searchableText: skill.name,
-          embedding: null,
-          embeddingModel: null,
-          createdAt: ts,
-          updatedAt: ts,
-        });
-      }
-    }
-    db.collections.resumeSkillGroupItem.insert(junction(resumeId, item.sortOrder, { groupId }));
+    const skillIds = resolveSkillIds(
+      db,
+      userId,
+      bySortOrder(item.skills).map((skill) => skill.name),
+    );
+    const existing = layout.skillGroups.find((entry) => entry.id === groupId);
+    if (existing) existing.skills = [...new Set([...existing.skills, ...skillIds])];
+    else layout.skillGroups.push({ id: groupId, skills: skillIds });
   }
 
-  for (const item of detail.contacts) {
+  for (const item of bySortOrder(detail.contacts)) {
     const title = `${item.type} ${item.value}`;
     const { id: contactId } = resolveId(
       db.collections.resumeContact,
@@ -284,10 +241,10 @@ export function attachResumeDetail(ctx: SeedCtx, detail: ResumeDetailDTO) {
         ...libraryMeta(userId, joinSearchable(item.type, item.value, item.label), item.sortOrder),
       }),
     );
-    db.collections.resumeContactItem.insert(junction(resumeId, item.sortOrder, { contactId }));
+    layout.contacts.push(contactId);
   }
 
-  for (const item of detail.links) {
+  for (const item of bySortOrder(detail.links)) {
     const { id: linkId } = resolveId(
       db.collections.resumeLink,
       (row) => titleMatch(row.url, item.url) || titleMatch(row.label, item.label),
@@ -300,10 +257,10 @@ export function attachResumeDetail(ctx: SeedCtx, detail: ResumeDetailDTO) {
         ...libraryMeta(userId, joinSearchable(item.label, item.url, item.icon), item.sortOrder),
       }),
     );
-    db.collections.resumeLinkItem.insert(junction(resumeId, item.sortOrder, { linkId }));
+    layout.links.push(linkId);
   }
 
-  for (const item of detail.summaries) {
+  for (const item of bySortOrder(detail.summaries)) {
     const { id: summaryId } = resolveId(
       db.collections.resumeSummary,
       (row) => titleMatch(row.text, item.text),
@@ -314,10 +271,10 @@ export function attachResumeDetail(ctx: SeedCtx, detail: ResumeDetailDTO) {
         ...libraryMeta(userId, joinSearchable(item.text), item.sortOrder),
       }),
     );
-    db.collections.resumeSummaryItem.insert(junction(resumeId, item.sortOrder, { summaryId }));
+    layout.summaries.push(summaryId);
   }
 
-  for (const item of detail.notes) {
+  for (const item of bySortOrder(detail.notes)) {
     const { id: noteId } = resolveId(
       db.collections.resumeNote,
       (row) => titleMatch(row.text, item.text),
@@ -329,10 +286,10 @@ export function attachResumeDetail(ctx: SeedCtx, detail: ResumeDetailDTO) {
         ...libraryMeta(userId, joinSearchable(item.label, item.text), item.sortOrder),
       }),
     );
-    db.collections.resumeNoteItem.insert(junction(resumeId, item.sortOrder, { noteId }));
+    layout.notes.push(noteId);
   }
 
-  for (const item of detail.certifications) {
+  for (const item of bySortOrder(detail.certifications)) {
     const title = `${item.name} ${item.issuer}`;
     const { id: certificationId } = resolveId(
       db.collections.resumeCertification,
@@ -347,12 +304,10 @@ export function attachResumeDetail(ctx: SeedCtx, detail: ResumeDetailDTO) {
         ...libraryMeta(userId, joinSearchable(item.name, item.issuer, item.date), item.sortOrder),
       }),
     );
-    db.collections.resumeCertificationItem.insert(
-      junction(resumeId, item.sortOrder, { certificationId }),
-    );
+    layout.certifications.push(certificationId);
   }
 
-  for (const item of detail.volunteers) {
+  for (const item of bySortOrder(detail.volunteers)) {
     const title = `${item.role} @ ${item.organization}`;
     const { id: volunteerId } = resolveId(
       db.collections.resumeVolunteer,
@@ -372,10 +327,10 @@ export function attachResumeDetail(ctx: SeedCtx, detail: ResumeDetailDTO) {
         ),
       }),
     );
-    db.collections.resumeVolunteerItem.insert(junction(resumeId, item.sortOrder, { volunteerId }));
+    layout.volunteers.push(volunteerId);
   }
 
-  for (const item of detail.languages) {
+  for (const item of bySortOrder(detail.languages)) {
     const { id: languageId } = resolveId(
       db.collections.resumeLanguage,
       (row) => titleMatch(row.name, item.name),
@@ -387,14 +342,15 @@ export function attachResumeDetail(ctx: SeedCtx, detail: ResumeDetailDTO) {
         ...libraryMeta(userId, joinSearchable(item.name, item.proficiency), item.sortOrder),
       }),
     );
-    db.collections.resumeLanguageItem.insert(junction(resumeId, item.sortOrder, { languageId }));
+    layout.languages.push(languageId);
   }
 
+  const next = FLAT_LAYOUT_KEYS.reduce(
+    (current, key) => setEntities(current, key, current[key]),
+    layout,
+  );
   db.collections.resume.update(resumeId, (draft) => {
-    draft.experienceOrder = experienceOrder;
-    draft.educationOrder = educationOrder;
-    draft.projectOrder = projectOrder;
-    draft.talkOrder = talkOrder;
+    draft.layout = next;
     draft.updatedAt = nowMs();
   });
 }
@@ -412,7 +368,7 @@ export function insertImportedResume(ctx: SeedCtx, detail: ResumeDetailDTO) {
     jobDescription: detail.jobDescription,
     jobId: null,
     templateId: detail.templateId || "default",
-    ...emptyResumeItemOrder,
+    layout: emptyResumeLayout(),
     searchableText: joinSearchable(
       detail.name,
       detail.fullName,

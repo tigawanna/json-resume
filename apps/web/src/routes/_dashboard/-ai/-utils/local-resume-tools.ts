@@ -6,8 +6,8 @@ import { cloneResume } from "@/data-access-layer/event-sourced/clone-resume";
 import type { AppDb } from "@/data-access-layer/event-sourced/collection";
 import { createEventSourcedResumeWorkspace } from "@/data-access-layer/event-sourced/event-sourced-resume-workspace";
 import { snapshotEventSourcedResume } from "@/data-access-layer/event-sourced/snapshot-resume";
-import { emptyResumeItemOrder } from "@/data-access-layer/event-sourced/resume-item-order";
 import { resumeDetailToDocument } from "@/data-access-layer/resume/resume-converters";
+import { emptyResumeLayout } from "@/features/resume/resume-layout";
 import type { ResumeDocumentV1 } from "@/features/resume/resume-schema";
 import type {
   CloneResumeToolOutput,
@@ -222,7 +222,7 @@ export async function createLocalResumeFromDocument(
     jobDescription: input.jobDescription ?? "",
     jobId: null,
     templateId: asTemplateId(input.document.meta.templateId),
-    ...emptyResumeItemOrder,
+    layout: emptyResumeLayout(),
     searchableText: joinSearchable(
       input.name,
       input.document.header.fullName,

@@ -7,7 +7,6 @@ import {
   resumeAiConversation,
   resumeEducation,
   resumeExperience,
-  resumeSkillGroup,
   syncEvent,
   user,
 } from "@/lib/drizzle/scheam";
@@ -42,18 +41,8 @@ export const ownedViaParent: Partial<
 > = {
   resumeExperienceBullet: { column: "experienceId", parent: resumeExperience },
   resumeEducationBullet: { column: "educationId", parent: resumeEducation },
-  resumeSkill: { column: "groupId", parent: resumeSkillGroup },
-  resumeSkillGroupSkill: { column: "groupId", parent: resumeSkillGroup },
   resumeAiMessage: { column: "conversationId", parent: resumeAiConversation },
 };
-
-/** `resume.<field>` order arrays are client-only; rebuild them from junction `sortOrder`. */
-const resumeOrderSources = {
-  experienceOrder: { collection: "resumeExperienceItem", entity: "experienceId" },
-  educationOrder: { collection: "resumeEducationItem", entity: "educationId" },
-  projectOrder: { collection: "resumeProjectItem", entity: "projectId" },
-  talkOrder: { collection: "resumeTalkItem", entity: "talkId" },
-} satisfies Record<string, { collection: ProjectableCollectionId; entity: string }>;
 
 type Row = Record<string, unknown>;
 
@@ -104,13 +93,6 @@ export function toPayload(row: Row): Row {
   return payload;
 }
 
-function orderedEntityIds(rows: Row[] | undefined, resumeId: unknown, entity: string): string[] {
-  return (rows ?? [])
-    .filter((row) => row.resumeId === resumeId)
-    .sort((a, b) => Number(a.sortOrder ?? 0) - Number(b.sortOrder ?? 0))
-    .map((row) => String(row[entity]));
-}
-
 function chunk<T>(items: T[], size: number): T[][] {
   const chunks: T[][] = [];
   for (let i = 0; i < items.length; i += size) chunks.push(items.slice(i, i + size));
@@ -157,12 +139,6 @@ export async function rebuildUserEventLog(
     rowsByCollection.set(collectionId, rows);
   }
   const loadedAt = Date.now();
-
-  for (const row of rowsByCollection.get("resume") ?? []) {
-    for (const [field, source] of Object.entries(resumeOrderSources)) {
-      row[field] = orderedEntityIds(rowsByCollection.get(source.collection), row.id, source.entity);
-    }
-  }
 
   const now = new Date();
   const txId = `rebuild-${crypto.randomUUID()}`;

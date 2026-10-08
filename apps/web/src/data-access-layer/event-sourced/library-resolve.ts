@@ -1,8 +1,9 @@
-import { bulletKey, libraryKeys, skillGroupKey } from "@/modules/library/library-keys";
-import { resumeJoins, rowsToDeleteWith } from "@/modules/library/library-references";
+import { layoutReferencedIds } from "@/features/resume/resume-layout";
+import { bulletKey, libraryKeys, norm } from "@/modules/library/library-keys";
+import { rowsToDeleteWith } from "@/modules/library/library-references";
 import { libraryRowBase, newId, nowMs } from "@/routes/_dashboard/-utils/row-helpers";
 import type { AppDb } from "./collection";
-import { skillsForGroup } from "./assemble-resume-detail";
+import { removeFromLayouts } from "./resume-layout-rows";
 
 type Keyed = { id: string; userId?: string | null };
 
@@ -72,7 +73,6 @@ export function resolveSkillIds(db: AppDb, userId: string, names: string[]): str
       const base = libraryRowBase(userId);
       db.collections.resumeSkill.insert({
         ...base,
-        groupId: null,
         name: name.trim(),
         level: null,
         searchableText: name.trim(),
@@ -84,81 +84,31 @@ export function resolveSkillIds(db: AppDb, userId: string, names: string[]): str
   return ids;
 }
 
-/** Writes a group's ordered skill links, replacing whatever it linked before. */
-export function setGroupSkills(db: AppDb, groupId: string, skillIds: string[]) {
-  for (const link of db.collections.resumeSkillGroupSkill.toArray) {
-    if (link.groupId === groupId) db.collections.resumeSkillGroupSkill.delete(link.id);
-  }
-  const ts = nowMs();
-  skillIds.forEach((skillId, sortOrder) => {
-    db.collections.resumeSkillGroupSkill.insert({
-      id: newId(),
-      groupId,
-      skillId,
-      sortOrder,
-      createdAt: ts,
-      updatedAt: ts,
-    });
-  });
-}
-
-/** Existing group with this name and exactly these skills, or a new one. */
-export function resolveSkillGroup(
-  db: AppDb,
-  userId: string,
-  name: string,
-  skillIds: string[],
-): string {
-  const skills = db.collections.resumeSkill.toArray;
-  const links = db.collections.resumeSkillGroupSkill.toArray;
-  const wanted = skillGroupKey(name, skillIds);
+/**
+ * The user's skill group with this name, or a new one. A group is a reusable
+ * name; which of its skills show is chosen per résumé in the layout.
+ */
+export function resolveSkillGroup(db: AppDb, userId: string, name: string): string {
+  const wanted = norm(name);
   for (const group of db.collections.resumeSkillGroup.toArray) {
     if (group.userId != null && group.userId !== userId) continue;
-    const current = skillsForGroup(group.id, skills, links).map((skill) => skill.id);
-    if (skillGroupKey(group.name, current) === wanted) return group.id;
+    if (norm(group.name) === wanted) return group.id;
   }
   const base = libraryRowBase(userId);
-  const names = skillIds.map((id) => skills.find((skill) => skill.id === id)?.name ?? "");
   db.collections.resumeSkillGroup.insert({
     ...base,
-    name,
-    searchableText: [name, ...names].join(" "),
+    name: name.trim(),
+    searchableText: name.trim(),
   });
-  setGroupSkills(db, base.id, skillIds);
   return base.id;
 }
 
-/**
- * Bullets predating bullet links show on every résumé using the experience.
- * Give those résumés explicit links before one of them diverges.
- */
-export function ensureBulletLinks(db: AppDb, experienceId: string) {
-  const bullets = db.collections.resumeExperienceBullet.toArray
+/** An experience's library bullets in library order (what a newly added experience starts with). */
+export function libraryBulletIds(db: AppDb, experienceId: string): string[] {
+  return db.collections.resumeExperienceBullet.toArray
     .filter((bullet) => bullet.experienceId === experienceId)
-    .sort((a, b) => a.sortOrder - b.sortOrder);
-  if (bullets.length === 0) return;
-  const ids = new Set(bullets.map((bullet) => bullet.id));
-  if (db.collections.resumeExperienceBulletItem.toArray.some((item) => ids.has(item.bulletId))) {
-    return;
-  }
-  const ts = nowMs();
-  const resumeIds = new Set(
-    db.collections.resumeExperienceItem.toArray
-      .filter((item) => item.experienceId === experienceId)
-      .map((item) => item.resumeId),
-  );
-  for (const resumeId of resumeIds) {
-    bullets.forEach((bullet, sortOrder) => {
-      db.collections.resumeExperienceBulletItem.insert({
-        id: newId(),
-        resumeId,
-        bulletId: bullet.id,
-        sortOrder,
-        createdAt: ts,
-        updatedAt: ts,
-      });
-    });
-  }
+    .sort((a, b) => a.sortOrder - b.sortOrder)
+    .map((bullet) => bullet.id);
 }
 
 /** Library bullet ids for these texts under one experience, inserting new wording once. */
@@ -194,37 +144,6 @@ export function resolveBulletIds(db: AppDb, experienceId: string, texts: string[
   return ids;
 }
 
-/** Replaces which of an experience's bullets this résumé shows. Library bullets stay. */
-export function setResumeBullets(
-  db: AppDb,
-  resumeId: string,
-  experienceId: string,
-  texts: string[],
-) {
-  ensureBulletLinks(db, experienceId);
-  const ownIds = new Set(
-    db.collections.resumeExperienceBullet.toArray
-      .filter((bullet) => bullet.experienceId === experienceId)
-      .map((bullet) => bullet.id),
-  );
-  for (const item of db.collections.resumeExperienceBulletItem.toArray) {
-    if (item.resumeId === resumeId && ownIds.has(item.bulletId)) {
-      db.collections.resumeExperienceBulletItem.delete(item.id);
-    }
-  }
-  const ts = nowMs();
-  resolveBulletIds(db, experienceId, texts).forEach((bulletId, sortOrder) => {
-    db.collections.resumeExperienceBulletItem.insert({
-      id: newId(),
-      resumeId,
-      bulletId,
-      sortOrder,
-      createdAt: ts,
-      updatedAt: ts,
-    });
-  });
-}
-
 type DeletableCollection = { delete: (id: string) => unknown; toArray: ReadonlyArray<object> };
 
 function collectionOf(db: AppDb, collectionId: string): DeletableCollection | undefined {
@@ -237,45 +156,22 @@ function rowsOf(db: AppDb, collectionId: string): ReadonlyArray<Record<string, u
   return rows.map((row) => ({ ...row }));
 }
 
-/** Ids of every library row a résumé points at, including skills of its groups. */
+/** Ids of every library row a résumé's layout points at, including bullets and skills. */
 export function linkedEntityIds(db: AppDb, resumeId: string): Set<string> {
-  const ids = new Set<string>();
-  for (const join of resumeJoins) {
-    for (const row of rowsOf(db, join.collectionId)) {
-      if (row.resumeId !== resumeId) continue;
-      for (const [field, value] of Object.entries(row)) {
-        if (field !== "id" && field !== "resumeId" && field.endsWith("Id")) {
-          if (typeof value === "string") ids.add(value);
-        }
-      }
-    }
-  }
-  for (const link of rowsOf(db, "resumeSkillGroupSkill")) {
-    if (typeof link.groupId === "string" && ids.has(link.groupId)) {
-      if (typeof link.skillId === "string") ids.add(link.skillId);
-    }
-  }
-  return ids;
+  const layout = db.collections.resume.get(resumeId)?.layout;
+  return layout ? layoutReferencedIds(layout) : new Set<string>();
 }
 
 /**
- * Deletes a parent and only the rows that point from it: join rows, plus
- * children whose required foreign key ties them to it. Shared entities stay.
+ * Deletes a row and the children whose required foreign key ties them to it
+ * (an experience's bullets). Shared entities stay; stored layouts drop the
+ * deleted ids.
  */
 export function deleteWithReferences(db: AppDb, collectionId: string, id: string) {
-  for (const row of rowsToDeleteWith(collectionId, id, (child) => rowsOf(db, child))) {
+  const rows = rowsToDeleteWith(collectionId, id, (child) => rowsOf(db, child));
+  for (const row of rows) {
     collectionOf(db, row.collectionId)?.delete(row.id);
   }
   collectionOf(db, collectionId)?.delete(id);
-}
-
-/** Groups nothing links to any more are containers only; their skills stay in the library. */
-export function deleteUnlinkedGroups(
-  db: AppDb,
-  candidates: Iterable<string>,
-  stillLinked: ReadonlySet<string>,
-) {
-  for (const groupId of candidates) {
-    if (!stillLinked.has(groupId)) deleteWithReferences(db, "resumeSkillGroup", groupId);
-  }
+  if (collectionId !== "resume") removeFromLayouts(db, [id, ...rows.map((row) => row.id)]);
 }

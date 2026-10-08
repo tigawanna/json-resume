@@ -21,7 +21,7 @@ import {
   type AdminColumn,
 } from "./admin-tables.server";
 import { ownedViaParent, ownerFilter, toPayload } from "./rebuild-event-log.server";
-import { parentRules, rowsToDeleteWith } from "../library/library-references";
+import { ownedChildren, rowsToDeleteWith } from "../library/library-references";
 
 /** The event log and its bookkeeping: editing these breaks sync for everyone. */
 const READ_ONLY_TABLES = new Set(["sync_event", "sync_backend", "__drizzle_migrations"]);
@@ -295,9 +295,7 @@ async function assertNoChildren(table: string, row: LibsqlRow, handled: Set<stri
 
 /** Every collection `rowsToDeleteWith` may read for this parent, following owned children. */
 export function ruleCollections(collectionId: string, out = new Set<string>()): Set<string> {
-  const rule = parentRules[collectionId];
-  for (const ref of rule?.references ?? []) out.add(ref.collectionId);
-  for (const owned of rule?.owned ?? []) {
+  for (const owned of ownedChildren[collectionId] ?? []) {
     if (out.has(owned.collectionId)) continue;
     out.add(owned.collectionId);
     ruleCollections(owned.collectionId, out);

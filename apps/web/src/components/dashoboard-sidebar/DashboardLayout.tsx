@@ -22,8 +22,6 @@ import { useViewer } from "@/data-access-layer/auth/viewer";
 import { DashboardSidebarFooter } from "./DashboardSidebarFooter";
 import { DashboardSidebarHeader } from "./DashboardSidebarHeader";
 import { DashboardSyncStatusButton } from "./DashboardSyncStatusButton";
-// import { FloatingPersonaChat } from "../persona-chat/FloatingPersonaChat";
-
 interface DashboardLayoutProps {
   sidebarRoutes: SidebarItem[];
   sidebarLabel: string;
@@ -91,7 +89,7 @@ export function DashboardLayout({
             <TSRBreadCrumbs />
           </div>
           <div className="mr-10">
-          <DashboardSyncStatusButton className="shrink-0" />
+            <DashboardSyncStatusButton className="shrink-0" />
           </div>
         </header>
         <div className="@container/main flex min-h-0 min-w-0 w-full flex-1 flex-col overflow-auto p-6">
@@ -99,7 +97,6 @@ export function DashboardLayout({
           <Outlet />
         </div>
       </SidebarInset>
-      {/* <FloatingPersonaChat /> */}
     </SidebarProvider>
   );
 }
@@ -110,7 +107,11 @@ function LocalOnlyBanner() {
 
   if (viewer.user) return null;
 
-  const showBanner = pathname === "/events" || pathname.startsWith("/events/") || pathname === "/settings" || pathname.startsWith("/settings/");
+  const showBanner =
+    pathname === "/events" ||
+    pathname.startsWith("/events/") ||
+    pathname === "/settings" ||
+    pathname.startsWith("/settings/");
   if (!showBanner) return null;
 
   return (

@@ -1,12 +1,7 @@
 import "@tanstack/react-start/server-only";
 
 import { db } from "@/lib/drizzle/client";
-import {
-  resume,
-  resumeExperience,
-  resumeExperienceBullet,
-  resumeExperienceItem,
-} from "@/lib/drizzle/scheam";
+import { resumeExperience, resumeExperienceBullet } from "@/lib/drizzle/scheam";
 import { and, asc, desc, eq, gt, inArray, like, lt, or } from "drizzle-orm";
 import { DEFAULT_PAGE_SIZE } from "../../pagination.types";
 import type { PaginatedResult } from "../../pagination.types";
@@ -28,10 +23,9 @@ function parseExperienceCursor(
   return { sortOrder, id };
 }
 
-type ExperienceBaseRow = Omit<ExperienceListItemDTO, "bullets" | "resumeUsage">;
+type ExperienceBaseRow = Omit<ExperienceListItemDTO, "bullets">;
 
 async function enrichExperienceListItems(
-  userId: string,
   items: ExperienceBaseRow[],
 ): Promise<ExperienceListItemDTO[]> {
   if (items.length === 0) return [];
@@ -49,20 +43,6 @@ async function enrichExperienceListItems(
     .where(inArray(resumeExperienceBullet.experienceId, experienceIds))
     .orderBy(asc(resumeExperienceBullet.sortOrder), asc(resumeExperienceBullet.id));
 
-  const resumeUsageRows = await db
-    .select({
-      experienceId: resumeExperienceItem.experienceId,
-      resumeId: resumeExperienceItem.resumeId,
-      resumeName: resume.name,
-      sortOrder: resumeExperienceItem.sortOrder,
-    })
-    .from(resumeExperienceItem)
-    .innerJoin(resume, eq(resumeExperienceItem.resumeId, resume.id))
-    .where(
-      and(inArray(resumeExperienceItem.experienceId, experienceIds), eq(resume.userId, userId)),
-    )
-    .orderBy(asc(resumeExperienceItem.sortOrder), asc(resume.name));
-
   const bulletsByExperienceId = new Map<string, ExperienceListItemDTO["bullets"]>();
   for (const bullet of bulletRows) {
     const current = bulletsByExperienceId.get(bullet.experienceId) ?? [];
@@ -74,21 +54,9 @@ async function enrichExperienceListItems(
     bulletsByExperienceId.set(bullet.experienceId, current);
   }
 
-  const resumeUsageByExperienceId = new Map<string, ExperienceListItemDTO["resumeUsage"]>();
-  for (const usage of resumeUsageRows) {
-    const current = resumeUsageByExperienceId.get(usage.experienceId) ?? [];
-    current.push({
-      resumeId: usage.resumeId,
-      resumeName: usage.resumeName,
-      sortOrder: usage.sortOrder,
-    });
-    resumeUsageByExperienceId.set(usage.experienceId, current);
-  }
-
   return items.map((item) => ({
     ...item,
     bullets: bulletsByExperienceId.get(item.id) ?? [],
-    resumeUsage: resumeUsageByExperienceId.get(item.id) ?? [],
   }));
 }
 
@@ -167,7 +135,7 @@ export async function listExperiencesForUserPaginated(
     createdAt: r.createdAt.toISOString(),
     updatedAt: r.updatedAt.toISOString(),
   }));
-  const items = await enrichExperienceListItems(userId, baseItems);
+  const items = await enrichExperienceListItems(baseItems);
 
   let nextCursor: string | undefined;
   let previousCursor: string | undefined;
@@ -232,7 +200,7 @@ export async function listExperiencesForUser(
     updatedAt: r.updatedAt.toISOString(),
   }));
 
-  return enrichExperienceListItems(userId, baseItems);
+  return enrichExperienceListItems(baseItems);
 }
 
 export async function deleteExperienceForUser(experienceId: string, userId: string): Promise<void> {

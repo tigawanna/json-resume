@@ -44,8 +44,6 @@ import { Route as DashboardVolunteersIndexRouteImport } from './routes/_dashboar
 import { Route as ApiAgenticSplatRouteImport } from './routes/api/agentic/$'
 import { Route as ApiAgenticOpenapiRouteImport } from './routes/api/agentic/openapi'
 import { Route as ApiAiEventSourcedResumeTailorRouteImport } from './routes/api/ai/event-sourced-resume-tailor'
-import { Route as ApiAiPersonaWriterRouteImport } from './routes/api/ai/persona-writer'
-import { Route as ApiAiResumeTailorRouteImport } from './routes/api/ai/resume-tailor'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ApiCronProjectSyncEventsRouteImport } from './routes/api/cron/project-sync-events'
 import { Route as ApiCronSquashSyncEventsRouteImport } from './routes/api/cron/squash-sync-events'
@@ -243,16 +241,6 @@ const ApiAiEventSourcedResumeTailorRoute =
     path: '/api/ai/event-sourced-resume-tailor',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ApiAiPersonaWriterRoute = ApiAiPersonaWriterRouteImport.update({
-  id: '/api/ai/persona-writer',
-  path: '/api/ai/persona-writer',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiAiResumeTailorRoute = ApiAiResumeTailorRouteImport.update({
-  id: '/api/ai/resume-tailor',
-  path: '/api/ai/resume-tailor',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
@@ -344,8 +332,6 @@ export interface FileRoutesByFullPath {
   '/api/agentic/$': typeof ApiAgenticSplatRoute
   '/api/agentic/openapi': typeof ApiAgenticOpenapiRouteWithChildren
   '/api/ai/event-sourced-resume-tailor': typeof ApiAiEventSourcedResumeTailorRoute
-  '/api/ai/persona-writer': typeof ApiAiPersonaWriterRoute
-  '/api/ai/resume-tailor': typeof ApiAiResumeTailorRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/cron/project-sync-events': typeof ApiCronProjectSyncEventsRoute
   '/api/cron/squash-sync-events': typeof ApiCronSquashSyncEventsRoute
@@ -395,8 +381,6 @@ export interface FileRoutesByTo {
   '/api/agentic/$': typeof ApiAgenticSplatRoute
   '/api/agentic/openapi': typeof ApiAgenticOpenapiRouteWithChildren
   '/api/ai/event-sourced-resume-tailor': typeof ApiAiEventSourcedResumeTailorRoute
-  '/api/ai/persona-writer': typeof ApiAiPersonaWriterRoute
-  '/api/ai/resume-tailor': typeof ApiAiResumeTailorRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/cron/project-sync-events': typeof ApiCronProjectSyncEventsRoute
   '/api/cron/squash-sync-events': typeof ApiCronSquashSyncEventsRoute
@@ -449,8 +433,6 @@ export interface FileRoutesById {
   '/api/agentic/$': typeof ApiAgenticSplatRoute
   '/api/agentic/openapi': typeof ApiAgenticOpenapiRouteWithChildren
   '/api/ai/event-sourced-resume-tailor': typeof ApiAiEventSourcedResumeTailorRoute
-  '/api/ai/persona-writer': typeof ApiAiPersonaWriterRoute
-  '/api/ai/resume-tailor': typeof ApiAiResumeTailorRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/cron/project-sync-events': typeof ApiCronProjectSyncEventsRoute
   '/api/cron/squash-sync-events': typeof ApiCronSquashSyncEventsRoute
@@ -503,8 +485,6 @@ export interface FileRouteTypes {
     | '/api/agentic/$'
     | '/api/agentic/openapi'
     | '/api/ai/event-sourced-resume-tailor'
-    | '/api/ai/persona-writer'
-    | '/api/ai/resume-tailor'
     | '/api/auth/$'
     | '/api/cron/project-sync-events'
     | '/api/cron/squash-sync-events'
@@ -554,8 +534,6 @@ export interface FileRouteTypes {
     | '/api/agentic/$'
     | '/api/agentic/openapi'
     | '/api/ai/event-sourced-resume-tailor'
-    | '/api/ai/persona-writer'
-    | '/api/ai/resume-tailor'
     | '/api/auth/$'
     | '/api/cron/project-sync-events'
     | '/api/cron/squash-sync-events'
@@ -607,8 +585,6 @@ export interface FileRouteTypes {
     | '/api/agentic/$'
     | '/api/agentic/openapi'
     | '/api/ai/event-sourced-resume-tailor'
-    | '/api/ai/persona-writer'
-    | '/api/ai/resume-tailor'
     | '/api/auth/$'
     | '/api/cron/project-sync-events'
     | '/api/cron/squash-sync-events'
@@ -656,8 +632,6 @@ export interface RootRouteChildren {
   ApiAgenticSplatRoute: typeof ApiAgenticSplatRoute
   ApiAgenticOpenapiRoute: typeof ApiAgenticOpenapiRouteWithChildren
   ApiAiEventSourcedResumeTailorRoute: typeof ApiAiEventSourcedResumeTailorRoute
-  ApiAiPersonaWriterRoute: typeof ApiAiPersonaWriterRoute
-  ApiAiResumeTailorRoute: typeof ApiAiResumeTailorRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiCronProjectSyncEventsRoute: typeof ApiCronProjectSyncEventsRoute
   ApiCronSquashSyncEventsRoute: typeof ApiCronSquashSyncEventsRoute
@@ -914,20 +888,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAiEventSourcedResumeTailorRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/ai/persona-writer': {
-      id: '/api/ai/persona-writer'
-      path: '/api/ai/persona-writer'
-      fullPath: '/api/ai/persona-writer'
-      preLoaderRoute: typeof ApiAiPersonaWriterRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/ai/resume-tailor': {
-      id: '/api/ai/resume-tailor'
-      path: '/api/ai/resume-tailor'
-      fullPath: '/api/ai/resume-tailor'
-      preLoaderRoute: typeof ApiAiResumeTailorRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
@@ -1135,8 +1095,6 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAgenticSplatRoute: ApiAgenticSplatRoute,
   ApiAgenticOpenapiRoute: ApiAgenticOpenapiRouteWithChildren,
   ApiAiEventSourcedResumeTailorRoute: ApiAiEventSourcedResumeTailorRoute,
-  ApiAiPersonaWriterRoute: ApiAiPersonaWriterRoute,
-  ApiAiResumeTailorRoute: ApiAiResumeTailorRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiCronProjectSyncEventsRoute: ApiCronProjectSyncEventsRoute,
   ApiCronSquashSyncEventsRoute: ApiCronSquashSyncEventsRoute,

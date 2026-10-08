@@ -1,3 +1,4 @@
+import { layoutReferencedIds, resumeLayoutSchema } from "@/features/resume/resume-layout";
 import {
   planRestore,
   planSquash,
@@ -87,6 +88,11 @@ export function resumeEventHistory(
 ): HistoryEvent[] {
   const linked = linkedEntityIds(db, resumeId);
   for (const event of events) {
+    if (event.collectionId === "resume" && event.key === resumeId) {
+      const past = resumeLayoutSchema.safeParse(event.payload.layout);
+      if (past.success) for (const id of layoutReferencedIds(past.data)) linked.add(id);
+      continue;
+    }
     if (event.payload.resumeId !== resumeId) continue;
     for (const [field, value] of Object.entries(event.payload)) {
       if (field !== "id" && field !== "resumeId" && field.endsWith("Id")) {
@@ -169,39 +175,21 @@ function rowWriters(db: AppDb) {
   const c = db.collections;
   return {
     resume: rowWriter(c.resume, s.resumeSchema),
-    resumeSection: rowWriter(c.resumeSection, s.resumeSectionSchema),
     resumeExperience: rowWriter(c.resumeExperience, s.resumeExperienceSchema),
-    resumeExperienceItem: rowWriter(c.resumeExperienceItem, s.resumeExperienceItemSchema),
     resumeExperienceBullet: rowWriter(c.resumeExperienceBullet, s.resumeExperienceBulletSchema),
-    resumeExperienceBulletItem: rowWriter(
-      c.resumeExperienceBulletItem,
-      s.resumeExperienceBulletItemSchema,
-    ),
     resumeEducation: rowWriter(c.resumeEducation, s.resumeEducationSchema),
-    resumeEducationItem: rowWriter(c.resumeEducationItem, s.resumeEducationItemSchema),
     resumeEducationBullet: rowWriter(c.resumeEducationBullet, s.resumeEducationBulletSchema),
     resumeSkillGroup: rowWriter(c.resumeSkillGroup, s.resumeSkillGroupSchema),
-    resumeSkillGroupItem: rowWriter(c.resumeSkillGroupItem, s.resumeSkillGroupItemSchema),
     resumeSkill: rowWriter(c.resumeSkill, s.resumeSkillSchema),
-    resumeSkillGroupSkill: rowWriter(c.resumeSkillGroupSkill, s.resumeSkillGroupSkillSchema),
     resumeContact: rowWriter(c.resumeContact, s.resumeContactSchema),
-    resumeContactItem: rowWriter(c.resumeContactItem, s.resumeContactItemSchema),
     resumeProject: rowWriter(c.resumeProject, s.resumeProjectSchema),
-    resumeProjectItem: rowWriter(c.resumeProjectItem, s.resumeProjectItemSchema),
     resumeSummary: rowWriter(c.resumeSummary, s.resumeSummarySchema),
-    resumeSummaryItem: rowWriter(c.resumeSummaryItem, s.resumeSummaryItemSchema),
     resumeNote: rowWriter(c.resumeNote, s.resumeNoteSchema),
-    resumeNoteItem: rowWriter(c.resumeNoteItem, s.resumeNoteItemSchema),
     resumeLink: rowWriter(c.resumeLink, s.resumeLinkSchema),
-    resumeLinkItem: rowWriter(c.resumeLinkItem, s.resumeLinkItemSchema),
     resumeLanguage: rowWriter(c.resumeLanguage, s.resumeLanguageSchema),
-    resumeLanguageItem: rowWriter(c.resumeLanguageItem, s.resumeLanguageItemSchema),
     resumeCertification: rowWriter(c.resumeCertification, s.resumeCertificationSchema),
-    resumeCertificationItem: rowWriter(c.resumeCertificationItem, s.resumeCertificationItemSchema),
     resumeVolunteer: rowWriter(c.resumeVolunteer, s.resumeVolunteerSchema),
-    resumeVolunteerItem: rowWriter(c.resumeVolunteerItem, s.resumeVolunteerItemSchema),
     resumeTalk: rowWriter(c.resumeTalk, s.resumeTalkSchema),
-    resumeTalkItem: rowWriter(c.resumeTalkItem, s.resumeTalkItemSchema),
     resumeAiChat: rowWriter(c.resumeAiChat, s.resumeAiChatSchema),
     resumeAiConversation: rowWriter(c.resumeAiConversation, s.resumeAiConversationSchema),
     resumeAiMessage: rowWriter(c.resumeAiMessage, s.resumeAiMessageSchema),
