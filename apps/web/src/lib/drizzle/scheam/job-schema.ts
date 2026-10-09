@@ -10,6 +10,7 @@ export const job = sqliteTable(
       .primaryKey()
       .$defaultFn(() => crypto.randomUUID()),
     userId: text("user_id").references(() => user.id, { onDelete: "cascade" }),
+    /** Optional — "" when unknown. Only `description` is required. */
     company: text("company").notNull(),
     title: text("title").default("").notNull(),
     description: text("description").notNull(),

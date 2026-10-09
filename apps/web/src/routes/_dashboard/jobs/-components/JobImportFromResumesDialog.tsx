@@ -32,7 +32,7 @@ function draftsFromGroups(groups: ReadonlyArray<JobImportGroup>) {
   const next: Record<string, Draft> = {};
   for (const group of groups) {
     next[group.key] = {
-      selected: Boolean(group.suggestedCompany.trim()),
+      selected: true,
       company: group.suggestedCompany,
       title: "",
     };
@@ -89,7 +89,7 @@ export function JobImportFromResumesDialog({
       const stats = importJobsFromResumeGroups(db, viewer.user?.id, latest, selections);
       if (stats.created === 0 && stats.reused === 0 && stats.attached === 0) {
         toast.message("Nothing imported", {
-          description: "Select at least one posting and fill in the company.",
+          description: "Select at least one posting.",
         });
         return;
       }
@@ -165,7 +165,7 @@ export function JobImportFromResumesDialog({
                         value={draft.company}
                         onChange={(e) => patchDraft(group.key, { company: e.target.value })}
                         className="mt-1"
-                        placeholder="Required"
+                        placeholder="Optional"
                         data-test="job-import-company"
                       />
                     </div>

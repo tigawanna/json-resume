@@ -1,3 +1,4 @@
+import type { JobStatus } from "@/data-access-layer/event-sourced/schemas";
 import type { TemplateId } from "@/features/resume/resume-schema";
 
 /** Row types inferred from Drizzle schema */
@@ -8,7 +9,6 @@ export interface ResumeRow {
   fullName: string;
   headline: string;
   description: string;
-  jobDescription: string;
   jobId?: string | null;
   templateId: string;
   createdAt: Date;
@@ -160,6 +160,16 @@ export interface ResumeLanguageRow {
   sortOrder: number;
 }
 
+export interface ResumeJobDTO {
+  id: string;
+  company: string;
+  title: string;
+  description: string;
+  url: string;
+  location: string;
+  status: JobStatus;
+}
+
 /** Full resume with all relations loaded (what the workbench needs) */
 export interface ResumeDetailDTO {
   id: string;
@@ -168,8 +178,10 @@ export interface ResumeDetailDTO {
   fullName: string;
   headline: string;
   description: string;
+  /** Posting text of the linked job (or a legacy pasted one); read-only, edit it through `job`. */
   jobDescription: string;
   jobId?: string | null;
+  job: ResumeJobDTO | null;
   templateId: TemplateId;
   createdAt: string;
   updatedAt: string;

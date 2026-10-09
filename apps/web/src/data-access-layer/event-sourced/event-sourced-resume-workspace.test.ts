@@ -32,7 +32,6 @@ function insertResume(id: string, layout?: Partial<ResumeLayout>) {
     fullName: "Ada",
     headline: "",
     description: "",
-    jobDescription: "",
     jobId: null,
     templateId: "classic",
     searchableText: "",
@@ -214,6 +213,44 @@ describe("event-sourced résumé workspace (layout writes)", () => {
       expect(resume.layout.experiences).toEqual([{ id: "e2", bullets: [] }]);
     }
     expect(db.collections.resumeExperienceBullet.toArray).toHaveLength(0);
+  });
+
+  it("saves a target job with only a description, links it, and edits it in place", async () => {
+    insertResume("r1");
+    const target = { description: "Build things", company: "", title: "", location: "", url: "" };
+
+    const { id } = await workspace("r1").saveTargetJob(target);
+    expect(db.collections.resume.get("r1")?.jobId).toBe(id);
+    expect(detailOf("r1")?.jobDescription).toBe("Build things");
+
+    await workspace("r1").saveTargetJob({ ...target, company: "Acme", title: "Engineer" });
+    expect(db.collections.job.toArray).toHaveLength(1);
+    expect(detailOf("r1")?.job).toMatchObject({ id, company: "Acme", title: "Engineer" });
+
+    await workspace("r1").attachJob(null);
+    expect(detailOf("r1")?.job).toBeNull();
+    expect(db.collections.job.toArray).toHaveLength(1);
+  });
+
+  it("linking a job drops a legacy pasted description from the résumé row", async () => {
+    insertResume("r1");
+    db.collections.resume.update("r1", (draft) => {
+      Reflect.set(draft, "jobDescription", "Old posting");
+    });
+    expect(detailOf("r1")?.jobDescription).toBe("Old posting");
+
+    const { id } = await workspace("r1").saveTargetJob({
+      description: "New posting",
+      company: "",
+      title: "",
+      location: "",
+      url: "",
+    });
+    expect(detailOf("r1")?.job?.id).toBe(id);
+    expect(detailOf("r1")?.jobDescription).toBe("New posting");
+
+    await workspace("r1").attachJob(null);
+    expect(detailOf("r1")?.jobDescription).toBe("");
   });
 
   it("clones a résumé as one row with a copy of its layout", async () => {

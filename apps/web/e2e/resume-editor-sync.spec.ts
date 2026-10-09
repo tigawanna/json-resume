@@ -18,8 +18,8 @@ test(
 
     const metadata = page.getByTestId("metadata-form");
     await metadata.getByLabel("Headline").fill(headline);
-    await metadata.getByRole("button", { name: "Save" }).click();
-    await expect(page.getByText("Resume updated")).toBeVisible();
+    await metadata.getByRole("button", { name: "Save details" }).click();
+    await expect(page.getByText("Details saved")).toBeVisible();
 
     await syncNow(page);
 

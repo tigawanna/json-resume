@@ -1,4 +1,4 @@
-import { PickFromExistingDialog } from "@/components/PickFromExistingDialog";
+import { EntityPickerSheet } from "@/components/entity-picker/EntityPickerSheet";
 import { useResumeWorkspace } from "@/components/resume/resume-workspace/ResumeWorkspaceContext";
 import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
 import { Badge } from "@/components/ui/badge";
@@ -154,38 +154,30 @@ export function SkillsForm({ resumeId }: SkillsFormProps) {
       </div>
 
       {searchSkills && (
-        <PickFromExistingDialog
+        <EntityPickerSheet
           open={pickOpen}
           onOpenChange={setPickOpen}
           title="Pick from Existing Skills"
-          description="Search skills from your other resumes."
+          description="Adds the picked skills to your last group. Save Skills to keep them."
+          searchPlaceholder="Search skills…"
           multi
+          pageSize={15}
           getSearchQueryKey={(q) => [queryKeyPrefixes.resumes, "search", "skills", q]}
           getSearchQueryFn={(q) => () => searchSkills(q)}
-          mapToItems={(data) =>
-            data.map((s) => ({
-              id: s.id,
-              primary: s.name,
-              secondary: s.groupName,
-            }))
-          }
-          onPick={(items) => {
+          getItem={(s) => ({ id: s.id, primary: s.name, secondary: s.groupName })}
+          onPick={(rows) => {
+            const names = rows.map((s) => s.name);
             if (groups.length === 0) {
-              setGroups([{ name: "Skills", items: items.map((i) => i.primary) }]);
+              setGroups([{ name: "Skills", items: names }]);
             } else {
               const lastIdx = groups.length - 1;
               setGroups((prev) =>
                 prev.map((g, i) =>
-                  i === lastIdx
-                    ? {
-                        ...g,
-                        items: [...g.items, ...items.map((it) => it.primary)],
-                      }
-                    : g,
+                  i === lastIdx ? { ...g, items: [...new Set([...g.items, ...names])] } : g,
                 ),
               );
             }
-            toast.success(`Added ${items.length} skill(s)`);
+            toast.success(`Added ${rows.length} skill(s)`);
           }}
         />
       )}

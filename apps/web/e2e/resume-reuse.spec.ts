@@ -29,7 +29,12 @@ test("picking an existing experience into another resume reuses the library row"
   const pick = page.getByTestId("pick-from-existing-dialog");
   await pick.getByTestId("pick-search-input").fill(role);
   await expect(pick.getByTestId("pick-results")).toContainText(`${role} at ${company}`);
-  await pick.getByTestId("pick-results").getByRole("button").first().click();
+  await pick
+    .getByTestId("pick-results")
+    .getByRole("button")
+    .filter({ hasText: `${role} at ${company}` })
+    .first()
+    .click();
   await pick.getByRole("button", { name: /Add \(/ }).click();
   await expectToast(page, "Added 1 experience(s)");
 

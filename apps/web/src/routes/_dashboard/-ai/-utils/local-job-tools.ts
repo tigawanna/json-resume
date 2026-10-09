@@ -46,24 +46,20 @@ export function saveLocalJob(
   },
 ): SaveJobToolOutput {
   const company = input.company?.trim() ?? "";
-  if (!company) {
-    throw new Error(
-      "Could not determine the company name. Extract it from the job description and pass company.",
-    );
-  }
 
   const existing = ctx.db.collections.job.toArray.find((row) => {
+    if (row.description.trim() === input.description.trim()) return true;
+    if (!company) return false;
     const sameCompany = row.company.trim().toLowerCase() === company.toLowerCase();
     if (!sameCompany) return false;
     const incomingTitle = input.title?.trim().toLowerCase() ?? "";
     const existingTitle = row.title.trim().toLowerCase();
-    if (incomingTitle && existingTitle) return incomingTitle === existingTitle;
-    return row.description.trim() === input.description.trim();
+    return Boolean(incomingTitle && existingTitle) && incomingTitle === existingTitle;
   });
 
   const job = existing
     ? updateJob(ctx.db, existing.id, {
-        company,
+        company: company || existing.company,
         description: input.description,
         title: input.title ?? existing.title,
         url: input.url ?? existing.url,

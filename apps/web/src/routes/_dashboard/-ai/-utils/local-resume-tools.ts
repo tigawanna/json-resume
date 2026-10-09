@@ -5,6 +5,7 @@ import {
 import { cloneResume } from "@/data-access-layer/event-sourced/clone-resume";
 import type { AppDb } from "@/data-access-layer/event-sourced/collection";
 import { createEventSourcedResumeWorkspace } from "@/data-access-layer/event-sourced/event-sourced-resume-workspace";
+import { attachJobDescription } from "@/data-access-layer/event-sourced/job-rows";
 import { snapshotEventSourcedResume } from "@/data-access-layer/event-sourced/snapshot-resume";
 import { resumeDetailToDocument } from "@/data-access-layer/resume/resume-converters";
 import { emptyResumeLayout } from "@/features/resume/resume-layout";
@@ -219,7 +220,6 @@ export async function createLocalResumeFromDocument(
     fullName: input.document.header.fullName || input.name,
     headline: input.document.header.headline ?? "",
     description: input.description ?? "",
-    jobDescription: input.jobDescription ?? "",
     jobId: null,
     templateId: asTemplateId(input.document.meta.templateId),
     layout: emptyResumeLayout(),
@@ -234,6 +234,7 @@ export async function createLocalResumeFromDocument(
     createdAt: base.createdAt,
     updatedAt: base.updatedAt,
   });
+  attachJobDescription(ctx.db, ctx.userId, base.id, input.jobDescription ?? "");
 
   const { snapshots, detail } = requireDetail(ctx.db, base.id);
   const workspace = createEventSourcedResumeWorkspace(ctx.db, detail, snapshots);

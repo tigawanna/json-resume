@@ -53,8 +53,8 @@ test(
     const metadata = page.getByTestId("metadata-form");
     await metadata.getByLabel("Full Name").fill(fullName);
     await metadata.getByLabel("Headline").fill(headline);
-    await metadata.getByRole("button", { name: "Save", exact: true }).click();
-    await expectToast(page, "Resume updated");
+    await metadata.getByRole("button", { name: "Save details" }).click();
+    await expectToast(page, "Details saved");
 
     const summaryForm = page.getByTestId("summary-form");
     await summaryForm.getByLabel("Professional Summary").fill(summary);
@@ -97,6 +97,7 @@ test(
     await pick
       .getByTestId("pick-results")
       .getByRole("button")
+      .filter({ hasText: pickedRole })
       .first()
       .evaluate((el: HTMLButtonElement) => el.click());
     await pick

@@ -20,7 +20,7 @@ import type {
   ResumeVolunteer,
   Job,
 } from "./schemas";
-import { resolveJobDescription } from "./job-rows";
+import { legacyJobDescription, linkedJob } from "./job-rows";
 
 /** The résumé row plus the library rows its layout can point at. */
 export type EventSourcedResumeSnapshots = {
@@ -78,6 +78,7 @@ export function assembleResumeDetail(
   const layout = resumeLayoutOf(resume);
   const bullets = byId(snapshots.experienceBullets);
   const skills = byId(snapshots.skills);
+  const job = linkedJob(resume, snapshots.jobs);
 
   return {
     id: resume.id,
@@ -86,8 +87,19 @@ export function assembleResumeDetail(
     fullName: resume.fullName,
     headline: resume.headline,
     description: resume.description,
-    jobDescription: resolveJobDescription(resume, snapshots.jobs),
-    jobId: resume.jobId ?? null,
+    jobDescription: job?.description ?? legacyJobDescription(resume),
+    jobId: job?.id ?? null,
+    job: job
+      ? {
+          id: job.id,
+          company: job.company,
+          title: job.title,
+          description: job.description,
+          url: job.url,
+          location: job.location,
+          status: job.status,
+        }
+      : null,
     templateId: asTemplateId(resume.templateId),
     createdAt: iso(resume.createdAt),
     updatedAt: iso(resume.updatedAt),

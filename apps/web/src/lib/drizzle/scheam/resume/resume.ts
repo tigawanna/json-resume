@@ -20,8 +20,7 @@ export const resume = sqliteTable(
     headline: text("headline").default("").notNull(),
     /** Internal notes about this resume */
     description: text("description").default("").notNull(),
-    /** Target job description used for AI tailoring (denormalized from `job` when linked) */
-    jobDescription: text("job_description").default("").notNull(),
+    /** Target job this résumé is tailored to; the posting text lives on `job.description`. */
     jobId: text("job_id"),
     /** Template used for rendering (classic, sidebar, accent, modern) */
     templateId: text("template_id").default("classic").notNull(),

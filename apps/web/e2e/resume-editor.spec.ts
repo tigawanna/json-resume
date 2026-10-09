@@ -17,9 +17,14 @@ test("saves edited and newly added resume parts across the whole editor flow", a
   await metadata
     .getByLabel("Description", { exact: true })
     .fill("Internal targeting notes for the e2e flow.");
-  await metadata.getByLabel("Job Description").fill("Build reliable full-stack product systems.");
-  await metadata.getByRole("button", { name: "Save" }).click();
-  await expect(page.getByText("Resume updated")).toBeVisible();
+  await metadata.getByRole("button", { name: "Save details" }).click();
+  await expect(page.getByText("Details saved")).toBeVisible();
+
+  const targetJob = page.getByTestId("target-job-form");
+  await targetJob.getByLabel("Job description").fill("Build reliable full-stack product systems.");
+  await targetJob.getByRole("button", { name: "Save & link job" }).click();
+  await expect(page.getByText("Job saved and linked")).toBeVisible();
+  await expect(page.getByTestId("target-job-section")).toContainText("Build reliable full-stack");
 
   const contacts = page.getByTestId("contacts-form");
   await contacts.getByRole("button", { name: "Add Contact" }).click();

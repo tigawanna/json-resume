@@ -1,4 +1,4 @@
-import { PickFromExistingDialog } from "@/components/PickFromExistingDialog";
+import { EntityPickerSheet } from "@/components/entity-picker/EntityPickerSheet";
 import { useResumeWorkspace } from "@/components/resume/resume-workspace/ResumeWorkspaceContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,7 +9,7 @@ import type { ResumeDetailDTO } from "@/data-access-layer/resume/resume.types";
 import { useAppForm } from "@/lib/tanstack/form";
 import { unwrapUnknownError } from "@/utils/errors";
 import { formOptions } from "@tanstack/react-form";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { ArrowDown, ArrowUp, Library, Pencil, Plus, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -20,37 +20,22 @@ interface ExperienceSectionProps {
 }
 
 export function ExperienceSection({ resumeId }: ExperienceSectionProps) {
-  const { resume, searches, createExperience, reorderExperience } = useResumeWorkspace();
+  const { resume, searches, attachLibraryRows, reorderExperience } = useResumeWorkspace();
   const searchExperiences = searches?.experiences;
-  const queryClient = useQueryClient();
 
   const [pickOpen, setPickOpen] = useState(false);
 
   const pickMutation = useMutation({
-    mutationFn: async (
-      rawItems: { company: string; role: string; startDate: string; endDate: string }[],
-    ) =>
-      Promise.all(
-        rawItems.map((exp) =>
-          createExperience({
-            company: exp.company,
-            role: exp.role,
-            startDate: exp.startDate,
-            endDate: exp.endDate,
-            location: "",
-          }),
-        ),
-      ),
-    onSuccess(_, rawItems) {
-      void queryClient.invalidateQueries({ queryKey: [queryKeyPrefixes.resumes] });
-      toast.success(`Added ${rawItems.length} experience(s)`);
-      setPickOpen(false);
+    mutationFn: async (ids: string[]) => attachLibraryRows("experiences", ids),
+    onSuccess(_, ids) {
+      toast.success(`Added ${ids.length} experience(s)`);
     },
     onError(err: unknown) {
       toast.error("Failed to add experiences", {
         description: unwrapUnknownError(err).message,
       });
     },
+    meta: { invalidates: [["resumes"], ["experiences"]] },
   });
 
   const reorderMutation = useMutation({
@@ -108,22 +93,22 @@ export function ExperienceSection({ resumeId }: ExperienceSectionProps) {
       </div>
 
       {searchExperiences && (
-        <PickFromExistingDialog
+        <EntityPickerSheet
           open={pickOpen}
           onOpenChange={setPickOpen}
           title="Pick from Existing Experiences"
-          description="Search across all your resumes to copy an experience entry."
+          description="Link experiences from your library. Edits to them show on every résumé that uses them."
+          searchPlaceholder="Search by role, company or location…"
           multi
+          attachedIds={resume.experiences.map((exp) => exp.id)}
           getSearchQueryKey={(q) => [queryKeyPrefixes.resumes, "search", "experiences", q]}
           getSearchQueryFn={(q) => () => searchExperiences(q)}
-          mapToItems={(data) =>
-            data.map((exp) => ({
-              id: exp.id,
-              primary: `${exp.role} at ${exp.company}`,
-              secondary: `${exp.startDate} – ${exp.endDate}`,
-            }))
-          }
-          onPick={(_, rawItems) => pickMutation.mutate(rawItems)}
+          getItem={(exp) => ({
+            id: exp.id,
+            primary: `${exp.role} at ${exp.company}`,
+            secondary: [exp.startDate, exp.endDate].filter(Boolean).join(" – ") || undefined,
+          })}
+          onPick={(rows) => pickMutation.mutate(rows.map((exp) => exp.id))}
         />
       )}
     </div>
@@ -367,23 +352,19 @@ function ExperienceCard({
         </div>
 
         {searchExperienceBullets && (
-          <PickFromExistingDialog
+          <EntityPickerSheet
             open={bulletPickOpen}
             onOpenChange={setBulletPickOpen}
             title="Pick Experience Bullets"
-            description="Search bullet points across all your experiences."
+            description="Copy bullet points from any experience into this one."
+            searchPlaceholder="Search bullet text…"
             multi
             getSearchQueryKey={(q) => [queryKeyPrefixes.resumes, "search", "experience-bullets", q]}
             getSearchQueryFn={(q) => () => searchExperienceBullets(q)}
-            mapToItems={(data) =>
-              data.map((b) => ({
-                id: b.id,
-                primary: b.text,
-              }))
-            }
-            onPick={(items) => {
-              setBullets((prev) => [...prev, ...items.map((i) => i.primary)]);
-              toast.success(`Added ${items.length} bullet(s)`);
+            getItem={(b) => ({ id: b.id, primary: b.text })}
+            onPick={(rows) => {
+              setBullets((prev) => [...prev, ...rows.map((b) => b.text)]);
+              toast.success(`Added ${rows.length} bullet(s)`);
             }}
           />
         )}

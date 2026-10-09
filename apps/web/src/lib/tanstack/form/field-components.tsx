@@ -59,6 +59,11 @@ function buildCommonProps(
   return { fieldLabel, fieldPlaceholder } as const;
 }
 
+/** Field names repeat across forms on one page, so ids must not be the bare name. */
+function useFieldInputId(name: string) {
+  return `${React.useId()}-${name}`;
+}
+
 function isInvalid(errors: Array<any>) {
   return errors.length > 0;
 }
@@ -74,6 +79,7 @@ export function TextField({
   const field = useFieldContext<string>();
   const errors = toFieldErrors(field.state.meta.errors);
   const invalid = isInvalid(errors);
+  const inputId = useFieldInputId(field.name);
   const { fieldLabel, fieldPlaceholder } = buildCommonProps(
     label,
     placeholder,
@@ -82,11 +88,11 @@ export function TextField({
 
   return (
     <Field data-invalid={invalid} orientation={orientation} className={className}>
-      <FieldLabel htmlFor={field.name as string}>{fieldLabel}</FieldLabel>
+      <FieldLabel htmlFor={inputId}>{fieldLabel}</FieldLabel>
       {description ? <FieldDescription>{description}</FieldDescription> : null}
       <FieldContent>
         <Input
-          id={field.name as string}
+          id={inputId}
           name={field.name as string}
           placeholder={fieldPlaceholder}
           aria-invalid={invalid}
@@ -116,6 +122,7 @@ export function PasswordField({
   const field = useFieldContext<string>();
   const errors = toFieldErrors(field.state.meta.errors);
   const invalid = isInvalid(errors);
+  const inputId = useFieldInputId(field.name);
   const { fieldLabel, fieldPlaceholder } = buildCommonProps(
     label,
     placeholder,
@@ -124,11 +131,11 @@ export function PasswordField({
 
   return (
     <Field data-invalid={invalid} orientation={orientation} className={className}>
-      <FieldLabel htmlFor={field.name as string}>{fieldLabel}</FieldLabel>
+      <FieldLabel htmlFor={inputId}>{fieldLabel}</FieldLabel>
       {description ? <FieldDescription>{description}</FieldDescription> : null}
       <FieldContent>
         <Input
-          id={field.name as string}
+          id={inputId}
           name={field.name as string}
           type={showPassword ? "text" : "password"}
           placeholder={fieldPlaceholder}
@@ -155,6 +162,7 @@ export function TextAreaField({
   const field = useFieldContext<string>();
   const errors = toFieldErrors(field.state.meta.errors);
   const invalid = isInvalid(errors);
+  const inputId = useFieldInputId(field.name);
   const { fieldLabel, fieldPlaceholder } = buildCommonProps(
     label,
     placeholder,
@@ -164,11 +172,11 @@ export function TextAreaField({
 
   return (
     <Field data-invalid={invalid} orientation={orientation} className={className}>
-      <FieldLabel htmlFor={field.name as string}>{fieldLabel}</FieldLabel>
+      <FieldLabel htmlFor={inputId}>{fieldLabel}</FieldLabel>
       {description ? <FieldDescription>{description}</FieldDescription> : null}
       <FieldContent>
         <Textarea
-          id={field.name as string}
+          id={inputId}
           name={field.name as string}
           placeholder={fieldPlaceholder}
           aria-invalid={invalid}
@@ -196,14 +204,15 @@ export function EmailField({
   const field = useFieldContext<string>();
   const errors = toFieldErrors(field.state.meta.errors);
   const invalid = isInvalid(errors);
+  const inputId = useFieldInputId(field.name);
 
   return (
     <Field data-invalid={invalid} orientation={orientation} className={className}>
-      <FieldLabel htmlFor={field.name as string}>{label}</FieldLabel>
+      <FieldLabel htmlFor={inputId}>{label}</FieldLabel>
       {description ? <FieldDescription>{description}</FieldDescription> : null}
       <FieldContent>
         <Input
-          id={field.name as string}
+          id={inputId}
           name={field.name as string}
           type="email"
           placeholder={placeholder}
@@ -233,19 +242,20 @@ export function SelectField<T extends string>({
   const field = useFieldContext<T>();
   const errors = toFieldErrors(field.state.meta.errors);
   const invalid = isInvalid(errors);
+  const inputId = useFieldInputId(field.name);
   const { fieldLabel } = buildCommonProps(label, placeholder, field.name as string);
 
   return (
     <Field data-invalid={invalid} orientation={orientation} className={className}>
       <FieldContent>
-        {fieldLabel ? <FieldLabel htmlFor={field.name as string}>{fieldLabel}</FieldLabel> : null}
+        {fieldLabel ? <FieldLabel htmlFor={inputId}>{fieldLabel}</FieldLabel> : null}
         {description ? <FieldDescription>{description}</FieldDescription> : null}
         <Select
           name={field.name as string}
           value={(field.state.value as string) ?? ""}
           onValueChange={(value) => field.handleChange(value as T)}
         >
-          <SelectTrigger id={field.name as string} aria-invalid={invalid} className="min-w-40">
+          <SelectTrigger id={inputId} aria-invalid={invalid} className="min-w-40">
             <SelectValue placeholder={placeholder} />
           </SelectTrigger>
           <SelectContent>
@@ -271,19 +281,20 @@ export function CheckboxField({
   const field = useFieldContext<boolean>();
   const errors = toFieldErrors(field.state.meta.errors);
   const invalid = isInvalid(errors);
+  const inputId = useFieldInputId(field.name);
   const fieldLabel = label || (field.name as string);
 
   return (
     <Field data-invalid={invalid} orientation={orientation} className={className}>
       <Checkbox
-        id={field.name as string}
+        id={inputId}
         name={field.name as string}
         checked={field.state.value ?? false}
         aria-invalid={invalid}
         onCheckedChange={(checked) => field.handleChange(checked === true)}
       />
       <FieldContent>
-        <FieldLabel htmlFor={field.name as string} className="font-normal">
+        <FieldLabel htmlFor={inputId} className="font-normal">
           {fieldLabel}
         </FieldLabel>
         {description ? <FieldDescription>{description}</FieldDescription> : null}
@@ -302,17 +313,18 @@ export function SwitchField({
   const field = useFieldContext<boolean>();
   const errors = toFieldErrors(field.state.meta.errors);
   const invalid = isInvalid(errors);
+  const inputId = useFieldInputId(field.name);
   const fieldLabel = label || (field.name as string);
 
   return (
     <Field data-invalid={invalid} orientation={orientation} className={className}>
       <FieldContent>
-        <FieldLabel htmlFor={field.name as string}>{fieldLabel}</FieldLabel>
+        <FieldLabel htmlFor={inputId}>{fieldLabel}</FieldLabel>
         {description ? <FieldDescription>{description}</FieldDescription> : null}
         <FieldErrorMessage />
       </FieldContent>
       <Switch
-        id={field.name as string}
+        id={inputId}
         name={field.name as string}
         checked={field.state.value ?? false}
         onCheckedChange={(checked) => field.handleChange(checked === true)}
@@ -334,6 +346,7 @@ export function RadioGroupField<T extends string>({
   const field = useFieldContext<T>();
   const errors = toFieldErrors(field.state.meta.errors);
   const invalid = isInvalid(errors);
+  const inputId = useFieldInputId(field.name);
   const fieldLabel = label || (field.name as string);
 
   return (
@@ -360,7 +373,7 @@ export function RadioGroupField<T extends string>({
               </FieldContent>
               <RadioGroupItem
                 value={item.value}
-                id={`${field.name}-${item.value}`}
+                id={`${inputId}-${item.value}`}
                 aria-invalid={invalid}
               />
             </Field>

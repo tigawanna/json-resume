@@ -1,4 +1,4 @@
-import { PickFromExistingDialog } from "@/components/PickFromExistingDialog";
+import { EntityPickerSheet } from "@/components/entity-picker/EntityPickerSheet";
 import { useResumeWorkspace } from "@/components/resume/resume-workspace/ResumeWorkspaceContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,7 +10,7 @@ import type { ResumeDetailDTO } from "@/data-access-layer/resume/resume.types";
 import { useAppForm } from "@/lib/tanstack/form";
 import { unwrapUnknownError } from "@/utils/errors";
 import { formOptions } from "@tanstack/react-form";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { ArrowDown, ArrowUp, ExternalLink, Library, Pencil, Plus, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -39,9 +39,8 @@ interface TalksSectionProps {
 }
 
 export function TalksSection({ resumeId }: TalksSectionProps) {
-  const { resume, searches, createTalk, reorderTalk } = useResumeWorkspace();
+  const { resume, searches, attachLibraryRows, reorderTalk } = useResumeWorkspace();
   const searchTalks = searches?.talks;
-  const queryClient = useQueryClient();
 
   const [pickOpen, setPickOpen] = useState(false);
 
@@ -56,27 +55,16 @@ export function TalksSection({ resumeId }: TalksSectionProps) {
   });
 
   const pickMutation = useMutation({
-    mutationFn: async (rawItems: { title: string; event: string; date: string }[]) =>
-      Promise.all(
-        rawItems.map((talk) =>
-          createTalk({
-            title: talk.title,
-            event: talk.event,
-            date: talk.date,
-            description: "",
-          }),
-        ),
-      ),
-    onSuccess(_, rawItems) {
-      void queryClient.invalidateQueries({ queryKey: [queryKeyPrefixes.resumes] });
-      toast.success(`Added ${rawItems.length} talk(s)`);
-      setPickOpen(false);
+    mutationFn: async (ids: string[]) => attachLibraryRows("talks", ids),
+    onSuccess(_, ids) {
+      toast.success(`Added ${ids.length} talk(s)`);
     },
     onError(err: unknown) {
       toast.error("Failed to add talks", {
         description: unwrapUnknownError(err).message,
       });
     },
+    meta: { invalidates: [["resumes"]] },
   });
 
   if (!resume) return null;
@@ -122,22 +110,22 @@ export function TalksSection({ resumeId }: TalksSectionProps) {
       </div>
 
       {searchTalks && (
-        <PickFromExistingDialog
+        <EntityPickerSheet
           open={pickOpen}
           onOpenChange={setPickOpen}
           title="Pick from Existing Talks"
-          description="Search across all your resumes to copy a talk entry."
+          description="Link talks from your library."
+          searchPlaceholder="Search by title, event or description…"
           multi
+          attachedIds={resume.talks.map((talk) => talk.id)}
           getSearchQueryKey={(q) => [queryKeyPrefixes.resumes, "search", "talks", q]}
           getSearchQueryFn={(q) => () => searchTalks(q)}
-          mapToItems={(data) =>
-            data.map((talk) => ({
-              id: talk.id,
-              primary: talk.title,
-              secondary: `${talk.event}${talk.date ? ` · ${talk.date}` : ""}`,
-            }))
-          }
-          onPick={(_, rawItems) => pickMutation.mutate(rawItems)}
+          getItem={(talk) => ({
+            id: talk.id,
+            primary: talk.title,
+            secondary: [talk.event, talk.date].filter(Boolean).join(" · ") || undefined,
+          })}
+          onPick={(rows) => pickMutation.mutate(rows.map((talk) => talk.id))}
         />
       )}
     </div>

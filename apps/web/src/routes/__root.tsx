@@ -104,7 +104,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <ThemeProvider defaultTheme="system" storageKey={AppConfig.themeStorageKey}>
           <TooltipProvider>
             {children}
-            {import.meta.env.DEV ? <TanstackDevtools /> : null}
+            {import.meta.env.DEV && import.meta.env.VITE_E2E !== "true" ? (
+              <TanstackDevtools />
+            ) : null}
             <Toaster />
           </TooltipProvider>
         </ThemeProvider>

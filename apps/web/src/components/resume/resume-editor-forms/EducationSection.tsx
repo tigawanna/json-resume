@@ -1,4 +1,4 @@
-import { PickFromExistingDialog } from "@/components/PickFromExistingDialog";
+import { EntityPickerSheet } from "@/components/entity-picker/EntityPickerSheet";
 import { useResumeWorkspace } from "@/components/resume/resume-workspace/ResumeWorkspaceContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,7 +10,7 @@ import type { ResumeDetailDTO } from "@/data-access-layer/resume/resume.types";
 import { useAppForm } from "@/lib/tanstack/form";
 import { unwrapUnknownError } from "@/utils/errors";
 import { formOptions } from "@tanstack/react-form";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { ArrowDown, ArrowUp, Library, Pencil, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -21,9 +21,8 @@ interface EducationSectionProps {
 }
 
 export function EducationSection({ resumeId }: EducationSectionProps) {
-  const { resume, searches, createEducation, reorderEducation } = useResumeWorkspace();
+  const { resume, searches, attachLibraryRows, reorderEducation } = useResumeWorkspace();
   const searchEducation = searches?.education;
-  const queryClient = useQueryClient();
 
   const [pickOpen, setPickOpen] = useState(false);
 
@@ -38,31 +37,16 @@ export function EducationSection({ resumeId }: EducationSectionProps) {
   });
 
   const pickMutation = useMutation({
-    mutationFn: async (rawItems: { school: string; degree: string; field: string }[]) =>
-      Promise.all(
-        rawItems.map((edu) =>
-          createEducation({
-            school: edu.school,
-            degree: edu.degree,
-            field: edu.field,
-            startDate: "",
-            endDate: "",
-            description: "",
-          }),
-        ),
-      ),
-    onSuccess(_, rawItems) {
-      void queryClient.invalidateQueries({ queryKey: [queryKeyPrefixes.resumes] });
-      toast.success(
-        `Added ${rawItems.length} education entr${rawItems.length === 1 ? "y" : "ies"}`,
-      );
-      setPickOpen(false);
+    mutationFn: async (ids: string[]) => attachLibraryRows("education", ids),
+    onSuccess(_, ids) {
+      toast.success(`Added ${ids.length} education entr${ids.length === 1 ? "y" : "ies"}`);
     },
     onError(err: unknown) {
       toast.error("Failed to add education entries", {
         description: unwrapUnknownError(err).message,
       });
     },
+    meta: { invalidates: [["resumes"], ["education"]] },
   });
 
   if (!resume) return null;
@@ -110,22 +94,22 @@ export function EducationSection({ resumeId }: EducationSectionProps) {
       </div>
 
       {searchEducation && (
-        <PickFromExistingDialog
+        <EntityPickerSheet
           open={pickOpen}
           onOpenChange={setPickOpen}
           title="Pick from Existing Education"
-          description="Search across all your resumes to copy an education entry."
+          description="Link education entries from your library."
+          searchPlaceholder="Search by school, degree or field…"
           multi
+          attachedIds={resume.education.map((edu) => edu.id)}
           getSearchQueryKey={(q) => [queryKeyPrefixes.resumes, "search", "education", q]}
           getSearchQueryFn={(q) => () => searchEducation(q)}
-          mapToItems={(data) =>
-            data.map((edu) => ({
-              id: edu.id,
-              primary: `${edu.degree} in ${edu.field}`,
-              secondary: edu.school,
-            }))
-          }
-          onPick={(_, rawItems) => pickMutation.mutate(rawItems)}
+          getItem={(edu) => ({
+            id: edu.id,
+            primary: [edu.degree, edu.field].filter(Boolean).join(" in ") || edu.school,
+            secondary: edu.school,
+          })}
+          onPick={(rows) => pickMutation.mutate(rows.map((edu) => edu.id))}
         />
       )}
     </div>

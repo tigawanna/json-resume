@@ -8,12 +8,27 @@ import { SkillsForm } from "@/components/resume/resume-editor-forms/SkillsForm";
 import { NotesForm } from "@/components/resume/resume-editor-forms/NotesForm";
 import { SummaryForm } from "@/components/resume/resume-editor-forms/SummaryForm";
 import { TalksSection } from "@/components/resume/resume-editor-forms/TalksSection";
+import { TargetJobSection } from "@/components/resume/resume-editor-forms/TargetJobSection";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+
+const EDITOR_SECTIONS = [
+  "details",
+  "target-job",
+  "contacts",
+  "links",
+  "summary",
+  "experience",
+  "education",
+  "projects",
+  "skills",
+  "talks",
+  "notes",
+];
 
 interface ResumeEditPanelProps {
   resumeId: string;
@@ -22,13 +37,21 @@ interface ResumeEditPanelProps {
 export function ResumeEditPanel({ resumeId }: ResumeEditPanelProps) {
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6" data-test="resume-edit-tab">
-      <MetadataForm resumeId={resumeId} />
+      <Accordion type="multiple" defaultValue={EDITOR_SECTIONS} className="w-full">
+        <AccordionItem value="details">
+          <AccordionTrigger>Details</AccordionTrigger>
+          <AccordionContent>
+            <MetadataForm />
+          </AccordionContent>
+        </AccordionItem>
 
-      <Accordion
-        type="multiple"
-        defaultValue={["contacts", "summary", "experience"]}
-        className="w-full"
-      >
+        <AccordionItem value="target-job">
+          <AccordionTrigger>Target job</AccordionTrigger>
+          <AccordionContent>
+            <TargetJobSection />
+          </AccordionContent>
+        </AccordionItem>
+
         <AccordionItem value="contacts">
           <AccordionTrigger>Contacts</AccordionTrigger>
           <AccordionContent>

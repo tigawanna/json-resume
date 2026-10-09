@@ -1,0 +1,1 @@
+ALTER TABLE `resume` DROP COLUMN `job_description`;

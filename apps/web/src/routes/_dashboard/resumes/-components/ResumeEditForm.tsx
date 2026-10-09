@@ -1,39 +1,35 @@
+import { JobPickerField } from "@/components/jobs/JobPickerField";
 import { Button } from "@/components/ui/button";
 import { DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { attachJobToResume, jobListLabel } from "@/data-access-layer/event-sourced/job-rows";
+import { attachJobToResume, searchJobs } from "@/data-access-layer/event-sourced/job-rows";
 import type { Resume } from "@/data-access-layer/event-sourced/schemas";
 import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
 import { useAppForm } from "@/lib/tanstack/form";
 import { unwrapUnknownError } from "@/utils/errors";
 import { formOptions } from "@tanstack/react-form";
 import { useLiveQuery } from "@tanstack/react-db";
-import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import { joinSearchable, touchUpdatedAt } from "../../-utils/row-helpers";
 
-const NONE = "__none__";
+const editDefaults: {
+  name: string;
+  fullName: string;
+  headline: string;
+  description: string;
+  jobId: string | null;
+} = {
+  name: "",
+  fullName: "",
+  headline: "",
+  description: "",
+  jobId: null,
+};
 
-const editOpts = formOptions({
-  defaultValues: {
-    name: "",
-    fullName: "",
-    headline: "",
-    description: "",
-    jobId: NONE,
-    jobDescription: "",
-  },
-});
+const editOpts = formOptions({ defaultValues: editDefaults });
 
 interface ResumeEditFormProps {
   item: Resume;
@@ -52,13 +48,11 @@ export function ResumeEditForm({ item, onSuccess }: ResumeEditFormProps) {
       fullName: item.fullName,
       headline: item.headline,
       description: item.description,
-      jobId: item.jobId ?? NONE,
-      jobDescription: item.jobDescription,
+      jobId: item.jobId ?? null,
     },
     onSubmit: async ({ value }) => {
       setPending(true);
       try {
-        const nextJobId = value.jobId === NONE ? null : value.jobId;
         db.collections.resume.update(item.id, (draft) => {
           draft.name = value.name;
           draft.fullName = value.fullName;
@@ -72,14 +66,8 @@ export function ResumeEditForm({ item, onSuccess }: ResumeEditFormProps) {
           );
           draft.updatedAt = touchUpdatedAt();
         });
-        if (nextJobId) {
-          attachJobToResume(db, item.id, nextJobId);
-        } else {
-          attachJobToResume(db, item.id, null);
-          db.collections.resume.update(item.id, (draft) => {
-            draft.jobDescription = value.jobDescription;
-            draft.updatedAt = touchUpdatedAt();
-          });
+        if (value.jobId !== (item.jobId ?? null)) {
+          attachJobToResume(db, item.id, value.jobId);
         }
         toast.success("Résumé saved");
         onSuccess?.();
@@ -159,48 +147,13 @@ export function ResumeEditForm({ item, onSuccess }: ResumeEditFormProps) {
       </form.AppField>
       <form.AppField name="jobId">
         {(field) => (
-          <div>
-            <div className="flex items-center justify-between gap-2">
-              <Label className="text-xs">Tracked job</Label>
-              <Link to="/jobs" className="text-primary text-xs hover:underline">
-                Manage jobs
-              </Link>
-            </div>
-            <Select value={field.state.value} onValueChange={(value) => field.handleChange(value)}>
-              <SelectTrigger className="mt-1 w-full" data-test="resume-job-picker">
-                <SelectValue placeholder="None" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={NONE}>None</SelectItem>
-                {(jobs ?? []).map((job) => (
-                  <SelectItem key={job.id} value={job.id}>
-                    {jobListLabel(job)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <JobPickerField
+            value={(jobs ?? []).find((job) => job.id === field.state.value) ?? null}
+            onChange={(job) => field.handleChange(job?.id ?? null)}
+            searchJobs={async (query) => searchJobs(jobs ?? [], query)}
+          />
         )}
       </form.AppField>
-      <form.Subscribe selector={(s) => s.values.jobId}>
-        {(jobId) =>
-          jobId === NONE ? (
-            <form.AppField name="jobDescription">
-              {(field) => (
-                <div>
-                  <Label className="text-xs">Target job description</Label>
-                  <Textarea
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    className="mt-1 min-h-20"
-                    placeholder="Or attach a tracked job above."
-                  />
-                </div>
-              )}
-            </form.AppField>
-          ) : null
-        }
-      </form.Subscribe>
       <form.Subscribe selector={(s) => s.values}>
         {(values) => (
           <DialogFooter>

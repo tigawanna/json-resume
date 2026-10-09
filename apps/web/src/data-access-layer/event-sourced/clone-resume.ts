@@ -1,6 +1,7 @@
 import { resumeLayoutSchema } from "@/features/resume/resume-layout";
 import { joinSearchable, newId, nowMs } from "@/routes/_dashboard/-utils/row-helpers";
 import type { AppDb } from "./collection";
+import { attachJobDescription } from "./job-rows";
 import { currentLayout } from "./resume-layout-rows";
 
 /** "CV" → "CV (copy)", then "CV (copy 2)", … ; cloning a copy counts from the original name. */
@@ -16,6 +17,7 @@ export function copyName(name: string, taken: Iterable<string>): string {
 export type CloneResumeOverrides = {
   name?: string;
   description?: string;
+  /** Links the copy to a job with this posting instead of the source's job. */
   jobDescription?: string;
 };
 
@@ -38,14 +40,12 @@ export function cloneResume(db: AppDb, sourceId: string, overrides: CloneResumeO
       resumes.map((row) => row.name),
     );
   const description = overrides.description ?? source.description;
-  const jobDescription = overrides.jobDescription ?? source.jobDescription;
 
   db.collections.resume.insert({
     ...source,
     id,
     name,
     description,
-    jobDescription,
     layout: resumeLayoutSchema.parse(currentLayout(db, sourceId)),
     searchableText: joinSearchable(name, source.fullName, source.headline, description),
     embedding: null,
@@ -53,5 +53,8 @@ export function cloneResume(db: AppDb, sourceId: string, overrides: CloneResumeO
     createdAt: ts,
     updatedAt: ts,
   });
+  if (overrides.jobDescription?.trim()) {
+    attachJobDescription(db, source.userId, id, overrides.jobDescription);
+  }
   return { resumeId: id, name };
 }

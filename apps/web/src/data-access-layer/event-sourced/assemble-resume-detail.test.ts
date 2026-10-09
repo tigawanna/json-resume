@@ -13,7 +13,6 @@ const baseResume: Resume = {
   fullName: "",
   headline: "",
   description: "",
-  jobDescription: "",
   templateId: "classic",
   ...searchable,
   ...ts,
@@ -116,5 +115,37 @@ describe("assembleResumeDetail", () => {
     );
     expect(detail?.experiences).toEqual([]);
     expect(detail?.skillGroups).toEqual([]);
+  });
+
+  it("reads the target job posting from the linked job", () => {
+    const detail = assembleResumeDetail("r1", {
+      ...library,
+      resume: { ...baseResume, jobId: "j1" },
+      jobs: [
+        {
+          id: "j1",
+          userId: "u1",
+          company: "",
+          title: "Engineer",
+          url: "",
+          location: "",
+          description: "Build things",
+          notes: "",
+          status: "saved",
+          ...searchable,
+          ...ts,
+        },
+      ],
+    });
+    expect(detail?.jobId).toBe("j1");
+    expect(detail?.jobDescription).toBe("Build things");
+    expect(detail?.job).toMatchObject({ id: "j1", title: "Engineer", company: "" });
+  });
+
+  it("falls back to a legacy pasted job description when no job is linked", () => {
+    const legacyRow = { ...baseResume, jobDescription: "Old posting" };
+    const detail = assembleResumeDetail("r1", { ...library, resume: legacyRow });
+    expect(detail?.job).toBeNull();
+    expect(detail?.jobDescription).toBe("Old posting");
   });
 });

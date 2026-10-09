@@ -35,6 +35,7 @@ export function resumeDocumentToDetail({
     description,
     jobDescription,
     jobId: null,
+    job: null,
     templateId: data.resume.templateId,
     createdAt,
     updatedAt,

@@ -1,4 +1,4 @@
-import { PickFromExistingDialog } from "@/components/PickFromExistingDialog";
+import { EntityPickerSheet } from "@/components/entity-picker/EntityPickerSheet";
 import { useResumeWorkspace } from "@/components/resume/resume-workspace/ResumeWorkspaceContext";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,20 +11,30 @@ import type { ResumeDetailDTO } from "@/data-access-layer/resume/resume.types";
 import { useAppForm } from "@/lib/tanstack/form";
 import { unwrapUnknownError } from "@/utils/errors";
 import { formOptions } from "@tanstack/react-form";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { ArrowDown, ArrowUp, Library, Pencil, Plus, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
+
+function techLabel(raw: string) {
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    return Array.isArray(parsed)
+      ? parsed.filter((item): item is string => typeof item === "string").join(", ")
+      : "";
+  } catch {
+    return "";
+  }
+}
 
 interface ProjectSectionProps {
   resumeId: string;
 }
 
 export function ProjectSection({ resumeId }: ProjectSectionProps) {
-  const { resume, searches, createProject, reorderProject } = useResumeWorkspace();
+  const { resume, searches, attachLibraryRows, reorderProject } = useResumeWorkspace();
   const searchProjects = searches?.projects;
-  const queryClient = useQueryClient();
 
   const [pickOpen, setPickOpen] = useState(false);
 
@@ -39,47 +49,16 @@ export function ProjectSection({ resumeId }: ProjectSectionProps) {
   });
 
   const pickMutation = useMutation({
-    mutationFn: async (
-      rawItems: {
-        id: string;
-        name: string;
-        description: string;
-        url: string;
-        homepageUrl: string;
-        tech: string;
-      }[],
-    ) =>
-      Promise.all(
-        rawItems.map((p) => {
-          const tech = (() => {
-            try {
-              const parsed: unknown = JSON.parse(p.tech);
-              return Array.isArray(parsed)
-                ? parsed.filter((x): x is string => typeof x === "string")
-                : [];
-            } catch {
-              return [];
-            }
-          })();
-          return createProject({
-            name: p.name,
-            description: p.description,
-            url: p.url,
-            homepageUrl: p.homepageUrl,
-            tech,
-          });
-        }),
-      ),
-    onSuccess(_, rawItems) {
-      void queryClient.invalidateQueries({ queryKey: [queryKeyPrefixes.resumes] });
-      toast.success(`Added ${rawItems.length} project(s)`);
-      setPickOpen(false);
+    mutationFn: async (ids: string[]) => attachLibraryRows("projects", ids),
+    onSuccess(_, ids) {
+      toast.success(`Added ${ids.length} project(s)`);
     },
     onError(err: unknown) {
       toast.error("Failed to add projects", {
         description: unwrapUnknownError(err).message,
       });
     },
+    meta: { invalidates: [["resumes"], ["resume-projects"]] },
   });
 
   if (!resume) return null;
@@ -127,33 +106,23 @@ export function ProjectSection({ resumeId }: ProjectSectionProps) {
       </div>
 
       {searchProjects && (
-        <PickFromExistingDialog
+        <EntityPickerSheet
           open={pickOpen}
           onOpenChange={setPickOpen}
           title="Pick from Existing Projects"
-          description="Search across all your resumes to copy a project."
+          description="Link projects from your library."
+          searchPlaceholder="Search by name, description, URL or tech…"
           multi
+          attachedIds={resume.projects.map((project) => project.id)}
           getSearchQueryKey={(q) => [queryKeyPrefixes.resumes, "search", "projects", q]}
           getSearchQueryFn={(q) => () => searchProjects(q)}
-          mapToItems={(data) =>
-            data.map((p) => {
-              const tech = (() => {
-                try {
-                  const parsed: unknown = JSON.parse(p.tech);
-                  return Array.isArray(parsed) ? (parsed as string[]).join(", ") : "";
-                } catch {
-                  return "";
-                }
-              })();
-              return {
-                id: p.id,
-                primary: p.name,
-                secondary: p.description,
-                detail: tech || undefined,
-              };
-            })
-          }
-          onPick={(_, rawItems) => pickMutation.mutate(rawItems)}
+          getItem={(p) => ({
+            id: p.id,
+            primary: p.name,
+            secondary: techLabel(p.tech) || p.url || undefined,
+            detail: p.description || undefined,
+          })}
+          onPick={(rows) => pickMutation.mutate(rows.map((p) => p.id))}
         />
       )}
     </div>

@@ -1,4 +1,4 @@
-import type { ResumeDetailDTO } from "@/data-access-layer/resume/resume.types";
+import type { ResumeDetailDTO, ResumeJobDTO } from "@/data-access-layer/resume/resume.types";
 import type { ResumeDocumentV1, TemplateId } from "@/features/resume/resume-schema";
 
 export interface ContactDraft {
@@ -56,16 +56,24 @@ export interface ResumeMetadataDraft {
   fullName: string;
   headline: string;
   description: string;
-  jobDescription: string;
-  jobId?: string | null;
   templateId: TemplateId;
 }
 
-export interface WorkspaceJobOption {
-  id: string;
+/** The résumé's target job; only `description` is required. */
+export interface TargetJobDraft {
+  description: string;
   company: string;
   title: string;
+  location: string;
+  url: string;
 }
+
+export interface WorkspaceJobOption extends ResumeJobDTO {
+  updatedAt: number;
+}
+
+/** Library lists a résumé can link existing rows into by id. */
+export type AttachableLibraryKey = "experiences" | "education" | "projects" | "talks";
 
 export interface ResumeSearchAdapter {
   experiences?: (
@@ -87,15 +95,20 @@ export interface ResumeSearchAdapter {
   >;
   skills?: (query: string) => Promise<{ id: string; name: string; groupName?: string }[]>;
   talks?: (query: string) => Promise<{ id: string; title: string; event: string; date: string }[]>;
+  jobs?: (query: string) => Promise<WorkspaceJobOption[]>;
 }
 
 export interface ResumeWorkspaceAdapter {
   mode: "remote" | "local";
   resume: ResumeDetailDTO;
   searches?: ResumeSearchAdapter;
-  /** Present when the workbench can attach an independent tracked job. */
-  jobs?: WorkspaceJobOption[];
   updateMetadata(values: ResumeMetadataDraft): Promise<void>;
+  /** Links an existing job (or none) as this résumé's target. */
+  attachJob(jobId: string | null): Promise<void>;
+  /** Edits the linked job, or creates a job from the draft and links it. */
+  saveTargetJob(values: TargetJobDraft): Promise<{ id: string }>;
+  /** Adds existing library rows to the résumé by id, skipping ones it already shows. */
+  attachLibraryRows(key: AttachableLibraryKey, ids: string[]): Promise<void>;
   updateContacts(contacts: ContactDraft[]): Promise<void>;
   updateLinks(links: LinkDraft[]): Promise<void>;
   updateSummary(text: string): Promise<void>;

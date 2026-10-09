@@ -84,12 +84,7 @@ export function JobCreateForm({ onSuccess }: JobCreateFormProps) {
       className="flex flex-col gap-3"
     >
       <div className="grid gap-3 sm:grid-cols-2">
-        <form.AppField
-          name="company"
-          validators={{
-            onChange: ({ value }) => (!value?.trim() ? "Company is required" : undefined),
-          }}
-        >
+        <form.AppField name="company">
           {(field) => (
             <div>
               <Label className="text-xs">Company</Label>
@@ -97,7 +92,7 @@ export function JobCreateForm({ onSuccess }: JobCreateFormProps) {
                 value={field.state.value}
                 onChange={(e) => field.handleChange(e.target.value)}
                 className="mt-1"
-                placeholder="Acme"
+                placeholder="Optional"
                 data-test="job-company"
               />
             </div>
@@ -130,7 +125,7 @@ export function JobCreateForm({ onSuccess }: JobCreateFormProps) {
               value={field.state.value}
               onChange={(e) => field.handleChange(e.target.value)}
               className="mt-1 min-h-32"
-              placeholder="Paste the posting. The résumé AI can extract the company name if you skip it there."
+              placeholder="Paste the posting. Only this field is required."
               data-test="job-description"
             />
           </div>
@@ -198,7 +193,7 @@ export function JobCreateForm({ onSuccess }: JobCreateFormProps) {
       </form.AppField>
       <form.Subscribe selector={(s) => s.values}>
         {(values) => {
-          const hasRequired = Boolean(values.company.trim()) && Boolean(values.description.trim());
+          const hasRequired = Boolean(values.description.trim());
           return (
             <DialogFooter>
               <Button

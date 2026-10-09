@@ -5,6 +5,7 @@ import { getResumeDetail } from "@/data-access-layer/resume/resume.server";
 import { emptyResumeLayout, resumeLayoutSchema } from "@/features/resume/resume-layout";
 import { db } from "@/lib/drizzle/client";
 import {
+  job,
   resume,
   resumeExperience,
   resumeExperienceBullet,
@@ -149,7 +150,9 @@ export async function listResumesTool(ctx: ToolContext, input: ListResumesToolIn
         like(resume.fullName, pattern),
         like(resume.headline, pattern),
         like(resume.description, pattern),
-        like(resume.jobDescription, pattern),
+        like(job.description, pattern),
+        like(job.company, pattern),
+        like(job.title, pattern),
       )!,
     );
   }
@@ -165,6 +168,7 @@ export async function listResumesTool(ctx: ToolContext, input: ListResumesToolIn
       updatedAt: resume.updatedAt,
     })
     .from(resume)
+    .leftJoin(job, and(eq(job.id, resume.jobId), eq(job.userId, ctx.userId)))
     .where(and(...conditions))
     .orderBy(desc(resume.updatedAt), desc(resume.id))
     .limit(data.limit);

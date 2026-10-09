@@ -9,7 +9,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { JOB_STATUS_LABELS, deleteJob } from "@/data-access-layer/event-sourced/job-rows";
+import {
+  JOB_STATUS_LABELS,
+  deleteJob,
+  jobListLabel,
+} from "@/data-access-layer/event-sourced/job-rows";
 import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
 import type { Job } from "@/data-access-layer/event-sourced/schemas";
 import { RouterPendingComponent } from "@/lib/tanstack/router/RouterPendingComponent";
@@ -178,7 +182,7 @@ export function JobList() {
         <LibraryEmpty
           icon={Briefcase}
           title="No jobs yet"
-          description="Save a company and job description to track applications. Paste a posting into résumé AI to extract the company name for you."
+          description="Paste a job description to track a posting. Company, title and the rest are optional."
           actionLabel="Add job"
           onAction={() => setCreateOpen(true)}
           hasSearch={hasSearch}
@@ -211,7 +215,7 @@ export function JobList() {
             header: "Company",
             headClassName: "w-[28%]",
             className: "max-w-0 w-[28%]",
-            cell: (row) => <TruncatedWithTooltip text={row.company} />,
+            cell: (row) => <TruncatedWithTooltip text={row.company || jobListLabel(row)} />,
           },
           {
             id: "title",
@@ -238,7 +242,7 @@ export function JobList() {
             cell: (row) => <TruncatedWithTooltip text={row.location} />,
           },
         ]}
-        mobileTitle={(row) => row.company}
+        mobileTitle={(row) => jobListLabel(row)}
         mobileSubtitle={(row) => row.title || JOB_STATUS_LABELS[row.status]}
         dataTest="jobs-table"
         actions={(row) => (

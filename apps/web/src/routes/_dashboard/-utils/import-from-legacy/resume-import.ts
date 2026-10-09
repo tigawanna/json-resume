@@ -3,6 +3,7 @@ import {
   libraryBulletIds,
   resolveSkillIds,
 } from "@/data-access-layer/event-sourced/library-resolve";
+import { attachJobDescription } from "@/data-access-layer/event-sourced/job-rows";
 import type { ResumeDetailDTO } from "@/data-access-layer/resume/resume.types";
 import { emptyResumeLayout, FLAT_LAYOUT_KEYS, setEntities } from "@/features/resume/resume-layout";
 import { normalizeTitle } from "../find-existing";
@@ -365,7 +366,6 @@ export function insertImportedResume(ctx: SeedCtx, detail: ResumeDetailDTO) {
     fullName: detail.fullName,
     headline: detail.headline,
     description: detail.description,
-    jobDescription: detail.jobDescription,
     jobId: null,
     templateId: detail.templateId || "default",
     layout: emptyResumeLayout(),
@@ -380,4 +380,5 @@ export function insertImportedResume(ctx: SeedCtx, detail: ResumeDetailDTO) {
     createdAt: Number.isNaN(tsCreated) ? nowMs() : tsCreated,
     updatedAt: Number.isNaN(tsUpdated) ? nowMs() : tsUpdated,
   });
+  attachJobDescription(ctx.db, ctx.userId, detail.id, detail.jobDescription);
 }

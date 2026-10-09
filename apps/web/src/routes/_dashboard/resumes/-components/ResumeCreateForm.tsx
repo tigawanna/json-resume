@@ -1,3 +1,4 @@
+import { JobPickerField } from "@/components/jobs/JobPickerField";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -11,25 +12,34 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useViewer } from "@/data-access-layer/auth/viewer";
+import { searchJobs } from "@/data-access-layer/event-sourced/job-rows";
 import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
 import { useAppForm } from "@/lib/tanstack/form";
 import { unwrapUnknownError } from "@/utils/errors";
 import { formOptions } from "@tanstack/react-form";
+import { useLiveQuery } from "@tanstack/react-db";
 import { useState } from "react";
 import { toast } from "sonner";
 import { joinSearchable, libraryRowBase } from "../../-utils/row-helpers";
 import { emptyResumeLayout } from "@/features/resume/resume-layout";
 
-const createOpts = formOptions({
-  defaultValues: {
-    name: "",
-    fullName: "",
-    headline: "",
-    description: "",
-    jobDescription: "",
-    templateId: "default",
-  },
-});
+const createDefaults: {
+  name: string;
+  fullName: string;
+  headline: string;
+  description: string;
+  jobId: string | null;
+  templateId: string;
+} = {
+  name: "",
+  fullName: "",
+  headline: "",
+  description: "",
+  jobId: null,
+  templateId: "default",
+};
+
+const createOpts = formOptions({ defaultValues: createDefaults });
 
 interface ResumeCreateFormProps {
   onSuccess?: () => void;
@@ -39,6 +49,7 @@ export function ResumeCreateForm({ onSuccess }: ResumeCreateFormProps) {
   const db = useEventSourcedDb();
   const { viewer } = useViewer();
   const [pending, setPending] = useState(false);
+  const { data: jobs } = useLiveQuery((q) => q.from({ row: db.collections.job }), []);
 
   const form = useAppForm({
     ...createOpts,
@@ -59,8 +70,7 @@ export function ResumeCreateForm({ onSuccess }: ResumeCreateFormProps) {
           fullName: value.fullName || value.name,
           headline: value.headline,
           description: value.description,
-          jobDescription: value.jobDescription,
-          jobId: null,
+          jobId: value.jobId,
           templateId: value.templateId || "default",
           layout: emptyResumeLayout(),
           searchableText: joinSearchable(
@@ -149,6 +159,16 @@ export function ResumeCreateForm({ onSuccess }: ResumeCreateFormProps) {
               className="mt-1 min-h-20"
             />
           </div>
+        )}
+      </form.AppField>
+      <form.AppField name="jobId">
+        {(field) => (
+          <JobPickerField
+            label="Target job (optional)"
+            value={(jobs ?? []).find((job) => job.id === field.state.value) ?? null}
+            onChange={(job) => field.handleChange(job?.id ?? null)}
+            searchJobs={async (query) => searchJobs(jobs ?? [], query)}
+          />
         )}
       </form.AppField>
       <form.Subscribe selector={(s) => s.values}>

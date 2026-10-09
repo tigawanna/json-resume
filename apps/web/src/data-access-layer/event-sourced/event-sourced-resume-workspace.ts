@@ -12,6 +12,7 @@ import {
 } from "@/features/resume/resume-layout";
 import type { ResumeDocumentV1 } from "@/features/resume/resume-schema";
 import type {
+  AttachableLibraryKey,
   ContactDraft,
   EducationDraft,
   ExperienceDraft,
@@ -21,10 +22,11 @@ import type {
   ResumeWorkspaceAdapter,
   SkillGroupDraft,
   TalkDraft,
+  TargetJobDraft,
 } from "@/components/resume/resume-workspace/resume-workspace-types";
 import type { AppDb } from "./collection";
 import type { EventSourcedResumeSnapshots } from "./assemble-resume-detail";
-import { attachJobToResume } from "./job-rows";
+import { attachJobToResume, saveResumeTargetJob, searchJobs } from "./job-rows";
 import {
   contactIndex,
   educationIndex,
@@ -209,12 +211,18 @@ export function createEventSourcedResumeWorkspace(
   return {
     mode: "local",
     resume: detail,
-    jobs: db.collections.job.toArray.map((job) => ({
-      id: job.id,
-      company: job.company,
-      title: job.title,
-    })),
     searches: {
+      jobs: async (query) =>
+        searchJobs(snapshots.jobs, query).map((job) => ({
+          id: job.id,
+          company: job.company,
+          title: job.title,
+          description: job.description,
+          url: job.url,
+          location: job.location,
+          status: job.status,
+          updatedAt: job.updatedAt,
+        })),
       experiences: async (query) =>
         snapshots.experiences
           .filter((row) => matchQuery(query, row.company, row.role, row.location))
@@ -278,16 +286,16 @@ export function createEventSourcedResumeWorkspace(
         );
         draft.updatedAt = nowMs();
       });
-      const nextJobId = values.jobId === undefined ? (detail.jobId ?? null) : values.jobId;
-      if (nextJobId) {
-        attachJobToResume(db, resumeId, nextJobId);
-      } else {
-        attachJobToResume(db, resumeId, null);
-        db.collections.resume.update(resumeId, (draft) => {
-          draft.jobDescription = values.jobDescription;
-          draft.updatedAt = nowMs();
-        });
-      }
+    },
+    async attachJob(jobId: string | null) {
+      attachJobToResume(db, resumeId, jobId);
+    },
+    async saveTargetJob(values: TargetJobDraft) {
+      const job = saveResumeTargetJob(db, userId, resumeId, values);
+      return { id: job.id };
+    },
+    async attachLibraryRows(key: AttachableLibraryKey, ids: string[]) {
+      for (const id of ids) addToLayout(key, id);
     },
     async updateContacts(contacts: ContactDraft[]) {
       const ids = contactIds(contacts);

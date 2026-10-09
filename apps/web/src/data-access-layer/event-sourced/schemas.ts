@@ -51,8 +51,7 @@ export const resumeSchema = z.object({
   fullName: z.string(),
   headline: z.string(),
   description: z.string(),
-  jobDescription: z.string(),
-  /** Linked row in the independent `job` collection, if any. */
+  /** Target job in the independent `job` collection; its `description` is the posting text. */
   jobId: z.string().nullable().optional(),
   templateId: z.string(),
   /** What the résumé shows from the library, in order; readers treat a missing one as empty. */
@@ -320,6 +319,7 @@ export type JobStatus = z.infer<typeof jobStatusSchema>;
 export const jobSchema = z.object({
   id: z.string(),
   userId: z.string().nullable().optional(),
+  /** "" when unknown; only `description` is required. */
   company: z.string(),
   title: z.string(),
   description: z.string(),

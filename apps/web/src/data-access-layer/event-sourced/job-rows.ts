@@ -1,5 +1,6 @@
+import { z } from "zod";
 import type { AppDb } from "./collection";
-import type { Job, JobStatus } from "./schemas";
+import type { Job, JobStatus, Resume } from "./schemas";
 import { jobStatusSchema } from "./schemas";
 import { joinSearchable, libraryRowBase, nowMs } from "@/routes/_dashboard/-utils/row-helpers";
 
@@ -17,9 +18,10 @@ export const JOB_STATUS_OPTIONS = jobStatusSchema.options.map((value) => ({
   label: JOB_STATUS_LABELS[value],
 }));
 
+/** Only the posting text is required; every other field may be filled in later. */
 export type JobDraft = {
-  company: string;
   description: string;
+  company?: string;
   title?: string;
   url?: string;
   location?: string;
@@ -47,7 +49,7 @@ function jobSearchableText(draft: {
 }
 
 function normalizeDraft(draft: JobDraft) {
-  const company = draft.company.trim();
+  const company = draft.company?.trim() ?? "";
   const description = draft.description.trim();
   const title = draft.title?.trim() ?? "";
   const url = draft.url?.trim() ?? "";
@@ -65,9 +67,6 @@ function normalizeDraft(draft: JobDraft) {
 
 export function insertJob(db: AppDb, userId: string | null | undefined, draft: JobDraft): Job {
   const value = normalizeDraft(draft);
-  if (!value.company) {
-    throw new Error("Company name is required.");
-  }
   if (!value.description) {
     throw new Error("Job description is required.");
   }
@@ -93,14 +92,15 @@ export function insertJob(db: AppDb, userId: string | null | undefined, draft: J
   return row;
 }
 
-export function updateJob(db: AppDb, jobId: string, draft: JobDraft): Job {
-  const existing = db.collections.job.toArray.find((row) => row.id === jobId);
+/** Fields left out of `draft` keep their current value. */
+export function updateJob(db: AppDb, jobId: string, draft: Partial<JobDraft>): Job {
+  const existing = db.collections.job.get(jobId);
   if (!existing) {
     throw new Error(`Job ${jobId} was not found.`);
   }
   const value = normalizeDraft({
-    company: draft.company,
-    description: draft.description,
+    company: draft.company ?? existing.company,
+    description: draft.description ?? existing.description,
     title: draft.title ?? existing.title,
     url: draft.url ?? existing.url,
     location: draft.location ?? existing.location,
@@ -108,9 +108,6 @@ export function updateJob(db: AppDb, jobId: string, draft: JobDraft): Job {
     notes: draft.notes ?? existing.notes,
     appliedAt: draft.appliedAt === undefined ? existing.appliedAt : draft.appliedAt,
   });
-  if (!value.company) {
-    throw new Error("Company name is required.");
-  }
   if (!value.description) {
     throw new Error("Job description is required.");
   }
@@ -126,45 +123,76 @@ export function updateJob(db: AppDb, jobId: string, draft: JobDraft): Job {
     row.searchableText = jobSearchableText(value);
     row.updatedAt = nowMs();
   });
-  syncJobDescriptionToLinkedResumes(db, jobId, value.description);
-  const updated = db.collections.job.toArray.find((row) => row.id === jobId);
+  const updated = db.collections.job.get(jobId);
   if (!updated) {
     throw new Error(`Job ${jobId} was not found after update.`);
   }
   return updated;
 }
 
+/**
+ * Résumés saved before jobs were tracked separately kept the posting on the row
+ * as `jobDescription`. Stored rows keep it until the résumé is linked or
+ * unlinked (which blanks it), so it can be moved into a job.
+ */
+const LEGACY_JOB_DESCRIPTION_KEY = "jobDescription";
+const legacyJobDescriptionSchema = z.object({ [LEGACY_JOB_DESCRIPTION_KEY]: z.string() });
+
+export function legacyJobDescription(resume: object): string {
+  const parsed = legacyJobDescriptionSchema.safeParse(resume);
+  return parsed.success ? parsed.data[LEGACY_JOB_DESCRIPTION_KEY].trim() : "";
+}
+
 export function attachJobToResume(db: AppDb, resumeId: string, jobId: string | null) {
-  const resume = db.collections.resume.toArray.find((row) => row.id === resumeId);
-  if (!resume) {
+  if (!db.collections.resume.has(resumeId)) {
     throw new Error(`Resume ${resumeId} was not found.`);
   }
-  if (!jobId) {
-    db.collections.resume.update(resumeId, (row) => {
-      row.jobId = null;
-      row.updatedAt = nowMs();
-    });
-    return;
-  }
-  const job = db.collections.job.toArray.find((row) => row.id === jobId);
-  if (!job) {
+  if (jobId && !db.collections.job.has(jobId)) {
     throw new Error(`Job ${jobId} was not found.`);
   }
   db.collections.resume.update(resumeId, (row) => {
     row.jobId = jobId;
-    row.jobDescription = job.description;
+    // Updates merge into the stored row, so a deleted key would survive; blank it instead.
+    if (Object.hasOwn(row, LEGACY_JOB_DESCRIPTION_KEY)) {
+      Reflect.set(row, LEGACY_JOB_DESCRIPTION_KEY, "");
+    }
     row.updatedAt = nowMs();
   });
 }
 
-export function syncJobDescriptionToLinkedResumes(db: AppDb, jobId: string, description: string) {
-  for (const resume of db.collections.resume.toArray) {
-    if (resume.jobId !== jobId) continue;
-    db.collections.resume.update(resume.id, (row) => {
-      row.jobDescription = description;
-      row.updatedAt = nowMs();
-    });
+/** Saves the résumé's target job: edits the linked job, or creates one and links it. */
+export function saveResumeTargetJob(
+  db: AppDb,
+  userId: string | null | undefined,
+  resumeId: string,
+  draft: JobDraft,
+): Job {
+  const resume = db.collections.resume.get(resumeId);
+  if (!resume) {
+    throw new Error(`Resume ${resumeId} was not found.`);
   }
+  const linked = resume.jobId ? db.collections.job.get(resume.jobId) : undefined;
+  if (linked) return updateJob(db, linked.id, draft);
+  const job = insertJob(db, userId, draft);
+  attachJobToResume(db, resumeId, job.id);
+  return job;
+}
+
+/** Links the résumé to a job with this posting text, reusing an identical one before creating a row. */
+export function attachJobDescription(
+  db: AppDb,
+  userId: string | null | undefined,
+  resumeId: string,
+  description: string,
+): Job | null {
+  const text = description.trim();
+  if (!text) return null;
+  const key = normalizeJobDescription(text);
+  const job =
+    db.collections.job.toArray.find((row) => normalizeJobDescription(row.description) === key) ??
+    insertJob(db, userId, { description: text });
+  attachJobToResume(db, resumeId, job.id);
+  return job;
 }
 
 export function unlinkJobFromResumes(db: AppDb, jobId: string) {
@@ -182,19 +210,36 @@ export function deleteJob(db: AppDb, jobId: string) {
   db.collections.job.delete(jobId);
 }
 
-export function resolveJobDescription(
-  resume: { jobId?: string | null; jobDescription: string },
-  jobs: ReadonlyArray<Job>,
-) {
-  if (resume.jobId) {
-    const job = jobs.find((row) => row.id === resume.jobId);
-    if (job?.description.trim()) return job.description;
-  }
-  return resume.jobDescription;
+export function linkedJob(resume: Pick<Resume, "jobId">, jobs: ReadonlyArray<Job>): Job | null {
+  if (!resume.jobId) return null;
+  return jobs.find((row) => row.id === resume.jobId) ?? null;
 }
 
-export function jobListLabel(job: Pick<Job, "company" | "title">) {
-  return job.title.trim() ? `${job.company} — ${job.title}` : job.company;
+export function jobDescriptionPreview(text: string, max = 240) {
+  const flat = text.trim().replace(/\s+/g, " ");
+  return flat.length <= max ? flat : `${flat.slice(0, max - 1)}…`;
+}
+
+export function jobListLabel(job: Pick<Job, "company" | "title" | "description">) {
+  const company = job.company.trim();
+  const title = job.title.trim();
+  if (company && title) return `${company} — ${title}`;
+  if (company || title) return company || title;
+  return jobDescriptionPreview(job.description, 60) || "Untitled job";
+}
+
+/** Jobs matching `query` in any text field, most recently updated first. */
+export function searchJobs<T extends Job>(jobs: ReadonlyArray<T>, query: string): T[] {
+  const needle = query.trim().toLowerCase();
+  return jobs
+    .filter(
+      (job) =>
+        !needle ||
+        [job.company, job.title, job.location, job.url, job.notes, job.description].some((part) =>
+          part.toLowerCase().includes(needle),
+        ),
+    )
+    .sort((a, b) => b.updatedAt - a.updatedAt);
 }
 
 function normalizeJobDescription(text: string) {
@@ -218,11 +263,11 @@ function guessCompanyFromDescription(text: string) {
   return "";
 }
 
-function guessCompanyFromResume(resume: { name: string; jobDescription: string }) {
-  const fromDescription = guessCompanyFromDescription(resume.jobDescription);
+function guessCompanyFromResume(name: string, description: string) {
+  const fromDescription = guessCompanyFromDescription(description);
   if (fromDescription) return fromDescription;
-  const name = resume.name.trim();
-  if (name && !/^(untitled|new resume|resume|copy)(\s|$)/i.test(name)) return name;
+  const trimmed = name.trim();
+  if (trimmed && !/^(untitled|new resume|resume|copy)(\s|$)/i.test(trimmed)) return trimmed;
   return "";
 }
 
@@ -235,19 +280,19 @@ export type JobImportGroup = {
   existingJobId: string | null;
 };
 
-/** Résumés with a pasted JD that are not already linked to a live job row. */
+/** Résumés still carrying a legacy pasted posting and not linked to a live job row. */
 export function listJobImportGroups(db: AppDb): JobImportGroup[] {
   const jobs = db.collections.job.toArray;
   const groups = new Map<string, JobImportGroup>();
 
   for (const resume of db.collections.resume.toArray) {
-    const description = resume.jobDescription.trim();
+    const description = legacyJobDescription(resume);
     if (!description) continue;
     if (resume.jobId && jobs.some((job) => job.id === resume.jobId)) continue;
 
     const key = normalizeJobDescription(description);
     const existing = jobs.find((job) => normalizeJobDescription(job.description) === key);
-    const suggested = guessCompanyFromResume(resume);
+    const suggested = guessCompanyFromResume(resume.name, description);
     const group = groups.get(key);
     if (group) {
       group.resumeIds.push(resume.id);
@@ -281,34 +326,27 @@ export function importJobsFromResumeGroups(
 
   for (const selection of selections) {
     const group = groups.find((item) => item.key === selection.key);
-    const company = selection.company.trim();
-    if (!group || !company) {
+    if (!group) {
       skipped += 1;
       continue;
     }
 
-    const existing = group.existingJobId
-      ? db.collections.job.toArray.find((row) => row.id === group.existingJobId)
-      : undefined;
+    const existing = group.existingJobId ? db.collections.job.get(group.existingJobId) : undefined;
     let jobId: string;
     if (existing) {
       reused += 1;
       jobId = existing.id;
     } else {
       jobId = insertJob(db, userId, {
-        company,
+        company: selection.company,
         description: group.description,
         title: selection.title,
       }).id;
       created += 1;
     }
-    const nextJob = db.collections.job.toArray.find((row) => row.id === jobId);
-    if (!nextJob) {
-      throw new Error("Job was not found after import.");
-    }
 
     for (const resumeId of group.resumeIds) {
-      attachJobToResume(db, resumeId, nextJob.id);
+      attachJobToResume(db, resumeId, jobId);
       attached += 1;
     }
   }

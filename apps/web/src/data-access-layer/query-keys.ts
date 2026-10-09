@@ -2,6 +2,7 @@ export const queryKeyPrefixes = {
   viewer: "viewer",
   users: "users",
   resumes: "resumes",
+  jobs: "jobs",
   experiences: "experiences",
   education: "education",
   resumeProjects: "resume-projects",
