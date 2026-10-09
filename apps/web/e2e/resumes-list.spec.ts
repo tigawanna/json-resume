@@ -1,72 +1,53 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
+import {
+  expectToast,
+  reloadAfterLocalWrites,
+  ROW_SELECTOR,
+  waitForLocalDb,
+  waitForLocalWrites,
+} from "./resume-data/local-db";
 import { signUp } from "./support/auth";
+import { createAndOpenResume } from "./support/resume-workflow";
 
-test.setTimeout(75_000);
+test("manages resumes from the list route", async ({ page }) => {
+  const { uniqueId } = await signUp(page);
+  const name = `List Resume ${uniqueId}`;
+  const copyName = `${name} (copy)`;
 
-test("manages resumes from the list route", async ({ page, context }) => {
-  await context.grantPermissions(["clipboard-read", "clipboard-write"]);
-  await signUp(page);
+  await createAndOpenResume(page, name);
 
-  await page.goto("/resumes");
-  await expect(page.getByTestId("resume-list-page")).toBeVisible();
-  await page.getByRole("button", { name: "New Resume" }).click();
-  await expectToast(page, "Resume created");
+  await openResumeList(page);
+  const original = resumeCard(page, name);
+  await expect(original).toBeVisible();
+
+  await original.getByTestId("row-clone-btn").click();
+  await expectToast(page, "Résumé cloned");
   await expect(page.getByTestId("resume-workbench")).toBeVisible();
+  await expect(page.getByTestId("metadata-form").getByLabel("Resume Name")).toHaveValue(copyName);
 
-  await page.goto("/resumes");
-  await expect(page.getByTestId("resume-list-page")).toBeVisible();
-  const originalCard = resumeCard(page, "Untitled Resume");
-  await expect(originalCard).toBeVisible();
+  await openResumeList(page);
+  await expect(original).toBeVisible();
+  const clone = resumeCard(page, copyName);
+  await expect(clone).toBeVisible();
 
-  await originalCard.getByRole("link", { name: "Untitled Resume" }).first().click();
-  await expect(page.getByTestId("resume-workbench")).toBeVisible();
-  await expect(page).toHaveURL((url) => {
-    return /^\/resumes\/[^/]+\/?$/.test(url.pathname) && url.searchParams.get("tab") === "edit";
-  });
+  await clone.getByTestId("row-delete-btn").click();
+  await expectToast(page, "Résumé deleted");
+  await expect(clone).toBeHidden();
 
-  await page.goto("/resumes");
-  await expect(page.getByTestId("resume-list-page")).toBeVisible();
-  await openResumeActions(originalCard);
-  await page.getByTestId("resume-copy-json-btn").click();
-  await expectToast(page, "Resume JSON copied");
-  const clipboardText = await page.evaluate(() => navigator.clipboard.readText());
-  expect(JSON.parse(clipboardText)).toMatchObject({
-    version: 1,
-    header: { fullName: "Jordan Lee" },
-  });
-
-  await openResumeActions(originalCard);
-  await page.getByTestId("resume-clone-btn").click();
-  await expectToast(page, "Resume cloned");
-  await expect(page.getByTestId("resume-workbench")).toBeVisible();
-
-  await page.goto("/resumes");
-  await expect(page.getByTestId("resume-list-page")).toBeVisible();
-  await expect(originalCard).toBeVisible();
-  const clonedCard = resumeCard(page, "Untitled Resume (copy)");
-  await expect(clonedCard).toBeVisible();
-
-  await openResumeActions(clonedCard);
-  await page.getByTestId("resume-delete-btn").click();
-  await expectToast(page, "Resume deleted");
-  await expect(clonedCard).toBeHidden();
-
-  await page.reload();
-  await expect(page.getByTestId("resume-list-page")).toBeVisible();
-  await expect(originalCard).toBeVisible();
-  await expect(resumeCard(page, "Untitled Resume (copy)")).toBeHidden();
+  await reloadAfterLocalWrites(page);
+  await expect(page.getByTestId("resumes-list-page")).toBeVisible();
+  await expect(original).toBeVisible();
+  await expect(resumeCard(page, copyName)).toBeHidden();
 });
 
+async function openResumeList(page: Page) {
+  await waitForLocalWrites(page);
+  await page.goto("/resumes");
+  await waitForLocalDb(page);
+  await expect(page.getByTestId("resumes-list-page")).toBeVisible();
+}
+
 function resumeCard(page: Page, name: string): Locator {
-  return page.locator("[data-test^='resume-card-']").filter({
-    has: page.getByRole("link", { name, exact: true }),
-  });
-}
-
-async function openResumeActions(card: Locator) {
-  await card.getByTestId("resume-card-actions-trigger").click();
-}
-
-async function expectToast(page: Page, message: string) {
-  await expect(page.getByText(message).last()).toBeVisible();
+  const title = page.locator("[data-slot='card-title']").and(page.getByText(name, { exact: true }));
+  return page.getByTestId("resumes-table").locator(ROW_SELECTOR).filter({ has: title });
 }

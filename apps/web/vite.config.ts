@@ -11,6 +11,11 @@ const config = defineConfig({
   staged: { "*": "vp check --fix" },
   server: {
     host: "::",
+    hmr: {
+      // A transient dev-server error (e.g. a socket reset under load) puts the overlay
+      // on every open page and blocks all pointer events until the test times out.
+      overlay: process.env.VITE_E2E !== "true",
+    },
   },
   resolve: {
     alias: {

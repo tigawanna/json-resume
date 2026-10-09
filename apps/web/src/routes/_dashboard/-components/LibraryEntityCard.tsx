@@ -90,9 +90,7 @@ export function LibraryEntityCard({
 
         <CardFooter className="mt-auto flex flex-wrap items-end justify-between gap-2 border-t pt-4">
           <div className="flex min-w-0 flex-1 flex-col gap-1">
-            {identity ? (
-              <p className="text-foreground/80 truncate text-sm">{identity}</p>
-            ) : null}
+            {identity ? <p className="text-foreground/80 truncate text-sm">{identity}</p> : null}
             {typeof sortOrder === "number" ? (
               <Badge variant="secondary" className="w-fit text-xs" title="Library sort order">
                 <ListOrdered className="mr-1 size-3" />#{sortOrder}

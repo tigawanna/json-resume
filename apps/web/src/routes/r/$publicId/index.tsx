@@ -15,9 +15,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { ArrowLeft, FileX } from "lucide-react";
 
 function asTemplateId(value: string): TemplateId {
-  return (TEMPLATE_IDS as readonly string[]).includes(value)
-    ? (value as TemplateId)
-    : "classic";
+  return (TEMPLATE_IDS as readonly string[]).includes(value) ? (value as TemplateId) : "classic";
 }
 
 export const Route = createFileRoute("/r/$publicId/")({

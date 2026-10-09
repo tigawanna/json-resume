@@ -8,8 +8,7 @@ import {
   seedCollection,
   waitForLocalDb,
 } from "./resume-data/local-db";
-
-test.setTimeout(120_000);
+import { openEditorSection } from "./support/resume-editor-sections";
 
 test("workbench add/edit/sort/pick-existing/skills persist into preview and back to edit", async ({
   page,
@@ -116,7 +115,7 @@ test("workbench add/edit/sort/pick-existing/skills persist into preview and back
   await firstCard.getByRole("button", { name: "Move experience down" }).click();
   await expect(page.locator("[data-test^='experience-card-']").nth(1)).toContainText(firstTitle);
 
-  await page.getByRole("button", { name: "Education" }).click();
+  await openEditorSection(page, "Education", "education-section");
   await page.getByRole("button", { name: "Add Education" }).click();
   const education = page.getByTestId("add-education-form");
   await education.getByLabel("School").fill(school);
@@ -125,7 +124,7 @@ test("workbench add/edit/sort/pick-existing/skills persist into preview and back
   await expectToast(page, "Education added");
   await expect(page.getByTestId("education-section")).toContainText(school);
 
-  await page.getByRole("button", { name: "Projects" }).click();
+  await openEditorSection(page, "Projects", "project-section");
   await page.getByRole("button", { name: "Add Project" }).click();
   const project = page.getByTestId("add-project-form");
   await expect(project).toBeVisible();
@@ -137,8 +136,7 @@ test("workbench add/edit/sort/pick-existing/skills persist into preview and back
   await expectToast(page, "Project added");
   await expect(page.getByTestId("project-section")).toContainText(projectName);
 
-  await page.getByRole("button", { name: "Skills", exact: true }).click();
-  const skills = page.getByTestId("skills-form");
+  const skills = await openEditorSection(page, "Skills", "skills-form");
   await skills.getByRole("button", { name: "Add Group" }).click();
   await skills.getByPlaceholder("Group name (e.g. Languages)").last().fill("Quality");
   await skills.getByPlaceholder("Type skill and press Enter").last().fill(skillName);
@@ -171,8 +169,8 @@ test("workbench add/edit/sort/pick-existing/skills persist into preview and back
   await expect(page.getByTestId("experience-section")).toContainText(addedRole);
   await expect(page.getByTestId("experience-section")).toContainText(editedBullet);
   await expect(page.getByTestId("education-section")).toContainText(school);
-  await page.getByRole("button", { name: "Projects" }).click();
-  await expect(page.getByTestId("project-section")).toContainText(projectName);
-  await page.getByRole("button", { name: "Skills", exact: true }).click();
-  await expect(page.getByTestId("skills-form")).toContainText(skillName);
+  await expect(await openEditorSection(page, "Projects", "project-section")).toContainText(
+    projectName,
+  );
+  await expect(await openEditorSection(page, "Skills", "skills-form")).toContainText(skillName);
 });

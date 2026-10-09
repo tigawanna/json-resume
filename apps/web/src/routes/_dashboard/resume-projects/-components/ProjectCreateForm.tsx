@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -198,6 +199,9 @@ export function ProjectCreateFormDialog({ open, setOpen }: ProjectCreateFormDial
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>New Project</DialogTitle>
+          <DialogDescription>
+            Add a project to your library so any résumé can reuse it.
+          </DialogDescription>
         </DialogHeader>
         <ProjectCreateForm onSuccess={() => setOpen(false)} />
       </DialogContent>

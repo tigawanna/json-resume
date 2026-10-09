@@ -18,8 +18,35 @@ type E2eSeedDb = {
 
 export async function waitForLocalDb(page: Page) {
   await page.waitForFunction(() => Boolean(window.__e2eEventSourcedDb), null, {
-    timeout: 30_000,
+    timeout: 60_000,
   });
+}
+
+/**
+ * Local writes are optimistic: the UI (and its toast) updates before the row reaches OPFS.
+ * Call before `page.reload()` or navigating away, or the write can be lost.
+ * Passes straight away on a page where the DB hasn't loaded, since nothing can be pending.
+ */
+export async function waitForLocalWrites(page: Page) {
+  await page.waitForFunction(
+    () => {
+      const db = window.__e2eEventSourcedDb;
+      if (!db) return true;
+      return Object.values(db.collections).every((collection) =>
+        [...collection._state.transactions.values()].every(
+          (tx) => tx.state === "completed" || tx.state === "failed",
+        ),
+      );
+    },
+    null,
+    { timeout: 10_000 },
+  );
+}
+
+export async function reloadAfterLocalWrites(page: Page) {
+  await waitForLocalWrites(page);
+  await page.reload();
+  await waitForLocalDb(page);
 }
 
 export async function seedCollection(
@@ -148,23 +175,26 @@ export async function expectPagination(page: Page, current: number, total: numbe
   await expect(page.getByTestId("list-pagination")).toContainText(`Page ${current} of ${total}`);
 }
 
+/** Items are `row-<id>`; their action buttons are `row-*-btn`. */
+export const ROW_SELECTOR = '[data-test^="row-"]:not([data-test$="-btn"])';
+
 export async function expectDesktopRowCount(page: Page, tableTestId: string, count: number) {
-  await expect(page.getByTestId(tableTestId).locator('[data-test^="row-"]')).toHaveCount(count);
+  await expect(page.getByTestId(tableTestId).locator(ROW_SELECTOR)).toHaveCount(count);
 }
 
+/** Clicks the action on the row containing `rowText`, so stale search results can't be hit. */
 export async function clickTableRowAction(
   page: Page,
   tableTestId: string,
   action: "edit" | "delete",
+  rowText: string,
 ) {
   const testId = action === "edit" ? "row-edit-btn" : "row-delete-btn";
-  await page
-    .getByTestId(tableTestId)
-    .getByTestId(testId)
-    .first()
-    .evaluate((el: HTMLButtonElement) => {
-      el.click();
-    });
+  const row = page.getByTestId(tableTestId).locator(ROW_SELECTOR).filter({ hasText: rowText });
+  await expect(row).toHaveCount(1);
+  await row.getByTestId(testId).evaluate((el: HTMLButtonElement) => {
+    el.click();
+  });
 }
 
 export async function goToNextPage(page: Page, expectedPage: number) {

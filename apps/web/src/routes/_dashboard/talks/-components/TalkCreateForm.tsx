@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -194,6 +195,9 @@ export function TalkCreateFormDialog({ open, setOpen }: TalkCreateFormDialogProp
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>New Talk</DialogTitle>
+          <DialogDescription>
+            Add a talk to your library so any résumé can reuse it.
+          </DialogDescription>
         </DialogHeader>
         <TalkCreateForm onSuccess={() => setOpen(false)} />
       </DialogContent>

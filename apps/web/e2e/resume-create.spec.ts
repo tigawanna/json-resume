@@ -1,8 +1,20 @@
-import { test } from "@playwright/test";
+import { expect, test } from "@playwright/test";
+import { waitForLocalDb, waitForLocalWrites } from "./resume-data/local-db";
 import { signUp } from "./support/auth";
-import { createResumeFromDashboard } from "./support/resume-workflow";
+import { createAndOpenResume } from "./support/resume-workflow";
 
 test("creates a resume through the authenticated UI", async ({ page }) => {
-  await signUp(page);
-  await createResumeFromDashboard(page);
+  const { uniqueId } = await signUp(page);
+  const name = `Created Resume ${uniqueId}`;
+  await createAndOpenResume(page, name);
+
+  await waitForLocalWrites(page);
+  await page.goto("/resumes");
+  await waitForLocalDb(page);
+  await expect(
+    page
+      .getByTestId("resumes-table")
+      .locator("[data-slot='card-title']")
+      .and(page.getByText(name, { exact: true })),
+  ).toBeVisible();
 });

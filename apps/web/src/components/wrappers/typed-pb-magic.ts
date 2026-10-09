@@ -27,9 +27,9 @@ type ResolveSelect<
   Extract<keyof TSelect, keyof TCollection["response"]> extends never
     ? TCollection["response"]
     : {
-        [K in keyof TSelect & keyof TCollection["response"] as TSelect[K] extends true
-          ? K
-          : never]: TCollection["response"][K];
+        [
+          K in keyof TSelect & keyof TCollection["response"] as TSelect[K] extends true ? K : never
+        ]: TCollection["response"][K];
       };
 export type ResolveSelectWithExpand<
   TCollection extends GenericCollection,
@@ -39,10 +39,12 @@ export type ResolveSelectWithExpand<
     ("expand" extends keyof TSelect
       ? {
           expand?: {
-            [Relation in keyof TSelect["expand"] &
-              keyof TCollection["relations"] as TSelect["expand"][Relation] extends false
-              ? never
-              : Relation]?: TSelect["expand"][Relation] extends true
+            [
+              Relation in keyof TSelect["expand"] &
+                keyof TCollection["relations"] as TSelect["expand"][Relation] extends false
+                ? never
+                : Relation
+            ]?: TSelect["expand"][Relation] extends true
               ? MaybeMakeArray<
                   TCollection["relations"][Relation],
                   ArrayInnerType<TCollection["relations"][Relation]>["response"]

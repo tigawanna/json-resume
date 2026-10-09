@@ -93,7 +93,10 @@ export function ReposFilters() {
       : langSplit.preset;
 
   return (
-    <div className="flex flex-col gap-3 sm:flex-row sm:items-center" data-test="repo-search-builder">
+    <div
+      className="flex flex-col gap-3 sm:flex-row sm:items-center"
+      data-test="repo-search-builder"
+    >
       <div className="relative min-w-0 flex-1">
         <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input
@@ -161,7 +164,11 @@ export function ReposFilters() {
                     patchFilters({ language: value });
                   }}
                 >
-                  <SelectTrigger id="repo-language-preset" data-test="repo-language" className="w-full">
+                  <SelectTrigger
+                    id="repo-language-preset"
+                    data-test="repo-language"
+                    className="w-full"
+                  >
                     <SelectValue placeholder="Filter by language" />
                   </SelectTrigger>
                   <SelectContent className="max-h-[min(280px,50vh)]">

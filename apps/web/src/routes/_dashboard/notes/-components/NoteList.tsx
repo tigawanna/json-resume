@@ -2,7 +2,13 @@ import { ADMIN_LIST_PER_PAGE } from "@/components/pagination/constants";
 import { deleteWithReferences } from "@/data-access-layer/event-sourced/library-resolve";
 import { usePageSearchQuery } from "@/components/search/use-page-search-query";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
 import type { ResumeNote } from "@/data-access-layer/event-sourced/schemas";
 import { RouterPendingComponent } from "@/lib/tanstack/router/RouterPendingComponent";
@@ -184,6 +190,7 @@ export function NoteList() {
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>New Note</DialogTitle>
+            <DialogDescription>Write a note to keep alongside your library.</DialogDescription>
           </DialogHeader>
           <NoteCreateForm onSuccess={() => setCreateOpen(false)} />
         </DialogContent>
@@ -193,6 +200,7 @@ export function NoteList() {
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>Edit Note</DialogTitle>
+            <DialogDescription>Update the contents of this note.</DialogDescription>
           </DialogHeader>
           {editing ? <NoteEditForm item={editing} onSuccess={() => setEditing(null)} /> : null}
         </DialogContent>

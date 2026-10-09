@@ -15,8 +15,6 @@ import {
   submitDialog,
 } from "./local-db";
 
-test.setTimeout(90_000);
-
 test("paginates, searches, and CRUDs local education entries", async ({ page }) => {
   const { uniqueId } = await signUp(page);
   const prefix = `Edu${uniqueId.slice(0, 8)}`;
@@ -49,12 +47,14 @@ test("paginates, searches, and CRUDs local education entries", async ({ page }) 
 
   await searchList(page, school);
   await expectDesktopRowCount(page, "education-table", 1);
-  await clickTableRowAction(page, "education-table", "edit");
-  await page.getByRole("dialog").locator("input").nth(1).fill("MFA");
+  await clickTableRowAction(page, "education-table", "edit", school);
+  const editDialog = page.getByRole("dialog");
+  await expect(editDialog.locator("input").nth(1)).toHaveValue("MSc");
+  await editDialog.locator("input").nth(1).fill("MFA");
   await submitDialog(page, "Save");
   await expectToast(page, "Education saved");
   await expect(page.getByTestId("education-table")).toContainText("MFA");
 
-  await clickTableRowAction(page, "education-table", "delete");
+  await clickTableRowAction(page, "education-table", "delete", school);
   await expectToast(page, "Education deleted");
 });

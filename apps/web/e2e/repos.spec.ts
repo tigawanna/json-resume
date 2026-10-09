@@ -1,16 +1,16 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
+import { expectToast, reloadAfterLocalWrites, waitForLocalDb } from "./resume-data/local-db";
 import { signUp } from "./support/auth";
-import { addGitHubAccountForUser, getSavedProjectCount } from "./support/github";
+import { addGitHubAccountForUser } from "./support/github";
 
 const agenticRepoUrl = "https://github.com/playwright-user/agentic-json-resume";
 
-test.setTimeout(90_000);
-
 test("searches and shortlists GitHub repositories", async ({ page }) => {
   const { email } = await signUp(page);
-  const { userId } = await addGitHubAccountForUser(email);
+  await addGitHubAccountForUser(email);
 
-  await page.goto("/repos", { waitUntil: "domcontentloaded" });
+  await page.goto("/repos");
+  await waitForLocalDb(page);
   await expect(page.getByTestId("github-repos-page")).toBeVisible();
   await expect(repoCard(page, "agentic-json-resume")).toBeVisible();
   await expect(repoCard(page, "legacy-portfolio")).toBeHidden();
@@ -27,24 +27,24 @@ test("searches and shortlists GitHub repositories", async ({ page }) => {
   await expect(agenticCard.getByText("resume", { exact: true })).toBeVisible();
 
   const saveButton = agenticCard.getByTestId("repo-save-toggle");
-  await expect(saveButton).toContainText("Save");
+  await expect(saveButton).toHaveText("Save");
   await saveButton.click();
   await expectToast(page, "Project saved");
-  await expect.poll(() => getSavedProjectCount(userId, agenticRepoUrl)).toBe(1);
-  await expect(saveButton).toContainText("Saved");
+  await expect(saveButton).toHaveText("Unsave");
+  await expect.poll(() => savedProjectCount(page, agenticRepoUrl)).toBe(1);
 
-  await page.reload({ waitUntil: "domcontentloaded" });
+  await reloadAfterLocalWrites(page);
   await expect(page.getByTestId("github-repos-page")).toBeVisible();
   const savedAgenticCard = repoCard(page, "agentic-json-resume");
-  await expect(savedAgenticCard.getByTestId("repo-save-toggle")).toContainText("Saved");
+  await expect(savedAgenticCard.getByTestId("repo-save-toggle")).toHaveText("Unsave");
 
   await savedAgenticCard.getByTestId("repo-save-toggle").click();
   await expectToast(page, "Project removed");
-  await expect.poll(() => getSavedProjectCount(userId, agenticRepoUrl)).toBe(0);
+  await expect.poll(() => savedProjectCount(page, agenticRepoUrl)).toBe(0);
 
-  await page.reload({ waitUntil: "domcontentloaded" });
+  await reloadAfterLocalWrites(page);
   await expect(page.getByTestId("github-repos-page")).toBeVisible();
-  await expect(repoCard(page, "agentic-json-resume").getByTestId("repo-save-toggle")).toContainText(
+  await expect(repoCard(page, "agentic-json-resume").getByTestId("repo-save-toggle")).toHaveText(
     "Save",
   );
 });
@@ -53,6 +53,11 @@ function repoCard(page: Page, name: string): Locator {
   return page.locator("[data-test='repo-card']").filter({ hasText: name });
 }
 
-async function expectToast(page: Page, message: string) {
-  await expect(page.getByText(message).last()).toBeVisible();
+/** Saved repos become local `resumeProject` rows keyed by URL. */
+function savedProjectCount(page: Page, url: string) {
+  return page.evaluate((target) => {
+    const db = window.__e2eEventSourcedDb;
+    if (!db) throw new Error("Local event-sourced DB is not ready");
+    return db.collections.resumeProject.toArray.filter((row) => row.url === target).length;
+  }, url);
 }

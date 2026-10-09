@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -230,6 +231,9 @@ export function JobCreateFormDialog({ open, setOpen }: JobCreateFormDialogProps)
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>New job</DialogTitle>
+          <DialogDescription>
+            Save a job posting so you can tailor résumés against it.
+          </DialogDescription>
         </DialogHeader>
         <JobCreateForm onSuccess={() => setOpen(false)} />
       </DialogContent>

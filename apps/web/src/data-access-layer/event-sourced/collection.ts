@@ -90,6 +90,19 @@ const byResumeId = <T extends { resumeId: string }>(name = "by-resume") => ({
   name,
 });
 
+/** List routes `orderBy(updatedAt).limit(n)`; without it TanStack DB loads every row. */
+const byUpdatedAt = <T extends { updatedAt: number }>(name = "by-updated") => ({
+  select: (row: T) => row.updatedAt,
+  indexType: BasicIndex,
+  name,
+});
+
+const libraryIndexes = <T extends { id: string; userId?: string | null; updatedAt: number }>() => [
+  byId<T>(),
+  byUserId<T>(),
+  byUpdatedAt<T>(),
+];
+
 /**
  * Local-first event-sourced DB.
  * Sync transport is wired but starts disabled. Call `applyManagedSyncGate`
@@ -116,16 +129,12 @@ const {
   collections: {
     resume: {
       getKey: (row) => row.id,
-      indexes: [
-        byId<Resume>(),
-        byUserId<Resume>(),
-        { select: (r) => r.updatedAt, indexType: BasicIndex, name: "by-updated" },
-      ],
+      indexes: libraryIndexes<Resume>(),
     },
 
     resumeExperience: {
       getKey: (row) => row.id,
-      indexes: [byId<ResumeExperience>(), byUserId<ResumeExperience>()],
+      indexes: libraryIndexes<ResumeExperience>(),
     },
     resumeExperienceBullet: {
       getKey: (row) => row.id,
@@ -137,7 +146,7 @@ const {
 
     resumeEducation: {
       getKey: (row) => row.id,
-      indexes: [byId<ResumeEducation>(), byUserId<ResumeEducation>()],
+      indexes: libraryIndexes<ResumeEducation>(),
     },
     resumeEducationBullet: {
       getKey: (row) => row.id,
@@ -149,56 +158,56 @@ const {
 
     resumeSkillGroup: {
       getKey: (row) => row.id,
-      indexes: [byId<ResumeSkillGroup>(), byUserId<ResumeSkillGroup>()],
+      indexes: libraryIndexes<ResumeSkillGroup>(),
     },
     resumeSkill: {
       getKey: (row) => row.id,
-      indexes: [byId<ResumeSkill>(), byUserId<ResumeSkill>()],
+      indexes: libraryIndexes<ResumeSkill>(),
     },
 
     resumeContact: {
       getKey: (row) => row.id,
-      indexes: [byId<ResumeContact>(), byUserId<ResumeContact>()],
+      indexes: libraryIndexes<ResumeContact>(),
     },
 
     resumeProject: {
       getKey: (row) => row.id,
-      indexes: [byId<ResumeProject>(), byUserId<ResumeProject>()],
+      indexes: libraryIndexes<ResumeProject>(),
     },
 
     resumeSummary: {
       getKey: (row) => row.id,
-      indexes: [byId<ResumeSummary>(), byUserId<ResumeSummary>()],
+      indexes: libraryIndexes<ResumeSummary>(),
     },
 
     resumeNote: {
       getKey: (row) => row.id,
-      indexes: [byId<ResumeNote>(), byUserId<ResumeNote>()],
+      indexes: libraryIndexes<ResumeNote>(),
     },
 
     resumeLink: {
       getKey: (row) => row.id,
-      indexes: [byId<ResumeLink>(), byUserId<ResumeLink>()],
+      indexes: libraryIndexes<ResumeLink>(),
     },
 
     resumeLanguage: {
       getKey: (row) => row.id,
-      indexes: [byId<ResumeLanguage>(), byUserId<ResumeLanguage>()],
+      indexes: libraryIndexes<ResumeLanguage>(),
     },
 
     resumeCertification: {
       getKey: (row) => row.id,
-      indexes: [byId<ResumeCertification>(), byUserId<ResumeCertification>()],
+      indexes: libraryIndexes<ResumeCertification>(),
     },
 
     resumeVolunteer: {
       getKey: (row) => row.id,
-      indexes: [byId<ResumeVolunteer>(), byUserId<ResumeVolunteer>()],
+      indexes: libraryIndexes<ResumeVolunteer>(),
     },
 
     resumeTalk: {
       getKey: (row) => row.id,
-      indexes: [byId<ResumeTalk>(), byUserId<ResumeTalk>()],
+      indexes: libraryIndexes<ResumeTalk>(),
     },
 
     resumeAiChat: {
@@ -213,7 +222,7 @@ const {
         byId<ResumeAiConversation>(),
         byUserId<ResumeAiConversation>(),
         byResumeId<ResumeAiConversation>(),
-        { select: (r) => r.updatedAt, indexType: BasicIndex, name: "by-updated" },
+        byUpdatedAt<ResumeAiConversation>(),
       ],
     },
     resumeAiMessage: {
@@ -229,11 +238,7 @@ const {
 
     savedProject: {
       getKey: (row) => row.id,
-      indexes: [
-        byId<SavedProject>(),
-        byUserId<SavedProject>(),
-        { select: (r) => r.updatedAt, indexType: BasicIndex, name: "by-updated" },
-      ],
+      indexes: libraryIndexes<SavedProject>(),
     },
 
     job: {
@@ -242,7 +247,7 @@ const {
         byId<Job>(),
         byUserId<Job>(),
         { select: (r) => r.status, indexType: BasicIndex, name: "by-status" },
-        { select: (r) => r.updatedAt, indexType: BasicIndex, name: "by-updated" },
+        byUpdatedAt<Job>(),
       ],
     },
 

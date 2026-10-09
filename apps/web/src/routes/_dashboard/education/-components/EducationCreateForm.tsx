@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -210,6 +211,9 @@ export function EducationCreateFormDialog({ open, setOpen }: EducationCreateForm
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>New Education</DialogTitle>
+          <DialogDescription>
+            Add an education entry to your library so any résumé can reuse it.
+          </DialogDescription>
         </DialogHeader>
         <EducationCreateForm onSuccess={() => setOpen(false)} />
       </DialogContent>

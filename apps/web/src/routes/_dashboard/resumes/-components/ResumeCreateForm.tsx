@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -180,6 +181,9 @@ export function ResumeCreateFormDialog({ open, setOpen }: ResumeCreateFormDialog
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>New Résumé</DialogTitle>
+          <DialogDescription>
+            Create a résumé, then fill it with entries from your library.
+          </DialogDescription>
         </DialogHeader>
         <ResumeCreateForm onSuccess={() => setOpen(false)} />
       </DialogContent>

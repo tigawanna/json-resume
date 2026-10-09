@@ -1,4 +1,5 @@
 import { expect, type Page } from "@playwright/test";
+import { reloadAfterLocalWrites } from "../resume-data/local-db";
 import { expectInputValue, expectNoInputValue, openEditorSection } from "./resume-editor-sections";
 
 export async function expectResumeItemChanges(page: Page) {
@@ -95,7 +96,7 @@ async function addUpdateAndDeleteExperience(page: Page) {
   await editingCard.getByRole("button", { name: "Save" }).click();
 
   await expectToast(page, "Experience saved");
-  await page.reload();
+  await reloadAfterLocalWrites(page);
   experience = await openEditorSection(page, "Experience", "experience-section");
   const updatedCard = experience
     .locator("[data-test^='experience-card-']")
@@ -105,7 +106,7 @@ async function addUpdateAndDeleteExperience(page: Page) {
   await updatedCard.getByRole("button", { name: "Delete experience" }).click();
 
   await expectToast(page, "Experience removed");
-  await page.reload();
+  await reloadAfterLocalWrites(page);
   experience = await openEditorSection(page, "Experience", "experience-section");
   await expect(updatedCard).toBeHidden();
 }
@@ -136,7 +137,7 @@ async function addUpdateAndDeleteEducation(page: Page) {
   await editingCard.getByRole("button", { name: "Save" }).click();
 
   await expectToast(page, "Education saved");
-  await page.reload();
+  await reloadAfterLocalWrites(page);
   education = await openEditorSection(page, "Education", "education-section");
   const updatedCard = education
     .locator("[data-test^='education-card-']")
@@ -146,7 +147,7 @@ async function addUpdateAndDeleteEducation(page: Page) {
   await updatedCard.locator("button").nth(3).click();
 
   await expectToast(page, "Education removed");
-  await page.reload();
+  await reloadAfterLocalWrites(page);
   education = await openEditorSection(page, "Education", "education-section");
   await expect(updatedCard).toBeHidden();
 }
@@ -181,7 +182,7 @@ async function addUpdateAndDeleteProject(page: Page) {
   await editingCard.getByRole("button", { name: "Save" }).click();
 
   await expectToast(page, "Project saved");
-  await page.reload();
+  await reloadAfterLocalWrites(page);
   projects = await openEditorSection(page, "Projects", "project-section");
   const updatedCard = projects
     .locator("[data-test^='project-card-']")
@@ -191,7 +192,7 @@ async function addUpdateAndDeleteProject(page: Page) {
   await updatedCard.locator("button").nth(3).click();
 
   await expectToast(page, "Project removed");
-  await page.reload();
+  await reloadAfterLocalWrites(page);
   projects = await openEditorSection(page, "Projects", "project-section");
   await expect(updatedCard).toBeHidden();
 }
@@ -248,7 +249,7 @@ async function addUpdateAndDeleteTalk(page: Page) {
   await editingCard.getByRole("button", { name: "Save" }).click();
 
   await expectToast(page, "Talk saved");
-  await page.reload();
+  await reloadAfterLocalWrites(page);
   talks = await openEditorSection(page, "Talks", "talks-section");
   const updatedCard = talks
     .locator("[data-test^='talk-card-']")
@@ -258,7 +259,7 @@ async function addUpdateAndDeleteTalk(page: Page) {
   await updatedCard.locator("button").nth(3).click();
 
   await expectToast(page, "Talk removed");
-  await page.reload();
+  await reloadAfterLocalWrites(page);
   talks = await openEditorSection(page, "Talks", "talks-section");
   await expect(updatedCard).toBeHidden();
 }

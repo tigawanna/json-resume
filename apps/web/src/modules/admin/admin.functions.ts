@@ -179,7 +179,7 @@ export const projectPendingEventsFn = createServerFn({ method: "POST" })
 
 export const compactLibraryFn = createServerFn({ method: "POST" })
   .middleware([adminMiddleware])
-  .inputValidator(z.object({ userId: z.string().min(1).optional() }))
+  .validator(z.object({ userId: z.string().min(1).optional() }))
   .handler(async ({ data, context }) =>
     auditAdminAction("compact-library", context.viewer.user, data, async () =>
       data.userId
@@ -215,7 +215,7 @@ export const getEventLogBackups = createServerFn({ method: "GET" })
 
 export const backupAndEmptyEventLogFn = createServerFn({ method: "POST" })
   .middleware([adminMiddleware])
-  .inputValidator(z.object({ confirm: z.string(), rebuild: z.boolean().optional() }))
+  .validator(z.object({ confirm: z.string(), rebuild: z.boolean().optional() }))
   .handler(async ({ data, context }) =>
     auditAdminAction(
       "backup-and-empty-event-log",

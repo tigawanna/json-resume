@@ -2,7 +2,13 @@ import { ADMIN_LIST_PER_PAGE } from "@/components/pagination/constants";
 import { Badge } from "@/components/ui/badge";
 import { usePageSearchQuery } from "@/components/search/use-page-search-query";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { JOB_STATUS_LABELS, deleteJob } from "@/data-access-layer/event-sourced/job-rows";
 import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
 import type { Job } from "@/data-access-layer/event-sourced/schemas";
@@ -244,6 +250,9 @@ export function JobList() {
         <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>New job</DialogTitle>
+            <DialogDescription>
+              Save a job posting so you can tailor résumés against it.
+            </DialogDescription>
           </DialogHeader>
           <JobCreateForm onSuccess={() => setCreateOpen(false)} />
         </DialogContent>
@@ -253,6 +262,7 @@ export function JobList() {
         <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit job</DialogTitle>
+            <DialogDescription>Update the details and status of this job.</DialogDescription>
           </DialogHeader>
           {editing ? <JobEditForm item={editing} onSuccess={() => setEditing(null)} /> : null}
         </DialogContent>

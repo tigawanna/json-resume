@@ -17,6 +17,7 @@
     "prepare": "vp config"
   },
   "devDependencies": {
+    "@shadcn/lint": "^0.2.0",
     "@typescript/native-preview": "catalog:",
     "site": "^2.60.4",
     "turbo": "^2.7.3",

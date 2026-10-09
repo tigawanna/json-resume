@@ -10,11 +10,10 @@ import {
   LIBRARY_SEED_COUNT,
   openSeededList,
   PAGE_SIZE,
+  ROW_SELECTOR,
   searchList,
   seedCollection,
 } from "./local-db";
-
-test.setTimeout(90_000);
 
 test("paginates, searches, and CRUDs local experiences without overflowing", async ({ page }) => {
   const { uniqueId } = await signUp(page);
@@ -26,9 +25,7 @@ test("paginates, searches, and CRUDs local experiences without overflowing", asy
 
   await expectDesktopRowCount(page, "experiences-table", PAGE_SIZE);
   await expectPagination(page, 1, totalPages);
-  await expect(
-    page.getByTestId("experiences-table").locator('[data-test^="row-"]').first(),
-  ).toBeVisible();
+  await expect(page.getByTestId("experiences-table").locator(ROW_SELECTOR).first()).toBeVisible();
 
   const firstPageText = await page.getByTestId("experiences-table").innerText();
   expect(firstPageText.length).toBeGreaterThan(40);
@@ -66,14 +63,15 @@ test("paginates, searches, and CRUDs local experiences without overflowing", asy
 
   await searchList(page, createdRole);
   await expectDesktopRowCount(page, "experiences-table", 1);
-  await clickTableRowAction(page, "experiences-table", "edit");
+  await clickTableRowAction(page, "experiences-table", "edit", createdRole);
   const editDialog = page.getByRole("dialog");
+  await expect(editDialog.locator("input").nth(0)).toHaveValue(createdRole);
   await editDialog.locator("input").nth(0).fill(`${createdRole} Senior`);
   await editDialog.getByRole("button", { name: "Save" }).click();
   await expectToast(page, "Experience saved");
   await expect(page.getByTestId("experiences-table")).toContainText(`${createdRole} Senior`);
 
-  await clickTableRowAction(page, "experiences-table", "delete");
+  await clickTableRowAction(page, "experiences-table", "delete", `${createdRole} Senior`);
   await expectToast(page, "Experience deleted");
   await expect(page.getByTestId("experiences-empty")).toBeVisible();
 });

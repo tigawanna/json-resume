@@ -2,7 +2,13 @@ import { ADMIN_LIST_PER_PAGE } from "@/components/pagination/constants";
 import { deleteWithReferences } from "@/data-access-layer/event-sourced/library-resolve";
 import { usePageSearchQuery } from "@/components/search/use-page-search-query";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
 import type { ResumeVolunteer } from "@/data-access-layer/event-sourced/schemas";
 import { RouterPendingComponent } from "@/lib/tanstack/router/RouterPendingComponent";
@@ -211,6 +217,9 @@ export function VolunteerList() {
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>New Volunteer</DialogTitle>
+            <DialogDescription>
+              Add a volunteer entry to your library so any résumé can reuse it.
+            </DialogDescription>
           </DialogHeader>
           <VolunteerCreateForm onSuccess={() => setCreateOpen(false)} />
         </DialogContent>
@@ -220,6 +229,9 @@ export function VolunteerList() {
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>Edit Volunteer</DialogTitle>
+            <DialogDescription>
+              Changes apply to every résumé that uses this volunteer entry.
+            </DialogDescription>
           </DialogHeader>
           {editing ? <VolunteerEditForm item={editing} onSuccess={() => setEditing(null)} /> : null}
         </DialogContent>

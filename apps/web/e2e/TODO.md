@@ -11,6 +11,35 @@ Last updated: 2026-05-21
 - Keep one spec file per route or major workflow so tests can be run in small parts.
 - Keep shared helpers boring: auth, navigation, unique fixture data, toast/assertion helpers. Do not hide route-specific form fields inside a giant all-routes helper.
 
+## Local-first + sync harness (2026-10-08)
+
+The app is local-first now: the editor writes to SQLite in the browser (OPFS) and only
+reaches the server through `/api/sync/events`. The webServer in `playwright.config.ts`
+is the sync server; its SQLite is `.test/db/e2e.sqlite` (reset each run).
+
+- Import `test`/`expect` from `support/fixtures.ts` and request `account` for a fresh
+  signed-up user. After every such test (pass or fail) its folder under `test-results/`
+  holds `browser.sqlite`, `server.sqlite` and `artifacts.json` (paths, user id, queries).
+- `support/sync.ts`: `enableManagedSync`, `syncNow`. The app does not push after each
+  edit, only on load, on enabling sync and on "Sync now".
+- `support/browser-db.ts`: `exportBrowserDb` (leaves the app to release the OPFS lock),
+  `queryBrowserDb`. The export has one view per collection (`resume`, `outbox`, …).
+- `support/database.ts`: `queryServerDb`, `snapshotServerDb`.
+- Reference spec: `resume-editor-sync.spec.ts`
+  (`pnpm --dir apps/web exec playwright test e2e/resume-editor-sync.spec.ts`).
+
+All specs were ported to the local-first UI on 2026-10-08; the full suite passes (23 tests).
+
+- Local writes are optimistic: the toast shows before the row reaches OPFS, and a reload
+  within ~300ms loses it. Call `waitForLocalWrites` (or `reloadAfterLocalWrites`) from
+  `resume-data/local-db.ts` before any `page.reload()` / `page.goto()` after a write.
+- Standalone Resume Data routes share `support/library-crud.ts` (`expectLibraryCrud`).
+  `support/resume-data-navigation.ts`, `createResumeFromDashboard` and
+  `expectDefaultResumeItems` are gone: use `createAndOpenResume`; new résumés start empty.
+- `settings-api-keys.spec.ts` was removed with the settings API-key UI (commit `1bcca3c`).
+- `support/global-setup.ts` visits every route once so the dev server compiles them before
+  workers start. A full page load takes ~10s under 4 workers, hence the 120s test timeout.
+
 ## Current Handoff
 
 Completed in this pass: `resume-data-experiences.spec.ts`.

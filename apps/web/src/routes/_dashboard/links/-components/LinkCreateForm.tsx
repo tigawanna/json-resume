@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -162,6 +163,9 @@ export function LinkCreateFormDialog({ open, setOpen }: LinkCreateFormDialogProp
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>New Link</DialogTitle>
+          <DialogDescription>
+            Add a link to your library so any résumé can reuse it.
+          </DialogDescription>
         </DialogHeader>
         <LinkCreateForm onSuccess={() => setOpen(false)} />
       </DialogContent>

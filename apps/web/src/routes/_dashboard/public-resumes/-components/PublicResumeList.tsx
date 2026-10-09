@@ -5,6 +5,7 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -67,7 +68,7 @@ export function PublicResumeList() {
     onSuccess(_data, id) {
       void qc.invalidateQueries({ queryKey: publicResumeKeys.all });
       toast.success("Unpublished");
-      void qc.removeQueries({ queryKey: publicResumeKeys.byId(id) });
+      qc.removeQueries({ queryKey: publicResumeKeys.byId(id) });
     },
     onError(err: unknown) {
       toast.error("Could not unpublish", {
@@ -77,8 +78,7 @@ export function PublicResumeList() {
   });
 
   const renameMutation = useMutation({
-    mutationFn: async (input: { id: string; title: string }) =>
-      renamePublicResume({ data: input }),
+    mutationFn: async (input: { id: string; title: string }) => renamePublicResume({ data: input }),
     onSuccess() {
       void qc.invalidateQueries({ queryKey: publicResumeKeys.all });
       toast.success("Title updated");
@@ -135,6 +135,9 @@ export function PublicResumeList() {
       <DialogContent className="sm:max-w-md" data-test="rename-public-resume-dialog">
         <DialogHeader>
           <DialogTitle>Rename public listing</DialogTitle>
+          <DialogDescription>
+            Choose the name shown for this résumé on its public listing.
+          </DialogDescription>
         </DialogHeader>
         <Input
           value={renameTitle}
@@ -256,7 +259,12 @@ export function PublicResumeList() {
                   asChild
                   data-test="public-resume-open-btn"
                 >
-                  <a href={`/r/${row.id}`} target="_blank" rel="noreferrer" aria-label="Open public page">
+                  <a
+                    href={`/r/${row.id}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label="Open public page"
+                  >
                     <ExternalLink className="size-3.5" />
                   </a>
                 </Button>

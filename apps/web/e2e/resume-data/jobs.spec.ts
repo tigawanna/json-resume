@@ -15,8 +15,6 @@ import {
   submitDialog,
 } from "./local-db";
 
-test.setTimeout(90_000);
-
 test("paginates, searches, and CRUDs local jobs", async ({ page }) => {
   const { uniqueId } = await signUp(page);
   const prefix = `Job${uniqueId.slice(0, 8)}`;
@@ -46,12 +44,14 @@ test("paginates, searches, and CRUDs local jobs", async ({ page }) => {
 
   await searchList(page, company);
   await expectDesktopRowCount(page, "jobs-table", 1);
-  await clickTableRowAction(page, "jobs-table", "edit");
-  await page.getByRole("dialog").locator("input").nth(1).fill("Principal Engineer");
+  await clickTableRowAction(page, "jobs-table", "edit", company);
+  const editDialog = page.getByRole("dialog");
+  await expect(editDialog.locator("input").nth(1)).toHaveValue("Staff Engineer");
+  await editDialog.locator("input").nth(1).fill("Principal Engineer");
   await submitDialog(page, "Save");
   await expectToast(page, "Job saved");
   await expect(page.getByTestId("jobs-table")).toContainText("Principal Engineer");
 
-  await clickTableRowAction(page, "jobs-table", "delete");
+  await clickTableRowAction(page, "jobs-table", "delete", company);
   await expectToast(page, "Job deleted");
 });

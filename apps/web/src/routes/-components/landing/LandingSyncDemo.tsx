@@ -56,7 +56,13 @@ export function LandingSyncDemo() {
 
   const copy = PHASE_COPY[phase];
   const Icon =
-    phase === "local" ? RefreshCwOff : phase === "syncing" ? RefreshCw : phase === "error" ? CloudAlert : CloudCheck;
+    phase === "local"
+      ? RefreshCwOff
+      : phase === "syncing"
+        ? RefreshCw
+        : phase === "error"
+          ? CloudAlert
+          : CloudCheck;
 
   return (
     <div

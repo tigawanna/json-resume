@@ -9,6 +9,7 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -185,6 +186,9 @@ export function ContactCreateFormDialog({ open, setOpen }: ContactCreateFormDial
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>New Contact</DialogTitle>
+          <DialogDescription>
+            Add a contact to your library so any résumé can reuse it.
+          </DialogDescription>
         </DialogHeader>
         <ContactCreateForm onSuccess={() => setOpen(false)} />
       </DialogContent>

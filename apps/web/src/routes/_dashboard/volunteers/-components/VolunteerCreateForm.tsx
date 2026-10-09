@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -191,6 +192,9 @@ export function VolunteerCreateFormDialog({ open, setOpen }: VolunteerCreateForm
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>New Volunteer</DialogTitle>
+          <DialogDescription>
+            Add a volunteer entry to your library so any résumé can reuse it.
+          </DialogDescription>
         </DialogHeader>
         <VolunteerCreateForm onSuccess={() => setOpen(false)} />
       </DialogContent>

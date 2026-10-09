@@ -3,6 +3,7 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -103,11 +104,11 @@ export function ImportResumeJsonDialog({ open, onOpenChange }: ImportResumeJsonD
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Import résumé JSON</DialogTitle>
+          <DialogDescription>
+            Paste a JSON Resume document (or upload a <code>.json</code> file). We’ll parse it into
+            a new local résumé with sections attached.
+          </DialogDescription>
         </DialogHeader>
-        <p className="text-muted-foreground text-sm">
-          Paste a JSON Resume document (or upload a <code>.json</code> file). We’ll parse it into a
-          new local résumé with sections attached.
-        </p>
         <label className="border-border hover:bg-muted/40 flex cursor-pointer items-center justify-center gap-2 rounded-md border border-dashed px-3 py-2 text-sm">
           <FileUp className="size-4" />
           Upload JSON file

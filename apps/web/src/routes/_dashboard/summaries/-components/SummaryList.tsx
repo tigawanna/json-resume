@@ -2,7 +2,13 @@ import { ADMIN_LIST_PER_PAGE } from "@/components/pagination/constants";
 import { deleteWithReferences } from "@/data-access-layer/event-sourced/library-resolve";
 import { usePageSearchQuery } from "@/components/search/use-page-search-query";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
 import type { ResumeSummary } from "@/data-access-layer/event-sourced/schemas";
 import { RouterPendingComponent } from "@/lib/tanstack/router/RouterPendingComponent";
@@ -183,6 +189,9 @@ export function SummaryList() {
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>New Summary</DialogTitle>
+            <DialogDescription>
+              Add a summary to your library so any résumé can reuse it.
+            </DialogDescription>
           </DialogHeader>
           <SummaryCreateForm onSuccess={() => setCreateOpen(false)} />
         </DialogContent>
@@ -192,6 +201,9 @@ export function SummaryList() {
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>Edit Summary</DialogTitle>
+            <DialogDescription>
+              Changes apply to every résumé that uses this summary.
+            </DialogDescription>
           </DialogHeader>
           {editing ? <SummaryEditForm item={editing} onSuccess={() => setEditing(null)} /> : null}
         </DialogContent>

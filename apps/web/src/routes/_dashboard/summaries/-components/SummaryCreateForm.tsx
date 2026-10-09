@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -128,6 +129,9 @@ export function SummaryCreateFormDialog({ open, setOpen }: SummaryCreateFormDial
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>New Summary</DialogTitle>
+          <DialogDescription>
+            Add a summary to your library so any résumé can reuse it.
+          </DialogDescription>
         </DialogHeader>
         <SummaryCreateForm onSuccess={() => setOpen(false)} />
       </DialogContent>

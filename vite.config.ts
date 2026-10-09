@@ -11,5 +11,9 @@ export default defineConfig({
       return `vp check --fix ${checked.map((file) => `'${file}'`).join(" ")}`;
     },
   },
-  lint: { options: { typeAware: true, typeCheck: true } },
+  lint: {
+    options: { typeAware: true, typeCheck: true },
+    jsPlugins: ["@shadcn/lint"],
+    rules: {},
+  },
 });

@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -113,6 +114,9 @@ export function SkillGroupCreateFormDialog({ open, setOpen }: SkillGroupCreateFo
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>New Skill Group</DialogTitle>
+          <DialogDescription>
+            Add a skill group to your library so any résumé can reuse it.
+          </DialogDescription>
         </DialogHeader>
         <SkillGroupCreateForm onSuccess={() => setOpen(false)} />
       </DialogContent>

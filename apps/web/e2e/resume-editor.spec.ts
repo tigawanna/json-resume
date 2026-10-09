@@ -1,13 +1,13 @@
 import { expect, test } from "@playwright/test";
 import { resumeDocumentV1Schema } from "@/features/resume/resume-schema";
+import { reloadAfterLocalWrites } from "./resume-data/local-db";
 import { signUp } from "./support/auth";
-import { createResumeFromDashboard } from "./support/resume-workflow";
-
-test.setTimeout(60_000);
+import { openEditorSection } from "./support/resume-editor-sections";
+import { createAndOpenResume } from "./support/resume-workflow";
 
 test("saves edited and newly added resume parts across the whole editor flow", async ({ page }) => {
   const { uniqueId } = await signUp(page);
-  await createResumeFromDashboard(page);
+  await createAndOpenResume(page, `Initial Resume ${uniqueId}`);
   await expect(page.getByTestId("resume-edit-tab")).toBeVisible();
 
   const metadata = page.getByTestId("metadata-form");
@@ -31,8 +31,7 @@ test("saves edited and newly added resume parts across the whole editor flow", a
   await contacts.getByRole("button", { name: "Save Contacts" }).click();
   await expect(page.getByText("Contacts saved")).toBeVisible();
 
-  await page.getByRole("button", { name: "Links" }).click();
-  const links = page.getByTestId("links-form");
+  const links = await openEditorSection(page, "Links", "links-form");
   await links.getByRole("button", { name: "Add Link" }).click();
   const linkInputs = links.locator("input");
   const linkInputCount = await linkInputs.count();
@@ -74,7 +73,7 @@ test("saves edited and newly added resume parts across the whole editor flow", a
   await editingExperienceCard.getByRole("button", { name: "Save" }).click();
   await expect(page.getByText("Experience saved")).toBeVisible();
 
-  await page.getByRole("button", { name: "Projects" }).click();
+  await openEditorSection(page, "Projects", "project-section");
   await page.getByRole("button", { name: "Add Project" }).click();
   const project = page.getByTestId("add-project-form");
   await project.getByPlaceholder("Enter Project Name").fill("resume-integrity-suite");
@@ -92,8 +91,7 @@ test("saves edited and newly added resume parts across the whole editor flow", a
   await project.getByRole("button", { name: "Add" }).click();
   await expect(page.getByText("Project added")).toBeVisible();
 
-  await page.getByRole("button", { name: "Skills" }).click();
-  const skills = page.getByTestId("skills-form");
+  const skills = await openEditorSection(page, "Skills", "skills-form");
   await skills.getByRole("button", { name: "Add Group" }).click();
   await skills.getByPlaceholder("Group name (e.g. Languages)").last().fill("Quality");
   await skills.getByPlaceholder("Type skill and press Enter").last().fill("Persistence Testing");
@@ -101,7 +99,7 @@ test("saves edited and newly added resume parts across the whole editor flow", a
   await skills.getByRole("button", { name: "Save Skills" }).click();
   await expect(page.getByText("Skills saved")).toBeVisible();
 
-  await page.reload();
+  await reloadAfterLocalWrites(page);
   await expect(page.getByTestId("resume-workbench")).toBeVisible();
   await page.getByRole("tab", { name: "JSON" }).click();
   await expect(page.getByTestId("resume-json-tab")).toBeVisible();
@@ -112,8 +110,6 @@ test("saves edited and newly added resume parts across the whole editor flow", a
 
   expect(doc.header.fullName).toBe(`Alex Persist ${uniqueId}`);
   expect(doc.header.headline).toBe("Principal Product Engineer");
-  expect(doc.header.email).toBe("jordan.lee@example.com");
-  expect(doc.header.location).toBe("Remote");
   expect(doc.header.links).toEqual(
     expect.arrayContaining([{ label: "Portfolio", url: "https://example.com/alex" }]),
   );

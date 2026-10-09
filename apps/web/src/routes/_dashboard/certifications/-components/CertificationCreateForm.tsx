@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -173,6 +174,9 @@ export function CertificationCreateFormDialog({
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>New Certification</DialogTitle>
+          <DialogDescription>
+            Add a certification to your library so any résumé can reuse it.
+          </DialogDescription>
         </DialogHeader>
         <CertificationCreateForm onSuccess={() => setOpen(false)} />
       </DialogContent>

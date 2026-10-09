@@ -15,8 +15,6 @@ import {
   submitDialog,
 } from "./local-db";
 
-test.setTimeout(90_000);
-
 test("paginates, searches, and CRUDs local resume projects", async ({ page }) => {
   const { uniqueId } = await signUp(page);
   const prefix = `Prj${uniqueId.slice(0, 8)}`;
@@ -47,12 +45,14 @@ test("paginates, searches, and CRUDs local resume projects", async ({ page }) =>
 
   await searchList(page, name);
   await expectDesktopRowCount(page, "resume-projects-table", 1);
-  await clickTableRowAction(page, "resume-projects-table", "edit");
-  await page.getByRole("dialog").locator("input").nth(0).fill(`${name} v2`);
+  await clickTableRowAction(page, "resume-projects-table", "edit", name);
+  const editDialog = page.getByRole("dialog");
+  await expect(editDialog.locator("input").nth(0)).toHaveValue(name);
+  await editDialog.locator("input").nth(0).fill(`${name} v2`);
   await submitDialog(page, "Save");
   await expectToast(page, "Project saved");
   await expect(page.getByTestId("resume-projects-table")).toContainText(`${name} v2`);
 
-  await clickTableRowAction(page, "resume-projects-table", "delete");
+  await clickTableRowAction(page, "resume-projects-table", "delete", `${name} v2`);
   await expectToast(page, "Project deleted");
 });

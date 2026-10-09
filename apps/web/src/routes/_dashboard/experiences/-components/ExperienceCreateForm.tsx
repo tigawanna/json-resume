@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -196,6 +197,9 @@ export function ExperienceCreateFormDialog({ open, setOpen }: ExperienceCreateFo
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>New Experience</DialogTitle>
+          <DialogDescription>
+            Add an experience to your library so any résumé can reuse it.
+          </DialogDescription>
         </DialogHeader>
         <ExperienceCreateForm onSuccess={() => setOpen(false)} />
       </DialogContent>

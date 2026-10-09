@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -144,6 +145,7 @@ export function NoteCreateFormDialog({ open, setOpen }: NoteCreateFormDialogProp
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>New Note</DialogTitle>
+          <DialogDescription>Write a note to keep alongside your library.</DialogDescription>
         </DialogHeader>
         <NoteCreateForm onSuccess={() => setOpen(false)} />
       </DialogContent>

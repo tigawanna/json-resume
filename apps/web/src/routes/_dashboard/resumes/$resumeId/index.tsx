@@ -7,6 +7,7 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -217,6 +218,9 @@ function EventSourcedResumeWorkbench({ resumeId }: { resumeId: string }) {
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
               <DialogTitle>Import Resume JSON</DialogTitle>
+              <DialogDescription>
+                Paste a résumé JSON document to replace this résumé's contents.
+              </DialogDescription>
             </DialogHeader>
             <textarea
               value={importText}

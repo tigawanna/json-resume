@@ -3,6 +3,7 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -45,6 +46,7 @@ export function SettingsDialog({
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
           <DialogTitle>Settings</DialogTitle>
+          <DialogDescription>Choose what the JSON tree and editor panes display.</DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
           <div>
@@ -119,6 +121,9 @@ export function PasteDialog({ open, onOpenChange, onSubmit }: PasteDialogProps) 
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Paste Resume JSON</DialogTitle>
+          <DialogDescription>
+            Paste a résumé JSON document to load it into the editor.
+          </DialogDescription>
         </DialogHeader>
         <textarea
           value={text}

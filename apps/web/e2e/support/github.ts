@@ -1,15 +1,10 @@
 import { createClient } from "@libsql/client";
 import { randomUUID } from "node:crypto";
-import { fileURLToPath } from "node:url";
-import { getUserIdByEmail } from "./database";
-
-const databaseUrl =
-  process.env.TEST_DATABASE_URL ??
-  `file:${fileURLToPath(new URL("../../.test/db/e2e.sqlite", import.meta.url))}`;
+import { getUserIdByEmail, serverDatabaseUrl } from "./database";
 
 export async function addGitHubAccountForUser(email: string) {
   const userId = await getUserIdByEmail(email);
-  const client = createClient({ url: databaseUrl, authToken: "" });
+  const client = createClient({ url: serverDatabaseUrl, authToken: "" });
   const id = `github-account-${randomUUID()}`;
   const now = Date.now();
 
@@ -34,22 +29,4 @@ export async function addGitHubAccountForUser(email: string) {
   }
 
   return { userId };
-}
-
-export async function getSavedProjectCount(userId: string, url: string) {
-  const client = createClient({ url: databaseUrl, authToken: "" });
-
-  try {
-    const result = await client.execute({
-      sql: "select count(*) as count from saved_project where user_id = ? and url = ?",
-      args: [userId, url],
-    });
-    const count = result.rows[0]?.count;
-    if (typeof count !== "number" && typeof count !== "bigint") {
-      throw new Error(`Saved project count query did not return a numeric result for ${url}`);
-    }
-    return Number(count);
-  } finally {
-    client.close();
-  }
 }

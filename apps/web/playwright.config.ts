@@ -10,7 +10,9 @@ const databaseUrl = process.env.TEST_DATABASE_URL ?? `file:${databasePath}`;
 
 export default defineConfig({
   testDir: "./e2e",
-  timeout: 30_000,
+  globalSetup: "./e2e/support/global-setup.ts",
+  // Each full page load re-reads the local SQLite DB from OPFS (~10s under parallel load).
+  timeout: 120_000,
   expect: {
     timeout: 10_000,
   },
