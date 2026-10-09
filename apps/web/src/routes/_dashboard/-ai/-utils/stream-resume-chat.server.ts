@@ -15,9 +15,11 @@ import {
   listJobsToolDefinition,
   attachJobToCurrentResumeToolDefinition,
 } from "@/features/agentic-tools/resume-chat-tool-definitions";
+import { listResumesToolDefinition } from "@/features/agentic-tools/definitions/resume-definitions";
 import { buildEventSourcedSystemPrompt } from "./system-prompt";
 
 const eventSourcedResumeAiToolDefinitions = [
+  listResumesToolDefinition,
   getCurrentResumeDocumentToolDefinition,
   searchCurrentResumeBlocksToolDefinition,
   cloneCurrentResumeToolDefinition,

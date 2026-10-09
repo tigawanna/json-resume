@@ -14,13 +14,16 @@ import {
   resumeSkillGroup,
   resumeSummary,
 } from "@/lib/drizzle/scheam";
-import { and, asc, desc, eq, like, or } from "drizzle-orm";
+import { jobListLabel } from "@/data-access-layer/event-sourced/job-rows";
+import { and, asc, count, desc, eq, like, or, sql } from "drizzle-orm";
+import { nextOffset, searchTerms } from "./shared/search-page";
 import {
   getResumeDocumentToolInputSchema,
   listResumesToolInputSchema,
   searchResumeBlocksToolInputSchema,
   type GetResumeDocumentToolInput,
   type ListResumesToolInput,
+  type ListResumesToolOutput,
   type ResumeBlockType,
   type SearchResumeBlocksToolInput,
 } from "./resume-tool-schemas";
@@ -138,12 +141,15 @@ async function layoutUsage(userId: string, resumeId: string | undefined) {
   return { byId, skillPairs };
 }
 
-export async function listResumesTool(ctx: ToolContext, input: ListResumesToolInput) {
+export async function listResumesTool(
+  ctx: ToolContext,
+  input: ListResumesToolInput,
+): Promise<ListResumesToolOutput> {
   const data = listResumesToolInputSchema.parse(input);
   const conditions = [eq(resume.userId, ctx.userId)];
-  const pattern = keywordPattern(data.keyword);
 
-  if (pattern) {
+  for (const term of searchTerms(data.keyword)) {
+    const pattern = `%${term}%`;
     conditions.push(
       or(
         like(resume.name, pattern),
@@ -157,27 +163,48 @@ export async function listResumesTool(ctx: ToolContext, input: ListResumesToolIn
     );
   }
 
-  const rows = await db
-    .select({
-      id: resume.id,
-      name: resume.name,
-      fullName: resume.fullName,
-      headline: resume.headline,
-      description: resume.description,
-      templateId: resume.templateId,
-      updatedAt: resume.updatedAt,
-    })
-    .from(resume)
-    .leftJoin(job, and(eq(job.id, resume.jobId), eq(job.userId, ctx.userId)))
-    .where(and(...conditions))
-    .orderBy(desc(resume.updatedAt), desc(resume.id))
-    .limit(data.limit);
+  const where = and(...conditions);
+  const jobJoin = and(eq(job.id, resume.jobId), eq(job.userId, ctx.userId));
+
+  const [rows, [{ total }]] = await Promise.all([
+    db
+      .select({
+        id: resume.id,
+        name: resume.name,
+        fullName: resume.fullName,
+        headline: resume.headline,
+        description: resume.description,
+        templateId: resume.templateId,
+        updatedAt: resume.updatedAt,
+        jobId: job.id,
+        jobCompany: job.company,
+        jobTitle: job.title,
+        jobDescriptionStart: sql<string | null>`substr(${job.description}, 1, 240)`,
+      })
+      .from(resume)
+      .leftJoin(job, jobJoin)
+      .where(where)
+      .orderBy(desc(resume.updatedAt), desc(resume.id))
+      .limit(data.limit)
+      .offset(data.offset),
+    db.select({ total: count() }).from(resume).leftJoin(job, jobJoin).where(where),
+  ]);
 
   return {
-    resumes: rows.map((row) => ({
+    resumes: rows.map(({ jobId, jobCompany, jobTitle, jobDescriptionStart, ...row }) => ({
       ...row,
+      jobId,
+      jobLabel: jobId
+        ? jobListLabel({
+            company: jobCompany ?? "",
+            title: jobTitle ?? "",
+            description: jobDescriptionStart ?? "",
+          })
+        : "",
       updatedAt: row.updatedAt.toISOString(),
     })),
+    total,
+    nextOffset: nextOffset(total, data.offset, rows.length),
   };
 }
 
@@ -210,8 +237,9 @@ export async function searchResumeBlocksTool(ctx: ToolContext, input: SearchResu
   const data = searchResumeBlocksToolInputSchema.parse(input);
   const blockTypes = data.blockTypes ?? defaultBlockTypes;
   const pattern = keywordPattern(data.keyword);
-  const scoped = data.resumeId !== undefined;
-  const { byId, skillPairs } = await layoutUsage(ctx.userId, data.resumeId);
+  const resumeId = data.resumeId || undefined;
+  const scoped = resumeId !== undefined;
+  const { byId, skillPairs } = await layoutUsage(ctx.userId, resumeId);
 
   function labelled<T extends { id: string }>(rows: T[]): Array<T & Usage> {
     return rows

@@ -26,14 +26,20 @@ Do not duplicate the query logic for future work. Add thin adapters that validat
 - `resume-orpc-client.server.ts`
   Tiny server-only re-export for consumers like MCP and AI orchestration.
 
+- `definitions/`
+  Isomorphic TanStack AI `toolDefinition()`s (name, description, schemas, MCP annotations). The single contract for chat, MCP and oRPC.
+
+- `remote-tools.server.ts`
+  `def.server<RemoteToolContext>()` wrappers around the functions in `resume-tools.server.ts`. `remoteResumeTools` is the list MCP serves.
+
 - `resume-mcp.server.ts`
-  MCP-specific adapter. It registers the shared functions as MCP tools and now calls the typed server-side oRPC client instead of bespoke glue.
+  `createMCPServer({ tools: remoteResumeTools })` from `@tanstack/ai-mcp/server`. The route authenticates the API key, then calls `resumeMcpServer.handle(request, { context: { userId } })`.
 
 - `resume-chat-tool-definitions.ts`
   Tool definitions for the in-app assistant. The tools run in the browser against the local collections (`routes/_dashboard/-ai/-utils/local-resume-tools.ts`, `local-job-tools.ts`).
 
 - `src/routes/api/mcp.ts`
-  Streamable HTTP MCP endpoint protected by Better Auth MCP OAuth via `withMcpAuth`.
+  Streamable HTTP MCP endpoint protected by a Better Auth API key (`x-api-key` or `Authorization: Bearer`).
 
 - `src/routes/api/agentic/$.ts`
   OpenAPI-compatible catch-all route for `/api/agentic/*`.
@@ -83,8 +89,8 @@ Key behavior:
 
 1. `resume-orpc.server.ts` owns the auth middleware and procedure definitions.
 2. External callers authenticate with Better Auth API keys.
-3. Internal trusted callers like MCP and TanStack AI use `createResumeAgenticServerClient(userId)`.
-4. Input and output validation come from `resume-tool-schemas.ts`.
+3. Internal trusted callers use `createResumeAgenticServerClient(userId)`. MCP calls the remote tools directly.
+4. Input and output validation come from the shared definitions in `definitions/`.
 5. The OpenAPI catch-all preserves the existing `/api/agentic/...` URLs.
 6. The RPC route is the preferred base for typed programmatic clients.
 7. Shared CORS headers are applied to both agentic HTTP routes and MCP.

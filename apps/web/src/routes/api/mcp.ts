@@ -1,7 +1,7 @@
 import { agenticCorsHeaders } from "@/features/agentic-tools/agentic-routes";
-import { createResumeMcpServer } from "@/features/agentic-tools/resume-mcp.server";
+import type { RemoteToolContext } from "@/features/agentic-tools/definitions/tool-context";
+import { resumeMcpServer } from "@/features/agentic-tools/resume-mcp.server";
 import { authenticateApiKeyRequest } from "@/lib/better-auth/api-key.server";
-import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
 import { createFileRoute } from "@tanstack/react-router";
 
 function withCors(response: Response): Response {
@@ -31,13 +31,8 @@ async function mcpHandler(request: Request): Promise<Response> {
     );
   }
 
-  const transport = new WebStandardStreamableHTTPServerTransport({
-    enableJsonResponse: true,
-  });
-  const server = createResumeMcpServer(authResult.userId);
-
-  await server.connect(transport);
-  const response = await transport.handleRequest(request);
+  const context = { userId: authResult.userId } satisfies RemoteToolContext;
+  const response = await resumeMcpServer.handle(request, { context });
   return withCors(response);
 }
 

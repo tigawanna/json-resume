@@ -25,7 +25,7 @@ import { z } from "zod";
 const searchCurrentResumeBlocksInputSchema = z.object({
   keyword: z.string().trim().min(1).optional(),
   blockTypes: z.array(resumeBlockTypeSchema).min(1).optional(),
-  limitPerType: z.coerce.number().int().min(1).max(20).default(8),
+  limitPerType: z.number().int().min(1).max(20).default(8),
 });
 
 export const getCurrentResumeDocumentToolDefinition = toolDefinition({

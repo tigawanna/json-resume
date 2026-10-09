@@ -13,6 +13,120 @@ Scope:
 - **External agents** — `resume-tools.server.ts` exposed via MCP (`resume-mcp.server.ts`) and
   oRPC/OpenAPI (`resume-orpc.server.ts`). Read-only, reads the server DB (lags local until sync).
 
+## Tool architecture (TanStack AI recommendation)
+
+Source: the `ai-core/tool-calling` skill shipped in `@tanstack/ai`
+(`node_modules/@tanstack/ai/skills/ai-core/tool-calling/SKILL.md`), the `ai-mcp` skill shipped in
+`@tanstack/ai-mcp`, and the `toolDefinition` / `createMCPServer` types.
+
+**One isomorphic definition per tool, many implementations.** `toolDefinition({ name, description,
+inputSchema, outputSchema, needsApproval?, lazy?, metadata? })` is the single source of truth.
+From it:
+
+- `def.client<LocalToolContext>(execute)`: browser implementation over the TanStack DB collections.
+  Registered with `useChat({ tools, context })`. The bare `def` goes to `chat({ tools })` on the
+  server so the model knows the schema (the "client tool" pattern; both sides are required).
+- `def.server<RemoteToolContext>(execute)`: server implementation over the materialized Drizzle
+  tables. Request context (`{ userId }`) is passed in with `chat({ context })` and arrives typed
+  as `ctx.context` in `execute`.
+- MCP serves the `.server()` tools directly through `createMCPServer({ tools })` from
+  `@tanstack/ai-mcp/server`. Our API-key auth runs first, then
+  `server.handle(request, { context: { userId } })` puts `userId` on `ctx.context`.
+- oRPC procedures use `.input(def.inputSchema).output(def.outputSchema)` and call the same plain
+  implementation functions, so every surface advertises the same contract.
+
+A tool name can have only one implementation per `chat()` run. The in-app assistant always uses
+the **client** implementation (local data is ahead of the server until sync). The **remote** copies
+serve MCP, oRPC/OpenAPI, and any future server-side agent.
+
+**Rules**
+
+1. **Writes are client-only.** A server write would bypass the event log (see `README.md`).
+   Remote copies exist only for read tools.
+2. **Reads that agents outside the app need get both implementations**, with identical output
+   shapes. Pure shaping/scoring logic (document view with ids, job view, keyword ranking) lives
+   in one isomorphic module that both implementations call; only the data source differs
+   (`assembleResumeDetail` locally, `getResumeDetail` on the server).
+3. **Schemas stay in `resume-tool-schemas.ts`.** Definitions import them; oRPC and MCP read them
+   from the definition. Top-level input schemas must be `z.object` (MCP rejects anything else).
+   Do not use `z.preprocess` in tool inputs: it makes optional fields show up as `required` in
+   the JSON Schema the model and MCP clients see. Do not use `z.coerce`: `execute` then receives
+   `unknown`. Use plain `.optional()` / `z.number()` and normalize blanks inside the
+   implementation. Implementation functions take `z.input<…>` and call `.parse()` themselves,
+   because `execute` receives the pre-parse input type.
+4. **Context types are explicit.** `LocalToolContext = { db, userId, getActiveResumeId,
+   setActiveResumeId, navigateToResume }`. `RemoteToolContext = { userId }`. Every write and
+   read tool takes an optional `resumeId` that defaults to the active résumé locally. Remote
+   copies require it (or fall back to most recently updated).
+5. **Approval and lazy flags live on the definition**, so every surface sees them:
+   `needsApproval: true` for destructive writes, `lazy: true` for rarely used tools, with
+   `lazyToolsConfig: { includeDescription: "first-sentence" }` in `chat()`.
+6. **The `remoteResumeTools` list in `remote-tools.server.ts` is what MCP serves.** Adding a
+   remote copy means adding it to that list. Read tools set
+   `metadata: { title, annotations: { readOnlyHint: true } }` so MCP hosts skip confirmation.
+7. **List and search tools search and page; they never dump.** Returning "the latest 50" fails
+   silently (the model cannot tell item 51 exists, so it says "not found" or creates a
+   duplicate) and resends every row on every later turn. Every list/search tool spreads
+   `searchPageInputShape` (`keyword`, `limit` default 20 / max 50, `offset`) into its input and
+   `searchPageOutputShape` (`total`, `nextOffset`, `null` when done) into its output.
+   `keyword` is split into words and **every word must match some field** (so
+   "senior react remote" finds rows where those words are spread across fields). Both sides
+   split with `searchTerms()` and finish with `nextOffset()` from `shared/search-page.ts`, and
+   filter, sort and page in the query engine, never on a materialized array. Locally that means
+   TanStack DB `queryOnce`: one `.where(orIlike(term, …fields))` per term, then
+   `orderBy`/`offset`/`limit`, plus a second `queryOnce` selecting `count()` (see
+   `listLocalResumes`). On the server it means one `or(like…)` group per term in Drizzle, plus a
+   `count()` query. Exceptions:
+   `rank_*` returns top N with no paging; `get_*` by id uses `sections` instead; small fixed
+   sets (a résumé's skill groups, statuses) return everything.
+
+**File layout**
+
+```
+features/agentic-tools/
+  definitions/             # isomorphic toolDefinition()s, one file per domain
+    resume-definitions.ts  # list_resumes, get_resume, set_active_resume, setters, upserts…
+    job-definitions.ts     # save_job, list_jobs, get_job, attach_job, update_job
+    library-definitions.ts # search_library, attach_library_items, rank_*
+    tool-context.ts        # LocalToolContext / RemoteToolContext (type-only)
+  shared/                  # pure isomorphic logic used by client and server implementations
+    resume-view.ts         # ResumeDetail + job -> get_resume output (with ids)
+    job-view.ts
+    rank.ts                # keyword/skill overlap scoring
+  resume-tool-schemas.ts   # Zod schemas (unchanged role)
+  resume-tools.server.ts   # remote implementations: plain (ctx, input) functions over Drizzle
+  remote-tools.server.ts   # def.server<RemoteToolContext>() list built from those functions
+  resume-mcp.server.ts     # createMCPServer({ tools: remoteResumeTools })
+  resume-orpc-router.server.ts
+routes/_dashboard/-ai/-utils/
+  client-tools.ts          # def.client<LocalToolContext>() over TanStack DB
+  local-*-tools.ts         # local implementations (existing)
+```
+
+**MCP hosting (done).** Upgraded to `@tanstack/ai` 0.67, `ai-client` 0.39, `ai-react` 0.30,
+`ai-openrouter` 0.21, and added `@tanstack/ai-mcp` 0.8.2 (which brings the v2 MCP SDK).
+`@modelcontextprotocol/sdk` v1 is removed. The three existing remote tools now go through
+`definitions/` → `remote-tools.server.ts` → `createMCPServer`, covered by
+`resume-mcp.server.test.ts`. The server is stateless (spec 2025 `sessions: "stateless"`
+default), which matches the old per-request transport.
+
+### Tool surface matrix
+
+| Tool                                            | Client (local, chat) | Remote (Drizzle: MCP + oRPC)          |
+| ----------------------------------------------- | -------------------- | ------------------------------------- |
+| `list_resumes`                                  | yes                  | yes (exists)                          |
+| `get_resume`                                    | yes                  | yes (replaces `get_resume_document`)  |
+| `search_library`                                | yes                  | yes (replaces `search_resume_blocks`) |
+| `list_jobs` / `get_job`                         | yes                  | yes (new)                             |
+| `rank_resumes_for_job` / `rank_library_for_job` | yes                  | yes (shared scorer)                   |
+| `get_playbook`                                  | yes (lazy)           | yes (static text)                     |
+| `set_active_resume` / `open_resume`             | yes                  | no (UI state)                         |
+| All writes (listed below)                       | yes                  | no (would bypass the event log)       |
+
+Writes: the setters, the `upsert_*` tools, `remove_from_resume`, `reorder_section`, `attach_*`,
+`save_job`, `update_job`, `clone_resume`, `create_resume`, `replace_resume_document`,
+`tailor_resume_for_job`, and `undo_last_ai_change`.
+
 ## Why the assistant keeps creating a new résumé instead of editing this one
 
 1. **The prompt tells it to.** `DEFAULT_EVENT_SOURCED_SYSTEM_PROMPT` says _"Prefer
@@ -54,6 +168,8 @@ Scope:
 | `get_resume_document`  | Assembles from `layout`; output still has `jobDescription` string.   | **Fix**  | Share the new `get_resume` output shape (`job` object, item ids) so external agents and the in-app assistant agree.        |
 | `search_resume_blocks` | Searches blocks per résumé.                                          | **Fix**  | Align with `search_library` (library-wide, `onResume` flags, all section types).                                           |
 | _(missing)_            | No job tools for external agents.                                    | **Add**  | `list_jobs`, `get_job` (read-only). Writes stay client-side because server writes would bypass the event log (see README). |
+| _(missing)_            | No ranking for external agents.                                      | **Add**  | `rank_resumes_for_job`, `rank_library_for_job` remote copies using the shared scorer in `shared/rank.ts`.                  |
+| _(wiring)_             | Each MCP tool and oRPC procedure is hand-registered.                 | **Fix**  | Register from the shared definitions (`metadata.surfaces`) through one generic MCP adapter and procedure factory.          |
 
 ## Wiring and infrastructure
 
@@ -112,11 +228,78 @@ Prompt rules to replace the current ones: remove "prefer clone" and "call refres
 add "edit the active résumé unless the user asks for a copy"; "use granular tools, use
 `replace_resume_document` only for full rewrites"; "after a clone the clone is active".
 
-## Suggested order
+## Implementation batches (5 at a time)
 
-1. **Unblock in-place editing (P0):** active-résumé ref, granular setters, `get_resume` with ids,
-   remove `refresh_resume_preview`, raise `maxIterations`, rewrite the prompt.
-2. **JD flow:** fix `save_job` / `attach_job`, add `get_job`, `rank_resumes_for_job`,
-   `tailor_resume_for_job`, thread survives navigation.
-3. **Library:** `search_library`, `attach_library_items`, `rank_library_for_job`.
-4. **Hardening:** approvals, lazy tools, cast removal, server tool alignment, README, `undo`.
+Each batch also updates the system prompt for the tools it adds or removes, and ships with unit
+tests for any shared (isomorphic) logic. Tick items off as they land.
+
+### Batch 1: Foundation and reads
+
+- [ ] **Shared definition layout.** `definitions/`, `tool-context.ts` and `remote-tools.server.ts`
+      exist with the three remote tools. Still to do: move the chat definitions from
+      `resume-chat-tool-definitions.ts` into `definitions/`, add `LocalToolContext`, create
+      `shared/`.
+- [ ] **Cleanup.** Delete `refresh_resume_preview` (tool + prompt rule) and dead schemas. Add
+      `agentLoopStrategy: maxIterations(16)` to `chat()`.
+- [ ] **Active résumé.** `activeResumeId` ref in `LocalToolContext`, plus `set_active_resume`.
+      All tools default to it.
+- [x] **`list_resumes`.** One definition, client (`listLocalResumes`) + remote implementation,
+      shared search/paging (rule 7), `jobId` + `jobLabel` per row. In the chat tool list.
+- [ ] **`get_resume({ resumeId?, sections? })`.** Shared `resume-view.ts` with item ids and a
+      `job` object. Replaces `get_current_resume_document` (chat) and `get_resume_document`
+      (MCP/oRPC).
+
+### Batch 2: Granular writes (client only)
+
+- [ ] `update_resume_details`
+- [ ] `set_summary`
+- [ ] `set_experience_bullets`
+- [ ] `set_skills`
+- [ ] `remove_from_resume`
+
+Prompt: "edit the active résumé unless the user asks for a copy", "use granular tools first".
+Remove "prefer clone".
+
+### Batch 3: Item upserts and bulk replace (client only)
+
+- [ ] `upsert_experience`
+- [ ] `upsert_project`
+- [ ] `upsert_education`
+- [ ] `upsert_talk`
+- [ ] `replace_resume_document` (rename of `update_current_resume_document`, `needsApproval: true`)
+
+### Batch 4: Jobs
+
+- [ ] `save_job` fix (`attachToResumeId`, normalized dedupe, full row output)
+- [ ] `attach_job({ resumeId?, jobId | null })` (validate first, `null` detaches)
+- [ ] `get_job` (client + remote)
+- [ ] `list_jobs` with rule 7 search/paging (local `queryOnce` like `listLocalResumes`, replacing
+      the `.toArray` filter; also swap `.toArray.find` by id for `.get`), with `linkedResumeIds`
+      (client + remote)
+- [ ] `update_job`
+
+Also: send only `activeResumeId` + job id/label in the prompt instead of the full JD text.
+
+### Batch 5: Résumé lifecycle and the JD flow
+
+- [ ] `clone_resume` (`jobId`, `makeActive`)
+- [ ] `create_resume` (optional partial document, `makeActive`)
+- [ ] `open_resume`, with the chat thread surviving navigation (thread keyed per conversation)
+- [ ] `rank_resumes_for_job` (shared `rank.ts`, client + remote)
+- [ ] `tailor_resume_for_job` (composite)
+
+### Batch 6: Library
+
+- [ ] `search_library` (client + remote, replaces both block-search tools, rule 7 search/paging)
+- [ ] `attach_library_items`
+- [ ] `rank_library_for_job` (client + remote)
+- [ ] `reorder_section`
+- [ ] `set_contacts` / `set_links` / `set_notes`
+
+### Batch 7: Hardening
+
+- [ ] Approval UI for `needsApproval` tools (bound `interrupts` / `resolveInterrupt`)
+- [ ] `lazy: true` on rare tools + `lazyToolsConfig`, and `get_playbook`
+- [ ] Remove casts in `buildTextAdapter` / `chat()`
+- [x] Adopt `@tanstack/ai-mcp` `createMCPServer` (done ahead of Batch 1, see "MCP hosting")
+- [ ] README refresh, and `undo_last_ai_change` (P2)

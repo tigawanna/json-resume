@@ -10,10 +10,12 @@ import {
   listJobsToolDefinition,
   attachJobToCurrentResumeToolDefinition,
 } from "@/features/agentic-tools/resume-chat-tool-definitions";
+import { listResumesToolDefinition } from "@/features/agentic-tools/definitions/resume-definitions";
 import {
   cloneLocalResume,
   createLocalResumeFromDocument,
   getLocalResumeDocument,
+  listLocalResumes,
   searchLocalResumeBlocks,
   updateLocalResumeDocument,
   type EventSourcedResumeAiContext,
@@ -26,6 +28,10 @@ function asWorkbenchTab(tab: string): "edit" | "preview" | "json" {
   if (tab === "preview" || tab === "json") return tab;
   return "edit";
 }
+
+export const listResumesClientTool = listResumesToolDefinition.client((input, ctx: ClientToolCtx) =>
+  listLocalResumes(ctx.context, input),
+);
 
 export const getCurrentResumeDocumentClientTool = getCurrentResumeDocumentToolDefinition.client(
   (_input, ctx: ClientToolCtx) => getLocalResumeDocument(ctx.context),
@@ -98,6 +104,7 @@ export const attachJobToCurrentResumeClientTool = attachJobToCurrentResumeToolDe
 );
 
 export const eventSourcedResumeAiClientTools = [
+  listResumesClientTool,
   getCurrentResumeDocumentClientTool,
   searchCurrentResumeBlocksClientTool,
   cloneCurrentResumeClientTool,

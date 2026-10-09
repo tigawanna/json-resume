@@ -9,26 +9,38 @@ export const resumeBlockTypeSchema = z.enum([
   "skill",
 ]);
 
-export const listResumesToolInputSchema = z.object({
-  keyword: z.string().trim().optional(),
-  limit: z.coerce.number().int().min(1).max(50).default(20),
-});
+/** Search + paging fields shared by every list/search tool input. */
+export const searchPageInputShape = {
+  keyword: z
+    .string()
+    .trim()
+    .optional()
+    .describe("Space-separated words. Every word must appear in some field. Omit to list all."),
+  limit: z.number().int().min(1).max(50).default(20),
+  offset: z.number().int().min(0).default(0).describe("Pass the previous nextOffset to page."),
+};
+
+/** Paging fields shared by every list/search tool output. */
+export const searchPageOutputShape = {
+  total: z.number().int().describe("Matches before paging."),
+  nextOffset: z
+    .number()
+    .int()
+    .nullable()
+    .describe("Offset of the next page, or null when every match was returned."),
+};
+
+export const listResumesToolInputSchema = z.object(searchPageInputShape);
 
 export const getResumeDocumentToolInputSchema = z.object({
   resumeId: z.string().trim().min(1),
 });
 
 export const searchResumeBlocksToolInputSchema = z.object({
-  resumeId: z.preprocess(
-    (val) => (typeof val === "string" && val.trim() === "" ? undefined : val),
-    z.string().trim().min(1).optional(),
-  ),
-  keyword: z.preprocess(
-    (val) => (typeof val === "string" && val.trim() === "" ? undefined : val),
-    z.string().trim().optional(),
-  ),
+  resumeId: z.string().trim().optional(),
+  keyword: z.string().trim().optional(),
   blockTypes: z.array(resumeBlockTypeSchema).min(1).optional(),
-  limitPerType: z.coerce.number().int().min(1).max(20).default(8),
+  limitPerType: z.number().int().min(1).max(20).default(8),
 });
 
 export const addExperienceBulletToolInputSchema = z.object({
@@ -93,11 +105,14 @@ export const resumeListItemSchema = z.object({
   headline: z.string(),
   description: z.string(),
   templateId: z.string(),
+  jobId: z.string().nullable(),
+  jobLabel: z.string().describe("Company and title of the target job, or empty when none."),
   updatedAt: z.string(),
 });
 
 export const listResumesToolOutputSchema = z.object({
   resumes: z.array(resumeListItemSchema),
+  ...searchPageOutputShape,
 });
 
 export const getResumeDocumentToolOutputSchema = z.object({
@@ -226,7 +241,7 @@ export const saveJobToolInputSchema = z.object({
 export const listJobsToolInputSchema = z.object({
   keyword: z.string().trim().min(1).optional(),
   status: jobStatusToolSchema.optional(),
-  limit: z.coerce.number().int().min(1).max(50).default(20),
+  limit: z.number().int().min(1).max(50).default(20),
 });
 
 export const jobToolRowSchema = z.object({
@@ -262,9 +277,9 @@ export const attachJobToCurrentResumeToolOutputSchema = z.object({
 });
 
 export type ResumeBlockType = z.infer<typeof resumeBlockTypeSchema>;
-export type ListResumesToolInput = z.infer<typeof listResumesToolInputSchema>;
-export type GetResumeDocumentToolInput = z.infer<typeof getResumeDocumentToolInputSchema>;
-export type SearchResumeBlocksToolInput = z.infer<typeof searchResumeBlocksToolInputSchema>;
+export type ListResumesToolInput = z.input<typeof listResumesToolInputSchema>;
+export type GetResumeDocumentToolInput = z.input<typeof getResumeDocumentToolInputSchema>;
+export type SearchResumeBlocksToolInput = z.input<typeof searchResumeBlocksToolInputSchema>;
 export type AddExperienceBulletToolInput = z.infer<typeof addExperienceBulletToolInputSchema>;
 export type ReplaceExperienceBulletsToolInput = z.infer<
   typeof replaceExperienceBulletsToolInputSchema

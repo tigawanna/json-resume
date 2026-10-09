@@ -86,44 +86,55 @@ export function getToolLabel(name: string): string {
     .join(" ");
 }
 
+function isStoredRole(role: string): role is ResumeAiChatMessage["role"] {
+  return role === "user" || role === "assistant" || role === "system";
+}
+
 export function toStoredMessages(messages: UIMessage[]): ResumeAiChatMessage[] {
-  return messages.map((message) => ({
-    id: message.id,
-    role: message.role,
-    parts: message.parts
-      .map((part): ResumeAiChatMessagePart | null => {
-        if (part.type === "text") return { type: "text", content: part.content };
-        if (part.type === "thinking") return { type: "thinking", content: part.content };
+  return messages.flatMap((message): ResumeAiChatMessage[] => {
+    const { role } = message;
+    if (!isStoredRole(role)) return [];
+    return [
+      {
+        id: message.id,
+        role,
+        parts: message.parts
+          .map((part): ResumeAiChatMessagePart | null => {
+            if (part.type === "text") return { type: "text", content: part.content };
+            if (part.type === "thinking") return { type: "thinking", content: part.content };
 
-        if (part.type === "tool-call") {
-          const output = toJsonValue(part.output);
-          const state =
-            part.state === "complete" || part.state === "error" ? "input-complete" : part.state;
-          return {
-            type: "tool-call",
-            id: part.id,
-            name: part.name,
-            arguments: part.arguments,
-            state,
-            ...(part.approval === undefined ? {} : { approval: part.approval }),
-            ...(output === undefined ? {} : { output }),
-          };
-        }
+            if (part.type === "tool-call") {
+              const output = toJsonValue(part.output);
+              const state =
+                part.state === "complete" || part.state === "error" ? "input-complete" : part.state;
+              return {
+                type: "tool-call",
+                id: part.id,
+                name: part.name,
+                arguments: part.arguments,
+                state,
+                ...(part.approval === undefined ? {} : { approval: part.approval }),
+                ...(output === undefined ? {} : { output }),
+              };
+            }
 
-        if (part.type === "tool-result") {
-          return {
-            type: "tool-result",
-            toolCallId: part.toolCallId,
-            content: typeof part.content === "string" ? part.content : JSON.stringify(part.content),
-            state: part.state,
-            ...(part.error === undefined ? {} : { error: part.error }),
-          };
-        }
+            if (part.type === "tool-result") {
+              return {
+                type: "tool-result",
+                toolCallId: part.toolCallId,
+                content:
+                  typeof part.content === "string" ? part.content : JSON.stringify(part.content),
+                state: part.state,
+                ...(part.error === undefined ? {} : { error: part.error }),
+              };
+            }
 
-        return null;
-      })
-      .filter((part): part is ResumeAiChatMessagePart => part !== null),
-  }));
+            return null;
+          })
+          .filter((part): part is ResumeAiChatMessagePart => part !== null),
+      },
+    ];
+  });
 }
 
 export function toUiMessages(messages: ResumeAiChatMessage[]): UIMessage[] {

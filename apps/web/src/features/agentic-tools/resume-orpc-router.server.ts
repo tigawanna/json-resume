@@ -1,13 +1,10 @@
 import "@tanstack/react-start/server-only";
 
+import { searchResumeBlocksToolDefinition } from "./definitions/library-definitions";
 import {
-  getResumeDocumentToolInputSchema,
-  getResumeDocumentToolOutputSchema,
-  listResumesToolInputSchema,
-  listResumesToolOutputSchema,
-  searchResumeBlocksToolInputSchema,
-  searchResumeBlocksToolOutputSchema,
-} from "./resume-tool-schemas";
+  getResumeDocumentToolDefinition,
+  listResumesToolDefinition,
+} from "./definitions/resume-definitions";
 import {
   getResumeDocumentTool,
   listResumesTool,
@@ -18,6 +15,7 @@ import { resumeReadProcedure } from "./resume-orpc-base.server";
 // ─── Read procedures ──────────────────────────────────────────────────────────
 // Require resumes:read permission. Safe to expose to read-only API keys.
 // Résumé edits happen on the client and sync as events; there are no server write tools.
+// Input/output schemas come from the shared tool definitions so oRPC, MCP and chat agree.
 
 const listResumesProcedure = resumeReadProcedure
   .route({
@@ -28,8 +26,8 @@ const listResumesProcedure = resumeReadProcedure
     tags: ["Agentic Resumes"],
     successStatus: 200,
   })
-  .input(listResumesToolInputSchema)
-  .output(listResumesToolOutputSchema)
+  .input(listResumesToolDefinition.inputSchema)
+  .output(listResumesToolDefinition.outputSchema)
   .handler(async ({ context, input }) => listResumesTool({ userId: context.userId }, input));
 
 const getResumeDocumentProcedure = resumeReadProcedure
@@ -41,8 +39,8 @@ const getResumeDocumentProcedure = resumeReadProcedure
     tags: ["Agentic Resumes"],
     successStatus: 200,
   })
-  .input(getResumeDocumentToolInputSchema)
-  .output(getResumeDocumentToolOutputSchema)
+  .input(getResumeDocumentToolDefinition.inputSchema)
+  .output(getResumeDocumentToolDefinition.outputSchema)
   .handler(async ({ context, input }) => getResumeDocumentTool({ userId: context.userId }, input));
 
 const searchResumeBlocksProcedure = resumeReadProcedure
@@ -54,8 +52,8 @@ const searchResumeBlocksProcedure = resumeReadProcedure
     tags: ["Agentic Resumes"],
     successStatus: 200,
   })
-  .input(searchResumeBlocksToolInputSchema)
-  .output(searchResumeBlocksToolOutputSchema)
+  .input(searchResumeBlocksToolDefinition.inputSchema)
+  .output(searchResumeBlocksToolDefinition.outputSchema)
   .handler(async ({ context, input }) => searchResumeBlocksTool({ userId: context.userId }, input));
 
 // ─── Router ───────────────────────────────────────────────────────────────────
