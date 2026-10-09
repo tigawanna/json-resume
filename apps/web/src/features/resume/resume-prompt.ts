@@ -56,7 +56,8 @@ export function buildTailorPrompt(
 5. Do NOT change the JSON structure. The output must be valid JSON that matches the exact same schema as the input.
 6. Do NOT add new fields or remove existing ones.
 7. Keep \`version\`, \`meta\`, and \`sectionOrder\` unchanged unless reordering sections makes sense for the role.
-8. Return ONLY the JSON — no markdown fences, no explanation, just raw JSON.`;
+8. Copy identifying facts verbatim: company names, role titles, dates, schools, degrees, project names and URLs, talk titles, and skill names (e.g. keep "Node.js" if that is how I wrote it). Only the wording of bullets, descriptions and the summary should change.
+9. Return ONLY the JSON — no markdown fences, no explanation, just raw JSON.`;
 
   const plainSection = plain
     ? `

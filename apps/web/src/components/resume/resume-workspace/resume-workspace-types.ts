@@ -1,5 +1,6 @@
 import type { ResumeDetailDTO, ResumeJobDTO } from "@/data-access-layer/resume/resume.types";
 import type { ResumeDocumentV1, TemplateId } from "@/features/resume/resume-schema";
+import type { ImportChoices, ResumeImportPlan } from "@/modules/resume-import/plan-resume-import";
 
 export interface ContactDraft {
   type: string;
@@ -131,5 +132,9 @@ export interface ResumeWorkspaceAdapter {
   updateTalk(id: string, values: TalkDraft): Promise<void>;
   deleteTalk(id: string): Promise<void>;
   reorderTalk(idA: string, idB: string): Promise<void>;
+  /** Matches a document against the library without writing; review it, then `applyDocumentImport`. */
+  planDocumentImport(doc: ResumeDocumentV1): ResumeImportPlan;
+  applyDocumentImport(plan: ResumeImportPlan, choices?: ImportChoices): Promise<void>;
+  /** `planDocumentImport` + `applyDocumentImport` with every item's default action. */
   replaceDocument(doc: ResumeDocumentV1): Promise<void>;
 }

@@ -4,15 +4,6 @@ import { ResumeEditPanel } from "@/components/resume/ResumeEditPanel";
 import { TemplatePicker } from "@/components/resume/TemplatePicker";
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
   Empty,
   EmptyContent,
   EmptyDescription,
@@ -24,7 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { asTemplateId } from "@/data-access-layer/event-sourced/assemble-resume-detail";
 import { createEventSourcedResumeWorkspace } from "@/data-access-layer/event-sourced/event-sourced-resume-workspace";
 import { resumeDetailToDocument } from "@/data-access-layer/resume/resume-converters";
-import { safeParseResumeJson, type TemplateId } from "@/features/resume/resume-schema";
+import type { TemplateId } from "@/features/resume/resume-schema";
 import { RouterPendingComponent } from "@/lib/tanstack/router/RouterPendingComponent";
 import { unwrapUnknownError } from "@/utils/errors";
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
@@ -33,11 +24,13 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { EventSourcedResumeAiTab } from "../../-ai/-components/EventSourcedResumeAiTab";
+import { ImportResumeJsonDialog } from "./-components/ImportResumeJsonDialog";
 import { ResumeActionsSheet } from "./-components/ResumeActionsSheet";
 import { ResumePreviewView } from "./-components/ResumePreviewTab";
+import { ResumePromptTab } from "./-components/ResumePromptTab";
 import { useEventSourcedResumeDetail } from "./-hooks/use-event-sourced-resume-detail";
 
-const tabsList = ["edit", "preview", "json", "ai"] as const;
+const tabsList = ["edit", "preview", "json", "prompt", "ai"] as const;
 const tabSchema = z.enum(tabsList).default("edit").catch("edit");
 
 export const Route = createFileRoute("/_dashboard/resumes/$resumeId/")({
@@ -60,8 +53,6 @@ function EventSourcedResumeWorkbench({ resumeId }: { resumeId: string }) {
   const { tab } = Route.useSearch();
   const [selectedTemplate, setSelectedTemplate] = useState<TemplateId | null>(null);
   const [importOpen, setImportOpen] = useState(false);
-  const [importText, setImportText] = useState("");
-  const [importError, setImportError] = useState<string | null>(null);
 
   function navigateToTab(value: string) {
     void router.navigate({
@@ -122,24 +113,6 @@ function EventSourcedResumeWorkbench({ resumeId }: { resumeId: string }) {
     }
   }
 
-  async function handleImport() {
-    const result = safeParseResumeJson(importText);
-    if (!result.ok) {
-      setImportError(result.error);
-      return;
-    }
-    try {
-      await workspace.replaceDocument(result.data);
-      toast.success("Résumé imported from JSON");
-      setImportText("");
-      setImportError(null);
-      setImportOpen(false);
-      navigateToTab("edit");
-    } catch (err: unknown) {
-      setImportError(unwrapUnknownError(err).message);
-    }
-  }
-
   return (
     <ResumeWorkspaceProvider value={workspace}>
       <div className="flex w-full flex-col gap-6 pb-24" data-test="resume-workbench">
@@ -185,6 +158,9 @@ function EventSourcedResumeWorkbench({ resumeId }: { resumeId: string }) {
             <TabsTrigger value="edit">Edit</TabsTrigger>
             <TabsTrigger value="preview">Preview</TabsTrigger>
             <TabsTrigger value="json">JSON</TabsTrigger>
+            <TabsTrigger value="prompt" data-test="resume-prompt-tab-trigger">
+              Prompt
+            </TabsTrigger>
             <TabsTrigger value="ai">AI</TabsTrigger>
           </TabsList>
 
@@ -204,6 +180,14 @@ function EventSourcedResumeWorkbench({ resumeId }: { resumeId: string }) {
             <ResumeJsonTab />
           </TabsContent>
 
+          <TabsContent value="prompt" className="mt-4">
+            <ResumePromptTab
+              doc={doc}
+              jobDescription={detail.jobDescription ?? ""}
+              onImported={() => navigateToTab("edit")}
+            />
+          </TabsContent>
+
           <TabsContent value="ai" className="mt-4">
             <EventSourcedResumeAiTab
               resumeId={resumeId}
@@ -212,35 +196,11 @@ function EventSourcedResumeWorkbench({ resumeId }: { resumeId: string }) {
           </TabsContent>
         </Tabs>
 
-        <Dialog open={importOpen} onOpenChange={setImportOpen}>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle>Import Resume JSON</DialogTitle>
-              <DialogDescription>
-                Paste a résumé JSON document to replace this résumé's contents.
-              </DialogDescription>
-            </DialogHeader>
-            <textarea
-              value={importText}
-              onChange={(e) => {
-                setImportText(e.target.value);
-                setImportError(null);
-              }}
-              placeholder='{"version": 1, "meta": {...}, ...}'
-              spellCheck={false}
-              className="border-input min-h-50 w-full rounded-md border bg-transparent px-3 py-2 font-mono text-sm outline-none"
-            />
-            {importError ? <p className="text-destructive text-xs">{importError}</p> : null}
-            <DialogFooter>
-              <DialogClose asChild>
-                <Button variant="ghost">Cancel</Button>
-              </DialogClose>
-              <Button onClick={() => void handleImport()} disabled={!importText.trim()}>
-                Import
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        <ImportResumeJsonDialog
+          open={importOpen}
+          onOpenChange={setImportOpen}
+          onImported={() => navigateToTab("edit")}
+        />
       </div>
     </ResumeWorkspaceProvider>
   );

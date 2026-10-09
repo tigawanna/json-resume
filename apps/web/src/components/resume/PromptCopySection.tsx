@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { buildTailorPrompt } from "@/features/resume/resume-prompt";
 import { safeParseResumeJson, type ResumeDocumentV1 } from "@/features/resume/resume-schema";
+import { extractJsonObject } from "@/utils/extract-json";
 import { Check, ClipboardCopy, Plus, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -12,7 +13,7 @@ import { toast } from "sonner";
 interface PromptCopySectionProps {
   doc: ResumeDocumentV1;
   jobDescription: string;
-  onApplyResult?: (doc: ResumeDocumentV1) => Promise<void>;
+  onApplyResult?: (doc: ResumeDocumentV1) => void;
   isApplying?: boolean;
 }
 
@@ -62,8 +63,9 @@ export function PromptCopySection({
       <CardHeader>
         <CardTitle className="text-base">Copy LLM Prompt</CardTitle>
         <CardDescription>
-          Paste this into ChatGPT, Claude, or any LLM. It includes your resume JSON, the job
-          description, and instructions to return tailored JSON you can paste back in the JSON tab.
+          Paste this into ChatGPT, Claude, Gemini, DeepSeek or any other LLM. It includes your
+          résumé JSON, the target job description, and instructions to return tailored JSON you can
+          paste back below.
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
@@ -148,12 +150,16 @@ export function PromptCopySection({
         {/* Paste LLM result */}
         {onApplyResult && (
           <div className="flex flex-col gap-2 border-t pt-4">
-            <Label className="text-xs font-medium">Paste LLM Result</Label>
+            <Label htmlFor="prompt-result" className="text-xs font-medium">
+              Paste LLM result
+            </Label>
             <p className="text-muted-foreground text-xs">
-              Paste the JSON returned by the LLM — it will seed the editor and switch to the Edit
-              tab.
+              Paste the reply (code fences are fine). Items are matched against your library so
+              nothing is duplicated; anything that differs from your library is shown for review
+              before it is saved.
             </p>
             <Textarea
+              id="prompt-result"
               className="font-mono text-xs"
               rows={8}
               placeholder='{ "version": 1, ... }'
@@ -162,24 +168,25 @@ export function PromptCopySection({
                 setPasteText(e.target.value);
                 setPasteError(null);
               }}
+              data-test="prompt-result-input"
             />
             {pasteError && <p className="text-destructive text-xs">{pasteError}</p>}
             <Button
               type="button"
               disabled={!pasteText.trim() || isApplying}
-              onClick={async () => {
-                const result = safeParseResumeJson(pasteText);
+              onClick={() => {
+                const result = safeParseResumeJson(extractJsonObject(pasteText));
                 if (!result.ok) {
                   setPasteError(result.error);
                   return;
                 }
-                await onApplyResult(result.data);
-                setPasteText("");
                 setPasteError(null);
+                onApplyResult(result.data);
               }}
               className="self-start gap-2"
+              data-test="prompt-result-import"
             >
-              {isApplying ? "Applying..." : "Apply & edit"}
+              {isApplying ? "Importing..." : "Import result"}
             </Button>
           </div>
         )}

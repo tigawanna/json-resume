@@ -6,9 +6,8 @@ import {
   type ResumeDocumentV1,
 } from "@/features/resume/resume-schema";
 import { useDebouncedValue } from "@/hooks/use-debouncer";
-import { unwrapUnknownError } from "@/utils/errors";
 import { buildSchemaPrompt } from "@/features/resume/resume-prompt";
-import { useMutation } from "@tanstack/react-query";
+import { useResumeImport } from "@/components/resume/resume-import/use-resume-import";
 import type { JsonValue } from "@visual-json/core";
 import { DiffView, JsonEditor } from "@visual-json/react";
 import { X } from "lucide-react";
@@ -20,7 +19,8 @@ import { VJ_THEME_VARS } from "./theme-vars";
 import type { ViewMode } from "./types";
 
 export function ResumeJsonTab() {
-  const { resume, replaceDocument } = useResumeWorkspace();
+  const workspace = useResumeWorkspace();
+  const { resume } = workspace;
 
   const doc = resume ? resumeDetailToDocument(resume) : null;
   const [jsonValue, setJsonValue] = useState<JsonValue>({} as JsonValue);
@@ -77,27 +77,15 @@ export function ResumeJsonTab() {
     }
   }, [debouncedJson]);
 
-  // ─── Save mutation ──────────────────────────────────────────
+  // ─── Save (matched against the library, reviewed when ambiguous) ──
 
-  const saveMutation = useMutation({
-    mutationFn: async (docToSave: ResumeDocumentV1) => {
-      await replaceDocument(docToSave);
-    },
-    onSuccess() {
-      setPendingDoc(null);
-      toast.success("JSON saved");
-    },
-    onError(err: unknown) {
-      toast.error("Failed to save JSON", {
-        description: unwrapUnknownError(err).message,
-      });
-    },
-    meta: { invalidates: [["resumes"]] },
+  const { importDocument, isImporting, reviewDialog } = useResumeImport(workspace, {
+    onApplied: () => setPendingDoc(null),
   });
 
   function handleSave() {
     if (!pendingDoc) return;
-    saveMutation.mutate(pendingDoc);
+    importDocument(pendingDoc);
   }
 
   /* ---- helpers ---- */
@@ -240,7 +228,7 @@ export function ResumeJsonTab() {
         onCopySchema={handleCopySchema}
         onOpenSettings={() => setSettingsOpen(true)}
         onSave={handleSave}
-        isSaving={saveMutation.isPending}
+        isSaving={isImporting}
         hasChanges={pendingDoc !== null}
       />
 
@@ -299,6 +287,7 @@ export function ResumeJsonTab() {
         onOpenChange={setPasteDialogOpen}
         onSubmit={loadAndValidateJson}
       />
+      {reviewDialog}
     </div>
   );
 }

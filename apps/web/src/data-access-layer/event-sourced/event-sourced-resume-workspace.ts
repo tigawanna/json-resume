@@ -1,5 +1,10 @@
-import { documentToInsertData } from "@/data-access-layer/resume/resume-converters";
 import type { ResumeDetailDTO } from "@/data-access-layer/resume/resume.types";
+import {
+  applyResumeImport,
+  planResumeImport,
+  type ImportChoices,
+  type ResumeImportPlan,
+} from "@/modules/resume-import/plan-resume-import";
 import {
   addEntity,
   layoutIds,
@@ -41,7 +46,7 @@ import {
   summaryIndex,
   talkIndex,
 } from "./library-resolve";
-import { currentLayout, editLayout } from "./resume-layout-rows";
+import { editLayout } from "./resume-layout-rows";
 import { joinSearchable, libraryRowBase, nowMs } from "@/routes/_dashboard/-utils/row-helpers";
 
 function matchQuery(query: string, ...parts: Array<string | null | undefined>) {
@@ -410,92 +415,20 @@ export function createEventSourcedResumeWorkspace(
     async reorderTalk(idA: string, idB: string) {
       edit((layout) => swapEntities(layout, "talks", idA, idB));
     },
+    planDocumentImport(doc: ResumeDocumentV1) {
+      return planResumeImport(db, { resumeId, userId }, doc);
+    },
+    async applyDocumentImport(plan: ResumeImportPlan, choices?: ImportChoices) {
+      applyResumeImport(db, plan, choices);
+    },
     /**
      * Rewrites the résumé from a document by linking to existing library rows
-     * wherever one matches, so a regenerated résumé adds only what is new.
-     * The whole layout is written in one résumé update.
+     * wherever one matches (exactly or closely), so a regenerated résumé adds
+     * only what is new. Uses each item's default action; the Prompt tab shows
+     * the plan for review first.
      */
     async replaceDocument(doc: ResumeDocumentV1) {
-      const data = documentToInsertData(resumeId, userId, doc);
-      const note = data.notes[0];
-
-      const experiences: ResumeLayout["experiences"] = [];
-      for (const experience of data.experiences) {
-        const id = resolveExperience({
-          company: experience.company,
-          role: experience.role,
-          startDate: experience.startDate,
-          endDate: experience.endDate,
-          location: experience.location,
-        });
-        if (experiences.some((entry) => entry.id === id)) continue;
-        const bulletTexts = data.experienceBullets
-          .filter((bullet) => bullet.experienceId === experience.id)
-          .sort((a, b) => a.sortOrder - b.sortOrder)
-          .map((bullet) => bullet.text);
-        experiences.push({ id, bullets: resolveBulletIds(db, id, bulletTexts) });
-      }
-
-      const next: ResumeLayout = {
-        ...currentLayout(db, resumeId),
-        sections: data.sections
-          .slice()
-          .sort((a, b) => a.sortOrder - b.sortOrder)
-          .map((section) => ({ key: section.key, title: section.title, enabled: section.enabled })),
-        contacts: [...new Set(contactIds(data.contacts))],
-        links: [
-          ...new Set(
-            linkIds(
-              data.links.map((link) => ({
-                label: link.label,
-                url: link.url,
-                icon: link.icon ?? undefined,
-              })),
-            ),
-          ),
-        ],
-        summaries: summaryIds(data.summaries[0]?.text ?? ""),
-        notes: noteIds({ label: note?.label ?? "Notes", text: note?.text ?? "" }),
-        skillGroups: skillGroupEntries(
-          data.skillGroups.map((group) => ({
-            name: group.name,
-            items: data.skills
-              .filter((skill) => skill.groupId === group.id)
-              .map((skill) => skill.name),
-          })),
-        ),
-        experiences,
-        education: [
-          ...new Set(
-            data.education.map((education) =>
-              resolveEducation({
-                school: education.school,
-                degree: education.degree,
-                field: education.field,
-                startDate: education.startDate,
-                endDate: education.endDate,
-                description: education.description,
-              }),
-            ),
-          ),
-        ],
-        projects: [...new Set(data.projects.map((project) => resolveProject(project)))],
-        talks: [...new Set(data.talks.map((talk) => resolveTalk(talk)))],
-      };
-
-      db.collections.resume.update(resumeId, (draft) => {
-        draft.fullName = data.resume.fullName;
-        draft.headline = data.resume.headline;
-        draft.templateId = data.resume.templateId;
-        draft.layout = next;
-        draft.searchableText = joinSearchable(
-          draft.name,
-          data.resume.fullName,
-          data.resume.headline,
-          draft.description,
-        );
-        draft.updatedAt = nowMs();
-      });
+      applyResumeImport(db, planResumeImport(db, { resumeId, userId }, doc));
     },
   };
 }

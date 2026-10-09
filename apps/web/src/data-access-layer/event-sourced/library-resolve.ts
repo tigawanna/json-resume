@@ -144,6 +144,37 @@ export function resolveBulletIds(db: AppDb, experienceId: string, texts: string[
   return ids;
 }
 
+/**
+ * Adds the education bullets whose wording is new. Education rows render all
+ * their bullets (there is no per-résumé pick), so nothing is removed.
+ */
+export function addEducationBullets(db: AppDb, educationId: string, texts: string[]): number {
+  const existing = db.collections.resumeEducationBullet.toArray.filter(
+    (bullet) => bullet.educationId === educationId,
+  );
+  const known = new Set(existing.map((bullet) => norm(bullet.text)));
+  let added = 0;
+  for (const text of texts) {
+    const key = norm(text);
+    if (!key || known.has(key)) continue;
+    const ts = nowMs();
+    db.collections.resumeEducationBullet.insert({
+      id: newId(),
+      educationId,
+      text,
+      sortOrder: existing.length + added,
+      searchableText: text,
+      embedding: null,
+      embeddingModel: null,
+      createdAt: ts,
+      updatedAt: ts,
+    });
+    known.add(key);
+    added++;
+  }
+  return added;
+}
+
 type DeletableCollection = { delete: (id: string) => unknown; toArray: ReadonlyArray<object> };
 
 function collectionOf(db: AppDb, collectionId: string): DeletableCollection | undefined {
