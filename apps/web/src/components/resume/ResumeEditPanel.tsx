@@ -45,7 +45,7 @@ export function ResumeEditPanel({ resumeId }: ResumeEditPanelProps) {
           </AccordionContent>
         </AccordionItem>
 
-        <AccordionItem value="target-job">
+        <AccordionItem value="target-job" id="resume-section-target-job" className="scroll-mt-20">
           <AccordionTrigger>Target job</AccordionTrigger>
           <AccordionContent>
             <TargetJobSection />

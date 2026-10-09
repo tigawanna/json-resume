@@ -1,12 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { buildTailorPrompt } from "@/features/resume/resume-prompt";
 import { safeParseResumeJson, type ResumeDocumentV1 } from "@/features/resume/resume-schema";
 import { extractJsonObject } from "@/utils/extract-json";
-import { Check, ClipboardCopy, Plus, Trash2, X } from "lucide-react";
+import { Check, ChevronRight, ClipboardCopy, Plus, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -70,24 +71,41 @@ export function PromptCopySection({
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         {/* Editable Prompt */}
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="prompt-area" className="text-xs font-medium">
-            Prompt (editable)
-          </Label>
-          <Textarea
-            id="prompt-area"
-            className="font-mono text-xs"
-            rows={8}
-            value={editedPrompt || basePrompt}
-            onChange={(e) => setEditedPrompt(e.target.value)}
-            placeholder="Your prompt will appear here..."
-          />
-          {editedPrompt && (
-            <Button variant="ghost" size="sm" onClick={resetPrompt} className="w-fit">
-              <X className="mr-1 size-3" /> Reset to Default
+        <Collapsible className="flex flex-col gap-2" data-test="prompt-editor">
+          <CollapsibleTrigger asChild>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="group -ml-2 w-fit gap-1.5 text-xs"
+              data-test="prompt-editor-toggle"
+            >
+              <ChevronRight className="size-3.5 transition-transform group-data-[state=open]:rotate-90" />
+              View / edit prompt
+              <span className="text-muted-foreground font-normal">
+                {editedPrompt ? "(edited)" : `(${fullPrompt.length.toLocaleString()} chars)`}
+              </span>
             </Button>
-          )}
-        </div>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="flex flex-col gap-2">
+            <Label htmlFor="prompt-area" className="sr-only">
+              Prompt
+            </Label>
+            <Textarea
+              id="prompt-area"
+              className="max-h-[50vh] font-mono text-xs"
+              rows={8}
+              value={editedPrompt || basePrompt}
+              onChange={(e) => setEditedPrompt(e.target.value)}
+              placeholder="Your prompt will appear here..."
+            />
+            {editedPrompt && (
+              <Button variant="ghost" size="sm" onClick={resetPrompt} className="w-fit">
+                <X className="mr-1 size-3" /> Reset to Default
+              </Button>
+            )}
+          </CollapsibleContent>
+        </Collapsible>
 
         {/* Directives Section */}
         <div className="flex flex-col gap-2 border-t pt-4">

@@ -55,10 +55,19 @@ function EventSourcedResumeWorkbench({ resumeId }: { resumeId: string }) {
   const [importOpen, setImportOpen] = useState(false);
 
   function navigateToTab(value: string) {
-    void router.navigate({
+    return router.navigate({
       to: ".",
       search: (prev) => ({ ...prev, tab: value as z.infer<typeof tabSchema> }),
       replace: true,
+    });
+  }
+
+  async function openTargetJobSection() {
+    await navigateToTab("edit");
+    requestAnimationFrame(() => {
+      document
+        .getElementById("resume-section-target-job")
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
     });
   }
 
@@ -184,7 +193,8 @@ function EventSourcedResumeWorkbench({ resumeId }: { resumeId: string }) {
             <ResumePromptTab
               doc={doc}
               jobDescription={detail.jobDescription ?? ""}
-              onImported={() => navigateToTab("edit")}
+              onImported={() => void navigateToTab("edit")}
+              onAddTargetJob={() => void openTargetJobSection()}
             />
           </TabsContent>
 
@@ -199,7 +209,7 @@ function EventSourcedResumeWorkbench({ resumeId }: { resumeId: string }) {
         <ImportResumeJsonDialog
           open={importOpen}
           onOpenChange={setImportOpen}
-          onImported={() => navigateToTab("edit")}
+          onImported={() => void navigateToTab("edit")}
         />
       </div>
     </ResumeWorkspaceProvider>
