@@ -359,8 +359,8 @@ projects and talks; skills and summaries resolve by text through `set_skills` / 
 - [x] Approval UI for `needsApproval` tools (bound `interrupts` / `resolveInterrupt`), done in
       Batch 3
 - [x] `lazy: true` on rare tools + `lazyToolsConfig`, and `get_playbook`
-- [ ] Remove casts in `buildTextAdapter` / `chat()` (the `chat()` casts went in Batch 3; the
-      adapter casts are waiting on a decision, see below)
+- [x] Remove casts in `buildTextAdapter` / `chat()` (the `chat()` casts went in Batch 3; the
+      adapter's model-id casts stay, with approval, see below)
 - [x] Adopt `@tanstack/ai-mcp` `createMCPServer` (done ahead of Batch 1, see "MCP hosting")
 - [x] README refresh, and `undo_last_ai_change` (P2)
 
@@ -383,4 +383,5 @@ event (ignoring `updatedAt`, which an earlier undo bumps) and writes the undo as
 
 `buildTextAdapter` still casts the model id: `createOpenRouterText` only accepts ids from the
 package's `OPENROUTER_CHAT_MODELS`, but the picker offers OpenRouter's live list and LM Studio
-takes any local id. A type guard against that list would reject those models.
+takes any local id. A type guard against that list would reject those models, so the casts
+stay (approved by the repo owner) with a comment on `buildTextAdapter`.

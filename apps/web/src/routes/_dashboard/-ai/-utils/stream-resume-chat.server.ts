@@ -15,6 +15,11 @@ import { buildEventSourcedSystemPrompt, type ActiveJobContext } from "./system-p
 /** Enough model turns for the job description to tailored résumé chain (about 6 to 9 tool calls). */
 const MAX_AGENT_ITERATIONS = 16;
 
+/**
+ * The model id is cast on purpose (approved): `createOpenRouterText` only types the
+ * package's bundled model list, but the picker offers OpenRouter's live list and
+ * LM Studio accepts any local id.
+ */
 function buildTextAdapter(apiKey: string | undefined, model: string | undefined): AnyTextAdapter {
   if (serverEnv.LMSTUDIO_BASE_URL) {
     const lmModel = serverEnv.LMSTUDIO_MODEL ?? "gemma-3-12b-it";
