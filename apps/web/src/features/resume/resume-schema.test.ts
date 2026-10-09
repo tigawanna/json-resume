@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createDefaultResume, resumeDocumentV1Schema, toResumeDocumentV1 } from "./resume-schema";
-import { getResumeDocumentToolOutputSchema } from "@/features/agentic-tools/resume-tool-schemas";
+import { updateCurrentResumeDocumentToolInputSchema } from "@/features/agentic-tools/resume-tool-schemas";
 
 describe("toResumeDocumentV1", () => {
   it("coerces sqlite-style integer booleans and null strings into a valid document", () => {
@@ -30,16 +30,7 @@ describe("toResumeDocumentV1", () => {
     expect(coerced.experience.items[0]?.role).toBe("");
     expect(coerced.experience.items[0]?.start).toBe("2024");
 
-    const toolOutput = getResumeDocumentToolOutputSchema.safeParse({
-      resume: {
-        id: "01a019a6-e37f-74df-8224-01c7528efdf1",
-        name: "User Resume",
-        description: "",
-        jobDescription: "",
-        document: coerced,
-        updatedAt: new Date().toISOString(),
-      },
-    });
-    expect(toolOutput.success).toBe(true);
+    const toolInput = updateCurrentResumeDocumentToolInputSchema.safeParse({ document: coerced });
+    expect(toolInput.success).toBe(true);
   });
 });

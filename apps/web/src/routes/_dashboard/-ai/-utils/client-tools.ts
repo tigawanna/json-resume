@@ -1,30 +1,36 @@
 import {
+  attachJobToCurrentResumeToolDefinition,
+  listJobsToolDefinition,
+  saveJobToolDefinition,
+} from "@/features/agentic-tools/definitions/job-definitions";
+import { searchCurrentResumeBlocksToolDefinition } from "@/features/agentic-tools/definitions/library-definitions";
+import {
   cloneCurrentResumeToolDefinition,
   createResumeFromDocumentToolDefinition,
-  getCurrentResumeDocumentToolDefinition,
+  getResumeToolDefinition,
+  listResumesToolDefinition,
   navigateToResumeToolDefinition,
-  refreshResumePreviewToolDefinition,
-  searchCurrentResumeBlocksToolDefinition,
+  setActiveResumeToolDefinition,
   updateCurrentResumeDocumentToolDefinition,
-  saveJobToolDefinition,
-  listJobsToolDefinition,
-  attachJobToCurrentResumeToolDefinition,
-} from "@/features/agentic-tools/resume-chat-tool-definitions";
-import { listResumesToolDefinition } from "@/features/agentic-tools/definitions/resume-definitions";
+} from "@/features/agentic-tools/definitions/resume-definitions";
+import type {
+  LocalToolContext,
+  ResumeWorkbenchTab,
+} from "@/features/agentic-tools/definitions/tool-context";
 import {
   cloneLocalResume,
   createLocalResumeFromDocument,
-  getLocalResumeDocument,
+  getLocalResume,
   listLocalResumes,
   searchLocalResumeBlocks,
+  setLocalActiveResume,
   updateLocalResumeDocument,
-  type EventSourcedResumeAiContext,
 } from "./local-resume-tools";
 import { attachLocalJobToCurrentResume, listLocalJobs, saveLocalJob } from "./local-job-tools";
 
-type ClientToolCtx = { context: EventSourcedResumeAiContext };
+type ClientToolCtx = { context: LocalToolContext };
 
-function asWorkbenchTab(tab: string): "edit" | "preview" | "json" {
+function asWorkbenchTab(tab: string): ResumeWorkbenchTab {
   if (tab === "preview" || tab === "json") return tab;
   return "edit";
 }
@@ -33,16 +39,20 @@ export const listResumesClientTool = listResumesToolDefinition.client((input, ct
   listLocalResumes(ctx.context, input),
 );
 
-export const getCurrentResumeDocumentClientTool = getCurrentResumeDocumentToolDefinition.client(
-  (_input, ctx: ClientToolCtx) => getLocalResumeDocument(ctx.context),
+export const getResumeClientTool = getResumeToolDefinition.client((input, ctx: ClientToolCtx) =>
+  getLocalResume(ctx.context, input),
+);
+
+export const setActiveResumeClientTool = setActiveResumeToolDefinition.client(
+  (input, ctx: ClientToolCtx) => setLocalActiveResume(ctx.context, input),
 );
 
 export const searchCurrentResumeBlocksClientTool = searchCurrentResumeBlocksToolDefinition.client(
   (input, ctx: ClientToolCtx) =>
     searchLocalResumeBlocks(ctx.context, {
-      keyword: input.keyword,
+      keyword: input.keyword || undefined,
       blockTypes: input.blockTypes,
-      limitPerType: typeof input.limitPerType === "number" ? input.limitPerType : undefined,
+      limitPerType: input.limitPerType,
     }),
 );
 
@@ -58,13 +68,6 @@ export const updateCurrentResumeDocumentClientTool =
   updateCurrentResumeDocumentToolDefinition.client((input, ctx: ClientToolCtx) =>
     updateLocalResumeDocument(ctx.context, input.document),
   );
-
-export const refreshResumePreviewClientTool = refreshResumePreviewToolDefinition.client(
-  (_input, ctx: ClientToolCtx) => ({
-    refreshed: true,
-    resumeId: ctx.context.resumeId,
-  }),
-);
 
 export const navigateToResumeClientTool = navigateToResumeToolDefinition.client(
   (input, ctx: ClientToolCtx) => {
@@ -95,7 +98,7 @@ export const listJobsClientTool = listJobsToolDefinition.client((input, ctx: Cli
   listLocalJobs(ctx.context, {
     keyword: input.keyword,
     status: input.status,
-    limit: typeof input.limit === "number" ? input.limit : undefined,
+    limit: input.limit,
   }),
 );
 
@@ -105,12 +108,12 @@ export const attachJobToCurrentResumeClientTool = attachJobToCurrentResumeToolDe
 
 export const eventSourcedResumeAiClientTools = [
   listResumesClientTool,
-  getCurrentResumeDocumentClientTool,
+  getResumeClientTool,
+  setActiveResumeClientTool,
   searchCurrentResumeBlocksClientTool,
   cloneCurrentResumeClientTool,
   createResumeFromDocumentClientTool,
   updateCurrentResumeDocumentClientTool,
-  refreshResumePreviewClientTool,
   navigateToResumeClientTool,
   saveJobClientTool,
   listJobsClientTool,

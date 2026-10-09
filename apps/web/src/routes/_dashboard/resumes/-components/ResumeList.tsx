@@ -21,7 +21,7 @@ import { FileText, FileUp, Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { createSortableColumns } from "@/lib/tanstack/db/sortable-columns";
-import { cloneLocalResume } from "../../-ai/-utils/local-resume-tools";
+import { cloneResume } from "@/data-access-layer/event-sourced/clone-resume";
 import { EventSourcedListScaffold } from "../../-components/EventSourcedListScaffold";
 import { EventSourcedSortToolbar } from "../../-components/EventSourcedSortToolbar";
 import { ImportFromLegacyButton } from "../../-components/ImportFromLegacyButton";
@@ -135,10 +135,7 @@ export function ResumeList() {
       return;
     }
     try {
-      const result = cloneLocalResume(
-        { db, resumeId: sourceId, userId, navigateToResume: () => undefined },
-        {},
-      );
+      const result = cloneResume(db, sourceId);
       toast.success("Résumé cloned");
       void navigate({
         to: "/resumes/$resumeId",

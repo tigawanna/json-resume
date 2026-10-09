@@ -5,12 +5,12 @@ import {
   updateJob,
 } from "@/data-access-layer/event-sourced/job-rows";
 import type { Job } from "@/data-access-layer/event-sourced/schemas";
+import type { LocalToolContext } from "@/features/agentic-tools/definitions/tool-context";
 import type {
   AttachJobToCurrentResumeToolOutput,
   ListJobsToolOutput,
   SaveJobToolOutput,
 } from "@/features/agentic-tools/resume-tool-schemas";
-import type { EventSourcedResumeAiContext } from "./local-resume-tools";
 
 function preview(text: string, max = 240) {
   const trimmed = text.trim().replace(/\s+/g, " ");
@@ -18,8 +18,8 @@ function preview(text: string, max = 240) {
   return `${trimmed.slice(0, max - 1)}…`;
 }
 
-function toJobToolRow(ctx: EventSourcedResumeAiContext, job: Job) {
-  const resume = ctx.db.collections.resume.toArray.find((row) => row.id === ctx.resumeId);
+function toJobToolRow(ctx: LocalToolContext, job: Job) {
+  const resume = ctx.db.collections.resume.get(ctx.getActiveResumeId());
   return {
     id: job.id,
     company: job.company,
@@ -33,7 +33,7 @@ function toJobToolRow(ctx: EventSourcedResumeAiContext, job: Job) {
 }
 
 export function saveLocalJob(
-  ctx: EventSourcedResumeAiContext,
+  ctx: LocalToolContext,
   input: {
     description: string;
     company?: string;
@@ -79,7 +79,7 @@ export function saveLocalJob(
 
   const attach = input.attachToCurrentResume !== false;
   if (attach) {
-    attachJobToResume(ctx.db, ctx.resumeId, job.id);
+    attachJobToResume(ctx.db, ctx.getActiveResumeId(), job.id);
   }
 
   return {
@@ -90,7 +90,7 @@ export function saveLocalJob(
 }
 
 export function listLocalJobs(
-  ctx: EventSourcedResumeAiContext,
+  ctx: LocalToolContext,
   input: { keyword?: string; status?: Job["status"]; limit?: number },
 ): ListJobsToolOutput {
   const needle = input.keyword?.trim().toLowerCase();
@@ -111,16 +111,17 @@ export function listLocalJobs(
 }
 
 export function attachLocalJobToCurrentResume(
-  ctx: EventSourcedResumeAiContext,
+  ctx: LocalToolContext,
   jobId: string,
 ): AttachJobToCurrentResumeToolOutput {
-  attachJobToResume(ctx.db, ctx.resumeId, jobId);
-  const job = ctx.db.collections.job.toArray.find((row) => row.id === jobId);
+  const resumeId = ctx.getActiveResumeId();
+  attachJobToResume(ctx.db, resumeId, jobId);
+  const job = ctx.db.collections.job.get(jobId);
   if (!job) {
     throw new Error(`Job ${jobId} was not found.`);
   }
   return {
-    resumeId: ctx.resumeId,
+    resumeId,
     jobId: job.id,
     company: job.company,
     title: jobListLabel(job),

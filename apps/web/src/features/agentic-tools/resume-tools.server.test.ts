@@ -106,3 +106,34 @@ describe("listResumesTool", () => {
     expect(result.resumes.map((row) => row.id)).not.toContain("other-r1");
   });
 });
+
+describe("getResumeTool", () => {
+  it("returns the shared view with the linked job", async () => {
+    const { resume } = await tools.getResumeTool({ userId: USER }, { resumeId: "r2" });
+
+    expect(resume).toMatchObject({
+      id: "r2",
+      name: "Backend CV",
+      job: { id: "job-acme", company: "Acme", description: expect.stringContaining("Go") },
+      header: { fullName: "Dana Doe", headline: "Go engineer" },
+    });
+  });
+
+  it("limits the payload to the requested sections", async () => {
+    const { resume } = await tools.getResumeTool(
+      { userId: USER },
+      { resumeId: "r2", sections: ["summary"] },
+    );
+
+    expect(resume.header).toBeUndefined();
+    expect(resume.summary).toEqual([]);
+    expect(resume.job?.description).toBeUndefined();
+  });
+
+  it("requires a resumeId and never reads another user's resume", async () => {
+    await expect(tools.getResumeTool({ userId: USER }, {})).rejects.toThrow(/list_resumes/);
+    await expect(tools.getResumeTool({ userId: USER }, { resumeId: "other-r1" })).rejects.toThrow(
+      "Resume not found",
+    );
+  });
+});

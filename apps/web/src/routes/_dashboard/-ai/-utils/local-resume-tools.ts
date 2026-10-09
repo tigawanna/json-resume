@@ -7,31 +7,30 @@ import type { AppDb } from "@/data-access-layer/event-sourced/collection";
 import { createEventSourcedResumeWorkspace } from "@/data-access-layer/event-sourced/event-sourced-resume-workspace";
 import { attachJobDescription, jobListLabel } from "@/data-access-layer/event-sourced/job-rows";
 import { snapshotEventSourcedResume } from "@/data-access-layer/event-sourced/snapshot-resume";
-import { resumeDetailToDocument } from "@/data-access-layer/resume/resume-converters";
 import { emptyResumeLayout } from "@/features/resume/resume-layout";
 import type { ResumeDocumentV1 } from "@/features/resume/resume-schema";
+import type { LocalToolContext } from "@/features/agentic-tools/definitions/tool-context";
 import {
+  getResumeToolInputSchema,
   listResumesToolInputSchema,
+  setActiveResumeToolInputSchema,
   type CloneResumeToolOutput,
   type CreateResumeFromDocumentToolOutput,
-  type GetResumeDocumentToolOutput,
+  type GetResumeToolInput,
+  type GetResumeToolOutput,
   type ListResumesToolInput,
   type ListResumesToolOutput,
   type ResumeBlockType,
   type SearchResumeBlocksToolOutput,
+  type SetActiveResumeToolInput,
+  type SetActiveResumeToolOutput,
   type UpdateResumeDocumentToolOutput,
 } from "@/features/agentic-tools/resume-tool-schemas";
+import { parseTech, resumeView } from "@/features/agentic-tools/shared/resume-view";
 import { nextOffset, searchTerms } from "@/features/agentic-tools/shared/search-page";
 import { count, eq, queryOnce, type InitialQueryBuilder } from "@tanstack/db";
 import { orIlike } from "../../-utils/list-query";
 import { joinSearchable, libraryRowBase, nowMs } from "../../-utils/row-helpers";
-
-export type EventSourcedResumeAiContext = {
-  db: AppDb;
-  resumeId: string;
-  userId: string;
-  navigateToResume: (resumeId: string, tab: "edit" | "preview" | "json") => void;
-};
 
 function requireDetail(db: AppDb, resumeId: string) {
   const snapshots = snapshotEventSourcedResume(db, resumeId);
@@ -46,22 +45,6 @@ function matchesKeyword(keyword: string | undefined, ...parts: Array<string | nu
   const needle = keyword?.trim().toLowerCase();
   if (!needle) return true;
   return parts.some((part) => (part ?? "").toLowerCase().includes(needle));
-}
-
-function parseTech(tech: string): string[] {
-  try {
-    const parsed: unknown = JSON.parse(tech);
-    if (Array.isArray(parsed)) {
-      return parsed.filter((item): item is string => typeof item === "string");
-    }
-  } catch {
-    if (tech.trim())
-      return tech
-        .split(",")
-        .map((item) => item.trim())
-        .filter(Boolean);
-  }
-  return [];
 }
 
 /** Résumés (with their linked job) where every term matches some résumé or job field. */
@@ -87,7 +70,7 @@ function matchingResumes(q: InitialQueryBuilder, db: AppDb, terms: ReadonlyArray
 }
 
 export async function listLocalResumes(
-  ctx: EventSourcedResumeAiContext,
+  ctx: LocalToolContext,
   input: ListResumesToolInput,
 ): Promise<ListResumesToolOutput> {
   const data = listResumesToolInputSchema.parse(input);
@@ -138,31 +121,37 @@ export async function listLocalResumes(
   };
 }
 
-export function getLocalResumeDocument(
-  ctx: EventSourcedResumeAiContext,
-): GetResumeDocumentToolOutput {
-  const { detail } = requireDetail(ctx.db, ctx.resumeId);
-  return {
-    resume: {
-      id: detail.id,
-      name: detail.name ?? "",
-      description: detail.description ?? "",
-      jobDescription: detail.jobDescription ?? "",
-      document: resumeDetailToDocument(detail),
-      updatedAt: detail.updatedAt,
-    },
-  };
+export function getLocalResume(
+  ctx: LocalToolContext,
+  input: GetResumeToolInput,
+): GetResumeToolOutput {
+  const data = getResumeToolInputSchema.parse(input);
+  const { detail } = requireDetail(ctx.db, data.resumeId || ctx.getActiveResumeId());
+  return { resume: resumeView(detail, data.sections) };
+}
+
+export function setLocalActiveResume(
+  ctx: LocalToolContext,
+  input: SetActiveResumeToolInput,
+): SetActiveResumeToolOutput {
+  const data = setActiveResumeToolInputSchema.parse(input);
+  const resume = ctx.db.collections.resume.get(data.resumeId);
+  if (!resume) {
+    throw new Error(`Resume ${data.resumeId} was not found. Use list_resumes to find its id.`);
+  }
+  ctx.setActiveResumeId(resume.id);
+  return { resumeId: resume.id, name: resume.name };
 }
 
 export function searchLocalResumeBlocks(
-  ctx: EventSourcedResumeAiContext,
+  ctx: LocalToolContext,
   input: {
     keyword?: string;
     blockTypes?: ResumeBlockType[];
     limitPerType?: number;
   },
 ): SearchResumeBlocksToolOutput {
-  const { detail } = requireDetail(ctx.db, ctx.resumeId);
+  const { detail } = requireDetail(ctx.db, ctx.getActiveResumeId());
   const types = new Set(
     input.blockTypes ?? ["summary", "experience", "experience_bullet", "project", "skill"],
   );
@@ -270,7 +259,7 @@ export function searchLocalResumeBlocks(
 }
 
 export function cloneLocalResume(
-  ctx: EventSourcedResumeAiContext,
+  ctx: LocalToolContext,
   input: {
     name?: string;
     description?: string;
@@ -278,13 +267,13 @@ export function cloneLocalResume(
     sourceResumeId?: string;
   },
 ): CloneResumeToolOutput {
-  const sourceResumeId = input.sourceResumeId ?? ctx.resumeId;
+  const sourceResumeId = input.sourceResumeId ?? ctx.getActiveResumeId();
   const { resumeId, name } = cloneResume(ctx.db, sourceResumeId, input);
   return { sourceResumeId, resumeId, name };
 }
 
 export async function createLocalResumeFromDocument(
-  ctx: EventSourcedResumeAiContext,
+  ctx: Pick<LocalToolContext, "db" | "userId">,
   input: {
     name: string;
     description?: string;
@@ -324,14 +313,15 @@ export async function createLocalResumeFromDocument(
 }
 
 export async function updateLocalResumeDocument(
-  ctx: EventSourcedResumeAiContext,
+  ctx: LocalToolContext,
   document: ResumeDocumentV1,
 ): Promise<UpdateResumeDocumentToolOutput> {
-  const { snapshots, detail } = requireDetail(ctx.db, ctx.resumeId);
+  const resumeId = ctx.getActiveResumeId();
+  const { snapshots, detail } = requireDetail(ctx.db, resumeId);
   const workspace = createEventSourcedResumeWorkspace(ctx.db, detail, snapshots);
   await workspace.replaceDocument(document);
   return {
-    resumeId: ctx.resumeId,
+    resumeId,
     updatedAt: new Date(nowMs()).toISOString(),
   };
 }

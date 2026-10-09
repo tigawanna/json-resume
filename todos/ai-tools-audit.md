@@ -6,8 +6,8 @@ each résumé's `layout`, and jobs moved into their own table linked by `resume.
 
 Scope:
 
-- **In-app assistant** — `features/agentic-tools/resume-chat-tool-definitions.ts` (definitions,
-  sent to the model by `stream-resume-chat.server.ts`) and
+- **In-app assistant** — `features/agentic-tools/definitions/` (definitions, sent to the model by
+  `stream-resume-chat.server.ts`) and
   `routes/_dashboard/-ai/-utils/client-tools.ts` (browser implementations over the local
   collections in `local-resume-tools.ts` / `local-job-tools.ts`).
 - **External agents** — `resume-tools.server.ts` exposed via MCP (`resume-mcp.server.ts`) and
@@ -235,19 +235,26 @@ tests for any shared (isomorphic) logic. Tick items off as they land.
 
 ### Batch 1: Foundation and reads
 
-- [ ] **Shared definition layout.** `definitions/`, `tool-context.ts` and `remote-tools.server.ts`
-      exist with the three remote tools. Still to do: move the chat definitions from
-      `resume-chat-tool-definitions.ts` into `definitions/`, add `LocalToolContext`, create
-      `shared/`.
-- [ ] **Cleanup.** Delete `refresh_resume_preview` (tool + prompt rule) and dead schemas. Add
-      `agentLoopStrategy: maxIterations(16)` to `chat()`.
-- [ ] **Active résumé.** `activeResumeId` ref in `LocalToolContext`, plus `set_active_resume`.
-      All tools default to it.
+- [x] **Shared definition layout.** All definitions live in `definitions/`
+      (`resume-`, `job-`, `library-definitions.ts`); `resume-chat-tool-definitions.ts` is gone.
+      `tool-context.ts` has `LocalToolContext` (replaces `EventSourcedResumeAiContext`) and
+      `RemoteToolContext`. `shared/` has `resume-view.ts` and `search-page.ts`. UI callers no
+      longer fake a tool context: the clone buttons call `cloneResume` directly and JSON import
+      passes `{ db, userId }`.
+- [x] **Cleanup.** `refresh_resume_preview` (tool, schemas, prompt rule) and the dead schemas
+      are deleted. `chat()` runs with `agentLoopStrategy: maxIterations(16)`.
+- [x] **Active résumé.** `LocalToolContext.getActiveResumeId()` / `setActiveResumeId()`, backed
+      by a ref in `use-event-sourced-resume-ai.ts` (state too, so the prompt gets
+      `activeResumeId`). Resets to the page's résumé when the page changes. Every local tool
+      defaults to it. `set_active_resume` validates the id. The chip in the chat UI is still to do.
 - [x] **`list_resumes`.** One definition, client (`listLocalResumes`) + remote implementation,
       shared search/paging (rule 7), `jobId` + `jobLabel` per row. In the chat tool list.
-- [ ] **`get_resume({ resumeId?, sections? })`.** Shared `resume-view.ts` with item ids and a
-      `job` object. Replaces `get_current_resume_document` (chat) and `get_resume_document`
-      (MCP/oRPC).
+- [x] **`get_resume({ resumeId?, sections? })`.** Shared `resume-view.ts` with item and bullet
+      ids, `sectionOrder` / `hiddenSections`, and a `job` object (description only with the
+      `"job"` section or no filter). Replaces `get_current_resume_document` (chat) and
+      `get_resume_document` (MCP, and oRPC, now `POST /resumes/get`). Remote requires `resumeId`.
+      Until Batch 2 lands, whole-document edits still go through `update_current_resume_document`,
+      so the model has to rebuild a `ResumeDocumentV1` from the view (bullets as strings).
 
 ### Batch 2: Granular writes (client only)
 

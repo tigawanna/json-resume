@@ -71,12 +71,7 @@ export function ImportResumeJsonDialog({ open, onOpenChange }: ImportResumeJsonD
     try {
       const name = importedResumeNameFromDoc(parsed.data);
       const result = await createLocalResumeFromDocument(
-        {
-          db,
-          resumeId: "",
-          userId,
-          navigateToResume: () => undefined,
-        },
+        { db, userId },
         { name, document: parsed.data },
       );
       toast.success("Résumé imported from JSON");

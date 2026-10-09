@@ -1,6 +1,5 @@
 import "@tanstack/react-start/server-only";
 
-import { resumeDetailToDocument } from "@/data-access-layer/resume/resume-converters";
 import { getResumeDetail } from "@/data-access-layer/resume/resume.server";
 import { emptyResumeLayout, resumeLayoutSchema } from "@/features/resume/resume-layout";
 import { db } from "@/lib/drizzle/client";
@@ -16,12 +15,14 @@ import {
 } from "@/lib/drizzle/scheam";
 import { jobListLabel } from "@/data-access-layer/event-sourced/job-rows";
 import { and, asc, count, desc, eq, like, or, sql } from "drizzle-orm";
+import { resumeView } from "./shared/resume-view";
 import { nextOffset, searchTerms } from "./shared/search-page";
 import {
-  getResumeDocumentToolInputSchema,
+  getResumeToolInputSchema,
   listResumesToolInputSchema,
   searchResumeBlocksToolInputSchema,
-  type GetResumeDocumentToolInput,
+  type GetResumeToolInput,
+  type GetResumeToolOutput,
   type ListResumesToolInput,
   type ListResumesToolOutput,
   type ResumeBlockType,
@@ -208,24 +209,20 @@ export async function listResumesTool(
   };
 }
 
-export async function getResumeDocumentTool(ctx: ToolContext, input: GetResumeDocumentToolInput) {
-  const data = getResumeDocumentToolInputSchema.parse(input);
+/** Remote callers have no active résumé, so `resumeId` is required here even though the schema allows omitting it. */
+export async function getResumeTool(
+  ctx: ToolContext,
+  input: GetResumeToolInput,
+): Promise<GetResumeToolOutput> {
+  const data = getResumeToolInputSchema.parse(input);
+  if (!data.resumeId) {
+    throw new Error("resumeId is required. Call list_resumes to find it.");
+  }
   const detail = await getResumeDetail(data.resumeId, ctx.userId);
-
   if (!detail) {
     throw new Error("Resume not found");
   }
-
-  return {
-    resume: {
-      id: detail.id,
-      name: detail.name ?? "",
-      description: detail.description ?? "",
-      jobDescription: detail.jobDescription ?? "",
-      document: resumeDetailToDocument(detail),
-      updatedAt: detail.updatedAt,
-    },
-  };
+  return { resume: resumeView(detail, data.sections) };
 }
 
 /**

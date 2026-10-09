@@ -2,14 +2,10 @@ import "@tanstack/react-start/server-only";
 
 import { searchResumeBlocksToolDefinition } from "./definitions/library-definitions";
 import {
-  getResumeDocumentToolDefinition,
+  getResumeToolDefinition,
   listResumesToolDefinition,
 } from "./definitions/resume-definitions";
-import {
-  getResumeDocumentTool,
-  listResumesTool,
-  searchResumeBlocksTool,
-} from "./resume-tools.server";
+import { getResumeTool, listResumesTool, searchResumeBlocksTool } from "./resume-tools.server";
 import { resumeReadProcedure } from "./resume-orpc-base.server";
 
 // ─── Read procedures ──────────────────────────────────────────────────────────
@@ -30,18 +26,19 @@ const listResumesProcedure = resumeReadProcedure
   .output(listResumesToolDefinition.outputSchema)
   .handler(async ({ context, input }) => listResumesTool({ userId: context.userId }, input));
 
-const getResumeDocumentProcedure = resumeReadProcedure
+const getResumeProcedure = resumeReadProcedure
   .route({
     method: "POST",
-    path: "/resumes/document",
-    summary: "Get a resume document",
-    description: "Load one resume as a normalized ResumeDocumentV1 payload.",
+    path: "/resumes/get",
+    summary: "Get a resume",
+    description:
+      "Load one resume's sections (with item ids) and its linked job. Pass sections to limit the payload.",
     tags: ["Agentic Resumes"],
     successStatus: 200,
   })
-  .input(getResumeDocumentToolDefinition.inputSchema)
-  .output(getResumeDocumentToolDefinition.outputSchema)
-  .handler(async ({ context, input }) => getResumeDocumentTool({ userId: context.userId }, input));
+  .input(getResumeToolDefinition.inputSchema)
+  .output(getResumeToolDefinition.outputSchema)
+  .handler(async ({ context, input }) => getResumeTool({ userId: context.userId }, input));
 
 const searchResumeBlocksProcedure = resumeReadProcedure
   .route({
@@ -63,7 +60,7 @@ const searchResumeBlocksProcedure = resumeReadProcedure
 export const resumeAgenticRouter = {
   resumes: {
     list: listResumesProcedure,
-    document: getResumeDocumentProcedure,
+    get: getResumeProcedure,
   },
   resumeBlocks: {
     search: searchResumeBlocksProcedure,

@@ -1,36 +1,47 @@
 import "@tanstack/react-start/server-only";
 
-import { chat, type AnyTextAdapter, type ModelMessage, type StreamChunk } from "@tanstack/ai";
+import {
+  chat,
+  maxIterations,
+  type AnyTextAdapter,
+  type ModelMessage,
+  type StreamChunk,
+} from "@tanstack/ai";
 import { createOpenRouterText } from "@tanstack/ai-openrouter";
 import { serverEnv } from "@/lib/server-env";
 import {
+  attachJobToCurrentResumeToolDefinition,
+  listJobsToolDefinition,
+  saveJobToolDefinition,
+} from "@/features/agentic-tools/definitions/job-definitions";
+import { searchCurrentResumeBlocksToolDefinition } from "@/features/agentic-tools/definitions/library-definitions";
+import {
   cloneCurrentResumeToolDefinition,
   createResumeFromDocumentToolDefinition,
-  getCurrentResumeDocumentToolDefinition,
+  getResumeToolDefinition,
+  listResumesToolDefinition,
   navigateToResumeToolDefinition,
-  refreshResumePreviewToolDefinition,
-  searchCurrentResumeBlocksToolDefinition,
+  setActiveResumeToolDefinition,
   updateCurrentResumeDocumentToolDefinition,
-  saveJobToolDefinition,
-  listJobsToolDefinition,
-  attachJobToCurrentResumeToolDefinition,
-} from "@/features/agentic-tools/resume-chat-tool-definitions";
-import { listResumesToolDefinition } from "@/features/agentic-tools/definitions/resume-definitions";
+} from "@/features/agentic-tools/definitions/resume-definitions";
 import { buildEventSourcedSystemPrompt } from "./system-prompt";
 
 const eventSourcedResumeAiToolDefinitions = [
   listResumesToolDefinition,
-  getCurrentResumeDocumentToolDefinition,
+  getResumeToolDefinition,
+  setActiveResumeToolDefinition,
   searchCurrentResumeBlocksToolDefinition,
   cloneCurrentResumeToolDefinition,
   createResumeFromDocumentToolDefinition,
   updateCurrentResumeDocumentToolDefinition,
-  refreshResumePreviewToolDefinition,
   navigateToResumeToolDefinition,
   saveJobToolDefinition,
   listJobsToolDefinition,
   attachJobToCurrentResumeToolDefinition,
 ] as const;
+
+/** Enough model turns for the job description to tailored résumé chain (about 6 to 9 tool calls). */
+const MAX_AGENT_ITERATIONS = 16;
 
 function buildTextAdapter(apiKey: string | undefined, model: string | undefined): AnyTextAdapter {
   if (serverEnv.LMSTUDIO_BASE_URL) {
@@ -51,6 +62,7 @@ function buildTextAdapter(apiKey: string | undefined, model: string | undefined)
 
 export async function streamEventSourcedResumeAgentChat(input: {
   resumeId: string;
+  activeResumeId?: string;
   messages: ModelMessage[];
   jobDescription?: string;
   systemPrompt?: string;
@@ -64,9 +76,11 @@ export async function streamEventSourcedResumeAgentChat(input: {
       buildEventSourcedSystemPrompt({
         instructions: input.systemPrompt ?? "",
         resumeId: input.resumeId,
+        activeResumeId: input.activeResumeId,
         jobDescription: input.jobDescription,
       }),
     ],
     tools: [...eventSourcedResumeAiToolDefinitions],
+    agentLoopStrategy: maxIterations(MAX_AGENT_ITERATIONS),
   });
 }

@@ -8,6 +8,7 @@ import { serverEnv } from "@/lib/server-env";
 
 const forwardedSchema = z.object({
   resumeId: z.string().trim().min(1),
+  activeResumeId: z.string().trim().min(1).optional(),
   jobDescription: z.string().optional(),
   systemPrompt: z.string().max(EVENT_SOURCED_SYSTEM_PROMPT_MAX_CHARS).optional(),
   apiKey: z.string().trim().optional(),
@@ -63,6 +64,7 @@ export const Route = createFileRoute("/api/ai/event-sourced-resume-tailor")({
 
           const stream = await streamEventSourcedResumeAgentChat({
             resumeId: data.resumeId,
+            activeResumeId: data.activeResumeId,
             jobDescription: data.jobDescription,
             systemPrompt: data.systemPrompt,
             messages: params.messages as never,

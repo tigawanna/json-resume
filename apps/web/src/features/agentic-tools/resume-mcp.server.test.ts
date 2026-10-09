@@ -7,7 +7,7 @@ vi.mock("@tanstack/react-start/server-only", () => ({}));
 const mockListResumesTool = vi.fn();
 vi.mock("./resume-tools.server", () => ({
   listResumesTool: (...args: unknown[]) => mockListResumesTool(...args),
-  getResumeDocumentTool: vi.fn(),
+  getResumeTool: vi.fn(),
   searchResumeBlocksTool: vi.fn(),
 }));
 
@@ -56,7 +56,7 @@ describe("resume MCP server", () => {
     const tools = result.tools as ListedTool[];
 
     expect(tools.map((tool) => tool.name).sort()).toEqual([
-      "get_resume_document",
+      "get_resume",
       "list_resumes",
       "search_resume_blocks",
     ]);

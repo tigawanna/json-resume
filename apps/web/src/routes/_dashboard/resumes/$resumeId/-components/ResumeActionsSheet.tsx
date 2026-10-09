@@ -27,7 +27,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { FileUp, GitFork, PanelRight, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { cloneLocalResume } from "../../../-ai/-utils/local-resume-tools";
+import { cloneResume } from "@/data-access-layer/event-sourced/clone-resume";
 import { PublishResumeButton } from "./PublishResumeButton";
 import { ResumeHistory } from "./ResumeHistory";
 
@@ -57,10 +57,7 @@ export function ResumeActionsSheet({
       return;
     }
     try {
-      const result = cloneLocalResume(
-        { db, resumeId, userId, navigateToResume: () => undefined },
-        {},
-      );
+      const result = cloneResume(db, resumeId);
       toast.success(`Cloned as “${result.name}”`);
       setOpen(false);
       void navigate({
