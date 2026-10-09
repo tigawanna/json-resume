@@ -33,6 +33,13 @@ export function EventSourcedResumeAiTab({ resumeId }: { resumeId: string }) {
       />
 
       <ResumeAiConversationCard
+        activeModelLabel={chat.activeModelLabel}
+        activeRoutingLabel={chat.activeRoutingLabel}
+        apiKey={chat.settings?.apiKey ?? null}
+        sessionChars={chat.sessionChars}
+        sessionGenerating={chat.sessionGenerating}
+        status={chat.status}
+        onOpenSettings={() => chat.setSettingsOpen(true)}
         composerRef={chat.composerRef}
         createdResumeTo="/resumes/$resumeId"
         currentResumeId={resumeId}

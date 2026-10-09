@@ -16,17 +16,16 @@ export function CreditsDisplay({ apiKey, sessionChars }: { apiKey: string; sessi
   const remaining = data.remaining_credits_display ?? data.total_credits - data.total_usage;
 
   return (
-    <span className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
-      <Coins className="size-3" />
-      <span>{formatCreditAmount(remaining)} remaining</span>
-      <span className="text-primary/30">·</span>
-      <span>{formatCreditAmount(data.total_usage)} used</span>
+    <span className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+      <span className="flex items-center gap-1.5">
+        <Coins className="size-3" />
+        {formatCreditAmount(remaining)} balance
+      </span>
       {sessionChars > 0 ? (
-        <>
-          <span className="text-primary/30">·</span>
+        <span className="flex items-center gap-1.5">
           <Hash className="size-3" />
-          <span>{formatTokenCount(sessionChars)} tokens this session</span>
-        </>
+          {formatTokenCount(sessionChars)} tokens this session
+        </span>
       ) : null}
     </span>
   );
