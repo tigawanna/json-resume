@@ -1,6 +1,8 @@
 import { useViewer } from "@/data-access-layer/auth/viewer";
+import { jobListLabel } from "@/data-access-layer/event-sourced/job-rows";
 import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
 import { fetchServerSentEvents, useChat, type UIMessage } from "@tanstack/ai-react";
+import { eq, useLiveQuery } from "@tanstack/react-db";
 import { useRouter } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import { eventSourcedResumeAiClientTools } from "../-utils/client-tools";
@@ -14,7 +16,7 @@ import {
   getSessionChars,
 } from "@/routes/_dashboard/resumes/$resumeId/-components/ResumeAiTab/resume-ai-message-utils";
 
-export function useEventSourcedResumeAiChat(resumeId: string, jobDescription: string) {
+export function useEventSourcedResumeAiChat(resumeId: string) {
   const [input, setInput] = useState("");
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [clearDialogOpen, setClearDialogOpen] = useState(false);
@@ -51,6 +53,22 @@ export function useEventSourcedResumeAiChat(resumeId: string, jobDescription: st
   const activeResumeIdRef = useRef(activeResumeId);
   activeResumeIdRef.current = activeResumeId;
 
+  const { data: activeJobRows } = useLiveQuery(
+    (q) =>
+      q
+        .from({ resume: db.collections.resume })
+        .innerJoin({ job: db.collections.job }, ({ resume, job }) => eq(resume.jobId, job.id))
+        .where(({ resume }) => eq(resume.id, activeResumeId))
+        .select(({ job }) => ({
+          id: job.id,
+          company: job.company,
+          title: job.title,
+          description: job.description,
+        })),
+    [db, activeResumeId],
+  );
+  const activeJob = activeJobRows?.[0];
+
   const context: LocalToolContext = {
     db,
     userId,
@@ -80,7 +98,8 @@ export function useEventSourcedResumeAiChat(resumeId: string, jobDescription: st
     forwardedProps: {
       resumeId,
       activeResumeId,
-      jobDescription,
+      activeJobId: activeJob?.id,
+      activeJobLabel: activeJob ? jobListLabel(activeJob) : undefined,
       systemPrompt,
       apiKey: settings?.apiKey,
       model: settings?.model,

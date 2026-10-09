@@ -1,7 +1,9 @@
 import {
-  attachJobToCurrentResumeToolDefinition,
+  attachJobToolDefinition,
+  getJobToolDefinition,
   listJobsToolDefinition,
   saveJobToolDefinition,
+  updateJobToolDefinition,
 } from "./job-definitions";
 import { searchCurrentResumeBlocksToolDefinition } from "./library-definitions";
 import {
@@ -47,7 +49,9 @@ export const chatToolDefinitions = [
   cloneCurrentResumeToolDefinition,
   createResumeFromDocumentToolDefinition,
   navigateToResumeToolDefinition,
-  saveJobToolDefinition,
   listJobsToolDefinition,
-  attachJobToCurrentResumeToolDefinition,
+  getJobToolDefinition,
+  saveJobToolDefinition,
+  updateJobToolDefinition,
+  attachJobToolDefinition,
 ] as const;

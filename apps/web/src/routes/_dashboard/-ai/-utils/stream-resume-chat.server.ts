@@ -10,7 +10,7 @@ import {
 import { createOpenRouterText } from "@tanstack/ai-openrouter";
 import { serverEnv } from "@/lib/server-env";
 import { chatToolDefinitions } from "@/features/agentic-tools/definitions/chat-tool-definitions";
-import { buildEventSourcedSystemPrompt } from "./system-prompt";
+import { buildEventSourcedSystemPrompt, type ActiveJobContext } from "./system-prompt";
 
 /** Enough model turns for the job description to tailored résumé chain (about 6 to 9 tool calls). */
 const MAX_AGENT_ITERATIONS = 16;
@@ -42,7 +42,7 @@ export async function streamEventSourcedResumeAgentChat(
   input: ChatRunParams & {
     resumeId: string;
     activeResumeId?: string;
-    jobDescription?: string;
+    activeJob?: ActiveJobContext;
     systemPrompt?: string;
     apiKey?: string;
     model?: string;
@@ -60,7 +60,7 @@ export async function streamEventSourcedResumeAgentChat(
         instructions: input.systemPrompt ?? "",
         resumeId: input.resumeId,
         activeResumeId: input.activeResumeId,
-        jobDescription: input.jobDescription,
+        activeJob: input.activeJob,
       }),
     ],
     tools: [...chatToolDefinitions],

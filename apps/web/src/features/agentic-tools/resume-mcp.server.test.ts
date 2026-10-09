@@ -10,6 +10,10 @@ vi.mock("./resume-tools.server", () => ({
   getResumeTool: vi.fn(),
   searchResumeBlocksTool: vi.fn(),
 }));
+vi.mock("./job-tools.server", () => ({
+  listJobsTool: vi.fn(),
+  getJobTool: vi.fn(),
+}));
 
 import { resumeMcpServer } from "./resume-mcp.server";
 
@@ -56,7 +60,9 @@ describe("resume MCP server", () => {
     const tools = result.tools as ListedTool[];
 
     expect(tools.map((tool) => tool.name).sort()).toEqual([
+      "get_job",
       "get_resume",
+      "list_jobs",
       "list_resumes",
       "search_resume_blocks",
     ]);

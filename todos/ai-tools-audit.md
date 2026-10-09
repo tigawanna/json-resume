@@ -296,15 +296,21 @@ widened `useChat`'s tools to `any`, which hid the approval interrupt types.
 
 ### Batch 4: Jobs
 
-- [ ] `save_job` fix (`attachToResumeId`, normalized dedupe, full row output)
-- [ ] `attach_job({ resumeId?, jobId | null })` (validate first, `null` detaches)
-- [ ] `get_job` (client + remote)
-- [ ] `list_jobs` with rule 7 search/paging (local `queryOnce` like `listLocalResumes`, replacing
+- [x] `save_job` fix (`attachToResumeId`, normalized dedupe, full row output)
+- [x] `attach_job({ resumeId?, jobId | null })` (validate first, `null` detaches)
+- [x] `get_job` (client + remote)
+- [x] `list_jobs` with rule 7 search/paging (local `queryOnce` like `listLocalResumes`, replacing
       the `.toArray` filter; also swap `.toArray.find` by id for `.get`), with `linkedResumeIds`
       (client + remote)
-- [ ] `update_job`
+- [x] `update_job`
 
-Also: send only `activeResumeId` + job id/label in the prompt instead of the full JD text.
+Also: send only `activeResumeId` + job id/label in the prompt instead of the full JD text. (Done.)
+
+`save_job` dedupes only on the normalized posting text (`findJobByDescription` in
+`job-rows.ts`); the old company + title match could overwrite a different posting. Job rows
+come from `shared/job-view.ts` for both sides; remote `get_job` needs `jobId` or `resumeId`.
+The hook reads the active résumé's job with a live query and forwards `activeJobId` /
+`activeJobLabel`; the model calls `get_job` for the text.
 
 ### Batch 5: Résumé lifecycle and the JD flow
 

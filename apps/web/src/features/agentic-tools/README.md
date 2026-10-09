@@ -7,6 +7,8 @@ The current implementation exposes these read-only, Drizzle-backed tools through
 - `list_resumes`
 - `get_resume` (shared view with item ids and the linked job; `resumeId` is required remotely)
 - `search_resume_blocks`
+- `list_jobs` (search/paging, with the résumés targeting each job)
+- `get_job` (full posting text; by `jobId`, or by `resumeId` remotely)
 
 Résumé documents are assembled from each résumé's `layout` column (see `todos/resume-layout.md`). There are no server write tools: résumé edits happen in the browser's local collections and sync to the server as events, so a server-side write would bypass the event log.
 
@@ -17,7 +19,7 @@ Do not duplicate the query logic for future work. Add thin adapters that validat
 - `resume-tool-schemas.ts`
   Shared Zod input and output schemas. Use these schemas for MCP, oRPC procedures, OpenAPI generation, and TanStack AI tool wrappers.
 
-- `resume-tools.server.ts`
+- `resume-tools.server.ts`, `job-tools.server.ts`
   Server-only implementations. These functions take `{ userId }` plus a validated input object, enforce ownership, and query Drizzle.
 
 - `resume-orpc.server.ts`
@@ -30,7 +32,7 @@ Do not duplicate the query logic for future work. Add thin adapters that validat
   Isomorphic TanStack AI `toolDefinition()`s (name, description, schemas, MCP annotations), one file per domain (`resume-`, `job-`, `library-definitions.ts`). The single contract for chat, MCP and oRPC. `tool-context.ts` holds `LocalToolContext` (browser tools, with the active résumé getter/setter) and `RemoteToolContext` (`{ userId }`).
 
 - `shared/`
-  Pure isomorphic logic both implementations call: `resume-view.ts` (the `get_resume` output) and `search-page.ts` (search terms and paging).
+  Pure isomorphic logic both implementations call: `resume-view.ts` (the `get_resume` output), `job-view.ts` (job rows) and `search-page.ts` (search terms and paging).
 
 - `remote-tools.server.ts`
   `def.server<RemoteToolContext>()` wrappers around the functions in `resume-tools.server.ts`. `remoteResumeTools` is the list MCP serves.
@@ -64,6 +66,8 @@ OpenAPI-compatible endpoints:
 POST /api/agentic/resumes/list
 POST /api/agentic/resumes/get
 POST /api/agentic/resume-blocks/search
+POST /api/agentic/jobs/list
+POST /api/agentic/jobs/get
 ```
 
 All routes also support:
@@ -102,7 +106,7 @@ const resumeReadPermission = { resumes: ["read"] };
 const resumeWritePermission = { resumes: ["write"] };
 ```
 
-Every current procedure uses read permission (list resumes, get resume, search resume blocks). `resumeWriteProcedure` is kept for future server writes, which would have to go through the event log.
+Every current procedure uses read permission (list/get resumes, search resume blocks, list/get jobs). `resumeWriteProcedure` is kept for future server writes, which would have to go through the event log.
 
 Do not enable Better Auth `enableSessionForAPIKeys` unless deliberately changing the auth model. The helper verifies API keys directly and avoids pretending API keys are cookie sessions.
 
@@ -132,7 +136,9 @@ Current AI tools (`definitions/chat-tool-definitions.ts`, with browser implement
 - `upsert_experience`, `upsert_project`, `upsert_education`, `upsert_talk` (with an `id` they edit the shared library item, so the change shows on every résumé using it)
 - `replace_resume_document` (needs approval), `clone_current_resume`, `create_resume_from_document`
 - `navigate_to_resume`
-- `save_job`, `list_jobs`, `attach_job_to_current_resume`
+- `list_jobs`, `get_job`, `save_job`, `update_job`, `attach_job` (`jobId: null` detaches)
+
+The prompt only names the active résumé's job (id and label); the model calls `get_job` when it needs the posting text. `list_jobs` and `get_job` also run remotely (MCP tools and `POST /jobs/list`, `POST /jobs/get`), sharing `shared/job-view.ts` with the local versions.
 
 Tools defined with `needsApproval: true` pause the run. The chat tab renders an Approve / Deny card (`ToolApprovalCard.tsx`) from `useChat`'s bound `interrupts`, and the route forwards `resume`, `threadId`, `runId`, and `parentRunId` into `chat()` so the run continues after the answer.
 

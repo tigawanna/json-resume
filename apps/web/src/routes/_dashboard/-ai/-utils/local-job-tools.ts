@@ -1,129 +1,178 @@
+import type { AppDb } from "@/data-access-layer/event-sourced/collection";
 import {
   attachJobToResume,
+  findJobByDescription,
   insertJob,
-  jobListLabel,
   updateJob,
 } from "@/data-access-layer/event-sourced/job-rows";
 import type { Job } from "@/data-access-layer/event-sourced/schemas";
 import type { LocalToolContext } from "@/features/agentic-tools/definitions/tool-context";
-import type {
-  AttachJobToCurrentResumeToolOutput,
-  ListJobsToolOutput,
-  SaveJobToolOutput,
+import {
+  attachJobToolInputSchema,
+  getJobToolInputSchema,
+  listJobsToolInputSchema,
+  saveJobToolInputSchema,
+  updateJobToolInputSchema,
+  type AttachJobToolInput,
+  type AttachJobToolOutput,
+  type GetJobToolInput,
+  type GetJobToolOutput,
+  type JobStatusTool,
+  type ListJobsToolInput,
+  type ListJobsToolOutput,
+  type SaveJobToolInput,
+  type SaveJobToolOutput,
+  type UpdateJobToolInput,
+  type UpdateJobToolOutput,
 } from "@/features/agentic-tools/resume-tool-schemas";
+import {
+  jobDetailView,
+  jobRowView,
+  linkedResumesByJob,
+} from "@/features/agentic-tools/shared/job-view";
+import { nextOffset, searchTerms } from "@/features/agentic-tools/shared/search-page";
+import { count, eq, inArray, queryOnce, type InitialQueryBuilder } from "@tanstack/db";
+import { orIlike } from "../../-utils/list-query";
 
-function preview(text: string, max = 240) {
-  const trimmed = text.trim().replace(/\s+/g, " ");
-  if (trimmed.length <= max) return trimmed;
-  return `${trimmed.slice(0, max - 1)}…`;
+async function linkedResumeIds(db: AppDb, jobIds: string[]) {
+  if (jobIds.length === 0) return new Map<string, string[]>();
+  const links = await queryOnce((q) =>
+    q
+      .from({ resume: db.collections.resume })
+      .where(({ resume }) => inArray(resume.jobId, jobIds))
+      .orderBy(({ resume }) => resume.updatedAt, "desc")
+      .select(({ resume }) => ({ id: resume.id, jobId: resume.jobId })),
+  );
+  return linkedResumesByJob(links);
 }
 
-function toJobToolRow(ctx: LocalToolContext, job: Job) {
-  const resume = ctx.db.collections.resume.get(ctx.getActiveResumeId());
-  return {
-    id: job.id,
-    company: job.company,
-    title: job.title,
-    location: job.location,
-    status: job.status,
-    url: job.url,
-    descriptionPreview: preview(job.description),
-    attachedToCurrentResume: resume?.jobId === job.id,
-  };
+async function jobRow(db: AppDb, job: Job) {
+  const links = await linkedResumeIds(db, [job.id]);
+  return jobRowView(job, links.get(job.id) ?? []);
 }
 
-export function saveLocalJob(
+function requireJob(db: AppDb, jobId: string): Job {
+  const job = db.collections.job.get(jobId);
+  if (!job) throw new Error(`Job ${jobId} was not found. Use list_jobs to find its id.`);
+  return job;
+}
+
+function requireResumeId(db: AppDb, resumeId: string) {
+  if (!db.collections.resume.has(resumeId)) {
+    throw new Error(`Resume ${resumeId} was not found. Use list_resumes to find its id.`);
+  }
+  return resumeId;
+}
+
+export async function saveLocalJob(
   ctx: LocalToolContext,
-  input: {
-    description: string;
-    company?: string;
-    title?: string;
-    url?: string;
-    location?: string;
-    status?: Job["status"];
-    notes?: string;
-    attachToCurrentResume?: boolean;
-  },
-): SaveJobToolOutput {
-  const company = input.company?.trim() ?? "";
-
-  const existing = ctx.db.collections.job.toArray.find((row) => {
-    if (row.description.trim() === input.description.trim()) return true;
-    if (!company) return false;
-    const sameCompany = row.company.trim().toLowerCase() === company.toLowerCase();
-    if (!sameCompany) return false;
-    const incomingTitle = input.title?.trim().toLowerCase() ?? "";
-    const existingTitle = row.title.trim().toLowerCase();
-    return Boolean(incomingTitle && existingTitle) && incomingTitle === existingTitle;
-  });
+  input: SaveJobToolInput,
+): Promise<SaveJobToolOutput> {
+  const data = saveJobToolInputSchema.parse(input);
+  const attachTo = data.attachToResumeId ? requireResumeId(ctx.db, data.attachToResumeId) : null;
+  const existing = findJobByDescription(ctx.db, data.description);
+  const fields = {
+    company: data.company,
+    title: data.title,
+    url: data.url,
+    location: data.location,
+    status: data.status,
+    notes: data.notes,
+  };
 
   const job = existing
-    ? updateJob(ctx.db, existing.id, {
-        company: company || existing.company,
-        description: input.description,
-        title: input.title ?? existing.title,
-        url: input.url ?? existing.url,
-        location: input.location ?? existing.location,
-        status: input.status ?? existing.status,
-        notes: input.notes ?? existing.notes,
-      })
-    : insertJob(ctx.db, ctx.userId, {
-        company,
-        description: input.description,
-        title: input.title,
-        url: input.url,
-        location: input.location,
-        status: input.status,
-        notes: input.notes,
-      });
+    ? updateJob(ctx.db, existing.id, fields)
+    : insertJob(ctx.db, ctx.userId, { ...fields, description: data.description });
+  if (attachTo) attachJobToResume(ctx.db, attachTo, job.id);
 
-  const attach = input.attachToCurrentResume !== false;
-  if (attach) {
-    attachJobToResume(ctx.db, ctx.getActiveResumeId(), job.id);
+  return { job: await jobRow(ctx.db, job), created: !existing, attachedToResumeId: attachTo };
+}
+
+export async function updateLocalJob(
+  ctx: LocalToolContext,
+  input: UpdateJobToolInput,
+): Promise<UpdateJobToolOutput> {
+  const { jobId, ...fields } = updateJobToolInputSchema.parse(input);
+  requireJob(ctx.db, jobId);
+  return { job: await jobRow(ctx.db, updateJob(ctx.db, jobId, fields)) };
+}
+
+export async function getLocalJob(
+  ctx: LocalToolContext,
+  input: GetJobToolInput,
+): Promise<GetJobToolOutput> {
+  const data = getJobToolInputSchema.parse(input);
+  let jobId = data.jobId;
+  if (!jobId) {
+    const resumeId = data.resumeId || ctx.getActiveResumeId();
+    jobId = ctx.db.collections.resume.get(resumeId)?.jobId ?? undefined;
+    if (!jobId) {
+      throw new Error(
+        `Resume ${resumeId} has no target job. Use list_jobs or save_job, then attach_job.`,
+      );
+    }
   }
+  const job = requireJob(ctx.db, jobId);
+  const links = await linkedResumeIds(ctx.db, [job.id]);
+  return { job: jobDetailView(job, links.get(job.id) ?? []) };
+}
+
+/** Jobs with the given status where every term matches some job field. */
+function matchingJobs(
+  q: InitialQueryBuilder,
+  db: AppDb,
+  terms: ReadonlyArray<string>,
+  status: JobStatusTool | undefined,
+) {
+  let query = q.from({ job: db.collections.job });
+  if (status) query = query.where(({ job }) => eq(job.status, status));
+  for (const term of terms) {
+    query = query.where(({ job }) =>
+      orIlike(term, job.company, job.title, job.location, job.url, job.notes, job.description),
+    );
+  }
+  return query;
+}
+
+export async function listLocalJobs(
+  ctx: LocalToolContext,
+  input: ListJobsToolInput,
+): Promise<ListJobsToolOutput> {
+  const data = listJobsToolInputSchema.parse(input);
+  const terms = searchTerms(data.keyword);
+
+  const [rows, totals] = await Promise.all([
+    queryOnce((q) =>
+      matchingJobs(q, ctx.db, terms, data.status)
+        .orderBy(({ job }) => job.updatedAt, "desc")
+        .orderBy(({ job }) => job.id, "desc")
+        .offset(data.offset)
+        .limit(data.limit),
+    ),
+    queryOnce((q) =>
+      matchingJobs(q, ctx.db, terms, data.status).select(({ job }) => ({ total: count(job.id) })),
+    ),
+  ]);
+  const total = totals[0]?.total ?? 0;
+  const links = await linkedResumeIds(
+    ctx.db,
+    rows.map((job) => job.id),
+  );
 
   return {
-    job: toJobToolRow(ctx, job),
-    created: !existing,
-    attachedToCurrentResume: attach,
+    jobs: rows.map((job) => jobRowView(job, links.get(job.id) ?? [])),
+    total,
+    nextOffset: nextOffset(total, data.offset, rows.length),
   };
 }
 
-export function listLocalJobs(
+export async function attachLocalJob(
   ctx: LocalToolContext,
-  input: { keyword?: string; status?: Job["status"]; limit?: number },
-): ListJobsToolOutput {
-  const needle = input.keyword?.trim().toLowerCase();
-  const limit = input.limit ?? 20;
-  const jobs = ctx.db.collections.job.toArray
-    .filter((job) => {
-      if (input.status && job.status !== input.status) return false;
-      if (!needle) return true;
-      return [job.company, job.title, job.location, job.description, job.notes, job.searchableText]
-        .join(" ")
-        .toLowerCase()
-        .includes(needle);
-    })
-    .sort((a, b) => b.updatedAt - a.updatedAt)
-    .slice(0, limit)
-    .map((job) => toJobToolRow(ctx, job));
-  return { jobs };
-}
-
-export function attachLocalJobToCurrentResume(
-  ctx: LocalToolContext,
-  jobId: string,
-): AttachJobToCurrentResumeToolOutput {
-  const resumeId = ctx.getActiveResumeId();
-  attachJobToResume(ctx.db, resumeId, jobId);
-  const job = ctx.db.collections.job.get(jobId);
-  if (!job) {
-    throw new Error(`Job ${jobId} was not found.`);
-  }
-  return {
-    resumeId,
-    jobId: job.id,
-    company: job.company,
-    title: jobListLabel(job),
-  };
+  input: AttachJobToolInput,
+): Promise<AttachJobToolOutput> {
+  const data = attachJobToolInputSchema.parse(input);
+  const resumeId = requireResumeId(ctx.db, data.resumeId || ctx.getActiveResumeId());
+  const job = data.jobId ? requireJob(ctx.db, data.jobId) : null;
+  attachJobToResume(ctx.db, resumeId, job?.id ?? null);
+  return { resumeId, job: job ? await jobRow(ctx.db, job) : null };
 }

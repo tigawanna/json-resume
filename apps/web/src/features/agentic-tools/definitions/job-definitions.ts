@@ -1,33 +1,55 @@
 import { toolDefinition } from "@tanstack/ai";
 import {
-  attachJobToCurrentResumeToolInputSchema,
-  attachJobToCurrentResumeToolOutputSchema,
+  attachJobToolInputSchema,
+  attachJobToolOutputSchema,
+  getJobToolInputSchema,
+  getJobToolOutputSchema,
   listJobsToolInputSchema,
   listJobsToolOutputSchema,
   saveJobToolInputSchema,
   saveJobToolOutputSchema,
+  updateJobToolInputSchema,
+  updateJobToolOutputSchema,
 } from "../resume-tool-schemas";
 
 export const saveJobToolDefinition = toolDefinition({
   name: "save_job",
   description:
-    "Save a job posting to the independent job tracker. Description is required. If the user did not give a company name, extract it from the posting text (and optionally title, location, and url). Set attachToCurrentResume true to use this job as the target for the active resume.",
+    "Save a job posting to the job tracker. Pass the full posting text; extract company, title, location and url from it when the user did not give them. A posting already tracked (same text) is updated instead of duplicated. Pass attachToResumeId to make a résumé target it.",
   inputSchema: saveJobToolInputSchema,
   outputSchema: saveJobToolOutputSchema,
+});
+
+export const updateJobToolDefinition = toolDefinition({
+  name: "update_job",
+  description:
+    "Change a tracked job's status, notes, company, title, location, url or posting text. Only the fields you pass change.",
+  inputSchema: updateJobToolInputSchema,
+  outputSchema: updateJobToolOutputSchema,
+});
+
+export const getJobToolDefinition = toolDefinition({
+  name: "get_job",
+  description:
+    "Read one tracked job with its full posting text. Omit jobId to read the job a résumé targets (the active résumé by default).",
+  inputSchema: getJobToolInputSchema,
+  outputSchema: getJobToolOutputSchema,
+  metadata: { title: "Get Job", annotations: { readOnlyHint: true } },
 });
 
 export const listJobsToolDefinition = toolDefinition({
   name: "list_jobs",
   description:
-    "List jobs in the user's tracker, optionally filtered by keyword or application status.",
+    "Search the user's job tracker, most recently updated first, optionally by application status. Each row lists the résumés targeting it.",
   inputSchema: listJobsToolInputSchema,
   outputSchema: listJobsToolOutputSchema,
+  metadata: { title: "List Jobs", annotations: { readOnlyHint: true } },
 });
 
-export const attachJobToCurrentResumeToolDefinition = toolDefinition({
-  name: "attach_job_to_current_resume",
+export const attachJobToolDefinition = toolDefinition({
+  name: "attach_job",
   description:
-    "Link an existing tracked job to the active resume so its description is used for AI tailoring.",
-  inputSchema: attachJobToCurrentResumeToolInputSchema,
-  outputSchema: attachJobToCurrentResumeToolOutputSchema,
+    "Make a résumé (the active one by default) target a tracked job, or pass jobId null to detach it.",
+  inputSchema: attachJobToolInputSchema,
+  outputSchema: attachJobToolOutputSchema,
 });

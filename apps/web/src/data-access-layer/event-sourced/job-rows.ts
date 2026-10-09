@@ -187,12 +187,15 @@ export function attachJobDescription(
 ): Job | null {
   const text = description.trim();
   if (!text) return null;
-  const key = normalizeJobDescription(text);
-  const job =
-    db.collections.job.toArray.find((row) => normalizeJobDescription(row.description) === key) ??
-    insertJob(db, userId, { description: text });
+  const job = findJobByDescription(db, text) ?? insertJob(db, userId, { description: text });
   attachJobToResume(db, resumeId, job.id);
   return job;
+}
+
+/** A tracked job with the same posting text, ignoring whitespace differences. */
+export function findJobByDescription(db: AppDb, description: string): Job | undefined {
+  const key = normalizeJobDescription(description);
+  return db.collections.job.toArray.find((row) => normalizeJobDescription(row.description) === key);
 }
 
 export function unlinkJobFromResumes(db: AppDb, jobId: string) {

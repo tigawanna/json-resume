@@ -16,21 +16,25 @@ export const DEFAULT_EVENT_SOURCED_SYSTEM_PROMPT = [
   "- When the user asks for a copy, use clone_current_resume (or create_resume_from_document for pasted resume text), then call set_active_resume with the new id before editing it.",
   "- After a successful clone or create, briefly tell the user the draft is ready. You may call navigate_to_resume so they can open it.",
   "- Edits show up in the editor immediately; there is no refresh step.",
-  "- Jobs live in a separate tracker from resumes. When the user pastes a job posting, call save_job. Extract company (required) plus title, location, and url when they appear in the text. Attach it to the active resume unless they ask not to.",
-  "- Use list_jobs to look up tracked applications. Use attach_job_to_current_resume to reuse an existing posting.",
+  "- Jobs live in a separate tracker from resumes. When the user pastes a job posting, call save_job with the full text and extract company, title, location, and url when they appear. Pass attachToResumeId with the active resume id unless they ask not to.",
+  "- Use get_job to read a job's posting text, list_jobs to search the tracker, update_job to change status or notes, and attach_job to point a resume at a tracked job (jobId null detaches it).",
   "- Keep responses practical and specific.",
   "- If you provide JSON, it must be valid ResumeDocumentV1 JSON with no markdown fences.",
   "- Do not use em dashes. Prefer commas and similar punctuation.",
 ].join("\n\n");
 
+export interface ActiveJobContext {
+  id: string;
+  label: string;
+}
+
 export function buildEventSourcedSystemPrompt(input: {
   instructions: string;
   resumeId: string;
   activeResumeId?: string;
-  jobDescription?: string;
+  activeJob?: ActiveJobContext;
 }): string {
   const instructions = input.instructions.trim() || DEFAULT_EVENT_SOURCED_SYSTEM_PROMPT;
-  const jobDescription = input.jobDescription?.trim();
   const activeResumeId = input.activeResumeId || input.resumeId;
 
   return [
@@ -38,8 +42,8 @@ export function buildEventSourcedSystemPrompt(input: {
     activeResumeId === input.resumeId
       ? `The active resume id is "${activeResumeId}" (the one open in the editor).`
       : `The active resume id is "${activeResumeId}". The editor has "${input.resumeId}" open.`,
-    jobDescription
-      ? `The job description saved on the open resume is:\n${jobDescription}`
-      : "There is no saved job description yet. Ask for one or work from the user's latest message.",
+    input.activeJob
+      ? `The active resume targets the job "${input.activeJob.label}" (id "${input.activeJob.id}"). Call get_job when you need its posting text.`
+      : "The active resume has no target job yet. If the user pastes a posting, save it with save_job; otherwise work from their latest message.",
   ].join("\n\n");
 }

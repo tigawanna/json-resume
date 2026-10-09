@@ -1,7 +1,9 @@
 import {
-  attachJobToCurrentResumeToolDefinition,
+  attachJobToolDefinition,
+  getJobToolDefinition,
   listJobsToolDefinition,
   saveJobToolDefinition,
+  updateJobToolDefinition,
 } from "@/features/agentic-tools/definitions/job-definitions";
 import { searchCurrentResumeBlocksToolDefinition } from "@/features/agentic-tools/definitions/library-definitions";
 import {
@@ -48,7 +50,13 @@ import {
   searchLocalResumeBlocks,
   setLocalActiveResume,
 } from "./local-resume-tools";
-import { attachLocalJobToCurrentResume, listLocalJobs, saveLocalJob } from "./local-job-tools";
+import {
+  attachLocalJob,
+  getLocalJob,
+  listLocalJobs,
+  saveLocalJob,
+  updateLocalJob,
+} from "./local-job-tools";
 
 type ClientToolCtx = { context: LocalToolContext };
 
@@ -138,29 +146,24 @@ export const navigateToResumeClientTool = navigateToResumeToolDefinition.client(
   },
 );
 
-export const saveJobClientTool = saveJobToolDefinition.client((input, ctx: ClientToolCtx) =>
-  saveLocalJob(ctx.context, {
-    description: input.description,
-    company: input.company,
-    title: input.title,
-    url: input.url,
-    location: input.location,
-    status: input.status,
-    notes: input.notes,
-    attachToCurrentResume: input.attachToCurrentResume,
-  }),
-);
-
 export const listJobsClientTool = listJobsToolDefinition.client((input, ctx: ClientToolCtx) =>
-  listLocalJobs(ctx.context, {
-    keyword: input.keyword,
-    status: input.status,
-    limit: input.limit,
-  }),
+  listLocalJobs(ctx.context, input),
 );
 
-export const attachJobToCurrentResumeClientTool = attachJobToCurrentResumeToolDefinition.client(
-  (input, ctx: ClientToolCtx) => attachLocalJobToCurrentResume(ctx.context, input.jobId),
+export const getJobClientTool = getJobToolDefinition.client((input, ctx: ClientToolCtx) =>
+  getLocalJob(ctx.context, input),
+);
+
+export const saveJobClientTool = saveJobToolDefinition.client((input, ctx: ClientToolCtx) =>
+  saveLocalJob(ctx.context, input),
+);
+
+export const updateJobClientTool = updateJobToolDefinition.client((input, ctx: ClientToolCtx) =>
+  updateLocalJob(ctx.context, input),
+);
+
+export const attachJobClientTool = attachJobToolDefinition.client((input, ctx: ClientToolCtx) =>
+  attachLocalJob(ctx.context, input),
 );
 
 export const eventSourcedResumeAiClientTools = [
@@ -181,7 +184,9 @@ export const eventSourcedResumeAiClientTools = [
   cloneCurrentResumeClientTool,
   createResumeFromDocumentClientTool,
   navigateToResumeClientTool,
-  saveJobClientTool,
   listJobsClientTool,
-  attachJobToCurrentResumeClientTool,
+  getJobClientTool,
+  saveJobClientTool,
+  updateJobClientTool,
+  attachJobClientTool,
 ];

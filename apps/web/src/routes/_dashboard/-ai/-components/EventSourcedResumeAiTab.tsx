@@ -10,7 +10,7 @@ export function EventSourcedResumeAiTab({
   resumeId: string;
   jobDescription: string;
 }) {
-  const chat = useEventSourcedResumeAiChat(resumeId, jobDescription);
+  const chat = useEventSourcedResumeAiChat(resumeId);
 
   return (
     <div

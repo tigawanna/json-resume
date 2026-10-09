@@ -1,6 +1,8 @@
 import "@tanstack/react-start/server-only";
 
+import { getJobToolDefinition, listJobsToolDefinition } from "./definitions/job-definitions";
 import { searchResumeBlocksToolDefinition } from "./definitions/library-definitions";
+import { getJobTool, listJobsTool } from "./job-tools.server";
 import {
   getResumeToolDefinition,
   listResumesToolDefinition,
@@ -53,6 +55,32 @@ const searchResumeBlocksProcedure = resumeReadProcedure
   .output(searchResumeBlocksToolDefinition.outputSchema)
   .handler(async ({ context, input }) => searchResumeBlocksTool({ userId: context.userId }, input));
 
+const listJobsProcedure = resumeReadProcedure
+  .route({
+    method: "POST",
+    path: "/jobs/list",
+    summary: "List tracked jobs",
+    description: "Search the job tracker, with the résumés targeting each job.",
+    tags: ["Agentic Jobs"],
+    successStatus: 200,
+  })
+  .input(listJobsToolDefinition.inputSchema)
+  .output(listJobsToolDefinition.outputSchema)
+  .handler(async ({ context, input }) => listJobsTool({ userId: context.userId }, input));
+
+const getJobProcedure = resumeReadProcedure
+  .route({
+    method: "POST",
+    path: "/jobs/get",
+    summary: "Get a tracked job",
+    description: "Load one job with its full posting text, by jobId or by the résumé targeting it.",
+    tags: ["Agentic Jobs"],
+    successStatus: 200,
+  })
+  .input(getJobToolDefinition.inputSchema)
+  .output(getJobToolDefinition.outputSchema)
+  .handler(async ({ context, input }) => getJobTool({ userId: context.userId }, input));
+
 // ─── Router ───────────────────────────────────────────────────────────────────
 // Grouped by domain so the server client (createRouterClient) surfaces a typed,
 // namespaced API: client.resumes.list(), client.resumeBlocks.search(), etc.
@@ -64,6 +92,10 @@ export const resumeAgenticRouter = {
   },
   resumeBlocks: {
     search: searchResumeBlocksProcedure,
+  },
+  jobs: {
+    list: listJobsProcedure,
+    get: getJobProcedure,
   },
 };
 
