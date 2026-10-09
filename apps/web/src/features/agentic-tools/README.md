@@ -6,7 +6,8 @@ The current implementation exposes these read-only, Drizzle-backed tools through
 
 - `list_resumes`
 - `get_resume` (shared view with item ids and the linked job; `resumeId` is required remotely)
-- `search_resume_blocks`
+- `search_library` (one library section per call, with search/paging; `resumeId` flags what that résumé shows)
+- `rank_resumes_for_job`, `rank_library_for_job` (keyword coverage of a job, shared scorer in `shared/rank.ts`)
 - `list_jobs` (search/paging, with the résumés targeting each job)
 - `get_job` (full posting text; by `jobId`, or by `resumeId` remotely)
 
@@ -65,7 +66,9 @@ OpenAPI-compatible endpoints:
 ```txt
 POST /api/agentic/resumes/list
 POST /api/agentic/resumes/get
-POST /api/agentic/resume-blocks/search
+POST /api/agentic/resumes/rank-for-job
+POST /api/agentic/library/search
+POST /api/agentic/library/rank-for-job
 POST /api/agentic/jobs/list
 POST /api/agentic/jobs/get
 ```
@@ -106,17 +109,17 @@ const resumeReadPermission = { resumes: ["read"] };
 const resumeWritePermission = { resumes: ["write"] };
 ```
 
-Every current procedure uses read permission (list/get/rank resumes, search resume blocks, list/get jobs). `resumeWriteProcedure` is kept for future server writes, which would have to go through the event log.
+Every current procedure uses read permission (list/get/rank resumes, search/rank the library, list/get jobs). `resumeWriteProcedure` is kept for future server writes, which would have to go through the event log.
 
 Do not enable Better Auth `enableSessionForAPIKeys` unless deliberately changing the auth model. The helper verifies API keys directly and avoids pretending API keys are cookie sessions.
 
 Example request:
 
 ```bash
-curl -X POST "$APP_URL/api/agentic/resume-blocks/search" \
+curl -X POST "$APP_URL/api/agentic/library/search" \
   -H "content-type: application/json" \
   -H "x-api-key: $AGENTIC_JSON_RESUME_API_KEY" \
-  --data '{"keyword":"react","limitPerType":5}'
+  --data '{"section":"experience_bullet","keyword":"react","limit":5}'
 ```
 
 ## TanStack AI Layer
@@ -129,10 +132,11 @@ The first slice is implemented:
 - `src/routes/api/ai/event-sourced-resume-tailor.ts` — session-protected SSE route; extracts `apiKey` and `model` from the request body and forwards them to `streamEventSourcedResumeAgentChat`.
 - `src/routes/_dashboard/-ai/-components/EventSourcedResumeAiTab.tsx` — reads credentials from the browser and passes them in the `useChat` body on every request.
 
-Current AI tools (`definitions/chat-tool-definitions.ts`, with browser implementations in `routes/_dashboard/-ai/-utils/client-tools.ts`) run against the local collections (`local-resume-tools.ts`, `local-job-tools.ts`), so edits sync as events like any other change. They target the **active résumé**: it starts as the one open in the editor, and `set_active_resume` moves it (held in a ref by `use-event-sourced-resume-ai.ts` and sent to the prompt as `activeResumeId`):
+Current AI tools (`definitions/chat-tool-definitions.ts`, with browser implementations in `routes/_dashboard/-ai/-utils/client-tools.ts`) run against the local collections (`local-resume-tools.ts`, `local-resume-edit-tools.ts`, `local-resume-lifecycle-tools.ts`, `local-library-tools.ts`, `local-job-tools.ts`), so edits sync as events like any other change. They target the **active résumé**: it starts as the one open in the editor, and `set_active_resume` moves it (held in a ref by `use-event-sourced-resume-ai.ts` and sent to the prompt as `activeResumeId`):
 
-- `list_resumes`, `get_resume`, `set_active_resume`, `search_current_resume_blocks`
-- `update_resume_details`, `set_summary`, `set_experience_bullets`, `set_skills`, `remove_from_resume`
+- `list_resumes`, `get_resume`, `set_active_resume`
+- `search_library`, `rank_library_for_job`, `attach_library_items` (find existing library rows and put them on the résumé)
+- `update_resume_details`, `set_summary`, `set_experience_bullets`, `set_skills`, `set_contacts`, `set_links`, `set_notes`, `reorder_section`, `remove_from_resume`
 - `upsert_experience`, `upsert_project`, `upsert_education`, `upsert_talk` (with an `id` they edit the shared library item, so the change shows on every résumé using it)
 - `replace_resume_document` (needs approval)
 - `clone_resume`, `create_resume`, `tailor_resume_for_job` (each makes the new résumé active), `rank_resumes_for_job`

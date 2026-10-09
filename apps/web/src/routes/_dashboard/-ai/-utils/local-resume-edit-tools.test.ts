@@ -4,7 +4,11 @@ import { useLocalToolDb } from "./local-tool-fixtures";
 import { createDefaultResume } from "@/features/resume/resume-schema";
 import {
   removeLocalFromResume,
+  reorderLocalSection,
   replaceLocalResumeDocument,
+  setLocalContacts,
+  setLocalLinks,
+  setLocalNotes,
   setLocalExperienceBullets,
   setLocalSkills,
   setLocalSummary,
@@ -259,5 +263,75 @@ describe("replace_resume_document", () => {
     const resume = getLocalResume(context("cv"), {}).resume;
     expect(resume.summary?.map((summary) => summary.text)).toEqual(["Rewritten summary"]);
     expect(resume.experience?.length).toBe(document.experience.items.length);
+  });
+});
+
+describe("reorder_section", () => {
+  it("puts the listed ids first and keeps the rest in order", () => {
+    seed();
+    insertExperience("exp2", "Globex", []);
+    insertExperience("exp3", "Hooli", []);
+    insertResume("multi", 3, {
+      layout: {
+        experiences: [
+          { id: "exp1", bullets: ["b1"] },
+          { id: "exp2", bullets: [] },
+          { id: "exp3", bullets: [] },
+        ],
+      },
+    });
+
+    const result = reorderLocalSection(context("multi"), {
+      section: "experience",
+      ids: ["exp3"],
+    });
+
+    expect(result.ids).toEqual(["exp3", "exp1", "exp2"]);
+    const experience = getLocalResume(context("multi"), { sections: ["experience"] }).resume
+      .experience;
+    expect(experience?.map((item) => item.id)).toEqual(["exp3", "exp1", "exp2"]);
+    expect(experience?.[1]?.bullets.map((bullet) => bullet.id)).toEqual(["b1"]);
+  });
+
+  it("rejects ids the résumé does not show", () => {
+    seed();
+
+    expect(() =>
+      reorderLocalSection(context("cv"), { section: "experience", ids: ["nope"] }),
+    ).toThrow("get_resume");
+  });
+});
+
+describe("set_contacts / set_links / set_notes", () => {
+  it("replaces the header contacts and links", async () => {
+    seed();
+
+    const contacts = await setLocalContacts(context("cv"), {
+      contacts: [
+        { type: "email", value: "ada@example.com" },
+        { type: "phone", value: "+1 555", label: "Mobile" },
+      ],
+    });
+    const links = await setLocalLinks(context("cv"), {
+      links: [{ label: "GitHub", url: "https://github.com/ada" }],
+    });
+
+    expect(contacts.contacts.map(({ type, value, label }) => ({ type, value, label }))).toEqual([
+      { type: "email", value: "ada@example.com", label: "" },
+      { type: "phone", value: "+1 555", label: "Mobile" },
+    ]);
+    expect(links.links).toEqual([
+      { id: expect.any(String), label: "GitHub", url: "https://github.com/ada" },
+    ]);
+  });
+
+  it("sets and clears the notes", async () => {
+    seed();
+
+    const set = await setLocalNotes(context("cv"), { text: "Dear team" });
+    expect(set.notes).toMatchObject({ label: "Notes", text: "Dear team" });
+
+    const cleared = await setLocalNotes(context("cv"), { text: "" });
+    expect(cleared.notes).toBeNull();
   });
 });

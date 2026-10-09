@@ -2,10 +2,18 @@ import { toolDefinition } from "@tanstack/ai";
 import {
   removeFromResumeToolInputSchema,
   removeFromResumeToolOutputSchema,
+  reorderSectionToolInputSchema,
+  reorderSectionToolOutputSchema,
   replaceResumeDocumentToolInputSchema,
   replaceResumeDocumentToolOutputSchema,
   setExperienceBulletsToolInputSchema,
+  setContactsToolInputSchema,
+  setContactsToolOutputSchema,
   setExperienceBulletsToolOutputSchema,
+  setLinksToolInputSchema,
+  setLinksToolOutputSchema,
+  setNotesToolInputSchema,
+  setNotesToolOutputSchema,
   setSkillsToolInputSchema,
   setSkillsToolOutputSchema,
   setSummaryToolInputSchema,
@@ -90,6 +98,35 @@ export const upsertTalkToolDefinition = toolDefinition({
   description: `Create or edit a talk on a résumé. ${SHARED_LIBRARY_NOTE}`,
   inputSchema: upsertTalkToolInputSchema,
   outputSchema: upsertTalkToolOutputSchema,
+});
+
+export const reorderSectionToolDefinition = toolDefinition({
+  name: "reorder_section",
+  description:
+    "Reorder the items of one résumé section. Pass ids in the order they should appear; unlisted items follow in their current order.",
+  inputSchema: reorderSectionToolInputSchema,
+  outputSchema: reorderSectionToolOutputSchema,
+});
+
+export const setContactsToolDefinition = toolDefinition({
+  name: "set_contacts",
+  description: "Replace the contact details in a résumé's header (email, phone, location, …).",
+  inputSchema: setContactsToolInputSchema,
+  outputSchema: setContactsToolOutputSchema,
+});
+
+export const setLinksToolDefinition = toolDefinition({
+  name: "set_links",
+  description: "Replace the links in a résumé's header (GitHub, LinkedIn, portfolio, …).",
+  inputSchema: setLinksToolInputSchema,
+  outputSchema: setLinksToolOutputSchema,
+});
+
+export const setNotesToolDefinition = toolDefinition({
+  name: "set_notes",
+  description: "Replace a résumé's notes section, such as a cover letter. Empty text clears it.",
+  inputSchema: setNotesToolInputSchema,
+  outputSchema: setNotesToolOutputSchema,
 });
 
 export const replaceResumeDocumentToolDefinition = toolDefinition({

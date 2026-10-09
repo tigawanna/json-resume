@@ -8,7 +8,10 @@ const mockListResumesTool = vi.fn();
 vi.mock("./resume-tools.server", () => ({
   listResumesTool: (...args: unknown[]) => mockListResumesTool(...args),
   getResumeTool: vi.fn(),
-  searchResumeBlocksTool: vi.fn(),
+}));
+vi.mock("./library-tools.server", () => ({
+  searchLibraryTool: vi.fn(),
+  rankLibraryForJobTool: vi.fn(),
 }));
 vi.mock("./job-tools.server", () => ({
   listJobsTool: vi.fn(),
@@ -67,8 +70,9 @@ describe("resume MCP server", () => {
       "get_resume",
       "list_jobs",
       "list_resumes",
+      "rank_library_for_job",
       "rank_resumes_for_job",
-      "search_resume_blocks",
+      "search_library",
     ]);
     expect(tools.every((tool) => tool.annotations?.readOnlyHint === true)).toBe(true);
   });
@@ -77,9 +81,7 @@ describe("resume MCP server", () => {
     const result = await rpcResult(
       await resumeMcpServer.handle(rpc("tools/list", {}), { context: { userId: "u1" } }),
     );
-    const search = (result.tools as ListedTool[]).find(
-      (tool) => tool.name === "search_resume_blocks",
-    );
+    const search = (result.tools as ListedTool[]).find((tool) => tool.name === "search_library");
 
     expect(search?.inputSchema.required ?? []).not.toContain("resumeId");
     expect(search?.inputSchema.required ?? []).not.toContain("keyword");

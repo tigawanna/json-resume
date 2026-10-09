@@ -11,12 +11,10 @@ import {
   type GetResumeToolOutput,
   type ListResumesToolInput,
   type ListResumesToolOutput,
-  type ResumeBlockType,
-  type SearchResumeBlocksToolOutput,
   type SetActiveResumeToolInput,
   type SetActiveResumeToolOutput,
 } from "@/features/agentic-tools/resume-tool-schemas";
-import { parseTech, resumeView } from "@/features/agentic-tools/shared/resume-view";
+import { resumeView } from "@/features/agentic-tools/shared/resume-view";
 import { nextOffset, searchTerms } from "@/features/agentic-tools/shared/search-page";
 import { count, eq, queryOnce, type InitialQueryBuilder } from "@tanstack/db";
 import { orIlike } from "../../-utils/list-query";
@@ -28,12 +26,6 @@ export function requireDetail(db: AppDb, resumeId: string) {
     throw new Error(`Resume ${resumeId} was not found in the local database.`);
   }
   return { snapshots, detail };
-}
-
-function matchesKeyword(keyword: string | undefined, ...parts: Array<string | null | undefined>) {
-  const needle = keyword?.trim().toLowerCase();
-  if (!needle) return true;
-  return parts.some((part) => (part ?? "").toLowerCase().includes(needle));
 }
 
 /** Résumés (with their linked job) where every term matches some résumé or job field. */
@@ -130,119 +122,4 @@ export function setLocalActiveResume(
   }
   ctx.setActiveResumeId(resume.id);
   return { resumeId: resume.id, name: resume.name };
-}
-
-export function searchLocalResumeBlocks(
-  ctx: LocalToolContext,
-  input: {
-    keyword?: string;
-    blockTypes?: ResumeBlockType[];
-    limitPerType?: number;
-  },
-): SearchResumeBlocksToolOutput {
-  const { detail } = requireDetail(ctx.db, ctx.getActiveResumeId());
-  const types = new Set(
-    input.blockTypes ?? ["summary", "experience", "experience_bullet", "project", "skill"],
-  );
-  const limit = input.limitPerType ?? 8;
-  const blocks: SearchResumeBlocksToolOutput["blocks"] = [];
-
-  if (types.has("summary")) {
-    for (const summary of detail.summaries) {
-      if (!matchesKeyword(input.keyword, summary.text)) continue;
-      blocks.push({
-        type: "summary",
-        id: summary.id,
-        resumeId: detail.id,
-        resumeName: detail.name,
-        text: summary.text,
-      });
-      if (blocks.filter((block) => block.type === "summary").length >= limit) break;
-    }
-  }
-
-  if (types.has("experience")) {
-    for (const experience of detail.experiences) {
-      if (
-        !matchesKeyword(input.keyword, experience.company, experience.role, experience.location)
-      ) {
-        continue;
-      }
-      blocks.push({
-        type: "experience",
-        id: experience.id,
-        resumeId: detail.id,
-        resumeName: detail.name,
-        company: experience.company,
-        role: experience.role,
-        startDate: experience.startDate,
-        endDate: experience.endDate,
-        location: experience.location,
-      });
-      if (blocks.filter((block) => block.type === "experience").length >= limit) break;
-    }
-  }
-
-  if (types.has("experience_bullet")) {
-    for (const experience of detail.experiences) {
-      for (const bullet of experience.bullets) {
-        if (!matchesKeyword(input.keyword, bullet.text, experience.company, experience.role)) {
-          continue;
-        }
-        blocks.push({
-          type: "experience_bullet",
-          id: bullet.id,
-          experienceId: experience.id,
-          resumeId: detail.id,
-          resumeName: detail.name,
-          company: experience.company,
-          role: experience.role,
-          text: bullet.text,
-          sortOrder: bullet.sortOrder,
-        });
-        if (blocks.filter((block) => block.type === "experience_bullet").length >= limit) break;
-      }
-    }
-  }
-
-  if (types.has("project")) {
-    for (const project of detail.projects) {
-      const tech = parseTech(project.tech);
-      if (!matchesKeyword(input.keyword, project.name, project.description, project.url, ...tech)) {
-        continue;
-      }
-      blocks.push({
-        type: "project",
-        id: project.id,
-        resumeId: detail.id,
-        resumeName: detail.name,
-        name: project.name,
-        description: project.description,
-        tech,
-        url: project.url,
-        homepageUrl: project.homepageUrl,
-      });
-      if (blocks.filter((block) => block.type === "project").length >= limit) break;
-    }
-  }
-
-  if (types.has("skill")) {
-    for (const group of detail.skillGroups) {
-      for (const skill of group.skills) {
-        if (!matchesKeyword(input.keyword, skill.name, group.name)) continue;
-        blocks.push({
-          type: "skill",
-          id: skill.id,
-          groupId: group.id,
-          resumeId: detail.id,
-          resumeName: detail.name,
-          groupName: group.name,
-          name: skill.name,
-        });
-        if (blocks.filter((block) => block.type === "skill").length >= limit) break;
-      }
-    }
-  }
-
-  return { blocks };
 }

@@ -5,7 +5,11 @@ import {
   saveJobToolDefinition,
   updateJobToolDefinition,
 } from "@/features/agentic-tools/definitions/job-definitions";
-import { searchCurrentResumeBlocksToolDefinition } from "@/features/agentic-tools/definitions/library-definitions";
+import {
+  attachLibraryItemsToolDefinition,
+  rankLibraryForJobToolDefinition,
+  searchLibraryToolDefinition,
+} from "@/features/agentic-tools/definitions/library-definitions";
 import {
   cloneResumeToolDefinition,
   createResumeToolDefinition,
@@ -18,8 +22,12 @@ import {
 } from "@/features/agentic-tools/definitions/resume-definitions";
 import {
   removeFromResumeToolDefinition,
+  reorderSectionToolDefinition,
   replaceResumeDocumentToolDefinition,
+  setContactsToolDefinition,
   setExperienceBulletsToolDefinition,
+  setLinksToolDefinition,
+  setNotesToolDefinition,
   setSkillsToolDefinition,
   setSummaryToolDefinition,
   updateResumeDetailsToolDefinition,
@@ -31,8 +39,12 @@ import {
 import type { LocalToolContext } from "@/features/agentic-tools/definitions/tool-context";
 import {
   removeLocalFromResume,
+  reorderLocalSection,
   replaceLocalResumeDocument,
+  setLocalContacts,
   setLocalExperienceBullets,
+  setLocalLinks,
+  setLocalNotes,
   setLocalSkills,
   setLocalSummary,
   updateLocalResumeDetails,
@@ -49,11 +61,11 @@ import {
   tailorLocalResumeForJob,
 } from "./local-resume-lifecycle-tools";
 import {
-  getLocalResume,
-  listLocalResumes,
-  searchLocalResumeBlocks,
-  setLocalActiveResume,
-} from "./local-resume-tools";
+  attachLocalLibraryItems,
+  rankLocalLibraryForJob,
+  searchLocalLibrary,
+} from "./local-library-tools";
+import { getLocalResume, listLocalResumes, setLocalActiveResume } from "./local-resume-tools";
 import {
   attachLocalJob,
   getLocalJob,
@@ -76,13 +88,16 @@ export const setActiveResumeClientTool = setActiveResumeToolDefinition.client(
   (input, ctx: ClientToolCtx) => setLocalActiveResume(ctx.context, input),
 );
 
-export const searchCurrentResumeBlocksClientTool = searchCurrentResumeBlocksToolDefinition.client(
-  (input, ctx: ClientToolCtx) =>
-    searchLocalResumeBlocks(ctx.context, {
-      keyword: input.keyword || undefined,
-      blockTypes: input.blockTypes,
-      limitPerType: input.limitPerType,
-    }),
+export const searchLibraryClientTool = searchLibraryToolDefinition.client(
+  (input, ctx: ClientToolCtx) => searchLocalLibrary(ctx.context, input),
+);
+
+export const attachLibraryItemsClientTool = attachLibraryItemsToolDefinition.client(
+  (input, ctx: ClientToolCtx) => attachLocalLibraryItems(ctx.context, input),
+);
+
+export const rankLibraryForJobClientTool = rankLibraryForJobToolDefinition.client(
+  (input, ctx: ClientToolCtx) => rankLocalLibraryForJob(ctx.context, input),
 );
 
 export const updateResumeDetailsClientTool = updateResumeDetailsToolDefinition.client(
@@ -115,6 +130,22 @@ export const upsertEducationClientTool = upsertEducationToolDefinition.client(
 
 export const upsertTalkClientTool = upsertTalkToolDefinition.client((input, ctx: ClientToolCtx) =>
   upsertLocalTalk(ctx.context, input),
+);
+
+export const setContactsClientTool = setContactsToolDefinition.client((input, ctx: ClientToolCtx) =>
+  setLocalContacts(ctx.context, input),
+);
+
+export const setLinksClientTool = setLinksToolDefinition.client((input, ctx: ClientToolCtx) =>
+  setLocalLinks(ctx.context, input),
+);
+
+export const setNotesClientTool = setNotesToolDefinition.client((input, ctx: ClientToolCtx) =>
+  setLocalNotes(ctx.context, input),
+);
+
+export const reorderSectionClientTool = reorderSectionToolDefinition.client(
+  (input, ctx: ClientToolCtx) => reorderLocalSection(ctx.context, input),
 );
 
 export const removeFromResumeClientTool = removeFromResumeToolDefinition.client(
@@ -169,7 +200,9 @@ export const eventSourcedResumeAiClientTools = [
   listResumesClientTool,
   getResumeClientTool,
   setActiveResumeClientTool,
-  searchCurrentResumeBlocksClientTool,
+  searchLibraryClientTool,
+  attachLibraryItemsClientTool,
+  rankLibraryForJobClientTool,
   updateResumeDetailsClientTool,
   setSummaryClientTool,
   setExperienceBulletsClientTool,
@@ -178,6 +211,10 @@ export const eventSourcedResumeAiClientTools = [
   upsertProjectClientTool,
   upsertEducationClientTool,
   upsertTalkClientTool,
+  setContactsClientTool,
+  setLinksClientTool,
+  setNotesClientTool,
+  reorderSectionClientTool,
   removeFromResumeClientTool,
   replaceResumeDocumentClientTool,
   cloneResumeClientTool,

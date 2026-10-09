@@ -5,7 +5,11 @@ import {
   saveJobToolDefinition,
   updateJobToolDefinition,
 } from "./job-definitions";
-import { searchCurrentResumeBlocksToolDefinition } from "./library-definitions";
+import {
+  attachLibraryItemsToolDefinition,
+  rankLibraryForJobToolDefinition,
+  searchLibraryToolDefinition,
+} from "./library-definitions";
 import {
   cloneResumeToolDefinition,
   createResumeToolDefinition,
@@ -18,8 +22,12 @@ import {
 } from "./resume-definitions";
 import {
   removeFromResumeToolDefinition,
+  reorderSectionToolDefinition,
   replaceResumeDocumentToolDefinition,
+  setContactsToolDefinition,
   setExperienceBulletsToolDefinition,
+  setLinksToolDefinition,
+  setNotesToolDefinition,
   setSkillsToolDefinition,
   setSummaryToolDefinition,
   updateResumeDetailsToolDefinition,
@@ -37,7 +45,9 @@ export const chatToolDefinitions = [
   listResumesToolDefinition,
   getResumeToolDefinition,
   setActiveResumeToolDefinition,
-  searchCurrentResumeBlocksToolDefinition,
+  searchLibraryToolDefinition,
+  attachLibraryItemsToolDefinition,
+  rankLibraryForJobToolDefinition,
   updateResumeDetailsToolDefinition,
   setSummaryToolDefinition,
   setExperienceBulletsToolDefinition,
@@ -46,6 +56,10 @@ export const chatToolDefinitions = [
   upsertProjectToolDefinition,
   upsertEducationToolDefinition,
   upsertTalkToolDefinition,
+  setContactsToolDefinition,
+  setLinksToolDefinition,
+  setNotesToolDefinition,
+  reorderSectionToolDefinition,
   removeFromResumeToolDefinition,
   replaceResumeDocumentToolDefinition,
   cloneResumeToolDefinition,

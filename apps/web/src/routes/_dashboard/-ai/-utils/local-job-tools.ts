@@ -57,6 +57,17 @@ export function requireJob(db: AppDb, jobId: string): Job {
   return job;
 }
 
+/** The posting a rank tool scores against: pasted text, the given job, or the active résumé's job. */
+export function resolveJobTarget(
+  ctx: LocalToolContext,
+  input: { jobId?: string; jobText?: string },
+): { id: string | null; title: string; description: string } {
+  if (input.jobText) return { id: null, title: "", description: input.jobText };
+  const jobId = input.jobId || ctx.db.collections.resume.get(ctx.getActiveResumeId())?.jobId;
+  if (!jobId) throw new Error("Pass jobId or jobText; the active résumé has no target job.");
+  return requireJob(ctx.db, jobId);
+}
+
 function requireResumeId(db: AppDb, resumeId: string) {
   if (!db.collections.resume.has(resumeId)) {
     throw new Error(`Resume ${resumeId} was not found. Use list_resumes to find its id.`);

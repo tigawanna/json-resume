@@ -1,10 +1,14 @@
 import { createEventSourcedResumeWorkspace } from "@/data-access-layer/event-sourced/event-sourced-resume-workspace";
-import { editLayout } from "@/data-access-layer/event-sourced/resume-layout-rows";
+import { currentLayout, editLayout } from "@/data-access-layer/event-sourced/resume-layout-rows";
 import type { ResumeDetailDTO } from "@/data-access-layer/resume/resume.types";
 import type { LocalToolContext } from "@/features/agentic-tools/definitions/tool-context";
 import {
   removeFromResumeToolInputSchema,
+  reorderSectionToolInputSchema,
   replaceResumeDocumentToolInputSchema,
+  setContactsToolInputSchema,
+  setLinksToolInputSchema,
+  setNotesToolInputSchema,
   setExperienceBulletsToolInputSchema,
   setSkillsToolInputSchema,
   setSummaryToolInputSchema,
@@ -14,6 +18,15 @@ import {
   upsertProjectToolInputSchema,
   upsertTalkToolInputSchema,
   type RemovableSection,
+  type ReorderableSection,
+  type ReorderSectionToolInput,
+  type ReorderSectionToolOutput,
+  type SetContactsToolInput,
+  type SetContactsToolOutput,
+  type SetLinksToolInput,
+  type SetLinksToolOutput,
+  type SetNotesToolInput,
+  type SetNotesToolOutput,
   type RemoveFromResumeToolInput,
   type RemoveFromResumeToolOutput,
   type ReplaceResumeDocumentToolInput,
@@ -36,7 +49,12 @@ import {
   type UpsertTalkToolOutput,
 } from "@/features/agentic-tools/resume-tool-schemas";
 import { parseTalkLinks, parseTech, resumeView } from "@/features/agentic-tools/shared/resume-view";
-import { removeEntity, type LayoutEntityKey } from "@/features/resume/resume-layout";
+import {
+  layoutIds,
+  removeEntity,
+  setEntities,
+  type LayoutEntityKey,
+} from "@/features/resume/resume-layout";
 import { nowMs } from "../../-utils/row-helpers";
 import { requireDetail } from "./local-resume-tools";
 
@@ -154,6 +172,71 @@ export function removeLocalFromResume(
     );
   }
   return { resumeId, section: data.section, itemId: data.itemId, removed };
+}
+
+const REORDER_KEY: Record<ReorderableSection, LayoutEntityKey> = {
+  experience: "experiences",
+  education: "education",
+  projects: "projects",
+  talks: "talks",
+  skills: "skillGroups",
+  contacts: "contacts",
+  links: "links",
+};
+
+export function reorderLocalSection(
+  ctx: LocalToolContext,
+  input: ReorderSectionToolInput,
+): ReorderSectionToolOutput {
+  const data = reorderSectionToolInputSchema.parse(input);
+  const { resumeId } = openWorkspace(ctx, data.resumeId);
+  const key = REORDER_KEY[data.section];
+  const current = layoutIds(currentLayout(ctx.db, resumeId), key);
+  const unknown = data.ids.filter((id) => !current.includes(id));
+  if (unknown.length > 0) {
+    throw new Error(
+      `${unknown.join(", ")} not in this résumé's ${data.section}. Read the ids with get_resume.`,
+    );
+  }
+  const listed = [...new Set(data.ids)];
+  const ids = [...listed, ...current.filter((id) => !listed.includes(id))];
+  editLayout(ctx.db, resumeId, (layout) => setEntities(layout, key, ids));
+  return { resumeId, section: data.section, ids };
+}
+
+export async function setLocalContacts(
+  ctx: LocalToolContext,
+  input: SetContactsToolInput,
+): Promise<SetContactsToolOutput> {
+  const data = setContactsToolInputSchema.parse(input);
+  const { resumeId, workspace } = openWorkspace(ctx, data.resumeId);
+  await workspace.updateContacts(
+    data.contacts.map((contact) => ({ ...contact, label: contact.label ?? "" })),
+  );
+  const header = resumeView(freshDetail(ctx, resumeId), ["header"]).header;
+  return { resumeId, contacts: header?.contacts ?? [] };
+}
+
+export async function setLocalLinks(
+  ctx: LocalToolContext,
+  input: SetLinksToolInput,
+): Promise<SetLinksToolOutput> {
+  const data = setLinksToolInputSchema.parse(input);
+  const { resumeId, workspace } = openWorkspace(ctx, data.resumeId);
+  await workspace.updateLinks(data.links);
+  const header = resumeView(freshDetail(ctx, resumeId), ["header"]).header;
+  return { resumeId, links: header?.links ?? [] };
+}
+
+export async function setLocalNotes(
+  ctx: LocalToolContext,
+  input: SetNotesToolInput,
+): Promise<SetNotesToolOutput> {
+  const data = setNotesToolInputSchema.parse(input);
+  const { resumeId, workspace } = openWorkspace(ctx, data.resumeId);
+  await workspace.updateNotes({ label: data.label ?? "", text: data.text });
+  const notes = resumeView(freshDetail(ctx, resumeId), ["notes"]).notes?.[0];
+  return { resumeId, notes: notes ?? null };
 }
 
 function requireLibraryRow<T>(row: T | undefined, kind: string, id: string): T {

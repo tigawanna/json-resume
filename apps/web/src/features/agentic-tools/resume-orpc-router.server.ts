@@ -1,7 +1,11 @@
 import "@tanstack/react-start/server-only";
 
 import { getJobToolDefinition, listJobsToolDefinition } from "./definitions/job-definitions";
-import { searchResumeBlocksToolDefinition } from "./definitions/library-definitions";
+import {
+  rankLibraryForJobToolDefinition,
+  searchLibraryToolDefinition,
+} from "./definitions/library-definitions";
+import { rankLibraryForJobTool, searchLibraryTool } from "./library-tools.server";
 import { getJobTool, listJobsTool } from "./job-tools.server";
 import {
   getResumeToolDefinition,
@@ -9,7 +13,7 @@ import {
   rankResumesForJobToolDefinition,
 } from "./definitions/resume-definitions";
 import { rankResumesForJobTool } from "./rank-tools.server";
-import { getResumeTool, listResumesTool, searchResumeBlocksTool } from "./resume-tools.server";
+import { getResumeTool, listResumesTool } from "./resume-tools.server";
 import { resumeReadProcedure } from "./resume-orpc-base.server";
 
 // ─── Read procedures ──────────────────────────────────────────────────────────
@@ -58,18 +62,33 @@ const rankResumesForJobProcedure = resumeReadProcedure
   .output(rankResumesForJobToolDefinition.outputSchema)
   .handler(async ({ context, input }) => rankResumesForJobTool({ userId: context.userId }, input));
 
-const searchResumeBlocksProcedure = resumeReadProcedure
+const searchLibraryProcedure = resumeReadProcedure
   .route({
     method: "POST",
-    path: "/resume-blocks/search",
-    summary: "Search reusable resume blocks",
-    description: "Search summaries, experience bullets, projects, and skills for tailoring.",
-    tags: ["Agentic Resumes"],
+    path: "/library/search",
+    summary: "Search the library",
+    description:
+      "Search one library section (summaries, experiences, bullets, education, projects, talks, skills) with paging. Pass resumeId to flag items that résumé shows.",
+    tags: ["Agentic Library"],
     successStatus: 200,
   })
-  .input(searchResumeBlocksToolDefinition.inputSchema)
-  .output(searchResumeBlocksToolDefinition.outputSchema)
-  .handler(async ({ context, input }) => searchResumeBlocksTool({ userId: context.userId }, input));
+  .input(searchLibraryToolDefinition.inputSchema)
+  .output(searchLibraryToolDefinition.outputSchema)
+  .handler(async ({ context, input }) => searchLibraryTool({ userId: context.userId }, input));
+
+const rankLibraryForJobProcedure = resumeReadProcedure
+  .route({
+    method: "POST",
+    path: "/library/rank-for-job",
+    summary: "Rank library items for a job",
+    description:
+      "Library items mentioning the most keywords of a tracked job or pasted posting, skipping ones the résumé already shows.",
+    tags: ["Agentic Library"],
+    successStatus: 200,
+  })
+  .input(rankLibraryForJobToolDefinition.inputSchema)
+  .output(rankLibraryForJobToolDefinition.outputSchema)
+  .handler(async ({ context, input }) => rankLibraryForJobTool({ userId: context.userId }, input));
 
 const listJobsProcedure = resumeReadProcedure
   .route({
@@ -99,7 +118,7 @@ const getJobProcedure = resumeReadProcedure
 
 // ─── Router ───────────────────────────────────────────────────────────────────
 // Grouped by domain so the server client (createRouterClient) surfaces a typed,
-// namespaced API: client.resumes.list(), client.resumeBlocks.search(), etc.
+// namespaced API: client.resumes.list(), client.library.search(), etc.
 
 export const resumeAgenticRouter = {
   resumes: {
@@ -107,8 +126,9 @@ export const resumeAgenticRouter = {
     get: getResumeProcedure,
     rankForJob: rankResumesForJobProcedure,
   },
-  resumeBlocks: {
-    search: searchResumeBlocksProcedure,
+  library: {
+    search: searchLibraryProcedure,
+    rankForJob: rankLibraryForJobProcedure,
   },
   jobs: {
     list: listJobsProcedure,

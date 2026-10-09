@@ -5,14 +5,6 @@ import {
 } from "@/features/resume/resume-schema";
 import { z } from "zod";
 
-export const resumeBlockTypeSchema = z.enum([
-  "summary",
-  "experience",
-  "experience_bullet",
-  "project",
-  "skill",
-]);
-
 /** Search + paging fields shared by every list/search tool input. */
 export const searchPageInputShape = {
   keyword: z
@@ -35,19 +27,6 @@ export const searchPageOutputShape = {
 };
 
 export const listResumesToolInputSchema = z.object(searchPageInputShape);
-
-export const searchResumeBlocksToolInputSchema = z.object({
-  resumeId: z.string().trim().optional(),
-  keyword: z.string().trim().optional(),
-  blockTypes: z.array(resumeBlockTypeSchema).min(1).optional(),
-  limitPerType: z.number().int().min(1).max(20).default(8),
-});
-
-export const searchCurrentResumeBlocksToolInputSchema = z.object({
-  keyword: z.string().trim().optional(),
-  blockTypes: z.array(resumeBlockTypeSchema).min(1).optional(),
-  limitPerType: z.number().int().min(1).max(20).default(8),
-});
 
 export const setActiveResumeToolInputSchema = z.object({
   resumeId: z.string().trim().min(1),
@@ -78,62 +57,6 @@ export const resumeListItemSchema = z.object({
 export const listResumesToolOutputSchema = z.object({
   resumes: z.array(resumeListItemSchema),
   ...searchPageOutputShape,
-});
-
-export const resumeSearchBlockSchema = z.discriminatedUnion("type", [
-  z.object({
-    type: z.literal("summary"),
-    id: z.string(),
-    resumeId: z.string(),
-    resumeName: z.string(),
-    text: z.string(),
-  }),
-  z.object({
-    type: z.literal("experience"),
-    id: z.string(),
-    resumeId: z.string(),
-    resumeName: z.string(),
-    company: z.string(),
-    role: z.string(),
-    startDate: z.string(),
-    endDate: z.string(),
-    location: z.string(),
-  }),
-  z.object({
-    type: z.literal("experience_bullet"),
-    id: z.string(),
-    experienceId: z.string(),
-    resumeId: z.string(),
-    resumeName: z.string(),
-    company: z.string(),
-    role: z.string(),
-    text: z.string(),
-    sortOrder: z.number().int(),
-  }),
-  z.object({
-    type: z.literal("project"),
-    id: z.string(),
-    resumeId: z.string(),
-    resumeName: z.string(),
-    name: z.string(),
-    description: z.string(),
-    tech: z.array(z.string()),
-    url: z.string(),
-    homepageUrl: z.string(),
-  }),
-  z.object({
-    type: z.literal("skill"),
-    id: z.string(),
-    groupId: z.string(),
-    resumeId: z.string(),
-    resumeName: z.string(),
-    groupName: z.string(),
-    name: z.string(),
-  }),
-]);
-
-export const searchResumeBlocksToolOutputSchema = z.object({
-  blocks: z.array(resumeSearchBlockSchema),
 });
 
 export const jobStatusToolSchema = z.enum([
@@ -627,7 +550,185 @@ export const tailorResumeForJobToolOutputSchema = z.object({
   resume: resumeViewSchema,
 });
 
-export type ResumeBlockType = z.infer<typeof resumeBlockTypeSchema>;
+// ─── Library ──────────────────────────────────────────────────────────────────
+
+export const librarySectionSchema = z.enum([
+  "summary",
+  "experience",
+  "experience_bullet",
+  "education",
+  "projects",
+  "talks",
+  "skills",
+]);
+
+export const libraryHitSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  detail: z.string(),
+  experienceId: z
+    .string()
+    .nullable()
+    .describe("For experience_bullet: the experience it belongs to."),
+  onResume: z.boolean().describe("Already shown on the target résumé."),
+});
+
+export const searchLibraryToolInputSchema = z.object({
+  section: librarySectionSchema.describe("One library section per call."),
+  ...searchPageInputShape,
+  resumeId: z
+    .string()
+    .trim()
+    .optional()
+    .describe("Résumé used for onResume. Defaults to the active résumé in the app."),
+  notOnResume: z
+    .boolean()
+    .default(false)
+    .describe("Only return items the target résumé does not show yet."),
+});
+
+export const searchLibraryToolOutputSchema = z.object({
+  section: librarySectionSchema,
+  resumeId: z.string().nullable(),
+  items: z.array(libraryHitSchema),
+  ...searchPageOutputShape,
+});
+
+export const attachableSectionSchema = z.enum([
+  "experience",
+  "experience_bullet",
+  "education",
+  "projects",
+  "talks",
+]);
+
+export const attachLibraryItemsToolInputSchema = z.object({
+  ...targetResumeShape,
+  section: attachableSectionSchema,
+  ids: z
+    .array(z.string().trim().min(1))
+    .min(1)
+    .max(30)
+    .describe(
+      "Library ids from search_library. Experiences arrive with all their bullets; a bullet joins its experience.",
+    ),
+});
+
+export const attachLibraryItemsToolOutputSchema = z.object({
+  resumeId: z.string(),
+  section: attachableSectionSchema,
+  attachedIds: z.array(z.string()),
+  alreadyOnResume: z.array(z.string()),
+});
+
+export const rankedLibraryItemSchema = libraryHitSchema.extend({
+  section: librarySectionSchema,
+  score: z.number().int().describe("How many job keywords the item mentions."),
+  matchedTerms: z.array(z.string()),
+});
+
+export const rankLibraryForJobToolInputSchema = z.object({
+  jobId: z.string().trim().optional().describe("Tracked job. Defaults to the active résumé's job."),
+  jobText: z.string().trim().max(20_000).optional().describe("Posting text, instead of jobId."),
+  resumeId: z
+    .string()
+    .trim()
+    .optional()
+    .describe("Résumé to fill. Defaults to the active résumé in the app."),
+  sections: z.array(librarySectionSchema).min(1).optional().describe("Defaults to every section."),
+  includeOnResume: z.boolean().default(false),
+  limit: z.number().int().min(1).max(30).default(10),
+});
+
+export const rankLibraryForJobToolOutputSchema = z.object({
+  jobId: z.string().nullable(),
+  resumeId: z.string().nullable(),
+  keywords: z.array(z.string()),
+  results: z.array(rankedLibraryItemSchema),
+});
+
+export const reorderableSectionSchema = z.enum([
+  "experience",
+  "education",
+  "projects",
+  "talks",
+  "skills",
+  "contacts",
+  "links",
+]);
+
+export const reorderSectionToolInputSchema = z.object({
+  ...targetResumeShape,
+  section: reorderableSectionSchema,
+  ids: z
+    .array(z.string().trim().min(1))
+    .min(1)
+    .max(60)
+    .describe(
+      "Item ids from get_resume in the new order (skill group ids for skills). Unlisted items keep their order after these.",
+    ),
+});
+
+export const reorderSectionToolOutputSchema = z.object({
+  resumeId: z.string(),
+  section: reorderableSectionSchema,
+  ids: z.array(z.string()),
+});
+
+const contactViewSchema = z.object({
+  id: z.string(),
+  type: z.string(),
+  value: z.string(),
+  label: z.string(),
+});
+
+export const setContactsToolInputSchema = z.object({
+  ...targetResumeShape,
+  contacts: z
+    .array(
+      z.object({
+        type: z.string().trim().min(1).max(40).describe("email, phone, location, website, …"),
+        value: z.string().trim().min(1).max(300),
+        label: z.string().trim().max(80).optional(),
+      }),
+    )
+    .max(12)
+    .describe("Every contact the header should show, in order."),
+});
+
+export const setContactsToolOutputSchema = z.object({
+  resumeId: z.string(),
+  contacts: z.array(contactViewSchema),
+});
+
+const linkViewSchema = z.object({ id: z.string(), label: z.string(), url: z.string() });
+
+export const setLinksToolInputSchema = z.object({
+  ...targetResumeShape,
+  links: z
+    .array(
+      z.object({ label: z.string().trim().min(1).max(80), url: z.string().trim().min(1).max(500) }),
+    )
+    .max(12)
+    .describe("Every header link, in order."),
+});
+
+export const setLinksToolOutputSchema = z.object({
+  resumeId: z.string(),
+  links: z.array(linkViewSchema),
+});
+
+export const setNotesToolInputSchema = z.object({
+  ...targetResumeShape,
+  label: z.string().trim().max(80).optional().describe('Heading, "Notes" by default.'),
+  text: z.string().trim().max(6_000).describe("Cover-letter or extra notes. Empty clears them."),
+});
+
+export const setNotesToolOutputSchema = z.object({
+  resumeId: z.string(),
+  notes: z.object({ id: z.string(), label: z.string(), text: z.string() }).nullable(),
+});
+
 export type ListResumesToolInput = z.input<typeof listResumesToolInputSchema>;
 export type GetResumeToolInput = z.input<typeof getResumeToolInputSchema>;
 export type GetResumeToolOutput = z.infer<typeof getResumeToolOutputSchema>;
@@ -655,10 +756,7 @@ export type UpsertTalkToolInput = z.input<typeof upsertTalkToolInputSchema>;
 export type UpsertTalkToolOutput = z.infer<typeof upsertTalkToolOutputSchema>;
 export type ReplaceResumeDocumentToolInput = z.input<typeof replaceResumeDocumentToolInputSchema>;
 export type SetActiveResumeToolOutput = z.infer<typeof setActiveResumeToolOutputSchema>;
-export type SearchResumeBlocksToolInput = z.input<typeof searchResumeBlocksToolInputSchema>;
 export type ListResumesToolOutput = z.infer<typeof listResumesToolOutputSchema>;
-export type ResumeSearchBlockSchema = z.infer<typeof resumeSearchBlockSchema>;
-export type SearchResumeBlocksToolOutput = z.infer<typeof searchResumeBlocksToolOutputSchema>;
 export type WorkbenchTab = z.infer<typeof workbenchTabSchema>;
 export type CloneResumeToolInput = z.input<typeof cloneResumeToolInputSchema>;
 export type CloneResumeToolOutput = z.infer<typeof cloneResumeToolOutputSchema>;
@@ -685,3 +783,22 @@ export type ListJobsToolInput = z.input<typeof listJobsToolInputSchema>;
 export type ListJobsToolOutput = z.infer<typeof listJobsToolOutputSchema>;
 export type AttachJobToolInput = z.input<typeof attachJobToolInputSchema>;
 export type AttachJobToolOutput = z.infer<typeof attachJobToolOutputSchema>;
+export type LibrarySection = z.infer<typeof librarySectionSchema>;
+export type LibraryHit = z.infer<typeof libraryHitSchema>;
+export type SearchLibraryToolInput = z.input<typeof searchLibraryToolInputSchema>;
+export type SearchLibraryToolOutput = z.infer<typeof searchLibraryToolOutputSchema>;
+export type AttachableSection = z.infer<typeof attachableSectionSchema>;
+export type AttachLibraryItemsToolInput = z.input<typeof attachLibraryItemsToolInputSchema>;
+export type AttachLibraryItemsToolOutput = z.infer<typeof attachLibraryItemsToolOutputSchema>;
+export type RankedLibraryItem = z.infer<typeof rankedLibraryItemSchema>;
+export type RankLibraryForJobToolInput = z.input<typeof rankLibraryForJobToolInputSchema>;
+export type RankLibraryForJobToolOutput = z.infer<typeof rankLibraryForJobToolOutputSchema>;
+export type ReorderableSection = z.infer<typeof reorderableSectionSchema>;
+export type ReorderSectionToolInput = z.input<typeof reorderSectionToolInputSchema>;
+export type ReorderSectionToolOutput = z.infer<typeof reorderSectionToolOutputSchema>;
+export type SetContactsToolInput = z.input<typeof setContactsToolInputSchema>;
+export type SetContactsToolOutput = z.infer<typeof setContactsToolOutputSchema>;
+export type SetLinksToolInput = z.input<typeof setLinksToolInputSchema>;
+export type SetLinksToolOutput = z.infer<typeof setLinksToolOutputSchema>;
+export type SetNotesToolInput = z.input<typeof setNotesToolInputSchema>;
+export type SetNotesToolOutput = z.infer<typeof setNotesToolOutputSchema>;

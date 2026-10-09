@@ -334,11 +334,25 @@ active résumé has no job or already targets it, otherwise `tailor_resume_for_j
 
 ### Batch 6: Library
 
-- [ ] `search_library` (client + remote, replaces both block-search tools, rule 7 search/paging)
-- [ ] `attach_library_items`
-- [ ] `rank_library_for_job` (client + remote)
-- [ ] `reorder_section`
-- [ ] `set_contacts` / `set_links` / `set_notes`
+- [x] `search_library` (client + remote, replaces both block-search tools, rule 7 search/paging)
+- [x] `attach_library_items`
+- [x] `rank_library_for_job` (client + remote)
+- [x] `reorder_section`
+- [x] `set_contacts` / `set_links` / `set_notes`
+
+`search_library` searches one section per call (summary, experience, experience_bullet,
+education, projects, talks, skills), so each call pages in the query engine with its own
+`total`; certifications, volunteers and languages are not covered yet. Hits share one shape
+(`id`, `title`, `detail`, `experienceId`, `onResume`) from `shared/library-view.ts`;
+`notOnResume` filters in the query. Locally a generic `queryOnce` helper takes a per-section
+fields callback typed from the collection's row ref, so there are no casts. Remote is
+`search_library` on MCP and `POST /library/search` (`resume-blocks/search` is gone);
+`onResume` needs `resumeId` there. `rank_library_for_job` reads up to 2,000 rows per section
+through the same search with no terms, excludes rows on the résumé in the query, and scores
+by matched keyword count (`matchedKeywords` in `rank.ts`). `attach_library_items` covers
+experiences (with all their bullets), single bullets (joining their experience), education,
+projects and talks; skills and summaries resolve by text through `set_skills` / `set_summary`.
+`reorder_section` puts listed ids first and keeps the rest in their order.
 
 ### Batch 7: Hardening
 

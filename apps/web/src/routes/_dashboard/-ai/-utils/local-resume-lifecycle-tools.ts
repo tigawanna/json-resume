@@ -30,7 +30,7 @@ import { resumeView } from "@/features/agentic-tools/shared/resume-view";
 import { emptyResumeLayout } from "@/features/resume/resume-layout";
 import { SECTION_KEYS, type ResumeDocumentV1 } from "@/features/resume/resume-schema";
 import { joinSearchable, libraryRowBase } from "../../-utils/row-helpers";
-import { requireJob } from "./local-job-tools";
+import { requireJob, resolveJobTarget } from "./local-job-tools";
 import { requireDetail } from "./local-resume-tools";
 
 /** Ranking assembles every résumé, so it looks at the most recently updated ones only. */
@@ -170,17 +170,7 @@ export function rankLocalResumesForJob(
   input: RankResumesForJobToolInput,
 ): RankResumesForJobToolOutput {
   const data = rankResumesForJobToolInputSchema.parse(input);
-  let job: { id: string | null; title: string; description: string };
-  if (data.jobText) {
-    job = { id: null, title: "", description: data.jobText };
-  } else {
-    const jobId = data.jobId || ctx.db.collections.resume.get(ctx.getActiveResumeId())?.jobId;
-    if (!jobId) {
-      throw new Error("Pass jobId or jobText; the active résumé has no target job.");
-    }
-    job = requireJob(ctx.db, jobId);
-  }
-
+  const job = resolveJobTarget(ctx, data);
   const keywords = jobKeywords(job);
   return {
     jobId: job.id,

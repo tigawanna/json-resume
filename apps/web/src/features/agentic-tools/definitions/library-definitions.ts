@@ -1,23 +1,35 @@
 import { toolDefinition } from "@tanstack/ai";
 import {
-  searchCurrentResumeBlocksToolInputSchema,
-  searchResumeBlocksToolInputSchema,
-  searchResumeBlocksToolOutputSchema,
+  attachLibraryItemsToolInputSchema,
+  attachLibraryItemsToolOutputSchema,
+  rankLibraryForJobToolInputSchema,
+  rankLibraryForJobToolOutputSchema,
+  searchLibraryToolInputSchema,
+  searchLibraryToolOutputSchema,
 } from "../resume-tool-schemas";
 
-export const searchResumeBlocksToolDefinition = toolDefinition({
-  name: "search_resume_blocks",
+export const searchLibraryToolDefinition = toolDefinition({
+  name: "search_library",
   description:
-    "Search reusable resume blocks such as summaries, experience bullets, projects, and skills. Use this to gather relevant material for a job description.",
-  inputSchema: searchResumeBlocksToolInputSchema,
-  outputSchema: searchResumeBlocksToolOutputSchema,
-  metadata: { title: "Search Resume Blocks", annotations: { readOnlyHint: true } },
+    "Search one section of the user's library (every summary, experience, bullet, education, project, talk and skill they have saved, across all résumés). Each item says whether the target résumé already shows it.",
+  inputSchema: searchLibraryToolInputSchema,
+  outputSchema: searchLibraryToolOutputSchema,
+  metadata: { title: "Search Library", annotations: { readOnlyHint: true } },
 });
 
-export const searchCurrentResumeBlocksToolDefinition = toolDefinition({
-  name: "search_current_resume_blocks",
+export const attachLibraryItemsToolDefinition = toolDefinition({
+  name: "attach_library_items",
   description:
-    "Search summaries, experience bullets, projects, and skills on the active resume using keywords from the target role.",
-  inputSchema: searchCurrentResumeBlocksToolInputSchema,
-  outputSchema: searchResumeBlocksToolOutputSchema,
+    "Put existing library items (ids from search_library or rank_library_for_job) on a résumé without rewriting them.",
+  inputSchema: attachLibraryItemsToolInputSchema,
+  outputSchema: attachLibraryItemsToolOutputSchema,
+});
+
+export const rankLibraryForJobToolDefinition = toolDefinition({
+  name: "rank_library_for_job",
+  description:
+    "Find the library items that mention the most keywords of a job, skipping ones the résumé already shows. Use it to fill gaps before writing new content.",
+  inputSchema: rankLibraryForJobToolInputSchema,
+  outputSchema: rankLibraryForJobToolOutputSchema,
+  metadata: { title: "Rank Library For Job", annotations: { readOnlyHint: true } },
 });

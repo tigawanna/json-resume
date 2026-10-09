@@ -65,6 +65,12 @@ function resumeTerms(detail: ResumeDetailDTO): Set<string> {
   return new Set(tokens(parts.join(" ")));
 }
 
+/** The keywords that appear as words in `text`. */
+export function matchedKeywords(keywords: ReadonlyArray<string>, text: string): string[] {
+  const terms = new Set(tokens(text));
+  return keywords.filter((keyword) => terms.has(keyword));
+}
+
 export function scoreResume(keywords: ReadonlyArray<string>, detail: ResumeDetailDTO) {
   const terms = resumeTerms(detail);
   const matchedTerms = keywords.filter((keyword) => terms.has(keyword));

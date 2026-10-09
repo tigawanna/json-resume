@@ -1,7 +1,10 @@
 import "@tanstack/react-start/server-only";
 
 import { getJobToolDefinition, listJobsToolDefinition } from "./definitions/job-definitions";
-import { searchResumeBlocksToolDefinition } from "./definitions/library-definitions";
+import {
+  rankLibraryForJobToolDefinition,
+  searchLibraryToolDefinition,
+} from "./definitions/library-definitions";
 import {
   getResumeToolDefinition,
   listResumesToolDefinition,
@@ -10,7 +13,8 @@ import {
 import type { RemoteToolContext } from "./definitions/tool-context";
 import { getJobTool, listJobsTool } from "./job-tools.server";
 import { rankResumesForJobTool } from "./rank-tools.server";
-import { getResumeTool, listResumesTool, searchResumeBlocksTool } from "./resume-tools.server";
+import { rankLibraryForJobTool, searchLibraryTool } from "./library-tools.server";
+import { getResumeTool, listResumesTool } from "./resume-tools.server";
 
 /** Callers must supply `{ userId }` as tool context; a missing one must never reach a query. */
 function requireRemoteContext(context: RemoteToolContext | undefined): RemoteToolContext {
@@ -26,9 +30,13 @@ export const getResumeRemoteTool = getResumeToolDefinition.server<RemoteToolCont
   getResumeTool(requireRemoteContext(ctx.context), input),
 );
 
-export const searchResumeBlocksRemoteTool =
-  searchResumeBlocksToolDefinition.server<RemoteToolContext>((input, ctx) =>
-    searchResumeBlocksTool(requireRemoteContext(ctx.context), input),
+export const searchLibraryRemoteTool = searchLibraryToolDefinition.server<RemoteToolContext>(
+  (input, ctx) => searchLibraryTool(requireRemoteContext(ctx.context), input),
+);
+
+export const rankLibraryForJobRemoteTool =
+  rankLibraryForJobToolDefinition.server<RemoteToolContext>((input, ctx) =>
+    rankLibraryForJobTool(requireRemoteContext(ctx.context), input),
   );
 
 export const listJobsRemoteTool = listJobsToolDefinition.server<RemoteToolContext>((input, ctx) =>
@@ -48,8 +56,9 @@ export const rankResumesForJobRemoteTool =
 export const remoteResumeTools = [
   listResumesRemoteTool,
   getResumeRemoteTool,
-  searchResumeBlocksRemoteTool,
+  searchLibraryRemoteTool,
   listJobsRemoteTool,
   getJobRemoteTool,
   rankResumesForJobRemoteTool,
+  rankLibraryForJobRemoteTool,
 ] as const;
