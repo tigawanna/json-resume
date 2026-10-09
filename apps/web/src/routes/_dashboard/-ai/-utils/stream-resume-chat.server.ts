@@ -9,36 +9,8 @@ import {
 } from "@tanstack/ai";
 import { createOpenRouterText } from "@tanstack/ai-openrouter";
 import { serverEnv } from "@/lib/server-env";
-import {
-  attachJobToCurrentResumeToolDefinition,
-  listJobsToolDefinition,
-  saveJobToolDefinition,
-} from "@/features/agentic-tools/definitions/job-definitions";
-import { searchCurrentResumeBlocksToolDefinition } from "@/features/agentic-tools/definitions/library-definitions";
-import {
-  cloneCurrentResumeToolDefinition,
-  createResumeFromDocumentToolDefinition,
-  getResumeToolDefinition,
-  listResumesToolDefinition,
-  navigateToResumeToolDefinition,
-  setActiveResumeToolDefinition,
-  updateCurrentResumeDocumentToolDefinition,
-} from "@/features/agentic-tools/definitions/resume-definitions";
+import { chatToolDefinitions } from "@/features/agentic-tools/definitions/chat-tool-definitions";
 import { buildEventSourcedSystemPrompt } from "./system-prompt";
-
-const eventSourcedResumeAiToolDefinitions = [
-  listResumesToolDefinition,
-  getResumeToolDefinition,
-  setActiveResumeToolDefinition,
-  searchCurrentResumeBlocksToolDefinition,
-  cloneCurrentResumeToolDefinition,
-  createResumeFromDocumentToolDefinition,
-  updateCurrentResumeDocumentToolDefinition,
-  navigateToResumeToolDefinition,
-  saveJobToolDefinition,
-  listJobsToolDefinition,
-  attachJobToCurrentResumeToolDefinition,
-] as const;
 
 /** Enough model turns for the job description to tailored résumé chain (about 6 to 9 tool calls). */
 const MAX_AGENT_ITERATIONS = 16;
@@ -80,7 +52,7 @@ export async function streamEventSourcedResumeAgentChat(input: {
         jobDescription: input.jobDescription,
       }),
     ],
-    tools: [...eventSourcedResumeAiToolDefinitions],
+    tools: [...chatToolDefinitions],
     agentLoopStrategy: maxIterations(MAX_AGENT_ITERATIONS),
   });
 }

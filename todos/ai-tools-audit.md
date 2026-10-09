@@ -85,7 +85,9 @@ serve MCP, oRPC/OpenAPI, and any future server-side agent.
 ```
 features/agentic-tools/
   definitions/             # isomorphic toolDefinition()s, one file per domain
-    resume-definitions.ts  # list_resumes, get_resume, set_active_resume, setters, upserts…
+    chat-tool-definitions.ts # the one list the in-app assistant sends to the model
+    resume-definitions.ts  # list_resumes, get_resume, set_active_resume, lifecycle
+    resume-edit-definitions.ts # setters, upserts, remove/reorder (client-only writes)
     job-definitions.ts     # save_job, list_jobs, get_job, attach_job, update_job
     library-definitions.ts # search_library, attach_library_items, rank_*
     tool-context.ts        # LocalToolContext / RemoteToolContext (type-only)
@@ -258,14 +260,19 @@ tests for any shared (isomorphic) logic. Tick items off as they land.
 
 ### Batch 2: Granular writes (client only)
 
-- [ ] `update_resume_details`
-- [ ] `set_summary`
-- [ ] `set_experience_bullets`
-- [ ] `set_skills`
-- [ ] `remove_from_resume`
+- [x] `update_resume_details`
+- [x] `set_summary`
+- [x] `set_experience_bullets`
+- [x] `set_skills`
+- [x] `remove_from_resume`
 
 Prompt: "edit the active résumé unless the user asks for a copy", "use granular tools first".
-Remove "prefer clone".
+Remove "prefer clone". (Done.)
+
+Landed as `definitions/resume-edit-definitions.ts` + `local-resume-edit-tools.ts` (thin wrappers
+over the workspace adapter; outputs re-read the résumé through `resumeView`). The chat tool list
+now lives once in `definitions/chat-tool-definitions.ts`; `client-tools.test.ts` fails if the
+browser implementations drift from it.
 
 ### Batch 3: Item upserts and bulk replace (client only)
 

@@ -1,73 +1,11 @@
 // @vitest-environment node
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { openTestAppDb } from "@/data-access-layer/event-sourced/app-test-db";
-import type { AppDb } from "@/data-access-layer/event-sourced/collection";
-import type { LocalToolContext } from "@/features/agentic-tools/definitions/tool-context";
-import { emptyResumeLayout, type ResumeLayout } from "@/features/resume/resume-layout";
+import { describe, expect, it } from "vitest";
+import { emptyResumeLayout } from "@/features/resume/resume-layout";
+import { useLocalToolDb } from "./local-tool-fixtures";
 import { getLocalResume, listLocalResumes, setLocalActiveResume } from "./local-resume-tools";
 
-const embeddable = { searchableText: "", embedding: null, embeddingModel: null };
-const lib = { userId: "u1", ...embeddable, createdAt: 1, updatedAt: 1 };
-
-let handle: ReturnType<typeof openTestAppDb>;
-let db: AppDb;
-
-beforeEach(async () => {
-  handle = openTestAppDb();
-  db = await handle.ensureDb();
-});
-
-afterEach(() => handle.close());
-
-function context(activeResumeId = ""): LocalToolContext {
-  let active = activeResumeId;
-  return {
-    db,
-    userId: "u1",
-    getActiveResumeId: () => active,
-    setActiveResumeId: (resumeId) => {
-      active = resumeId;
-    },
-    navigateToResume: () => {},
-  };
-}
-
-function insertJob(id: string, fields: { company: string; title: string; description: string }) {
-  db.collections.job.insert({
-    id,
-    userId: "u1",
-    ...fields,
-    url: "",
-    location: "",
-    status: "saved",
-    notes: "",
-    appliedAt: null,
-    ...embeddable,
-    createdAt: 1,
-    updatedAt: 1,
-  });
-}
-
-function insertResume(
-  id: string,
-  updatedAt: number,
-  fields: { name?: string; jobId?: string; layout?: Partial<ResumeLayout> },
-) {
-  db.collections.resume.insert({
-    ...(fields.layout ? { layout: { ...emptyResumeLayout(), ...fields.layout } } : {}),
-    id,
-    userId: "u1",
-    name: fields.name ?? id,
-    fullName: "Ada",
-    headline: "",
-    description: "",
-    jobId: fields.jobId ?? null,
-    templateId: "classic",
-    ...embeddable,
-    createdAt: 1,
-    updatedAt,
-  });
-}
+const fixture = useLocalToolDb();
+const { context, insertJob, insertResume, insertSummary, insertExperience } = fixture;
 
 describe("listLocalResumes", () => {
   it("pages newest first and reports the next offset", async () => {
@@ -124,29 +62,8 @@ describe("getLocalResume", () => {
       title: "Backend Engineer",
       description: "Build Go services",
     });
-    db.collections.resumeSummary.insert({
-      id: "s1",
-      text: "Backend engineer",
-      sortOrder: 0,
-      ...lib,
-    });
-    db.collections.resumeExperience.insert({
-      id: "exp1",
-      company: "Initech",
-      role: "Engineer",
-      startDate: "2020",
-      endDate: "",
-      location: "",
-      sortOrder: 0,
-      ...lib,
-    });
-    db.collections.resumeExperienceBullet.insert({
-      id: "b1",
-      experienceId: "exp1",
-      text: "Shipped billing",
-      sortOrder: 0,
-      ...lib,
-    });
+    insertSummary("s1", "Backend engineer");
+    insertExperience("exp1", "Initech", [{ id: "b1", text: "Shipped billing" }]);
     const sections = emptyResumeLayout().sections.map((section) =>
       section.key === "talks" ? { ...section, enabled: false } : section,
     );

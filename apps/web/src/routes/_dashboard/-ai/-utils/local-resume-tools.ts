@@ -32,7 +32,7 @@ import { count, eq, queryOnce, type InitialQueryBuilder } from "@tanstack/db";
 import { orIlike } from "../../-utils/list-query";
 import { joinSearchable, libraryRowBase, nowMs } from "../../-utils/row-helpers";
 
-function requireDetail(db: AppDb, resumeId: string) {
+export function requireDetail(db: AppDb, resumeId: string) {
   const snapshots = snapshotEventSourcedResume(db, resumeId);
   const detail = assembleResumeDetail(resumeId, snapshots);
   if (!detail) {

@@ -13,10 +13,24 @@ import {
   setActiveResumeToolDefinition,
   updateCurrentResumeDocumentToolDefinition,
 } from "@/features/agentic-tools/definitions/resume-definitions";
+import {
+  removeFromResumeToolDefinition,
+  setExperienceBulletsToolDefinition,
+  setSkillsToolDefinition,
+  setSummaryToolDefinition,
+  updateResumeDetailsToolDefinition,
+} from "@/features/agentic-tools/definitions/resume-edit-definitions";
 import type {
   LocalToolContext,
   ResumeWorkbenchTab,
 } from "@/features/agentic-tools/definitions/tool-context";
+import {
+  removeLocalFromResume,
+  setLocalExperienceBullets,
+  setLocalSkills,
+  setLocalSummary,
+  updateLocalResumeDetails,
+} from "./local-resume-edit-tools";
 import {
   cloneLocalResume,
   createLocalResumeFromDocument,
@@ -54,6 +68,26 @@ export const searchCurrentResumeBlocksClientTool = searchCurrentResumeBlocksTool
       blockTypes: input.blockTypes,
       limitPerType: input.limitPerType,
     }),
+);
+
+export const updateResumeDetailsClientTool = updateResumeDetailsToolDefinition.client(
+  (input, ctx: ClientToolCtx) => updateLocalResumeDetails(ctx.context, input),
+);
+
+export const setSummaryClientTool = setSummaryToolDefinition.client((input, ctx: ClientToolCtx) =>
+  setLocalSummary(ctx.context, input),
+);
+
+export const setExperienceBulletsClientTool = setExperienceBulletsToolDefinition.client(
+  (input, ctx: ClientToolCtx) => setLocalExperienceBullets(ctx.context, input),
+);
+
+export const setSkillsClientTool = setSkillsToolDefinition.client((input, ctx: ClientToolCtx) =>
+  setLocalSkills(ctx.context, input),
+);
+
+export const removeFromResumeClientTool = removeFromResumeToolDefinition.client(
+  (input, ctx: ClientToolCtx) => removeLocalFromResume(ctx.context, input),
 );
 
 export const cloneCurrentResumeClientTool = cloneCurrentResumeToolDefinition.client(
@@ -111,6 +145,11 @@ export const eventSourcedResumeAiClientTools = [
   getResumeClientTool,
   setActiveResumeClientTool,
   searchCurrentResumeBlocksClientTool,
+  updateResumeDetailsClientTool,
+  setSummaryClientTool,
+  setExperienceBulletsClientTool,
+  setSkillsClientTool,
+  removeFromResumeClientTool,
   cloneCurrentResumeClientTool,
   createResumeFromDocumentClientTool,
   updateCurrentResumeDocumentClientTool,

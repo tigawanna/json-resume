@@ -125,9 +125,10 @@ The first slice is implemented:
 - `src/routes/api/ai/event-sourced-resume-tailor.ts` — session-protected SSE route; extracts `apiKey` and `model` from the request body and forwards them to `streamEventSourcedResumeAgentChat`.
 - `src/routes/_dashboard/-ai/-components/EventSourcedResumeAiTab.tsx` — reads credentials from the browser and passes them in the `useChat` body on every request.
 
-Current AI tools (`definitions/`, with browser implementations in `routes/_dashboard/-ai/-utils/client-tools.ts`) run against the local collections (`local-resume-tools.ts`, `local-job-tools.ts`), so edits sync as events like any other change. They target the **active résumé**: it starts as the one open in the editor, and `set_active_resume` moves it (held in a ref by `use-event-sourced-resume-ai.ts` and sent to the prompt as `activeResumeId`):
+Current AI tools (`definitions/chat-tool-definitions.ts`, with browser implementations in `routes/_dashboard/-ai/-utils/client-tools.ts`) run against the local collections (`local-resume-tools.ts`, `local-job-tools.ts`), so edits sync as events like any other change. They target the **active résumé**: it starts as the one open in the editor, and `set_active_resume` moves it (held in a ref by `use-event-sourced-resume-ai.ts` and sent to the prompt as `activeResumeId`):
 
 - `list_resumes`, `get_resume`, `set_active_resume`, `search_current_resume_blocks`
+- `update_resume_details`, `set_summary`, `set_experience_bullets`, `set_skills`, `remove_from_resume`
 - `update_current_resume_document`, `clone_current_resume`, `create_resume_from_document`
 - `navigate_to_resume`
 - `save_job`, `list_jobs`, `attach_job_to_current_resume`
