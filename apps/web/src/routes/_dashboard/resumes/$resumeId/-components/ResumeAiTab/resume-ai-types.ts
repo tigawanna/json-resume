@@ -27,10 +27,4 @@ export type ResumeAiMessageAction = (message: UIMessage) => void | Promise<void>
 
 export const isLocalMode = import.meta.env.VITE_AI_LOCAL_MODE === "true";
 
-export const writeToolNames = new Set([
-  "clone_current_resume",
-  "create_resume_from_document",
-  "update_current_resume_document",
-]);
-
 export { createdResumeToolNames } from "@/features/agentic-tools/created-resume-output";

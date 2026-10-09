@@ -11,14 +11,18 @@ import {
   listResumesToolDefinition,
   navigateToResumeToolDefinition,
   setActiveResumeToolDefinition,
-  updateCurrentResumeDocumentToolDefinition,
 } from "@/features/agentic-tools/definitions/resume-definitions";
 import {
   removeFromResumeToolDefinition,
+  replaceResumeDocumentToolDefinition,
   setExperienceBulletsToolDefinition,
   setSkillsToolDefinition,
   setSummaryToolDefinition,
   updateResumeDetailsToolDefinition,
+  upsertEducationToolDefinition,
+  upsertExperienceToolDefinition,
+  upsertProjectToolDefinition,
+  upsertTalkToolDefinition,
 } from "@/features/agentic-tools/definitions/resume-edit-definitions";
 import type {
   LocalToolContext,
@@ -26,10 +30,15 @@ import type {
 } from "@/features/agentic-tools/definitions/tool-context";
 import {
   removeLocalFromResume,
+  replaceLocalResumeDocument,
   setLocalExperienceBullets,
   setLocalSkills,
   setLocalSummary,
   updateLocalResumeDetails,
+  upsertLocalEducation,
+  upsertLocalExperience,
+  upsertLocalProject,
+  upsertLocalTalk,
 } from "./local-resume-edit-tools";
 import {
   cloneLocalResume,
@@ -38,7 +47,6 @@ import {
   listLocalResumes,
   searchLocalResumeBlocks,
   setLocalActiveResume,
-  updateLocalResumeDocument,
 } from "./local-resume-tools";
 import { attachLocalJobToCurrentResume, listLocalJobs, saveLocalJob } from "./local-job-tools";
 
@@ -86,8 +94,28 @@ export const setSkillsClientTool = setSkillsToolDefinition.client((input, ctx: C
   setLocalSkills(ctx.context, input),
 );
 
+export const upsertExperienceClientTool = upsertExperienceToolDefinition.client(
+  (input, ctx: ClientToolCtx) => upsertLocalExperience(ctx.context, input),
+);
+
+export const upsertProjectClientTool = upsertProjectToolDefinition.client(
+  (input, ctx: ClientToolCtx) => upsertLocalProject(ctx.context, input),
+);
+
+export const upsertEducationClientTool = upsertEducationToolDefinition.client(
+  (input, ctx: ClientToolCtx) => upsertLocalEducation(ctx.context, input),
+);
+
+export const upsertTalkClientTool = upsertTalkToolDefinition.client((input, ctx: ClientToolCtx) =>
+  upsertLocalTalk(ctx.context, input),
+);
+
 export const removeFromResumeClientTool = removeFromResumeToolDefinition.client(
   (input, ctx: ClientToolCtx) => removeLocalFromResume(ctx.context, input),
+);
+
+export const replaceResumeDocumentClientTool = replaceResumeDocumentToolDefinition.client(
+  (input, ctx: ClientToolCtx) => replaceLocalResumeDocument(ctx.context, input),
 );
 
 export const cloneCurrentResumeClientTool = cloneCurrentResumeToolDefinition.client(
@@ -97,11 +125,6 @@ export const cloneCurrentResumeClientTool = cloneCurrentResumeToolDefinition.cli
 export const createResumeFromDocumentClientTool = createResumeFromDocumentToolDefinition.client(
   (input, ctx: ClientToolCtx) => createLocalResumeFromDocument(ctx.context, input),
 );
-
-export const updateCurrentResumeDocumentClientTool =
-  updateCurrentResumeDocumentToolDefinition.client((input, ctx: ClientToolCtx) =>
-    updateLocalResumeDocument(ctx.context, input.document),
-  );
 
 export const navigateToResumeClientTool = navigateToResumeToolDefinition.client(
   (input, ctx: ClientToolCtx) => {
@@ -149,10 +172,14 @@ export const eventSourcedResumeAiClientTools = [
   setSummaryClientTool,
   setExperienceBulletsClientTool,
   setSkillsClientTool,
+  upsertExperienceClientTool,
+  upsertProjectClientTool,
+  upsertEducationClientTool,
+  upsertTalkClientTool,
   removeFromResumeClientTool,
+  replaceResumeDocumentClientTool,
   cloneCurrentResumeClientTool,
   createResumeFromDocumentClientTool,
-  updateCurrentResumeDocumentClientTool,
   navigateToResumeClientTool,
   saveJobClientTool,
   listJobsClientTool,

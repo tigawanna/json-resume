@@ -276,11 +276,23 @@ browser implementations drift from it.
 
 ### Batch 3: Item upserts and bulk replace (client only)
 
-- [ ] `upsert_experience`
-- [ ] `upsert_project`
-- [ ] `upsert_education`
-- [ ] `upsert_talk`
-- [ ] `replace_resume_document` (rename of `update_current_resume_document`, `needsApproval: true`)
+- [x] `upsert_experience`
+- [x] `upsert_project`
+- [x] `upsert_education`
+- [x] `upsert_talk`
+- [x] `replace_resume_document` (rename of `update_current_resume_document`, `needsApproval: true`)
+
+Upserts: no `id` creates the item (or reuses an identical library row; `created` says which)
+and adds it to the résumé; an `id` merges the given fields into the library row (shared by
+every résumé, which the description and prompt call out) and attaches it if missing.
+`upsert_experience` also takes `bullets`. Outputs come from `resumeView`, which now includes
+education `description` and talk `links`.
+
+The approval UI was pulled forward from Batch 7, since a gated tool with no UI stalls the chat:
+`ToolApprovalCard.tsx` renders the bound `interrupts`, and the route forwards `resume` /
+`threadId` / `runId` / `parentRunId` into `chat()` (which also removed the `messages` casts).
+`createEventSourcedChatPersistence` is now generic: its untyped `ChatClientPersistence` return
+widened `useChat`'s tools to `any`, which hid the approval interrupt types.
 
 ### Batch 4: Jobs
 
@@ -312,7 +324,8 @@ Also: send only `activeResumeId` + job id/label in the prompt instead of the ful
 
 ### Batch 7: Hardening
 
-- [ ] Approval UI for `needsApproval` tools (bound `interrupts` / `resolveInterrupt`)
+- [x] Approval UI for `needsApproval` tools (bound `interrupts` / `resolveInterrupt`), done in
+      Batch 3
 - [ ] `lazy: true` on rare tools + `lazyToolsConfig`, and `get_playbook`
 - [ ] Remove casts in `buildTextAdapter` / `chat()`
 - [x] Adopt `@tanstack/ai-mcp` `createMCPServer` (done ahead of Batch 1, see "MCP hosting")

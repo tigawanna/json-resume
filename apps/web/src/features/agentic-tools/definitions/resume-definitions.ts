@@ -12,8 +12,6 @@ import {
   navigateToResumeToolOutputSchema,
   setActiveResumeToolInputSchema,
   setActiveResumeToolOutputSchema,
-  updateCurrentResumeDocumentToolInputSchema,
-  updateResumeDocumentToolOutputSchema,
 } from "../resume-tool-schemas";
 
 export const listResumesToolDefinition = toolDefinition({
@@ -64,12 +62,4 @@ export const navigateToResumeToolDefinition = toolDefinition({
     "Navigate the user to a resume after a successful clone, fork, or new draft creation so they can see the resume being worked on.",
   inputSchema: navigateToResumeToolInputSchema,
   outputSchema: navigateToResumeToolOutputSchema,
-});
-
-export const updateCurrentResumeDocumentToolDefinition = toolDefinition({
-  name: "update_current_resume_document",
-  description:
-    "Replace the whole content of the active resume with a complete ResumeDocumentV1. Read it with get_resume first and carry every section over (bullets and skills as plain strings), changing only what the user asked for.",
-  inputSchema: updateCurrentResumeDocumentToolInputSchema,
-  outputSchema: updateResumeDocumentToolOutputSchema,
 });

@@ -6,6 +6,7 @@ import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 
 import { eventSourcedResumeAiClientTools } from "../-utils/client-tools";
 import { createEventSourcedChatPersistence } from "../-utils/event-sourced-chat-persistence";
 import type { LocalToolContext } from "@/features/agentic-tools/definitions/tool-context";
+import type { ToolApprovalRequest } from "../-components/ToolApprovalCard";
 import { useEventSourcedAiSettings } from "./use-event-sourced-ai-settings";
 import { isLocalMode } from "@/routes/_dashboard/resumes/$resumeId/-components/ResumeAiTab/resume-ai-types";
 import {
@@ -38,7 +39,7 @@ export function useEventSourcedResumeAiChat(resumeId: string, jobDescription: st
   dbRef.current = db;
   userIdRef.current = userId;
   const persistenceRef = useRef(
-    createEventSourcedChatPersistence({
+    createEventSourcedChatPersistence<typeof eventSourcedResumeAiClientTools>({
       getDb: () => dbRef.current,
       getUserId: () => userIdRef.current,
       resumeId,
@@ -87,6 +88,23 @@ export function useEventSourcedResumeAiChat(resumeId: string, jobDescription: st
   });
 
   const { messages, isLoading, status, sessionGenerating } = chat;
+
+  const approvals: ToolApprovalRequest[] = chat.interrupts.flatMap((interrupt) => {
+    if (interrupt.kind !== "tool-approval") return [];
+    const targetId = interrupt.originalArgs.resumeId || activeResumeId;
+    return [
+      {
+        id: interrupt.id,
+        toolName: interrupt.toolName,
+        title: `Rewrite "${db.collections.resume.get(targetId)?.name ?? targetId}"`,
+        detail:
+          "The assistant wants to replace this résumé's whole content. Library items are reused where they match.",
+        args: interrupt.originalArgs,
+        approve: () => interrupt.resolveInterrupt(true),
+        deny: () => interrupt.resolveInterrupt(false),
+      },
+    ];
+  });
 
   useEffect(() => {
     endOfMessagesRef.current?.scrollIntoView({ block: "end" });
@@ -140,6 +158,8 @@ export function useEventSourcedResumeAiChat(resumeId: string, jobDescription: st
 
   return {
     activeModelLabel,
+    approvals,
+    approvalsResuming: chat.resuming,
     chatErrorMessage: chat.error?.message ?? null,
     clearDialogOpen,
     clearLocalConversation,

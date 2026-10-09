@@ -4,7 +4,7 @@ import {
   chat,
   maxIterations,
   type AnyTextAdapter,
-  type ModelMessage,
+  type chatParamsFromRequestBody,
   type StreamChunk,
 } from "@tanstack/ai";
 import { createOpenRouterText } from "@tanstack/ai-openrouter";
@@ -32,18 +32,29 @@ function buildTextAdapter(apiKey: string | undefined, model: string | undefined)
   }) as unknown as AnyTextAdapter;
 }
 
-export async function streamEventSourcedResumeAgentChat(input: {
-  resumeId: string;
-  activeResumeId?: string;
-  messages: ModelMessage[];
-  jobDescription?: string;
-  systemPrompt?: string;
-  apiKey?: string;
-  model?: string;
-}): Promise<AsyncIterable<StreamChunk>> {
+/** The AG-UI run fields `chat()` needs to continue a run after a tool approval. */
+type ChatRunParams = Pick<
+  Awaited<ReturnType<typeof chatParamsFromRequestBody>>,
+  "messages" | "threadId" | "runId" | "parentRunId" | "resume"
+>;
+
+export async function streamEventSourcedResumeAgentChat(
+  input: ChatRunParams & {
+    resumeId: string;
+    activeResumeId?: string;
+    jobDescription?: string;
+    systemPrompt?: string;
+    apiKey?: string;
+    model?: string;
+  },
+): Promise<AsyncIterable<StreamChunk>> {
   return chat({
     adapter: buildTextAdapter(input.apiKey, input.model),
-    messages: input.messages as never,
+    messages: input.messages,
+    threadId: input.threadId,
+    runId: input.runId,
+    parentRunId: input.parentRunId,
+    resume: input.resume,
     systemPrompts: [
       buildEventSourcedSystemPrompt({
         instructions: input.systemPrompt ?? "",

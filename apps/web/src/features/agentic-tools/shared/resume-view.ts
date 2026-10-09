@@ -1,6 +1,6 @@
 import type { ResumeDetailDTO } from "@/data-access-layer/resume/resume.types";
 import { SECTION_KEYS, type SectionKey } from "@/features/resume/resume-schema";
-import type { ResumeView, ResumeViewSection } from "../resume-tool-schemas";
+import { talkViewSchema, type ResumeView, type ResumeViewSection } from "../resume-tool-schemas";
 
 function isSectionKey(key: string): key is SectionKey {
   return SECTION_KEYS.some((sectionKey) => sectionKey === key);
@@ -24,6 +24,16 @@ export function parseTech(tech: string): string[] {
       .filter(Boolean);
   }
   return [];
+}
+
+/** Talk `links` is a JSON array string of `{ label, url }`. */
+export function parseTalkLinks(links: string): Array<{ label: string; url: string }> {
+  try {
+    const parsed = talkViewSchema.shape.links.safeParse(JSON.parse(links));
+    return parsed.success ? parsed.data : [];
+  } catch {
+    return [];
+  }
 }
 
 /**
@@ -109,6 +119,7 @@ export function resumeView(
             field: item.field,
             startDate: item.startDate,
             endDate: item.endDate,
+            description: item.description,
             bullets: bySortOrder(item.bullets).map(({ id, text }) => ({ id, text })),
           })),
         }
@@ -127,13 +138,16 @@ export function resumeView(
       : {}),
     ...(include("talks")
       ? {
-          talks: bySortOrder(detail.talks).map(({ id, title, event, date, description }) => ({
-            id,
-            title,
-            event,
-            date,
-            description,
-          })),
+          talks: bySortOrder(detail.talks).map(
+            ({ id, title, event, date, description, links }) => ({
+              id,
+              title,
+              event,
+              date,
+              description,
+              links: parseTalkLinks(links),
+            }),
+          ),
         }
       : {}),
     ...(include("skills")

@@ -1,8 +1,13 @@
 import type { AppDb } from "@/data-access-layer/event-sourced/collection";
+import type { AnyClientTool } from "@tanstack/ai";
 import type { ChatClientPersistence, ChatPersistedState } from "@tanstack/ai-client";
 import { nowMs } from "../../-utils/row-helpers";
 
-function isPersistedState(value: unknown): value is ChatPersistedState {
+type ClientTools = ReadonlyArray<AnyClientTool>;
+
+function isPersistedState<TTools extends ClientTools>(
+  value: unknown,
+): value is ChatPersistedState<TTools> {
   return (
     typeof value === "object" &&
     value !== null &&
@@ -11,28 +16,31 @@ function isPersistedState(value: unknown): value is ChatPersistedState {
   );
 }
 
-function parseStoredMessages(raw: string): ChatPersistedState | null {
+function parseStoredMessages<TTools extends ClientTools>(
+  raw: string,
+): ChatPersistedState<TTools> | null {
   try {
     const parsed: unknown = JSON.parse(raw);
     if (Array.isArray(parsed)) return { messages: parsed };
-    return isPersistedState(parsed) ? parsed : null;
+    return isPersistedState<TTools>(parsed) ? parsed : null;
   } catch {
     return null;
   }
 }
 
-export function createEventSourcedChatPersistence(options: {
+/** Typed by the chat's tools so `useChat` can still infer them (an untyped adapter widens them to `any`). */
+export function createEventSourcedChatPersistence<TTools extends ClientTools>(options: {
   getDb: () => AppDb;
   getUserId: () => string;
   resumeId: string;
-}): ChatClientPersistence {
+}): ChatClientPersistence<TTools> {
   const { resumeId } = options;
 
   return {
     getItem() {
       const row = options.getDb().collections.resumeAiChat.get(resumeId);
       if (!row) return null;
-      return parseStoredMessages(row.messages);
+      return parseStoredMessages<TTools>(row.messages);
     },
     setItem(_id, state) {
       const db = options.getDb();

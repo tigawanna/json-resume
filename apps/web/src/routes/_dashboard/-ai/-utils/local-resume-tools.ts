@@ -24,13 +24,12 @@ import {
   type SearchResumeBlocksToolOutput,
   type SetActiveResumeToolInput,
   type SetActiveResumeToolOutput,
-  type UpdateResumeDocumentToolOutput,
 } from "@/features/agentic-tools/resume-tool-schemas";
 import { parseTech, resumeView } from "@/features/agentic-tools/shared/resume-view";
 import { nextOffset, searchTerms } from "@/features/agentic-tools/shared/search-page";
 import { count, eq, queryOnce, type InitialQueryBuilder } from "@tanstack/db";
 import { orIlike } from "../../-utils/list-query";
-import { joinSearchable, libraryRowBase, nowMs } from "../../-utils/row-helpers";
+import { joinSearchable, libraryRowBase } from "../../-utils/row-helpers";
 
 export function requireDetail(db: AppDb, resumeId: string) {
   const snapshots = snapshotEventSourcedResume(db, resumeId);
@@ -310,18 +309,4 @@ export async function createLocalResumeFromDocument(
   await workspace.replaceDocument(input.document);
 
   return { resumeId: base.id, name: input.name };
-}
-
-export async function updateLocalResumeDocument(
-  ctx: LocalToolContext,
-  document: ResumeDocumentV1,
-): Promise<UpdateResumeDocumentToolOutput> {
-  const resumeId = ctx.getActiveResumeId();
-  const { snapshots, detail } = requireDetail(ctx.db, resumeId);
-  const workspace = createEventSourcedResumeWorkspace(ctx.db, detail, snapshots);
-  await workspace.replaceDocument(document);
-  return {
-    resumeId,
-    updatedAt: new Date(nowMs()).toISOString(),
-  };
 }

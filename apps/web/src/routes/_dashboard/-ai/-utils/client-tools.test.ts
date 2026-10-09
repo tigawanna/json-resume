@@ -11,4 +11,12 @@ describe("in-app assistant tools", () => {
     expect(implemented).toEqual(sent);
     expect(new Set(sent).size).toBe(sent.length);
   });
+
+  it("asks the user before a whole-résumé rewrite", () => {
+    const gated = eventSourcedResumeAiClientTools
+      .filter((tool) => tool.needsApproval)
+      .map((tool) => tool.name);
+
+    expect(gated).toEqual(["replace_resume_document"]);
+  });
 });

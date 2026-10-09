@@ -11,14 +11,18 @@ import {
   listResumesToolDefinition,
   navigateToResumeToolDefinition,
   setActiveResumeToolDefinition,
-  updateCurrentResumeDocumentToolDefinition,
 } from "./resume-definitions";
 import {
   removeFromResumeToolDefinition,
+  replaceResumeDocumentToolDefinition,
   setExperienceBulletsToolDefinition,
   setSkillsToolDefinition,
   setSummaryToolDefinition,
   updateResumeDetailsToolDefinition,
+  upsertEducationToolDefinition,
+  upsertExperienceToolDefinition,
+  upsertProjectToolDefinition,
+  upsertTalkToolDefinition,
 } from "./resume-edit-definitions";
 
 /**
@@ -34,10 +38,14 @@ export const chatToolDefinitions = [
   setSummaryToolDefinition,
   setExperienceBulletsToolDefinition,
   setSkillsToolDefinition,
+  upsertExperienceToolDefinition,
+  upsertProjectToolDefinition,
+  upsertEducationToolDefinition,
+  upsertTalkToolDefinition,
   removeFromResumeToolDefinition,
+  replaceResumeDocumentToolDefinition,
   cloneCurrentResumeToolDefinition,
   createResumeFromDocumentToolDefinition,
-  updateCurrentResumeDocumentToolDefinition,
   navigateToResumeToolDefinition,
   saveJobToolDefinition,
   listJobsToolDefinition,

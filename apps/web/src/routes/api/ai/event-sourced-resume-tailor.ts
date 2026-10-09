@@ -67,7 +67,11 @@ export const Route = createFileRoute("/api/ai/event-sourced-resume-tailor")({
             activeResumeId: data.activeResumeId,
             jobDescription: data.jobDescription,
             systemPrompt: data.systemPrompt,
-            messages: params.messages as never,
+            messages: params.messages,
+            threadId: params.threadId,
+            runId: params.runId,
+            parentRunId: params.parentRunId,
+            resume: params.resume,
             apiKey: data.apiKey,
             model: data.model,
           });

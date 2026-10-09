@@ -129,9 +129,12 @@ Current AI tools (`definitions/chat-tool-definitions.ts`, with browser implement
 
 - `list_resumes`, `get_resume`, `set_active_resume`, `search_current_resume_blocks`
 - `update_resume_details`, `set_summary`, `set_experience_bullets`, `set_skills`, `remove_from_resume`
-- `update_current_resume_document`, `clone_current_resume`, `create_resume_from_document`
+- `upsert_experience`, `upsert_project`, `upsert_education`, `upsert_talk` (with an `id` they edit the shared library item, so the change shows on every résumé using it)
+- `replace_resume_document` (needs approval), `clone_current_resume`, `create_resume_from_document`
 - `navigate_to_resume`
 - `save_job`, `list_jobs`, `attach_job_to_current_resume`
+
+Tools defined with `needsApproval: true` pause the run. The chat tab renders an Approve / Deny card (`ToolApprovalCard.tsx`) from `useChat`'s bound `interrupts`, and the route forwards `resume`, `threadId`, `runId`, and `parentRunId` into `chat()` so the run continues after the answer.
 
 ### API Key Architecture
 

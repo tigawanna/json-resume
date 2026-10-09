@@ -71,11 +71,7 @@ export const cloneCurrentResumeToolInputSchema = z.object({
   jobDescription: z.string().trim().max(20_000).optional(),
 });
 
-export const updateCurrentResumeDocumentToolInputSchema = z.object({
-  document: resumeDocumentV1Schema,
-});
-
-export const updateResumeDocumentToolOutputSchema = z.object({
+export const replaceResumeDocumentToolOutputSchema = z.object({
   resumeId: z.string(),
   updatedAt: z.string(),
 });
@@ -210,6 +206,47 @@ const skillGroupViewSchema = z.object({
   skills: z.array(z.object({ id: z.string(), name: z.string() })),
 });
 
+const linkPairSchema = z.object({ label: z.string(), url: z.string() });
+
+export const experienceViewSchema = z.object({
+  id: z.string(),
+  company: z.string(),
+  role: z.string(),
+  startDate: z.string(),
+  endDate: z.string(),
+  location: z.string(),
+  bullets: z.array(idTextSchema),
+});
+
+export const educationViewSchema = z.object({
+  id: z.string(),
+  school: z.string(),
+  degree: z.string(),
+  field: z.string(),
+  startDate: z.string(),
+  endDate: z.string(),
+  description: z.string(),
+  bullets: z.array(idTextSchema),
+});
+
+export const projectViewSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  description: z.string(),
+  tech: z.array(z.string()),
+  url: z.string(),
+  homepageUrl: z.string(),
+});
+
+export const talkViewSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  event: z.string(),
+  date: z.string(),
+  description: z.string(),
+  links: z.array(linkPairSchema),
+});
+
 export const resumeViewSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -240,55 +277,10 @@ export const resumeViewSchema = z.object({
     })
     .optional(),
   summary: z.array(idTextSchema).optional(),
-  experience: z
-    .array(
-      z.object({
-        id: z.string(),
-        company: z.string(),
-        role: z.string(),
-        startDate: z.string(),
-        endDate: z.string(),
-        location: z.string(),
-        bullets: z.array(idTextSchema),
-      }),
-    )
-    .optional(),
-  education: z
-    .array(
-      z.object({
-        id: z.string(),
-        school: z.string(),
-        degree: z.string(),
-        field: z.string(),
-        startDate: z.string(),
-        endDate: z.string(),
-        bullets: z.array(idTextSchema),
-      }),
-    )
-    .optional(),
-  projects: z
-    .array(
-      z.object({
-        id: z.string(),
-        name: z.string(),
-        description: z.string(),
-        tech: z.array(z.string()),
-        url: z.string(),
-        homepageUrl: z.string(),
-      }),
-    )
-    .optional(),
-  talks: z
-    .array(
-      z.object({
-        id: z.string(),
-        title: z.string(),
-        event: z.string(),
-        date: z.string(),
-        description: z.string(),
-      }),
-    )
-    .optional(),
+  experience: z.array(experienceViewSchema).optional(),
+  education: z.array(educationViewSchema).optional(),
+  projects: z.array(projectViewSchema).optional(),
+  talks: z.array(talkViewSchema).optional(),
   skills: z.array(skillGroupViewSchema).optional(),
   notes: z.array(z.object({ id: z.string(), label: z.string(), text: z.string() })).optional(),
 });
@@ -384,6 +376,91 @@ export const removeFromResumeToolInputSchema = z.object({
     .describe("Item id from get_resume (a skill group id for skills). The library row is kept."),
 });
 
+const upsertIdShape = {
+  id: z
+    .string()
+    .trim()
+    .optional()
+    .describe(
+      "Library id to edit (from get_resume or search). Omit to create; an identical existing item is reused.",
+    ),
+};
+
+const shortText = z.string().trim().max(200);
+
+export const upsertExperienceToolInputSchema = z.object({
+  ...targetResumeShape,
+  ...upsertIdShape,
+  company: shortText.optional().describe("Required when creating."),
+  role: shortText.optional().describe("Required when creating."),
+  startDate: z.string().trim().max(40).optional(),
+  endDate: z.string().trim().max(40).optional().describe('Empty or "Present" for a current role.'),
+  location: shortText.optional(),
+  bullets: z
+    .array(z.string().trim().min(1).max(600))
+    .max(12)
+    .optional()
+    .describe("When given, the bullets this experience shows on the résumé, in order."),
+});
+
+export const upsertProjectToolInputSchema = z.object({
+  ...targetResumeShape,
+  ...upsertIdShape,
+  name: shortText.optional().describe("Required when creating."),
+  description: z.string().trim().max(2_000).optional(),
+  tech: z.array(z.string().trim().min(1).max(60)).max(30).optional(),
+  url: z.string().trim().max(2_000).optional(),
+  homepageUrl: z.string().trim().max(2_000).optional(),
+});
+
+export const upsertEducationToolInputSchema = z.object({
+  ...targetResumeShape,
+  ...upsertIdShape,
+  school: shortText.optional().describe("Required when creating."),
+  degree: shortText.optional(),
+  field: shortText.optional(),
+  startDate: z.string().trim().max(40).optional(),
+  endDate: z.string().trim().max(40).optional(),
+  description: z.string().trim().max(2_000).optional(),
+});
+
+export const upsertTalkToolInputSchema = z.object({
+  ...targetResumeShape,
+  ...upsertIdShape,
+  title: shortText.optional().describe("Required when creating."),
+  event: shortText.optional(),
+  date: z.string().trim().max(40).optional(),
+  description: z.string().trim().max(2_000).optional(),
+  links: z
+    .array(z.object({ label: shortText, url: z.string().trim().max(2_000) }))
+    .max(10)
+    .optional(),
+});
+
+const upsertOutputShape = {
+  resumeId: z.string(),
+  created: z.boolean().describe("True when a new library item was inserted."),
+};
+
+export const upsertExperienceToolOutputSchema = z.object({
+  ...upsertOutputShape,
+  experience: experienceViewSchema,
+});
+export const upsertProjectToolOutputSchema = z.object({
+  ...upsertOutputShape,
+  project: projectViewSchema,
+});
+export const upsertEducationToolOutputSchema = z.object({
+  ...upsertOutputShape,
+  education: educationViewSchema,
+});
+export const upsertTalkToolOutputSchema = z.object({ ...upsertOutputShape, talk: talkViewSchema });
+
+export const replaceResumeDocumentToolInputSchema = z.object({
+  ...targetResumeShape,
+  document: resumeDocumentV1Schema,
+});
+
 export const removeFromResumeToolOutputSchema = z.object({
   resumeId: z.string(),
   section: removableSectionSchema,
@@ -458,6 +535,15 @@ export type SetSkillsToolOutput = z.infer<typeof setSkillsToolOutputSchema>;
 export type RemovableSection = z.infer<typeof removableSectionSchema>;
 export type RemoveFromResumeToolInput = z.input<typeof removeFromResumeToolInputSchema>;
 export type RemoveFromResumeToolOutput = z.infer<typeof removeFromResumeToolOutputSchema>;
+export type UpsertExperienceToolInput = z.input<typeof upsertExperienceToolInputSchema>;
+export type UpsertExperienceToolOutput = z.infer<typeof upsertExperienceToolOutputSchema>;
+export type UpsertProjectToolInput = z.input<typeof upsertProjectToolInputSchema>;
+export type UpsertProjectToolOutput = z.infer<typeof upsertProjectToolOutputSchema>;
+export type UpsertEducationToolInput = z.input<typeof upsertEducationToolInputSchema>;
+export type UpsertEducationToolOutput = z.infer<typeof upsertEducationToolOutputSchema>;
+export type UpsertTalkToolInput = z.input<typeof upsertTalkToolInputSchema>;
+export type UpsertTalkToolOutput = z.infer<typeof upsertTalkToolOutputSchema>;
+export type ReplaceResumeDocumentToolInput = z.input<typeof replaceResumeDocumentToolInputSchema>;
 export type SetActiveResumeToolOutput = z.infer<typeof setActiveResumeToolOutputSchema>;
 export type SearchResumeBlocksToolInput = z.input<typeof searchResumeBlocksToolInputSchema>;
 export type CreateResumeFromDocumentToolInput = z.infer<
@@ -470,10 +556,7 @@ export type CreateResumeFromDocumentToolOutput = z.infer<
   typeof createResumeFromDocumentToolOutputSchema
 >;
 export type CloneResumeToolOutput = z.infer<typeof cloneResumeToolOutputSchema>;
-export type UpdateCurrentResumeDocumentToolInput = z.infer<
-  typeof updateCurrentResumeDocumentToolInputSchema
->;
-export type UpdateResumeDocumentToolOutput = z.infer<typeof updateResumeDocumentToolOutputSchema>;
+export type ReplaceResumeDocumentToolOutput = z.infer<typeof replaceResumeDocumentToolOutputSchema>;
 export type SaveJobToolInput = z.infer<typeof saveJobToolInputSchema>;
 export type SaveJobToolOutput = z.infer<typeof saveJobToolOutputSchema>;
 export type ListJobsToolOutput = z.infer<typeof listJobsToolOutputSchema>;
