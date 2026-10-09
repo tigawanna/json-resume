@@ -28,6 +28,35 @@ function parseStoredMessages<TTools extends ClientTools>(
   }
 }
 
+/** Carries a conversation over to another résumé's chat, unless that résumé already has one. */
+export function handOverChatMessages(
+  db: AppDb,
+  userId: string,
+  toResumeId: string,
+  messages: ReadonlyArray<unknown>,
+) {
+  if (!userId || messages.length === 0) return;
+  const existing = db.collections.resumeAiChat.get(toResumeId);
+  if (existing && (parseStoredMessages(existing.messages)?.messages.length ?? 0) > 0) return;
+  const payload = JSON.stringify({ messages });
+  const ts = nowMs();
+  if (existing) {
+    db.collections.resumeAiChat.update(toResumeId, (draft) => {
+      draft.messages = payload;
+      draft.updatedAt = ts;
+    });
+    return;
+  }
+  db.collections.resumeAiChat.insert({
+    id: toResumeId,
+    userId,
+    resumeId: toResumeId,
+    messages: payload,
+    createdAt: ts,
+    updatedAt: ts,
+  });
+}
+
 /** Typed by the chat's tools so `useChat` can still infer them (an untyped adapter widens them to `any`). */
 export function createEventSourcedChatPersistence<TTools extends ClientTools>(options: {
   getDb: () => AppDb;

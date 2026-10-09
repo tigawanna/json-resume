@@ -7,12 +7,14 @@ import {
 } from "./job-definitions";
 import { searchCurrentResumeBlocksToolDefinition } from "./library-definitions";
 import {
-  cloneCurrentResumeToolDefinition,
-  createResumeFromDocumentToolDefinition,
+  cloneResumeToolDefinition,
+  createResumeToolDefinition,
   getResumeToolDefinition,
   listResumesToolDefinition,
-  navigateToResumeToolDefinition,
+  openResumeToolDefinition,
+  rankResumesForJobToolDefinition,
   setActiveResumeToolDefinition,
+  tailorResumeForJobToolDefinition,
 } from "./resume-definitions";
 import {
   removeFromResumeToolDefinition,
@@ -46,9 +48,11 @@ export const chatToolDefinitions = [
   upsertTalkToolDefinition,
   removeFromResumeToolDefinition,
   replaceResumeDocumentToolDefinition,
-  cloneCurrentResumeToolDefinition,
-  createResumeFromDocumentToolDefinition,
-  navigateToResumeToolDefinition,
+  cloneResumeToolDefinition,
+  createResumeToolDefinition,
+  rankResumesForJobToolDefinition,
+  tailorResumeForJobToolDefinition,
+  openResumeToolDefinition,
   listJobsToolDefinition,
   getJobToolDefinition,
   saveJobToolDefinition,

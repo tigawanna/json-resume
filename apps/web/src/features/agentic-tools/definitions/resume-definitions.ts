@@ -1,17 +1,21 @@
 import { toolDefinition } from "@tanstack/ai";
 import {
-  cloneCurrentResumeToolInputSchema,
+  cloneResumeToolInputSchema,
   cloneResumeToolOutputSchema,
-  createResumeFromDocumentToolInputSchema,
-  createResumeFromDocumentToolOutputSchema,
+  createResumeToolInputSchema,
+  createResumeToolOutputSchema,
   getResumeToolInputSchema,
   getResumeToolOutputSchema,
   listResumesToolInputSchema,
   listResumesToolOutputSchema,
-  navigateToResumeToolInputSchema,
-  navigateToResumeToolOutputSchema,
+  openResumeToolInputSchema,
+  openResumeToolOutputSchema,
+  rankResumesForJobToolInputSchema,
+  rankResumesForJobToolOutputSchema,
   setActiveResumeToolInputSchema,
   setActiveResumeToolOutputSchema,
+  tailorResumeForJobToolInputSchema,
+  tailorResumeForJobToolOutputSchema,
 } from "../resume-tool-schemas";
 
 export const listResumesToolDefinition = toolDefinition({
@@ -40,26 +44,43 @@ export const setActiveResumeToolDefinition = toolDefinition({
   outputSchema: setActiveResumeToolOutputSchema,
 });
 
-export const cloneCurrentResumeToolDefinition = toolDefinition({
-  name: "clone_current_resume",
+export const cloneResumeToolDefinition = toolDefinition({
+  name: "clone_resume",
   description:
-    "Clone the active resume into a new draft. Only when the user asks for a copy or variant. The clone does not become active; call set_active_resume to keep editing it.",
-  inputSchema: cloneCurrentResumeToolInputSchema,
+    "Copy a résumé (the active one by default) into a new draft that shares its library items. Only when the user asks for a copy or variant. The copy becomes active unless makeActive is false; pass jobId to retarget it.",
+  inputSchema: cloneResumeToolInputSchema,
   outputSchema: cloneResumeToolOutputSchema,
 });
 
-export const createResumeFromDocumentToolDefinition = toolDefinition({
-  name: "create_resume_from_document",
+export const createResumeToolDefinition = toolDefinition({
+  name: "create_resume",
   description:
-    "Create a new resume draft from a complete ResumeDocumentV1 JSON document assembled from selected blocks.",
-  inputSchema: createResumeFromDocumentToolInputSchema,
-  outputSchema: createResumeFromDocumentToolOutputSchema,
+    "Create a new résumé: blank, or imported from a complete parsed document when the user pastes a whole résumé. It becomes active unless makeActive is false.",
+  inputSchema: createResumeToolInputSchema,
+  outputSchema: createResumeToolOutputSchema,
 });
 
-export const navigateToResumeToolDefinition = toolDefinition({
-  name: "navigate_to_resume",
+export const openResumeToolDefinition = toolDefinition({
+  name: "open_resume",
   description:
-    "Navigate the user to a resume after a successful clone, fork, or new draft creation so they can see the resume being worked on.",
-  inputSchema: navigateToResumeToolInputSchema,
-  outputSchema: navigateToResumeToolOutputSchema,
+    "Show a résumé (the active one by default) in the editor once this reply finishes. The conversation moves with it. Call it last.",
+  inputSchema: openResumeToolInputSchema,
+  outputSchema: openResumeToolOutputSchema,
+});
+
+export const rankResumesForJobToolDefinition = toolDefinition({
+  name: "rank_resumes_for_job",
+  description:
+    "Score the user's résumés against a job by keyword coverage and return the best matches with matched and missing terms. Use it to pick the résumé to start from.",
+  inputSchema: rankResumesForJobToolInputSchema,
+  outputSchema: rankResumesForJobToolOutputSchema,
+  metadata: { title: "Rank Resumes For Job", annotations: { readOnlyHint: true } },
+});
+
+export const tailorResumeForJobToolDefinition = toolDefinition({
+  name: "tailor_resume_for_job",
+  description:
+    "One step for a tailored copy: copies the base résumé (or the best match for the job), points the copy at the job, makes it active and returns its content with the job keywords it is missing. Then edit it with the setters and upserts.",
+  inputSchema: tailorResumeForJobToolInputSchema,
+  outputSchema: tailorResumeForJobToolOutputSchema,
 });

@@ -6,7 +6,9 @@ import { getJobTool, listJobsTool } from "./job-tools.server";
 import {
   getResumeToolDefinition,
   listResumesToolDefinition,
+  rankResumesForJobToolDefinition,
 } from "./definitions/resume-definitions";
+import { rankResumesForJobTool } from "./rank-tools.server";
 import { getResumeTool, listResumesTool, searchResumeBlocksTool } from "./resume-tools.server";
 import { resumeReadProcedure } from "./resume-orpc-base.server";
 
@@ -41,6 +43,20 @@ const getResumeProcedure = resumeReadProcedure
   .input(getResumeToolDefinition.inputSchema)
   .output(getResumeToolDefinition.outputSchema)
   .handler(async ({ context, input }) => getResumeTool({ userId: context.userId }, input));
+
+const rankResumesForJobProcedure = resumeReadProcedure
+  .route({
+    method: "POST",
+    path: "/resumes/rank-for-job",
+    summary: "Rank resumes for a job",
+    description:
+      "Score the caller's most recent résumés by keyword coverage of a tracked job or pasted posting text.",
+    tags: ["Agentic Resumes"],
+    successStatus: 200,
+  })
+  .input(rankResumesForJobToolDefinition.inputSchema)
+  .output(rankResumesForJobToolDefinition.outputSchema)
+  .handler(async ({ context, input }) => rankResumesForJobTool({ userId: context.userId }, input));
 
 const searchResumeBlocksProcedure = resumeReadProcedure
   .route({
@@ -89,6 +105,7 @@ export const resumeAgenticRouter = {
   resumes: {
     list: listResumesProcedure,
     get: getResumeProcedure,
+    rankForJob: rankResumesForJobProcedure,
   },
   resumeBlocks: {
     search: searchResumeBlocksProcedure,

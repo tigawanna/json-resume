@@ -14,6 +14,9 @@ vi.mock("./job-tools.server", () => ({
   listJobsTool: vi.fn(),
   getJobTool: vi.fn(),
 }));
+vi.mock("./rank-tools.server", () => ({
+  rankResumesForJobTool: vi.fn(),
+}));
 
 import { resumeMcpServer } from "./resume-mcp.server";
 
@@ -64,6 +67,7 @@ describe("resume MCP server", () => {
       "get_resume",
       "list_jobs",
       "list_resumes",
+      "rank_resumes_for_job",
       "search_resume_blocks",
     ]);
     expect(tools.every((tool) => tool.annotations?.readOnlyHint === true)).toBe(true);

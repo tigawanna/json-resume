@@ -7,12 +7,14 @@ import {
 } from "@/features/agentic-tools/definitions/job-definitions";
 import { searchCurrentResumeBlocksToolDefinition } from "@/features/agentic-tools/definitions/library-definitions";
 import {
-  cloneCurrentResumeToolDefinition,
-  createResumeFromDocumentToolDefinition,
+  cloneResumeToolDefinition,
+  createResumeToolDefinition,
   getResumeToolDefinition,
   listResumesToolDefinition,
-  navigateToResumeToolDefinition,
+  openResumeToolDefinition,
+  rankResumesForJobToolDefinition,
   setActiveResumeToolDefinition,
+  tailorResumeForJobToolDefinition,
 } from "@/features/agentic-tools/definitions/resume-definitions";
 import {
   removeFromResumeToolDefinition,
@@ -26,10 +28,7 @@ import {
   upsertProjectToolDefinition,
   upsertTalkToolDefinition,
 } from "@/features/agentic-tools/definitions/resume-edit-definitions";
-import type {
-  LocalToolContext,
-  ResumeWorkbenchTab,
-} from "@/features/agentic-tools/definitions/tool-context";
+import type { LocalToolContext } from "@/features/agentic-tools/definitions/tool-context";
 import {
   removeLocalFromResume,
   replaceLocalResumeDocument,
@@ -44,7 +43,12 @@ import {
 } from "./local-resume-edit-tools";
 import {
   cloneLocalResume,
-  createLocalResumeFromDocument,
+  createLocalResume,
+  openLocalResume,
+  rankLocalResumesForJob,
+  tailorLocalResumeForJob,
+} from "./local-resume-lifecycle-tools";
+import {
   getLocalResume,
   listLocalResumes,
   searchLocalResumeBlocks,
@@ -59,11 +63,6 @@ import {
 } from "./local-job-tools";
 
 type ClientToolCtx = { context: LocalToolContext };
-
-function asWorkbenchTab(tab: string): ResumeWorkbenchTab {
-  if (tab === "preview" || tab === "json") return tab;
-  return "edit";
-}
 
 export const listResumesClientTool = listResumesToolDefinition.client((input, ctx: ClientToolCtx) =>
   listLocalResumes(ctx.context, input),
@@ -126,24 +125,24 @@ export const replaceResumeDocumentClientTool = replaceResumeDocumentToolDefiniti
   (input, ctx: ClientToolCtx) => replaceLocalResumeDocument(ctx.context, input),
 );
 
-export const cloneCurrentResumeClientTool = cloneCurrentResumeToolDefinition.client(
-  (input, ctx: ClientToolCtx) => cloneLocalResume(ctx.context, input),
+export const cloneResumeClientTool = cloneResumeToolDefinition.client((input, ctx: ClientToolCtx) =>
+  cloneLocalResume(ctx.context, input),
 );
 
-export const createResumeFromDocumentClientTool = createResumeFromDocumentToolDefinition.client(
-  (input, ctx: ClientToolCtx) => createLocalResumeFromDocument(ctx.context, input),
+export const createResumeClientTool = createResumeToolDefinition.client(
+  (input, ctx: ClientToolCtx) => createLocalResume(ctx.context, input),
 );
 
-export const navigateToResumeClientTool = navigateToResumeToolDefinition.client(
-  (input, ctx: ClientToolCtx) => {
-    const tab = input.tab ?? "preview";
-    ctx.context.navigateToResume(input.resumeId, asWorkbenchTab(tab));
-    return {
-      navigated: true,
-      resumeId: input.resumeId,
-      tab,
-    };
-  },
+export const rankResumesForJobClientTool = rankResumesForJobToolDefinition.client(
+  (input, ctx: ClientToolCtx) => rankLocalResumesForJob(ctx.context, input),
+);
+
+export const tailorResumeForJobClientTool = tailorResumeForJobToolDefinition.client(
+  (input, ctx: ClientToolCtx) => tailorLocalResumeForJob(ctx.context, input),
+);
+
+export const openResumeClientTool = openResumeToolDefinition.client((input, ctx: ClientToolCtx) =>
+  openLocalResume(ctx.context, input),
 );
 
 export const listJobsClientTool = listJobsToolDefinition.client((input, ctx: ClientToolCtx) =>
@@ -181,9 +180,11 @@ export const eventSourcedResumeAiClientTools = [
   upsertTalkClientTool,
   removeFromResumeClientTool,
   replaceResumeDocumentClientTool,
-  cloneCurrentResumeClientTool,
-  createResumeFromDocumentClientTool,
-  navigateToResumeClientTool,
+  cloneResumeClientTool,
+  createResumeClientTool,
+  rankResumesForJobClientTool,
+  tailorResumeForJobClientTool,
+  openResumeClientTool,
   listJobsClientTool,
   getJobClientTool,
   saveJobClientTool,

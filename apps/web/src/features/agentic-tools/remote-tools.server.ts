@@ -5,9 +5,11 @@ import { searchResumeBlocksToolDefinition } from "./definitions/library-definiti
 import {
   getResumeToolDefinition,
   listResumesToolDefinition,
+  rankResumesForJobToolDefinition,
 } from "./definitions/resume-definitions";
 import type { RemoteToolContext } from "./definitions/tool-context";
 import { getJobTool, listJobsTool } from "./job-tools.server";
+import { rankResumesForJobTool } from "./rank-tools.server";
 import { getResumeTool, listResumesTool, searchResumeBlocksTool } from "./resume-tools.server";
 
 /** Callers must supply `{ userId }` as tool context; a missing one must never reach a query. */
@@ -37,6 +39,11 @@ export const getJobRemoteTool = getJobToolDefinition.server<RemoteToolContext>((
   getJobTool(requireRemoteContext(ctx.context), input),
 );
 
+export const rankResumesForJobRemoteTool =
+  rankResumesForJobToolDefinition.server<RemoteToolContext>((input, ctx) =>
+    rankResumesForJobTool(requireRemoteContext(ctx.context), input),
+  );
+
 /** Read-only tools over the materialized tables, served by MCP. */
 export const remoteResumeTools = [
   listResumesRemoteTool,
@@ -44,4 +51,5 @@ export const remoteResumeTools = [
   searchResumeBlocksRemoteTool,
   listJobsRemoteTool,
   getJobRemoteTool,
+  rankResumesForJobRemoteTool,
 ] as const;

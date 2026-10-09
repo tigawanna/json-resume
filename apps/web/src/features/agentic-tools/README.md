@@ -106,7 +106,7 @@ const resumeReadPermission = { resumes: ["read"] };
 const resumeWritePermission = { resumes: ["write"] };
 ```
 
-Every current procedure uses read permission (list/get resumes, search resume blocks, list/get jobs). `resumeWriteProcedure` is kept for future server writes, which would have to go through the event log.
+Every current procedure uses read permission (list/get/rank resumes, search resume blocks, list/get jobs). `resumeWriteProcedure` is kept for future server writes, which would have to go through the event log.
 
 Do not enable Better Auth `enableSessionForAPIKeys` unless deliberately changing the auth model. The helper verifies API keys directly and avoids pretending API keys are cookie sessions.
 
@@ -134,11 +134,12 @@ Current AI tools (`definitions/chat-tool-definitions.ts`, with browser implement
 - `list_resumes`, `get_resume`, `set_active_resume`, `search_current_resume_blocks`
 - `update_resume_details`, `set_summary`, `set_experience_bullets`, `set_skills`, `remove_from_resume`
 - `upsert_experience`, `upsert_project`, `upsert_education`, `upsert_talk` (with an `id` they edit the shared library item, so the change shows on every résumé using it)
-- `replace_resume_document` (needs approval), `clone_current_resume`, `create_resume_from_document`
-- `navigate_to_resume`
+- `replace_resume_document` (needs approval)
+- `clone_resume`, `create_resume`, `tailor_resume_for_job` (each makes the new résumé active), `rank_resumes_for_job`
+- `open_resume` (navigates once the reply finishes and carries the conversation to the target résumé)
 - `list_jobs`, `get_job`, `save_job`, `update_job`, `attach_job` (`jobId: null` detaches)
 
-The prompt only names the active résumé's job (id and label); the model calls `get_job` when it needs the posting text. `list_jobs` and `get_job` also run remotely (MCP tools and `POST /jobs/list`, `POST /jobs/get`), sharing `shared/job-view.ts` with the local versions.
+The prompt only names the active résumé's job (id and label); the model calls `get_job` when it needs the posting text. `list_jobs` and `get_job` also run remotely (MCP tools and `POST /jobs/list`, `POST /jobs/get`), sharing `shared/job-view.ts` with the local versions. `rank_resumes_for_job` runs remotely too (`POST /resumes/rank-for-job`), sharing the keyword scorer in `shared/rank.ts`.
 
 Tools defined with `needsApproval: true` pause the run. The chat tab renders an Approve / Deny card (`ToolApprovalCard.tsx`) from `useChat`'s bound `interrupts`, and the route forwards `resume`, `threadId`, `runId`, and `parentRunId` into `chat()` so the run continues after the answer.
 

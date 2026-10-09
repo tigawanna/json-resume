@@ -55,7 +55,7 @@ serve MCP, oRPC/OpenAPI, and any future server-side agent.
    implementation. Implementation functions take `z.input<…>` and call `.parse()` themselves,
    because `execute` receives the pre-parse input type.
 4. **Context types are explicit.** `LocalToolContext = { db, userId, getActiveResumeId,
-   setActiveResumeId, navigateToResume }`. `RemoteToolContext = { userId }`. Every write and
+   setActiveResumeId, openResume }`. `RemoteToolContext = { userId }`. Every write and
    read tool takes an optional `resumeId` that defaults to the active résumé locally. Remote
    copies require it (or fall back to most recently updated).
 5. **Approval and lazy flags live on the definition**, so every surface sees them:
@@ -314,11 +314,23 @@ The hook reads the active résumé's job with a live query and forwards `activeJ
 
 ### Batch 5: Résumé lifecycle and the JD flow
 
-- [ ] `clone_resume` (`jobId`, `makeActive`)
-- [ ] `create_resume` (optional partial document, `makeActive`)
-- [ ] `open_resume`, with the chat thread surviving navigation (thread keyed per conversation)
-- [ ] `rank_resumes_for_job` (shared `rank.ts`, client + remote)
-- [ ] `tailor_resume_for_job` (composite)
+- [x] `clone_resume` (`jobId`, `makeActive`)
+- [x] `create_resume` (optional full document, `makeActive`)
+- [x] `open_resume`, with the chat thread surviving navigation
+- [x] `rank_resumes_for_job` (shared `rank.ts`, client + remote)
+- [x] `tailor_resume_for_job` (composite)
+
+`create_resume` takes an optional complete document rather than a partial one: the schema has
+no partial form, and a blank résumé filled with the setters and upserts covers the rest.
+`open_resume` queues the navigation until the reply finishes, then copies the transcript to the
+target résumé's chat row (only if that row is empty) and opens the `ai` tab by default. The AI
+tab is keyed by résumé so it remounts and reads that row; thread storage stays per résumé.
+`rank.ts` scores keyword coverage (title words weigh triple, stopwords dropped, 40 keywords
+max) over the most recently updated résumés (200 locally, 100 remotely). Remote ranking is
+`rank_resumes_for_job` on MCP and `POST /resumes/rank-for-job`; it needs `jobId` or `jobText`.
+The prompt now spells out the pasted-posting flow: `save_job`, then edit in place when the
+active résumé has no job or already targets it, otherwise `tailor_resume_for_job`, and
+`open_resume` last.
 
 ### Batch 6: Library
 

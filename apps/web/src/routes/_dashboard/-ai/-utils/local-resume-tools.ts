@@ -1,21 +1,12 @@
-import {
-  assembleResumeDetail,
-  asTemplateId,
-} from "@/data-access-layer/event-sourced/assemble-resume-detail";
-import { cloneResume } from "@/data-access-layer/event-sourced/clone-resume";
+import { assembleResumeDetail } from "@/data-access-layer/event-sourced/assemble-resume-detail";
 import type { AppDb } from "@/data-access-layer/event-sourced/collection";
-import { createEventSourcedResumeWorkspace } from "@/data-access-layer/event-sourced/event-sourced-resume-workspace";
-import { attachJobDescription, jobListLabel } from "@/data-access-layer/event-sourced/job-rows";
+import { jobListLabel } from "@/data-access-layer/event-sourced/job-rows";
 import { snapshotEventSourcedResume } from "@/data-access-layer/event-sourced/snapshot-resume";
-import { emptyResumeLayout } from "@/features/resume/resume-layout";
-import type { ResumeDocumentV1 } from "@/features/resume/resume-schema";
 import type { LocalToolContext } from "@/features/agentic-tools/definitions/tool-context";
 import {
   getResumeToolInputSchema,
   listResumesToolInputSchema,
   setActiveResumeToolInputSchema,
-  type CloneResumeToolOutput,
-  type CreateResumeFromDocumentToolOutput,
   type GetResumeToolInput,
   type GetResumeToolOutput,
   type ListResumesToolInput,
@@ -29,7 +20,6 @@ import { parseTech, resumeView } from "@/features/agentic-tools/shared/resume-vi
 import { nextOffset, searchTerms } from "@/features/agentic-tools/shared/search-page";
 import { count, eq, queryOnce, type InitialQueryBuilder } from "@tanstack/db";
 import { orIlike } from "../../-utils/list-query";
-import { joinSearchable, libraryRowBase } from "../../-utils/row-helpers";
 
 export function requireDetail(db: AppDb, resumeId: string) {
   const snapshots = snapshotEventSourcedResume(db, resumeId);
@@ -255,58 +245,4 @@ export function searchLocalResumeBlocks(
   }
 
   return { blocks };
-}
-
-export function cloneLocalResume(
-  ctx: LocalToolContext,
-  input: {
-    name?: string;
-    description?: string;
-    jobDescription?: string;
-    sourceResumeId?: string;
-  },
-): CloneResumeToolOutput {
-  const sourceResumeId = input.sourceResumeId ?? ctx.getActiveResumeId();
-  const { resumeId, name } = cloneResume(ctx.db, sourceResumeId, input);
-  return { sourceResumeId, resumeId, name };
-}
-
-export async function createLocalResumeFromDocument(
-  ctx: Pick<LocalToolContext, "db" | "userId">,
-  input: {
-    name: string;
-    description?: string;
-    jobDescription?: string;
-    document: ResumeDocumentV1;
-  },
-): Promise<CreateResumeFromDocumentToolOutput> {
-  const base = libraryRowBase(ctx.userId);
-  ctx.db.collections.resume.insert({
-    id: base.id,
-    userId: ctx.userId,
-    name: input.name,
-    fullName: input.document.header.fullName || input.name,
-    headline: input.document.header.headline ?? "",
-    description: input.description ?? "",
-    jobId: null,
-    templateId: asTemplateId(input.document.meta.templateId),
-    layout: emptyResumeLayout(),
-    searchableText: joinSearchable(
-      input.name,
-      input.document.header.fullName,
-      input.document.header.headline,
-      input.description,
-    ),
-    embedding: null,
-    embeddingModel: null,
-    createdAt: base.createdAt,
-    updatedAt: base.updatedAt,
-  });
-  attachJobDescription(ctx.db, ctx.userId, base.id, input.jobDescription ?? "");
-
-  const { snapshots, detail } = requireDetail(ctx.db, base.id);
-  const workspace = createEventSourcedResumeWorkspace(ctx.db, detail, snapshots);
-  await workspace.replaceDocument(input.document);
-
-  return { resumeId: base.id, name: input.name };
 }

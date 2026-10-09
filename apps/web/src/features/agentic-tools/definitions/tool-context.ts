@@ -1,6 +1,5 @@
 import type { AppDb } from "@/data-access-layer/event-sourced/collection";
-
-export type ResumeWorkbenchTab = "edit" | "preview" | "json";
+import type { WorkbenchTab } from "../resume-tool-schemas";
 
 /**
  * Context for local (browser, TanStack DB) tool implementations, passed to `useChat({ context })`.
@@ -12,7 +11,8 @@ export type LocalToolContext = {
   userId: string;
   getActiveResumeId: () => string;
   setActiveResumeId: (resumeId: string) => void;
-  navigateToResume: (resumeId: string, tab: ResumeWorkbenchTab) => void;
+  /** Queues navigation until the current reply finishes, so the run is not cut off. */
+  openResume: (resumeId: string, tab: WorkbenchTab) => void;
 };
 
 /** Request context for remote (Drizzle-backed) tool implementations. */

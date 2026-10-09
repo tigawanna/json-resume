@@ -6,8 +6,12 @@ import { eq, useLiveQuery } from "@tanstack/react-db";
 import { useRouter } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import { eventSourcedResumeAiClientTools } from "../-utils/client-tools";
-import { createEventSourcedChatPersistence } from "../-utils/event-sourced-chat-persistence";
+import {
+  createEventSourcedChatPersistence,
+  handOverChatMessages,
+} from "../-utils/event-sourced-chat-persistence";
 import type { LocalToolContext } from "@/features/agentic-tools/definitions/tool-context";
+import type { WorkbenchTab } from "@/features/agentic-tools/resume-tool-schemas";
 import type { ToolApprovalRequest } from "../-components/ToolApprovalCard";
 import { useEventSourcedAiSettings } from "./use-event-sourced-ai-settings";
 import { isLocalMode } from "@/routes/_dashboard/resumes/$resumeId/-components/ResumeAiTab/resume-ai-types";
@@ -52,6 +56,7 @@ export function useEventSourcedResumeAiChat(resumeId: string) {
   const activeResumeId = activeResume.pageResumeId === resumeId ? activeResume.id : resumeId;
   const activeResumeIdRef = useRef(activeResumeId);
   activeResumeIdRef.current = activeResumeId;
+  const pendingOpenRef = useRef<{ resumeId: string; tab: WorkbenchTab } | null>(null);
 
   const { data: activeJobRows } = useLiveQuery(
     (q) =>
@@ -77,12 +82,8 @@ export function useEventSourcedResumeAiChat(resumeId: string) {
       activeResumeIdRef.current = nextResumeId;
       setActiveResume({ pageResumeId: resumeId, id: nextResumeId });
     },
-    navigateToResume(nextResumeId, tab) {
-      void router.navigate({
-        to: "/resumes/$resumeId",
-        params: { resumeId: nextResumeId },
-        search: { tab },
-      });
+    openResume(nextResumeId, tab) {
+      pendingOpenRef.current = { resumeId: nextResumeId, tab };
     },
   };
 
@@ -124,6 +125,20 @@ export function useEventSourcedResumeAiChat(resumeId: string) {
       },
     ];
   });
+
+  useEffect(() => {
+    const pending = pendingOpenRef.current;
+    if (!pending || isLoading) return;
+    pendingOpenRef.current = null;
+    if (pending.resumeId !== resumeId) {
+      handOverChatMessages(db, userId, pending.resumeId, messages);
+    }
+    void router.navigate({
+      to: "/resumes/$resumeId",
+      params: { resumeId: pending.resumeId },
+      search: { tab: pending.tab },
+    });
+  }, [isLoading, db, messages, resumeId, router, userId]);
 
   useEffect(() => {
     endOfMessagesRef.current?.scrollIntoView({ block: "end" });

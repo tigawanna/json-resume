@@ -23,19 +23,19 @@ export function useLocalToolDb() {
   return {
     db: () => db,
 
-    context: (activeResumeId = ""): LocalToolContext & { navigations: string[] } => {
+    context: (activeResumeId = ""): LocalToolContext & { opened: string[] } => {
       let active = activeResumeId;
-      const navigations: string[] = [];
+      const opened: string[] = [];
       return {
         db,
         userId: "u1",
-        navigations,
+        opened,
         getActiveResumeId: () => active,
         setActiveResumeId: (resumeId) => {
           active = resumeId;
         },
-        navigateToResume: (resumeId, tab) => {
-          navigations.push(`${resumeId}:${tab}`);
+        openResume: (resumeId, tab) => {
+          opened.push(`${resumeId}:${tab}`);
         },
       };
     },

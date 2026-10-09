@@ -51,7 +51,7 @@ async function jobRow(db: AppDb, job: Job) {
   return jobRowView(job, links.get(job.id) ?? []);
 }
 
-function requireJob(db: AppDb, jobId: string): Job {
+export function requireJob(db: AppDb, jobId: string): Job {
   const job = db.collections.job.get(jobId);
   if (!job) throw new Error(`Job ${jobId} was not found. Use list_jobs to find its id.`);
   return job;

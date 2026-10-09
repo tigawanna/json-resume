@@ -4,9 +4,9 @@ export interface CreatedResumeOutput {
 }
 
 export const createdResumeToolNames = new Set([
-  "create_resume_from_document",
+  "create_resume",
   "clone_resume",
-  "clone_current_resume",
+  "tailor_resume_for_job",
 ]);
 
 export function getCreatedResumeOutput(part: {
