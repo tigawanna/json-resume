@@ -3,6 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { streamEventSourcedResumeAgentChat } from "@/routes/_dashboard/-ai/-utils/stream-resume-chat.server";
 import { EVENT_SOURCED_SYSTEM_PROMPT_MAX_CHARS } from "@/routes/_dashboard/-ai/-utils/system-prompt";
+import { aiRoutingSchema } from "@/features/agentic-tools/openrouter-routing";
 import { auth } from "@/lib/auth";
 import { serverEnv } from "@/lib/server-env";
 
@@ -14,6 +15,7 @@ const forwardedSchema = z.object({
   systemPrompt: z.string().max(EVENT_SOURCED_SYSTEM_PROMPT_MAX_CHARS).optional(),
   apiKey: z.string().trim().optional(),
   model: z.string().trim().optional(),
+  routing: aiRoutingSchema.optional(),
 });
 
 const corsHeaders = {
@@ -77,6 +79,8 @@ export const Route = createFileRoute("/api/ai/event-sourced-resume-tailor")({
             resume: params.resume,
             apiKey: data.apiKey,
             model: data.model,
+            routing: data.routing,
+            userId: session.user.id,
           });
 
           return withCors(toServerSentEventsResponse(stream));

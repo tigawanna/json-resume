@@ -199,11 +199,7 @@ function EventSourcedResumeWorkbench({ resumeId }: { resumeId: string }) {
           </TabsContent>
 
           <TabsContent value="ai" className="mt-4">
-            <EventSourcedResumeAiTab
-              key={resumeId}
-              resumeId={resumeId}
-              jobDescription={detail.jobDescription ?? ""}
-            />
+            <EventSourcedResumeAiTab key={resumeId} resumeId={resumeId} />
           </TabsContent>
         </Tabs>
 

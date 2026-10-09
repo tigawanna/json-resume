@@ -106,6 +106,7 @@ export function useEventSourcedResumeAiChat(resumeId: string) {
       systemPrompt,
       apiKey: settings?.apiKey,
       model: settings?.model,
+      routing: settings?.routing,
     },
   });
 
@@ -153,6 +154,13 @@ export function useEventSourcedResumeAiChat(resumeId: string) {
     setInput("");
   }
 
+  async function sendText(text: string) {
+    const trimmed = text.trim();
+    if (!trimmed || isLoading || !isReady) return;
+    await chat.sendMessage(trimmed);
+    setInput("");
+  }
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     await submitMessage();
@@ -191,9 +199,19 @@ export function useEventSourcedResumeAiChat(resumeId: string) {
   const activeModelLabel = settings?.model
     ? (settings.model.split("/").pop() ?? settings.model)
     : null;
+  const routing = settings?.routing;
+  const activeRoutingLabel =
+    !routing || isLocalMode
+      ? null
+      : routing.mode === "auto"
+        ? routing.sort
+          ? `Auto · ${routing.sort}`
+          : "Auto routing"
+        : `${routing.mode === "official" ? "Official" : "Pinned"}: ${routing.providers.join(", ")}`;
 
   return {
     activeModelLabel,
+    activeRoutingLabel,
     approvals,
     approvalsResuming: chat.resuming,
     chatErrorMessage: chat.error?.message ?? null,
@@ -214,6 +232,7 @@ export function useEventSourcedResumeAiChat(resumeId: string) {
     resendPastPrompt,
     saveSettings,
     sendStarter,
+    sendText,
     sessionChars: getSessionChars(messages),
     sessionGenerating,
     settings,

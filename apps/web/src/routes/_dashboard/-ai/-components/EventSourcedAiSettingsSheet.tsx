@@ -1,19 +1,28 @@
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
+import { openRouterModelEndpointsQueryOptions } from "@/data-access-layer/openrouter/model-endpoints";
 import { ModelPicker } from "@/features/agentic-tools/ModelPicker";
+import { ProviderRoutingPicker } from "@/features/agentic-tools/ProviderRoutingPicker";
+import {
+  DEFAULT_AI_ROUTING,
+  resolveRouting,
+  type AiRouting,
+} from "@/features/agentic-tools/openrouter-routing";
+import { useOpenRouterModels } from "@/hooks/use-openrouter-models";
 import type { AiSettings } from "@/types/ai-settings";
+import { useQuery } from "@tanstack/react-query";
 import { Eye, EyeOff, KeyRound } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { isLocalMode } from "@/routes/_dashboard/resumes/$resumeId/-components/ResumeAiTab/resume-ai-types";
 import {
   EVENT_SOURCED_SYSTEM_PROMPT_MAX_CHARS,
@@ -22,7 +31,7 @@ import {
 
 const DEFAULT_MODEL = "deepseek/deepseek-chat-v3-0324";
 
-interface EventSourcedAiSettingsModalProps {
+interface EventSourcedAiSettingsSheetProps {
   open: boolean;
   settings: AiSettings | null;
   systemPrompt: string;
@@ -34,7 +43,7 @@ interface EventSourcedAiSettingsModalProps {
   onResetSystemPrompt: () => void;
 }
 
-export function EventSourcedAiSettingsModal({
+export function EventSourcedAiSettingsSheet({
   open,
   settings,
   systemPrompt,
@@ -44,48 +53,75 @@ export function EventSourcedAiSettingsModal({
   onSaveSettings,
   onSaveSystemPrompt,
   onResetSystemPrompt,
-}: EventSourcedAiSettingsModalProps) {
+}: EventSourcedAiSettingsSheetProps) {
   const [apiKey, setApiKey] = useState(settings?.apiKey ?? "");
   const [model, setModel] = useState(settings?.model ?? DEFAULT_MODEL);
+  const [routing, setRouting] = useState<AiRouting>(settings?.routing ?? DEFAULT_AI_ROUTING);
   const [promptDraft, setPromptDraft] = useState(systemPrompt);
   const [showKey, setShowKey] = useState(false);
   const promptDirty = promptDraft !== systemPrompt;
+
+  const { data: models } = useOpenRouterModels();
+  const { data: endpoints } = useQuery({
+    ...openRouterModelEndpointsQueryOptions(model),
+    enabled: open && !isLocalMode && model.length > 0,
+  });
 
   useEffect(() => {
     if (!open) return;
     setApiKey(settings?.apiKey ?? "");
     setModel(settings?.model ?? DEFAULT_MODEL);
+    setRouting(settings?.routing ?? DEFAULT_AI_ROUTING);
     setPromptDraft(systemPrompt);
     setShowKey(false);
   }, [open, settings, systemPrompt]);
 
+  function handleModelChange(next: string) {
+    if (next === model) return;
+    setModel(next);
+    if (routing.mode === "custom") setRouting({ ...routing, providers: [] });
+  }
+
   function handleSave() {
     if (!isLocalMode) {
       if (!apiKey.trim() || !model) return;
-      onSaveSettings({ apiKey: apiKey.trim(), model, storageType: "local" });
+      onSaveSettings({
+        apiKey: apiKey.trim(),
+        model,
+        storageType: "local",
+        routing: resolveRouting(
+          model,
+          routing,
+          endpoints,
+          models?.find((candidate) => candidate.id === model),
+        ),
+      });
     }
     if (promptDirty) onSaveSystemPrompt(promptDraft);
     onOpenChange(false);
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex max-h-[92vh] flex-col gap-0 overflow-hidden p-0 sm:max-w-2xl">
-        <DialogHeader className="border-border/60 border-b px-6 py-4">
-          <DialogTitle>AI settings</DialogTitle>
-          <DialogDescription>
-            Provider, model, and system prompt. Stored in the local database and synced when sync is
-            on.
-          </DialogDescription>
-        </DialogHeader>
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent
+        side="right"
+        className="w-full gap-0 sm:max-w-xl lg:max-w-2xl"
+        data-test="event-sourced-ai-settings-sheet"
+      >
+        <SheetHeader className="border-border/60 border-b px-6 py-4">
+          <SheetTitle>AI settings</SheetTitle>
+          <SheetDescription>
+            Key, model, provider routing, and system prompt. Stored in the local database and synced
+            when sync is on.
+          </SheetDescription>
+        </SheetHeader>
 
-        <div className="flex flex-col gap-5 overflow-y-auto px-6 py-5">
+        <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto px-6 py-5">
           {isLocalMode ? (
             <p className="text-muted-foreground text-sm">Using LM Studio. No API key required.</p>
           ) : (
             <>
-              <div className="grid gap-2">
-                <Label htmlFor="event-sourced-api-key">OpenRouter API key</Label>
+              <SettingsSection title="OpenRouter API key">
                 <div className="relative">
                   <Input
                     id="event-sourced-api-key"
@@ -94,7 +130,9 @@ export function EventSourcedAiSettingsModal({
                     onChange={(event) => setApiKey(event.target.value)}
                     placeholder="sk-or-v1-..."
                     autoComplete="off"
+                    aria-label="OpenRouter API key"
                     className="pr-11"
+                    data-test="event-sourced-api-key-input"
                   />
                   <button
                     type="button"
@@ -105,21 +143,25 @@ export function EventSourcedAiSettingsModal({
                     {showKey ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
                   </button>
                 </div>
-              </div>
-              <div className="grid gap-2">
-                <Label>Model</Label>
-                <ModelPicker value={model} onChange={setModel} />
-              </div>
+              </SettingsSection>
+
+              <SettingsSection
+                title="Model"
+                aside={<span className="truncate font-mono text-xs">{model}</span>}
+              >
+                <ModelPicker value={model} onChange={handleModelChange} />
+              </SettingsSection>
+
+              <SettingsSection title="Provider routing">
+                <ProviderRoutingPicker modelId={model} value={routing} onChange={setRouting} />
+              </SettingsSection>
             </>
           )}
 
-          <div className="grid gap-2">
-            <div className="flex items-center justify-between gap-2">
-              <Label htmlFor="event-sourced-system-prompt">System prompt</Label>
-              <span className="text-muted-foreground text-xs">
-                {isCustomSystemPrompt || promptDirty ? "Custom" : "Default"}
-              </span>
-            </div>
+          <SettingsSection
+            title="System prompt"
+            aside={isCustomSystemPrompt || promptDirty ? "Custom" : "Default"}
+          >
             <Textarea
               id="event-sourced-system-prompt"
               value={promptDraft}
@@ -127,6 +169,7 @@ export function EventSourcedAiSettingsModal({
                 setPromptDraft(event.target.value.slice(0, EVENT_SOURCED_SYSTEM_PROMPT_MAX_CHARS))
               }
               rows={10}
+              aria-label="System prompt"
               className="min-h-40 font-mono text-xs leading-5"
               data-test="event-sourced-system-prompt-input"
             />
@@ -149,12 +192,18 @@ export function EventSourcedAiSettingsModal({
                 Reset default
               </Button>
             </div>
-          </div>
+          </SettingsSection>
         </div>
 
-        <DialogFooter className="border-border/60 border-t px-6 py-4">
+        <SheetFooter className="border-border/60 flex-row justify-end border-t px-6 py-4">
           {settings && !isLocalMode ? (
-            <Button type="button" variant="ghost" size="sm" onClick={onClearSettings}>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="mr-auto"
+              onClick={onClearSettings}
+            >
               Clear key
             </Button>
           ) : null}
@@ -169,8 +218,28 @@ export function EventSourcedAiSettingsModal({
             <KeyRound className="size-3.5" />
             Save
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
+  );
+}
+
+function SettingsSection({
+  title,
+  aside,
+  children,
+}: {
+  title: string;
+  aside?: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <section className="grid gap-2.5">
+      <div className="flex min-w-0 items-center justify-between gap-3">
+        <Label className="shrink-0">{title}</Label>
+        {aside ? <span className="text-muted-foreground min-w-0 text-xs">{aside}</span> : null}
+      </div>
+      {children}
+    </section>
   );
 }

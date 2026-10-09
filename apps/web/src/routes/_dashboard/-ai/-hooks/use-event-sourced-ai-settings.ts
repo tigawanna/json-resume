@@ -4,6 +4,7 @@ import {
   updateAppSettings,
 } from "@/data-access-layer/event-sourced/app-settings";
 import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
+import { DEFAULT_AI_ROUTING } from "@/features/agentic-tools/openrouter-routing";
 import type { AiSettings } from "@/types/ai-settings";
 import { eq, useLiveQuery } from "@tanstack/react-db";
 import { useEffect, useRef } from "react";
@@ -82,17 +83,22 @@ export function useEventSourcedAiSettings() {
     ? row.aiSystemPrompt.slice(0, EVENT_SOURCED_SYSTEM_PROMPT_MAX_CHARS)
     : DEFAULT_EVENT_SOURCED_SYSTEM_PROMPT;
 
-  const settings: AiSettings | null = apiKey ? { apiKey, model, storageType: "local" } : null;
+  const routing = row.aiRouting ?? DEFAULT_AI_ROUTING;
+
+  const settings: AiSettings | null = apiKey
+    ? { apiKey, model, storageType: "local", routing }
+    : null;
 
   function saveSettings(next: AiSettings) {
     updateAppSettings(db, {
       aiApiKey: next.apiKey.trim(),
       aiModel: next.model,
+      aiRouting: next.routing,
     });
   }
 
   function clearSettings() {
-    updateAppSettings(db, { aiApiKey: "", aiModel: "" });
+    updateAppSettings(db, { aiApiKey: "", aiModel: "", aiRouting: undefined });
   }
 
   function saveSystemPrompt(next: string) {

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { aiRoutingSchema } from "@/features/agentic-tools/openrouter-routing";
 import { resumeLayoutSchema } from "@/features/resume/resume-layout";
 
 /**
@@ -37,6 +38,8 @@ export const appSettingsSchema = z.object({
   aiModel: z.string().optional(),
   aiApiKey: z.string().optional(),
   aiSystemPrompt: z.string().optional(),
+  /** OpenRouter provider routing for the selected model. */
+  aiRouting: aiRoutingSchema.optional(),
   /** Column visibility + sort per list route (e.g. `resumes`). */
   listTablePrefs: z.record(z.string(), listTablePrefsSchema).optional(),
 });

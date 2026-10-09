@@ -3,13 +3,7 @@ import { useEventSourcedResumeAiChat } from "../-hooks/use-event-sourced-resume-
 import { EventSourcedAiChrome } from "./EventSourcedAiChrome";
 import { ToolApprovalCard } from "./ToolApprovalCard";
 
-export function EventSourcedResumeAiTab({
-  resumeId,
-  jobDescription,
-}: {
-  resumeId: string;
-  jobDescription: string;
-}) {
+export function EventSourcedResumeAiTab({ resumeId }: { resumeId: string }) {
   const chat = useEventSourcedResumeAiChat(resumeId);
 
   return (
@@ -19,8 +13,8 @@ export function EventSourcedResumeAiTab({
     >
       <EventSourcedAiChrome
         activeModelLabel={chat.activeModelLabel}
+        activeRoutingLabel={chat.activeRoutingLabel}
         clearDialogOpen={chat.clearDialogOpen}
-        hasJobDescription={!!jobDescription.trim()}
         hasMessages={chat.messages.length > 0}
         isBusy={chat.isLoading}
         isCustomSystemPrompt={chat.isCustomSystemPrompt}
@@ -35,14 +29,13 @@ export function EventSourcedResumeAiTab({
         onResetSystemPrompt={chat.resetSystemPrompt}
         onSaveSettings={chat.saveSettings}
         onSaveSystemPrompt={chat.saveSystemPrompt}
-        onSendStarter={(message) => void chat.sendStarter(message)}
         onSettingsOpenChange={chat.setSettingsOpen}
       />
 
       <ResumeAiConversationCard
-        activeModelLabel={chat.activeModelLabel}
         composerRef={chat.composerRef}
         createdResumeTo="/resumes/$resumeId"
+        currentResumeId={resumeId}
         endOfMessagesRef={chat.endOfMessagesRef}
         errorMessage={chat.chatErrorMessage}
         historyPending={false}
@@ -52,17 +45,9 @@ export function EventSourcedResumeAiTab({
         messages={chat.messages}
         onEditPastPrompt={chat.editPastPrompt}
         onInputChange={chat.setInput}
-        onKeyDown={chat.handleComposerKeyDown}
-        onOpenSettings={() => chat.setSettingsOpen(true)}
-        onRegenerate={() => void chat.reload()}
         onResendPastPrompt={(message) => void chat.resendPastPrompt(message)}
+        onSend={(message) => void chat.sendText(message)}
         onStop={chat.stop}
-        onSubmit={chat.handleSubmit}
-        savePending={false}
-        sessionChars={chat.sessionChars}
-        sessionGenerating={chat.sessionGenerating}
-        settings={chat.settings}
-        status={chat.status}
       />
 
       <ToolApprovalCard approvals={chat.approvals} resuming={chat.approvalsResuming} />
