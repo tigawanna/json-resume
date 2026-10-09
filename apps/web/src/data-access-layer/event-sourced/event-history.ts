@@ -139,6 +139,7 @@ export async function squashLocalEvents(
 
 type RowWriter = {
   has: (key: string) => boolean;
+  read: (key: string) => Record<string, unknown> | undefined;
   upsert: (key: string, row: Record<string, unknown>) => void;
   remove: (key: string) => void;
 };
@@ -146,6 +147,7 @@ type RowWriter = {
 function rowWriter<T extends object>(
   collection: {
     has: (key: string) => boolean;
+    get: (key: string) => T | undefined;
     insert: (row: T) => unknown;
     update: (key: string, updater: (draft: T) => void) => unknown;
     delete: (key: string) => unknown;
@@ -154,6 +156,10 @@ function rowWriter<T extends object>(
 ): RowWriter {
   return {
     has: (key) => collection.has(key),
+    read(key) {
+      const row = collection.get(key);
+      return row ? Object.fromEntries(Object.entries(row)) : undefined;
+    },
     upsert(key, row) {
       const parsed = schema.parse(row);
       if (!collection.has(key)) {
@@ -229,4 +235,78 @@ export function restoreToEvent(
     applied += 1;
   }
   return { ...plan, applied };
+}
+
+type RowRef = { collectionId: string; key: string };
+
+export type RevertResult = {
+  reverted: number;
+  /** Rows changed again after these events; reverting them would lose that edit. */
+  skipped: RowRef[];
+  /** Rows whose state before these events is no longer recorded. */
+  unknown: RowRef[];
+};
+
+/** JSON with sorted object keys, so equal rows compare equal regardless of key order. */
+function canonicalJson(value: unknown): string {
+  return JSON.stringify(value, (_key, nested: unknown) =>
+    typeof nested === "object" && nested !== null && !Array.isArray(nested)
+      ? Object.fromEntries(Object.entries(nested).sort(([a], [b]) => (a < b ? -1 : 1)))
+      : nested,
+  );
+}
+
+/**
+ * Compares only the payload's fields: live rows carry TanStack DB's virtual `$`
+ * fields. `updatedAt` is ignored because an earlier undo bumps it without
+ * changing content.
+ */
+function stillMatches(live: Record<string, unknown> | undefined, last: OutboxEntry) {
+  if (last.type === "delete") return live === undefined;
+  if (!live) return false;
+  return Object.entries(last.payload).every(
+    ([field, value]) =>
+      field === "updatedAt" || canonicalJson(live[field]) === canonicalJson(value),
+  );
+}
+
+/**
+ * Undoes a group of this device's own events (one assistant tool call): each
+ * row goes back to its state before the group's first event on it. Rows that
+ * no longer match the group's last event were edited since and are skipped.
+ * Like `restoreToEvent`, the undo is written as new events.
+ */
+export function revertOwnEvents(db: AppDb, entries: readonly OutboxEntry[]): RevertResult {
+  const writers: Record<string, RowWriter | undefined> = rowWriters(db);
+  const byRow = new Map<string, OutboxEntry[]>();
+  for (const entry of [...entries].sort((a, b) => a.localSeq - b.localSeq)) {
+    const row = rowOf({ collectionId: entry.collectionId, key: String(entry.key) });
+    byRow.set(row, [...(byRow.get(row) ?? []), entry]);
+  }
+
+  const now = Date.now();
+  const result: RevertResult = { reverted: 0, skipped: [], unknown: [] };
+  for (const events of byRow.values()) {
+    const first = events[0];
+    const last = events[events.length - 1];
+    const writer = writers[first.collectionId];
+    if (!writer) continue;
+    const key = String(first.key);
+    const ref = { collectionId: first.collectionId, key };
+    if (!stillMatches(writer.read(key), last)) {
+      result.skipped.push(ref);
+      continue;
+    }
+    if (first.type === "insert") {
+      if (writer.has(key)) writer.remove(key);
+    } else if (first.previous) {
+      const row = first.previous;
+      writer.upsert(key, typeof row.updatedAt === "number" ? { ...row, updatedAt: now } : row);
+    } else {
+      result.unknown.push(ref);
+      continue;
+    }
+    result.reverted += 1;
+  }
+  return result;
 }

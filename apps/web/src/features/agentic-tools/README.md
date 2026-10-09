@@ -20,7 +20,7 @@ Do not duplicate the query logic for future work. Add thin adapters that validat
 - `resume-tool-schemas.ts`
   Shared Zod input and output schemas. Use these schemas for MCP, oRPC procedures, OpenAPI generation, and TanStack AI tool wrappers.
 
-- `resume-tools.server.ts`, `job-tools.server.ts`
+- `resume-tools.server.ts`, `job-tools.server.ts`, `library-tools.server.ts`, `rank-tools.server.ts`
   Server-only implementations. These functions take `{ userId }` plus a validated input object, enforce ownership, and query Drizzle.
 
 - `resume-orpc.server.ts`
@@ -30,10 +30,10 @@ Do not duplicate the query logic for future work. Add thin adapters that validat
   Tiny server-only re-export for consumers like MCP and AI orchestration.
 
 - `definitions/`
-  Isomorphic TanStack AI `toolDefinition()`s (name, description, schemas, MCP annotations), one file per domain (`resume-`, `job-`, `library-definitions.ts`). The single contract for chat, MCP and oRPC. `tool-context.ts` holds `LocalToolContext` (browser tools, with the active résumé getter/setter) and `RemoteToolContext` (`{ userId }`).
+  Isomorphic TanStack AI `toolDefinition()`s (name, description, schemas, MCP annotations, `needsApproval`, `lazy`), one file per domain (`resume-`, `resume-edit-`, `job-`, `library-`, `assistant-definitions.ts`). The single contract for chat, MCP and oRPC. `tool-context.ts` holds `LocalToolContext` (browser tools, with the active résumé getter/setter) and `RemoteToolContext` (`{ userId }`).
 
 - `shared/`
-  Pure isomorphic logic both implementations call: `resume-view.ts` (the `get_resume` output), `job-view.ts` (job rows) and `search-page.ts` (search terms and paging).
+  Pure isomorphic logic both implementations call: `resume-view.ts` (the `get_resume` output), `job-view.ts` (job rows), `library-view.ts` (library hits), `rank.ts` (keyword scorer), `search-page.ts` (search terms and paging) and `playbooks.ts` (the `get_playbook` text).
 
 - `remote-tools.server.ts`
   `def.server<RemoteToolContext>()` wrappers around the functions in `resume-tools.server.ts`. `remoteResumeTools` is the list MCP serves.
@@ -124,11 +124,9 @@ curl -X POST "$APP_URL/api/agentic/library/search" \
 
 ## TanStack AI Layer
 
-The first slice is implemented:
-
-- `src/routes/_dashboard/-ai/-utils/stream-resume-chat.server.ts` — TanStack AI orchestration; builds the adapter and streams the chat with `maxIterations(16)`. Tools are declared without server implementations.
-- `openrouter-models.ts` — full `OPENROUTER_MODELS` runtime array + derived `OpenRouterModel` type. The `@tanstack/ai-openrouter` package ships the model list only in TypeScript source (not in the compiled dist), so this file is the runtime source of truth.
-- `AiSettingsPanel.tsx` — collapsible settings card rendered inside the AI tab. Houses the API key input, searchable model combobox, and storage type toggle.
+- `src/routes/_dashboard/-ai/-utils/stream-resume-chat.server.ts` — TanStack AI orchestration; builds the adapter and streams the chat with `maxIterations(16)` and `lazyToolsConfig: { includeDescription: "first-sentence" }`. Tools are declared without server implementations.
+- `ModelPicker.tsx` — searchable model list fetched live from the OpenRouter API (`hooks/use-openrouter-models.ts`, `services/openrouter/`).
+- `AiSettingsPanel.tsx` — collapsible settings card rendered inside the AI tab. Houses the API key input, model picker, and storage type toggle.
 - `src/routes/api/ai/event-sourced-resume-tailor.ts` — session-protected SSE route; extracts `apiKey` and `model` from the request body and forwards them to `streamEventSourcedResumeAgentChat`.
 - `src/routes/_dashboard/-ai/-components/EventSourcedResumeAiTab.tsx` — reads credentials from the browser and passes them in the `useChat` body on every request.
 
@@ -142,6 +140,12 @@ Current AI tools (`definitions/chat-tool-definitions.ts`, with browser implement
 - `clone_resume`, `create_resume`, `tailor_resume_for_job` (each makes the new résumé active), `rank_resumes_for_job`
 - `open_resume` (navigates once the reply finishes and carries the conversation to the target résumé)
 - `list_jobs`, `get_job`, `save_job`, `update_job`, `attach_job` (`jobId: null` detaches)
+- `get_playbook` (the tool order for edit_resume, pasted_job, tailored_copy, fill_from_library, import_resume; static text, so the prompt stays short)
+- `undo_last_ai_change` (reverts the last write tool call; call again to step further back)
+
+Rarely used tools are `lazy: true` (`create_resume`, `update_job`, `set_contacts`, `set_links`, `set_notes`, `reorder_section`, `replace_resume_document`, `undo_last_ai_change`). The model sees them by name and first sentence in TanStack AI's `__lazy__tool__discovery__` tool and loads a schema only when it needs one. Only client-only tools are lazy; `get_playbook` stays client-only because its steps name the browser write tools.
+
+Undo: every write tool runs through `journaled()` in `client-tools.ts`, which records the outbox `localSeq` range of that call on `LocalToolContext.changes` (in memory, per chat tab). The event hook allocates the first `localSeq` of each transaction synchronously, so a call owns the transactions that start inside its range. `revertOwnEvents` in `event-history.ts` puts each touched row back to its state before the call (inserted rows are removed), written as new events. Rows edited again since (by the user or another device) are skipped and reported.
 
 The prompt only names the active résumé's job (id and label); the model calls `get_job` when it needs the posting text. `list_jobs` and `get_job` also run remotely (MCP tools and `POST /jobs/list`, `POST /jobs/get`), sharing `shared/job-view.ts` with the local versions. `rank_resumes_for_job` runs remotely too (`POST /resumes/rank-for-job`), sharing the keyword scorer in `shared/rank.ts`.
 
@@ -173,9 +177,7 @@ Relevant files:
 
 ### Switching Models
 
-The `AiSettingsPanel` combobox lists every model in `openrouter-models.ts`. The default is `deepseek/deepseek-chat-v3-0324` — cheap and capable for resume tailoring. Any model in the list can be selected; the string is passed verbatim to OpenRouter.
-
-To add a newly released model: append its OpenRouter model id to `OPENROUTER_MODELS` in `openrouter-models.ts`. The `OpenRouterModel` type is derived from that array so no other changes are needed.
+The model picker lists the models OpenRouter currently serves (live API), with free-only and cheapest-first filters. The chosen id is passed verbatim to OpenRouter, so new models need no code change.
 
 ### Local Development with LM Studio
 
@@ -198,12 +200,12 @@ Steps:
 
 The adapter reuse works because the `@openrouter/sdk` `SDKOptions` accepts a `serverURL` override, and LM Studio's API is OpenAI-compatible.
 
-The current assistant is intentionally conservative:
+The assistant's ground rules (system prompt in `system-prompt.ts`):
 
-1. It can inspect the active resume and search reusable blocks.
-2. It should not invent work history or metrics.
-3. It only saves a new draft when the user explicitly asks.
-4. It is a first integration slice, not the final tailoring workflow.
+1. It edits the active résumé in place with granular tools; it copies only when the user asks for a copy or variant.
+2. It reuses library material (`rank_library_for_job`, `search_library`, `attach_library_items`) before writing new content.
+3. It never invents work history or metrics.
+4. Whole-résumé rewrites need the user's approval, and its last change can be undone.
 
 ## Important Constraints
 
@@ -221,10 +223,7 @@ The current assistant is intentionally conservative:
 
 ## Future Tool Ideas
 
-Add these only when the first API and agent loop are working:
-
-- `rank_resume_blocks_for_job`
-- `create_tailored_resume_draft`
 - `diff_resume_documents`
+- `search_library` sections for certifications, volunteering and languages
 
-For ranking or tailoring tools, keep model calls outside `resume-tools.server.ts` unless the tool is explicitly AI-powered. The current file should stay mostly deterministic database logic.
+Keep model calls out of the `*-tools.server.ts` files unless a tool is explicitly AI-powered; they should stay deterministic database logic.

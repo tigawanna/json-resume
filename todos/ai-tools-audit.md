@@ -358,7 +358,29 @@ projects and talks; skills and summaries resolve by text through `set_skills` / 
 
 - [x] Approval UI for `needsApproval` tools (bound `interrupts` / `resolveInterrupt`), done in
       Batch 3
-- [ ] `lazy: true` on rare tools + `lazyToolsConfig`, and `get_playbook`
-- [ ] Remove casts in `buildTextAdapter` / `chat()`
+- [x] `lazy: true` on rare tools + `lazyToolsConfig`, and `get_playbook`
+- [ ] Remove casts in `buildTextAdapter` / `chat()` (the `chat()` casts went in Batch 3; the
+      adapter casts are waiting on a decision, see below)
 - [x] Adopt `@tanstack/ai-mcp` `createMCPServer` (done ahead of Batch 1, see "MCP hosting")
-- [ ] README refresh, and `undo_last_ai_change` (P2)
+- [x] README refresh, and `undo_last_ai_change` (P2)
+
+Lazy: `create_resume`, `update_job`, `set_contacts`, `set_links`, `set_notes`,
+`reorder_section`, `replace_resume_document` and `undo_last_ai_change`, with
+`includeDescription: "first-sentence"`, so each description's first sentence has to stand on
+its own (a test checks the lazy set and that sentence). Only client-only tools are lazy.
+`get_playbook` is eager, so the prompt can point to it without a discovery round trip, and
+client-only, unlike the matrix above: its steps name browser write tools that MCP callers
+don't have. The prompt keeps the core rules and points to the five playbooks for the call
+order; a test checks that every snake_case name in a playbook is a real tool or playbook.
+
+`undo_last_ai_change`: `journaled()` in `client-tools.ts` records each write call's outbox
+`localSeq` range on `LocalToolContext.changes`, in memory per chat tab. The event hook
+allocates a transaction's first `localSeq` synchronously when the tool writes, so a call owns
+the transactions that start inside its range. Timestamps can't separate calls made in the
+same millisecond. `revertOwnEvents` (`event-history.ts`) restores each row to the `previous` of
+its first event, removing rows that were inserted. It skips rows that no longer match the last
+event (ignoring `updatedAt`, which an earlier undo bumps) and writes the undo as new events.
+
+`buildTextAdapter` still casts the model id: `createOpenRouterText` only accepts ids from the
+package's `OPENROUTER_CHAT_MODELS`, but the picker offers OpenRouter's live list and LM Studio
+takes any local id. A type guard against that list would reject those models.

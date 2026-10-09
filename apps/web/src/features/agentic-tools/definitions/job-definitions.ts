@@ -26,6 +26,7 @@ export const updateJobToolDefinition = toolDefinition({
     "Change a tracked job's status, notes, company, title, location, url or posting text. Only the fields you pass change.",
   inputSchema: updateJobToolInputSchema,
   outputSchema: updateJobToolOutputSchema,
+  lazy: true,
 });
 
 export const getJobToolDefinition = toolDefinition({

@@ -1,3 +1,4 @@
+import { getPlaybookToolDefinition, undoLastAiChangeToolDefinition } from "./assistant-definitions";
 import {
   attachJobToolDefinition,
   getJobToolDefinition,
@@ -39,7 +40,8 @@ import {
 
 /**
  * Every tool the in-app assistant can call. The server sends these to the model;
- * `client-tools.ts` must implement exactly these names.
+ * `client-tools.ts` must implement exactly these names. `lazy` ones are only
+ * listed by name until the model discovers them.
  */
 export const chatToolDefinitions = [
   listResumesToolDefinition,
@@ -72,4 +74,6 @@ export const chatToolDefinitions = [
   saveJobToolDefinition,
   updateJobToolDefinition,
   attachJobToolDefinition,
+  getPlaybookToolDefinition,
+  undoLastAiChangeToolDefinition,
 ] as const;

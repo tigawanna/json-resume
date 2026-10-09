@@ -1,4 +1,8 @@
 import {
+  getPlaybookToolDefinition,
+  undoLastAiChangeToolDefinition,
+} from "@/features/agentic-tools/definitions/assistant-definitions";
+import {
   attachJobToolDefinition,
   getJobToolDefinition,
   listJobsToolDefinition,
@@ -73,8 +77,19 @@ import {
   saveLocalJob,
   updateLocalJob,
 } from "./local-job-tools";
+import { trackAiChange, undoLocalAiChange } from "./local-undo-tools";
+import { getPlaybook } from "@/features/agentic-tools/shared/playbooks";
 
 type ClientToolCtx = { context: LocalToolContext };
+
+/** Write tools record what they changed, so `undo_last_ai_change` can revert it. */
+function journaled<TInput, TOutput>(
+  tool: string,
+  run: (context: LocalToolContext, input: TInput) => TOutput | Promise<TOutput>,
+) {
+  return (input: TInput, ctx: ClientToolCtx) =>
+    trackAiChange(ctx.context, tool, () => run(ctx.context, input));
+}
 
 export const listResumesClientTool = listResumesToolDefinition.client((input, ctx: ClientToolCtx) =>
   listLocalResumes(ctx.context, input),
@@ -93,7 +108,7 @@ export const searchLibraryClientTool = searchLibraryToolDefinition.client(
 );
 
 export const attachLibraryItemsClientTool = attachLibraryItemsToolDefinition.client(
-  (input, ctx: ClientToolCtx) => attachLocalLibraryItems(ctx.context, input),
+  journaled(attachLibraryItemsToolDefinition.name, attachLocalLibraryItems),
 );
 
 export const rankLibraryForJobClientTool = rankLibraryForJobToolDefinition.client(
@@ -101,67 +116,67 @@ export const rankLibraryForJobClientTool = rankLibraryForJobToolDefinition.clien
 );
 
 export const updateResumeDetailsClientTool = updateResumeDetailsToolDefinition.client(
-  (input, ctx: ClientToolCtx) => updateLocalResumeDetails(ctx.context, input),
+  journaled(updateResumeDetailsToolDefinition.name, updateLocalResumeDetails),
 );
 
-export const setSummaryClientTool = setSummaryToolDefinition.client((input, ctx: ClientToolCtx) =>
-  setLocalSummary(ctx.context, input),
+export const setSummaryClientTool = setSummaryToolDefinition.client(
+  journaled(setSummaryToolDefinition.name, setLocalSummary),
 );
 
 export const setExperienceBulletsClientTool = setExperienceBulletsToolDefinition.client(
-  (input, ctx: ClientToolCtx) => setLocalExperienceBullets(ctx.context, input),
+  journaled(setExperienceBulletsToolDefinition.name, setLocalExperienceBullets),
 );
 
-export const setSkillsClientTool = setSkillsToolDefinition.client((input, ctx: ClientToolCtx) =>
-  setLocalSkills(ctx.context, input),
+export const setSkillsClientTool = setSkillsToolDefinition.client(
+  journaled(setSkillsToolDefinition.name, setLocalSkills),
 );
 
 export const upsertExperienceClientTool = upsertExperienceToolDefinition.client(
-  (input, ctx: ClientToolCtx) => upsertLocalExperience(ctx.context, input),
+  journaled(upsertExperienceToolDefinition.name, upsertLocalExperience),
 );
 
 export const upsertProjectClientTool = upsertProjectToolDefinition.client(
-  (input, ctx: ClientToolCtx) => upsertLocalProject(ctx.context, input),
+  journaled(upsertProjectToolDefinition.name, upsertLocalProject),
 );
 
 export const upsertEducationClientTool = upsertEducationToolDefinition.client(
-  (input, ctx: ClientToolCtx) => upsertLocalEducation(ctx.context, input),
+  journaled(upsertEducationToolDefinition.name, upsertLocalEducation),
 );
 
-export const upsertTalkClientTool = upsertTalkToolDefinition.client((input, ctx: ClientToolCtx) =>
-  upsertLocalTalk(ctx.context, input),
+export const upsertTalkClientTool = upsertTalkToolDefinition.client(
+  journaled(upsertTalkToolDefinition.name, upsertLocalTalk),
 );
 
-export const setContactsClientTool = setContactsToolDefinition.client((input, ctx: ClientToolCtx) =>
-  setLocalContacts(ctx.context, input),
+export const setContactsClientTool = setContactsToolDefinition.client(
+  journaled(setContactsToolDefinition.name, setLocalContacts),
 );
 
-export const setLinksClientTool = setLinksToolDefinition.client((input, ctx: ClientToolCtx) =>
-  setLocalLinks(ctx.context, input),
+export const setLinksClientTool = setLinksToolDefinition.client(
+  journaled(setLinksToolDefinition.name, setLocalLinks),
 );
 
-export const setNotesClientTool = setNotesToolDefinition.client((input, ctx: ClientToolCtx) =>
-  setLocalNotes(ctx.context, input),
+export const setNotesClientTool = setNotesToolDefinition.client(
+  journaled(setNotesToolDefinition.name, setLocalNotes),
 );
 
 export const reorderSectionClientTool = reorderSectionToolDefinition.client(
-  (input, ctx: ClientToolCtx) => reorderLocalSection(ctx.context, input),
+  journaled(reorderSectionToolDefinition.name, reorderLocalSection),
 );
 
 export const removeFromResumeClientTool = removeFromResumeToolDefinition.client(
-  (input, ctx: ClientToolCtx) => removeLocalFromResume(ctx.context, input),
+  journaled(removeFromResumeToolDefinition.name, removeLocalFromResume),
 );
 
 export const replaceResumeDocumentClientTool = replaceResumeDocumentToolDefinition.client(
-  (input, ctx: ClientToolCtx) => replaceLocalResumeDocument(ctx.context, input),
+  journaled(replaceResumeDocumentToolDefinition.name, replaceLocalResumeDocument),
 );
 
-export const cloneResumeClientTool = cloneResumeToolDefinition.client((input, ctx: ClientToolCtx) =>
-  cloneLocalResume(ctx.context, input),
+export const cloneResumeClientTool = cloneResumeToolDefinition.client(
+  journaled(cloneResumeToolDefinition.name, cloneLocalResume),
 );
 
 export const createResumeClientTool = createResumeToolDefinition.client(
-  (input, ctx: ClientToolCtx) => createLocalResume(ctx.context, input),
+  journaled(createResumeToolDefinition.name, createLocalResume),
 );
 
 export const rankResumesForJobClientTool = rankResumesForJobToolDefinition.client(
@@ -169,7 +184,7 @@ export const rankResumesForJobClientTool = rankResumesForJobToolDefinition.clien
 );
 
 export const tailorResumeForJobClientTool = tailorResumeForJobToolDefinition.client(
-  (input, ctx: ClientToolCtx) => tailorLocalResumeForJob(ctx.context, input),
+  journaled(tailorResumeForJobToolDefinition.name, tailorLocalResumeForJob),
 );
 
 export const openResumeClientTool = openResumeToolDefinition.client((input, ctx: ClientToolCtx) =>
@@ -184,16 +199,24 @@ export const getJobClientTool = getJobToolDefinition.client((input, ctx: ClientT
   getLocalJob(ctx.context, input),
 );
 
-export const saveJobClientTool = saveJobToolDefinition.client((input, ctx: ClientToolCtx) =>
-  saveLocalJob(ctx.context, input),
+export const saveJobClientTool = saveJobToolDefinition.client(
+  journaled(saveJobToolDefinition.name, saveLocalJob),
 );
 
-export const updateJobClientTool = updateJobToolDefinition.client((input, ctx: ClientToolCtx) =>
-  updateLocalJob(ctx.context, input),
+export const updateJobClientTool = updateJobToolDefinition.client(
+  journaled(updateJobToolDefinition.name, updateLocalJob),
 );
 
-export const attachJobClientTool = attachJobToolDefinition.client((input, ctx: ClientToolCtx) =>
-  attachLocalJob(ctx.context, input),
+export const attachJobClientTool = attachJobToolDefinition.client(
+  journaled(attachJobToolDefinition.name, attachLocalJob),
+);
+
+export const getPlaybookClientTool = getPlaybookToolDefinition.client((input) =>
+  getPlaybook(input),
+);
+
+export const undoLastAiChangeClientTool = undoLastAiChangeToolDefinition.client(
+  (input, ctx: ClientToolCtx) => undoLocalAiChange(ctx.context, input),
 );
 
 export const eventSourcedResumeAiClientTools = [
@@ -227,4 +250,6 @@ export const eventSourcedResumeAiClientTools = [
   saveJobClientTool,
   updateJobClientTool,
   attachJobClientTool,
+  getPlaybookClientTool,
+  undoLastAiChangeClientTool,
 ];

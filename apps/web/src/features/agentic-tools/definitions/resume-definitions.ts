@@ -58,6 +58,7 @@ export const createResumeToolDefinition = toolDefinition({
     "Create a new résumé: blank, or imported from a complete parsed document when the user pastes a whole résumé. It becomes active unless makeActive is false.",
   inputSchema: createResumeToolInputSchema,
   outputSchema: createResumeToolOutputSchema,
+  lazy: true,
 });
 
 export const openResumeToolDefinition = toolDefinition({

@@ -10,7 +10,7 @@ import {
   createEventSourcedChatPersistence,
   handOverChatMessages,
 } from "../-utils/event-sourced-chat-persistence";
-import type { LocalToolContext } from "@/features/agentic-tools/definitions/tool-context";
+import type { AiChange, LocalToolContext } from "@/features/agentic-tools/definitions/tool-context";
 import type { WorkbenchTab } from "@/features/agentic-tools/resume-tool-schemas";
 import type { ToolApprovalRequest } from "../-components/ToolApprovalCard";
 import { useEventSourcedAiSettings } from "./use-event-sourced-ai-settings";
@@ -57,6 +57,7 @@ export function useEventSourcedResumeAiChat(resumeId: string) {
   const activeResumeIdRef = useRef(activeResumeId);
   activeResumeIdRef.current = activeResumeId;
   const pendingOpenRef = useRef<{ resumeId: string; tab: WorkbenchTab } | null>(null);
+  const changesRef = useRef<AiChange[]>([]);
 
   const { data: activeJobRows } = useLiveQuery(
     (q) =>
@@ -85,6 +86,7 @@ export function useEventSourcedResumeAiChat(resumeId: string) {
     openResume(nextResumeId, tab) {
       pendingOpenRef.current = { resumeId: nextResumeId, tab };
     },
+    changes: changesRef.current,
   };
 
   const chat = useChat({

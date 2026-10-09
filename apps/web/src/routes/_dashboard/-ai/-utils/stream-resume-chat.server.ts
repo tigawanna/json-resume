@@ -64,6 +64,7 @@ export async function streamEventSourcedResumeAgentChat(
       }),
     ],
     tools: [...chatToolDefinitions],
+    lazyToolsConfig: { includeDescription: "first-sentence" },
     agentLoopStrategy: maxIterations(MAX_AGENT_ITERATIONS),
   });
 }

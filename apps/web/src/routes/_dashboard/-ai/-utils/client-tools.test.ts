@@ -19,4 +19,22 @@ describe("in-app assistant tools", () => {
 
     expect(gated).toEqual(["replace_resume_document"]);
   });
+
+  it("keeps rarely used tools behind lazy discovery, each with a first sentence for the catalog", () => {
+    const lazy = chatToolDefinitions.filter((definition) => definition.lazy);
+
+    expect(lazy.map((definition) => definition.name).sort()).toEqual([
+      "create_resume",
+      "reorder_section",
+      "replace_resume_document",
+      "set_contacts",
+      "set_links",
+      "set_notes",
+      "undo_last_ai_change",
+      "update_job",
+    ]);
+    for (const definition of lazy) {
+      expect(definition.description).toMatch(/^[^.!?]{10,}[.!?](\s|$)/);
+    }
+  });
 });

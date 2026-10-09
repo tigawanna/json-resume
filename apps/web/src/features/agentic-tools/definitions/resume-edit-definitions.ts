@@ -106,6 +106,7 @@ export const reorderSectionToolDefinition = toolDefinition({
     "Reorder the items of one résumé section. Pass ids in the order they should appear; unlisted items follow in their current order.",
   inputSchema: reorderSectionToolInputSchema,
   outputSchema: reorderSectionToolOutputSchema,
+  lazy: true,
 });
 
 export const setContactsToolDefinition = toolDefinition({
@@ -113,6 +114,7 @@ export const setContactsToolDefinition = toolDefinition({
   description: "Replace the contact details in a résumé's header (email, phone, location, …).",
   inputSchema: setContactsToolInputSchema,
   outputSchema: setContactsToolOutputSchema,
+  lazy: true,
 });
 
 export const setLinksToolDefinition = toolDefinition({
@@ -120,6 +122,7 @@ export const setLinksToolDefinition = toolDefinition({
   description: "Replace the links in a résumé's header (GitHub, LinkedIn, portfolio, …).",
   inputSchema: setLinksToolInputSchema,
   outputSchema: setLinksToolOutputSchema,
+  lazy: true,
 });
 
 export const setNotesToolDefinition = toolDefinition({
@@ -127,6 +130,7 @@ export const setNotesToolDefinition = toolDefinition({
   description: "Replace a résumé's notes section, such as a cover letter. Empty text clears it.",
   inputSchema: setNotesToolInputSchema,
   outputSchema: setNotesToolOutputSchema,
+  lazy: true,
 });
 
 export const replaceResumeDocumentToolDefinition = toolDefinition({
@@ -136,4 +140,5 @@ export const replaceResumeDocumentToolDefinition = toolDefinition({
   inputSchema: replaceResumeDocumentToolInputSchema,
   outputSchema: replaceResumeDocumentToolOutputSchema,
   needsApproval: true,
+  lazy: true,
 });

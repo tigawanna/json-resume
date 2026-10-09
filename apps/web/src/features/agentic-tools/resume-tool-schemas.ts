@@ -729,6 +729,44 @@ export const setNotesToolOutputSchema = z.object({
   notes: z.object({ id: z.string(), label: z.string(), text: z.string() }).nullable(),
 });
 
+// ─── Assistant (playbooks, undo) ──────────────────────────────────────────────
+
+export const playbookNameSchema = z.enum([
+  "edit_resume",
+  "pasted_job",
+  "tailored_copy",
+  "fill_from_library",
+  "import_resume",
+]);
+
+export const getPlaybookToolInputSchema = z.object({
+  name: playbookNameSchema.describe("The workflow to read the steps for."),
+});
+
+export const getPlaybookToolOutputSchema = z.object({
+  name: playbookNameSchema,
+  when: z.string(),
+  steps: z.array(z.string()),
+});
+
+export const undoLastAiChangeToolInputSchema = z.object({});
+
+const changedRowSchema = z.object({ collectionId: z.string(), key: z.string() });
+
+export const undoLastAiChangeToolOutputSchema = z.object({
+  undoneTool: z.string().nullable().describe("The tool call that was reverted; null when none."),
+  reverted: z.number().int(),
+  skipped: z
+    .array(changedRowSchema)
+    .describe("Rows edited again after that call, left as they are."),
+  unknown: z.array(changedRowSchema).describe("Rows whose earlier state is no longer recorded."),
+  remaining: z.number().int().describe("How many earlier assistant changes can still be undone."),
+  activeResumeId: z
+    .string()
+    .nullable()
+    .describe("Null when the undo removed the active résumé; call set_active_resume."),
+});
+
 export type ListResumesToolInput = z.input<typeof listResumesToolInputSchema>;
 export type GetResumeToolInput = z.input<typeof getResumeToolInputSchema>;
 export type GetResumeToolOutput = z.infer<typeof getResumeToolOutputSchema>;
@@ -802,3 +840,8 @@ export type SetLinksToolInput = z.input<typeof setLinksToolInputSchema>;
 export type SetLinksToolOutput = z.infer<typeof setLinksToolOutputSchema>;
 export type SetNotesToolInput = z.input<typeof setNotesToolInputSchema>;
 export type SetNotesToolOutput = z.infer<typeof setNotesToolOutputSchema>;
+export type PlaybookName = z.infer<typeof playbookNameSchema>;
+export type GetPlaybookToolInput = z.input<typeof getPlaybookToolInputSchema>;
+export type GetPlaybookToolOutput = z.infer<typeof getPlaybookToolOutputSchema>;
+export type UndoLastAiChangeToolInput = z.input<typeof undoLastAiChangeToolInputSchema>;
+export type UndoLastAiChangeToolOutput = z.infer<typeof undoLastAiChangeToolOutputSchema>;

@@ -37,6 +37,7 @@ export function useLocalToolDb() {
         openResume: (resumeId, tab) => {
           opened.push(`${resumeId}:${tab}`);
         },
+        changes: [],
       };
     },
 
