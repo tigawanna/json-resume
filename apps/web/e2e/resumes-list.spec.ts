@@ -9,7 +9,7 @@ import {
 import { signUp } from "./support/auth";
 import { createAndOpenResume } from "./support/resume-workflow";
 
-test("manages resumes from the list route", async ({ page }) => {
+test("manages resumes from the list route", { tag: "@smoke" }, async ({ page }) => {
   const { uniqueId } = await signUp(page);
   const name = `List Resume ${uniqueId}`;
   const copyName = `${name} (copy)`;

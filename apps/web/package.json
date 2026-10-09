@@ -9,6 +9,7 @@
     "test": "vp test run",
     "test:watch": "vp test",
     "test:e2e": "playwright test",
+    "test:e2e:smoke": "E2E_SMOKE=true playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:all": "pnpm test && pnpm test:e2e",
     "check-types": "tsgo -b --noEmit",

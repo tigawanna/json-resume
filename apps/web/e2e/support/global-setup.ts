@@ -22,6 +22,9 @@ const WARM_ROUTES = [
   "/settings",
 ];
 
+/** Routes the `@smoke` tests open; the résumé detail route is warmed below either way. */
+const SMOKE_WARM_ROUTES = ["/resumes", "/experiences"];
+
 /**
  * The dev server compiles each route on first request, which can take longer than an
  * `expect` timeout when every worker hits a cold route at once. Visit them once up front.
@@ -36,7 +39,8 @@ export default async function globalSetup(config: FullConfig) {
     const page = await browser.newPage({ baseURL });
     page.setDefaultTimeout(120_000);
     await signUp(page);
-    for (const route of WARM_ROUTES) {
+    const routes = process.env.E2E_SMOKE === "true" ? SMOKE_WARM_ROUTES : WARM_ROUTES;
+    for (const route of routes) {
       await page.goto(route);
       await waitForLocalDb(page);
       await page.locator("[data-test$='-page']").first().waitFor();

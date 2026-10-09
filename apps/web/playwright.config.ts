@@ -7,9 +7,12 @@ const baseURL = `http://127.0.0.1:${port}`;
 const githubMockURL = `http://127.0.0.1:${githubMockPort}`;
 const databasePath = fileURLToPath(new URL("./.test/db/e2e.sqlite", import.meta.url));
 const databaseUrl = process.env.TEST_DATABASE_URL ?? `file:${databasePath}`;
+/** `pnpm test:e2e:smoke`: only `@smoke` tests, and global setup warms only their routes. */
+const smoke = process.env.E2E_SMOKE === "true";
 
 export default defineConfig({
   testDir: "./e2e",
+  ...(smoke ? { grep: /@smoke/ } : {}),
   globalSetup: "./e2e/support/global-setup.ts",
   // Each full page load re-reads the local SQLite DB from OPFS (~10s under parallel load).
   timeout: 120_000,
