@@ -1,5 +1,6 @@
 import { ResumeAiConversationCard } from "@/routes/_dashboard/resumes/$resumeId/-components/ResumeAiTab/ResumeAiConversationCard";
 import { useEventSourcedResumeAiChat } from "../-hooks/use-event-sourced-resume-ai";
+import { isApiKeyErrorMessage } from "../-utils/is-api-key-error";
 import { EventSourcedAiChrome } from "./EventSourcedAiChrome";
 import { ToolApprovalCard } from "./ToolApprovalCard";
 
@@ -14,6 +15,7 @@ export function EventSourcedResumeAiTab({ resumeId }: { resumeId: string }) {
       <EventSourcedAiChrome
         activeModelLabel={chat.activeModelLabel}
         activeRoutingLabel={chat.activeRoutingLabel}
+        apiKeyRejected={isApiKeyErrorMessage(chat.chatErrorMessage)}
         clearDialogOpen={chat.clearDialogOpen}
         hasMessages={chat.messages.length > 0}
         isBusy={chat.isLoading}

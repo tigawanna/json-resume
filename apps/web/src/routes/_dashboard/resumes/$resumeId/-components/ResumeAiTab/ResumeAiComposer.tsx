@@ -9,7 +9,15 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { resumeListQueryOptions } from "@/data-access-layer/resume/resume-query-options";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { ArrowUp, ChevronsUpDown, FileText, LoaderCircle, Plus, Square } from "lucide-react";
+import {
+  AlertTriangle,
+  ArrowUp,
+  ChevronsUpDown,
+  FileText,
+  LoaderCircle,
+  Plus,
+  Square,
+} from "lucide-react";
 import { useState, type KeyboardEvent, type RefObject } from "react";
 import { CreditsDisplay } from "./ResumeAiCredits";
 
@@ -94,7 +102,7 @@ export function ResumeAiComposer({
 
   return (
     <>
-      <div className="mx-auto w-full max-w-3xl">
+      <div className="mx-auto w-full max-w-3xl ">
         {errorMessage ? (
           <p
             className="mb-3 rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive"
@@ -112,13 +120,13 @@ export function ResumeAiComposer({
           data-test="resume-ai-composer"
         >
           <div
-            className="overflow-hidden rounded-2xl border border-base-content/15 bg-base-200 shadow-sm"
+            className="overflow-hidden rounded-2xl border border-base-content/15 bg-primary/10 text-base-content shadow-sm"
             data-test="resume-ai-input-shell"
           >
             <div className="relative">
               <div
                 aria-hidden
-                className="pointer-events-none absolute inset-0 overflow-hidden px-4 pt-3 pb-2 text-base break-words whitespace-pre-wrap text-base-content md:text-base"
+                className="pointer-events-none absolute inset-0 overflow-hidden px-4 pt-3 pb-2 text-base wrap-break-word whitespace-pre-wrap md:text-base"
               >
                 <MentionHighlight text={`${input} `} names={referenced.map((r) => r.name)} />
               </div>
@@ -166,6 +174,18 @@ export function ResumeAiComposer({
                   ) : null}
                   <ChevronsUpDown className="size-3 shrink-0 opacity-60" />
                 </button>
+                {errorMessage ? (
+                  <button
+                    type="button"
+                    onClick={onOpenSettings}
+                    title={`${errorMessage} - open AI settings`}
+                    aria-label="Error. Open AI settings"
+                    className="text-destructive hover:bg-destructive/10 flex shrink-0 items-center rounded-md p-1 transition-colors"
+                    data-test="resume-ai-error-indicator"
+                  >
+                    <AlertTriangle className="size-4" />
+                  </button>
+                ) : null}
               </div>
               <div className="flex shrink-0 items-center gap-1">
                 {isBusy ? (

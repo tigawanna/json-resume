@@ -1,4 +1,3 @@
-import { FileSearch, Sparkles } from "lucide-react";
 import type { UIMessage } from "@tanstack/ai-react";
 import { ResumeAiComposer } from "./ResumeAiComposer";
 import { ResumeAiMessage } from "./ResumeAiMessage";
@@ -25,16 +24,27 @@ export function ResumeAiConversationCard({
   createdResumeTo,
   ...composerProps
 }: ResumeAiConversationCardProps) {
+  const isEmpty = messages.length === 0;
+
+  if (isEmpty && !historyPending) {
+    return (
+      <div
+        className="flex min-h-[calc(100dvh-16rem)] flex-col justify-center"
+        data-test="resume-ai-conversation"
+      >
+        <ResumeAiComposer {...composerProps} isReady={isReady} />
+      </div>
+    );
+  }
+
   return (
     <div
       className="flex min-h-120 flex-col overflow-hidden rounded-xl"
       data-test="resume-ai-conversation"
     >
       <div className="flex min-h-96 flex-col gap-5 px-1 py-2">
-        {messages.length === 0 && historyPending ? (
+        {isEmpty && historyPending ? (
           <ConversationSkeleton />
-        ) : messages.length === 0 ? (
-          <EmptyConversation isReady={isReady} />
         ) : (
           messages.map((message) => (
             <ResumeAiMessage
@@ -70,24 +80,6 @@ function ConversationSkeleton() {
           </div>
         </div>
       ))}
-    </div>
-  );
-}
-
-function EmptyConversation({ isReady }: { isReady: boolean }) {
-  return (
-    <div className="flex h-full flex-1 flex-col items-center justify-center py-12 text-center">
-      <div className="mb-4 flex size-12 items-center justify-center rounded-2xl bg-[color-mix(in_oklch,var(--color-primary)_13%,transparent)] text-primary">
-        {isReady ? <Sparkles className="size-5" /> : <FileSearch className="size-5" />}
-      </div>
-      <p className="text-sm font-medium">
-        {isReady ? "Start a resume tailoring chat" : "Connect an AI provider first"}
-      </p>
-      <p className="mt-1 max-w-md text-sm leading-6 text-muted-foreground">
-        {isReady
-          ? "Ask for a specific edit, fit check, or rewrite."
-          : "Configure your OpenRouter API key in settings to unlock the assistant."}
-      </p>
     </div>
   );
 }

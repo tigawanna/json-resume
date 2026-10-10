@@ -21,7 +21,7 @@ import {
 import { useOpenRouterModels } from "@/hooks/use-openrouter-models";
 import type { AiSettings } from "@/types/ai-settings";
 import { useQuery } from "@tanstack/react-query";
-import { Eye, EyeOff, KeyRound } from "lucide-react";
+import { AlertTriangle, Eye, EyeOff, KeyRound } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { isLocalMode } from "@/routes/_dashboard/resumes/$resumeId/-components/ResumeAiTab/resume-ai-types";
 import {
@@ -33,6 +33,7 @@ const DEFAULT_MODEL = "deepseek/deepseek-chat-v3-0324";
 
 interface EventSourcedAiSettingsSheetProps {
   open: boolean;
+  apiKeyRejected: boolean;
   settings: AiSettings | null;
   systemPrompt: string;
   isCustomSystemPrompt: boolean;
@@ -45,6 +46,7 @@ interface EventSourcedAiSettingsSheetProps {
 
 export function EventSourcedAiSettingsSheet({
   open,
+  apiKeyRejected,
   settings,
   systemPrompt,
   isCustomSystemPrompt,
@@ -122,6 +124,19 @@ export function EventSourcedAiSettingsSheet({
           ) : (
             <>
               <SettingsSection title="OpenRouter API key">
+                {apiKeyRejected ? (
+                  <div
+                    role="alert"
+                    className="flex items-start gap-2 rounded-lg bg-destructive/10 px-3 py-2.5 text-sm text-destructive"
+                    data-test="event-sourced-api-key-invalid"
+                  >
+                    <AlertTriangle className="mt-0.5 size-4 shrink-0" />
+                    <p>
+                      Invalid API key. OpenRouter rejected the saved key. Check it for typos or
+                      create a new one at openrouter.ai/keys.
+                    </p>
+                  </div>
+                ) : null}
                 <div className="relative">
                   <Input
                     id="event-sourced-api-key"
@@ -131,6 +146,7 @@ export function EventSourcedAiSettingsSheet({
                     placeholder="sk-or-v1-..."
                     autoComplete="off"
                     aria-label="OpenRouter API key"
+                    aria-invalid={apiKeyRejected || undefined}
                     className="pr-11"
                     data-test="event-sourced-api-key-input"
                   />

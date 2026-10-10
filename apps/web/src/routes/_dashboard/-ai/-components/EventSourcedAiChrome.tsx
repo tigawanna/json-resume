@@ -17,6 +17,7 @@ import { EventSourcedAiSettingsSheet } from "./EventSourcedAiSettingsSheet";
 interface EventSourcedAiChromeProps {
   activeModelLabel: string | null;
   activeRoutingLabel: string | null;
+  apiKeyRejected: boolean;
   clearDialogOpen: boolean;
   hasMessages: boolean;
   isBusy: boolean;
@@ -36,11 +37,11 @@ interface EventSourcedAiChromeProps {
 }
 
 export function EventSourcedAiChrome({
+  apiKeyRejected,
   clearDialogOpen,
   hasMessages,
   isBusy,
   isCustomSystemPrompt,
-  isReady,
   settings,
   settingsOpen,
   systemPrompt,
@@ -102,6 +103,7 @@ export function EventSourcedAiChrome({
 
       <EventSourcedAiSettingsSheet
         open={settingsOpen}
+        apiKeyRejected={apiKeyRejected}
         settings={settings}
         systemPrompt={systemPrompt}
         isCustomSystemPrompt={isCustomSystemPrompt}

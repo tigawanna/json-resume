@@ -54,7 +54,7 @@ export function ResumeAiMessage({
         className={cn(
           "min-w-0 max-w-[min(44rem,calc(100%-3rem))] overflow-hidden rounded-2xl px-4 py-3 shadow-sm ring-1",
           role === "user"
-            ? "rounded-tr-md bg-primary text-primary-foreground ring-[color-mix(in_oklch,var(--color-primary)_34%,transparent)]"
+            ? "rounded-tr-md bg-primary/10 text-primary/70  ring-[color-mix(in_oklch,var(--color-primary)_34%,transparent)]"
             : "rounded-tl-md bg-base-100 text-foreground ring-[color-mix(in_oklch,var(--color-base-content)_9%,transparent)]",
         )}
       >
