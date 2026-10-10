@@ -1,0 +1,404 @@
+import { useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
+import { cn } from "@/lib/utils";
+import type { PromptAreaProps, PromptAreaHandle } from "./types";
+import { usePromptArea } from "./use-prompt-area";
+import { BLUR_DELAY_MS } from "./use-prompt-area-events";
+import { TriggerPopover } from "./trigger-popover";
+import { AnimatedPlaceholder } from "./animated-placeholder";
+import { ImageStrip } from "./image-strip";
+import { FileStrip } from "./file-strip";
+
+/**
+ * PromptArea - A lightweight rich text input with trigger support.
+ *
+ * Uses contentEditable to support inline chips (immutable pills) for
+ * mentions, commands, and other triggered tokens. Each trigger character
+ * can be configured to show a dropdown or fire a callback.
+ *
+ * @example
+ * ```tsx
+ * const [segments, setSegments] = useState<Segment[]>([])
+ *
+ * <PromptArea
+ *   value={segments}
+ *   onChange={setSegments}
+ *   triggers={[
+ *     { char: '@', position: 'any', mode: 'dropdown', onSearch: searchUsers },
+ *     { char: '/', position: 'start', mode: 'dropdown', onSearch: searchCommands },
+ *     { char: '#', position: 'any', mode: 'dropdown', onSearch: searchTags },
+ *   ]}
+ *   placeholder="Type a message..."
+ *   onSubmit={handleSubmit}
+ *   autoGrow
+ * />
+ * ```
+ */
+export function PromptArea({
+  value,
+  onChange,
+  triggers,
+  placeholder,
+  className,
+  disabled = false,
+  markdown,
+  markdownHeadings,
+  normalizeBullets,
+  onSubmit,
+  onEscape,
+  onChipClick,
+  onChipAdd,
+  onChipDelete,
+  onLinkClick,
+  onPaste,
+  onUndo,
+  onRedo,
+  minHeight = 80,
+  maxHeight,
+  autoFocus = false,
+  autoGrow = false,
+  "aria-label": ariaLabel,
+  "data-test-id": dataTestId,
+  images = [],
+  imagePosition = "above",
+  onImagePaste,
+  onImageRemove,
+  onImageClick,
+  files = [],
+  filePosition = "above",
+  onFileRemove,
+  onFileClick,
+  onKeyDown,
+  onBlur,
+  onRawPaste,
+  submitOnEnter,
+  spellCheck,
+  maxLength,
+  "aria-describedby": ariaDescribedBy,
+  ref,
+}: PromptAreaProps & { ref?: React.Ref<PromptAreaHandle> }) {
+  const {
+    editorRef,
+    activeTrigger,
+    suggestions,
+    suggestionsLoading,
+    suggestionsError,
+    selectedSuggestionIndex,
+    handleInput,
+    handleKeyDown,
+    handleClick,
+    handleMouseDown,
+    selectSuggestion,
+    dismissTrigger,
+    handle,
+    triggerRect,
+    eventHandlers,
+  } = usePromptArea({
+    value,
+    onChange,
+    triggers,
+    disabled,
+    onSubmit,
+    onEscape,
+    onChipClick,
+    onChipAdd,
+    onChipDelete,
+    onLinkClick,
+    onPaste,
+    onRawPaste,
+    onUndo,
+    onRedo,
+    onImagePaste,
+    markdown,
+    markdownHeadings,
+    normalizeBullets,
+    submitOnEnter,
+    maxLength,
+  });
+
+  // Expose imperative handle via ref
+  useImperativeHandle(ref, () => handle, [handle]);
+
+  // Auto-focus on mount
+  useEffect(() => {
+    if (autoFocus) {
+      editorRef.current?.focus();
+    }
+  }, [autoFocus, editorRef]);
+
+  // -----------------------------------------------------------------------
+  // Auto-grow: expand on focus/input, shrink on blur
+  // -----------------------------------------------------------------------
+
+  const [isFocused, setIsFocused] = useState(false);
+  const [editorHeight, setEditorHeight] = useState<number | undefined>(undefined);
+
+  const syncHeight = useCallback(() => {
+    const el = editorRef.current;
+    if (!el) return;
+    // Temporarily set height to auto so scrollHeight reflects true content height
+    el.style.height = "auto";
+    const contentHeight = el.scrollHeight;
+    el.style.height = `${contentHeight}px`;
+    setEditorHeight(contentHeight);
+  }, [editorRef]);
+
+  // One height measurement per frame: the input handler and the value-change
+  // effect both request a sync on every keystroke, and each measurement is a
+  // forced reflow of the whole editor (the height:auto dance invalidates
+  // layout, then scrollHeight reads it). Coalescing them into a single
+  // pre-paint rAF callback halves the per-keystroke reflows without a
+  // visible frame at a stale height.
+  const heightRaf = useRef<number | null>(null);
+  const scheduleSyncHeight = useCallback(() => {
+    if (heightRaf.current !== null) return;
+    heightRaf.current = requestAnimationFrame(() => {
+      heightRaf.current = null;
+      syncHeight();
+    });
+  }, [syncHeight]);
+
+  useEffect(() => {
+    return () => {
+      if (heightRaf.current !== null) {
+        cancelAnimationFrame(heightRaf.current);
+        // Clear the guard too: StrictMode's dev double-mount runs this
+        // cleanup and re-runs the effect on the same component instance, and
+        // a stale id would latch scheduleSyncHeight closed forever.
+        heightRaf.current = null;
+      }
+    };
+  }, []);
+
+  const handleFocus = useCallback(() => {
+    if (!autoGrow) return;
+    setIsFocused(true);
+    syncHeight();
+  }, [autoGrow, syncHeight]);
+
+  const handleBlurWithShrink = useCallback(() => {
+    eventHandlers.onBlur();
+    if (!autoGrow) return;
+    setTimeout(() => {
+      const editor = editorRef.current;
+      if (!editor) return;
+      // Only shrink if focus truly left the component
+      const activeEl = document.activeElement;
+      if (activeEl && editor.parentElement?.contains(activeEl)) return;
+      setIsFocused(false);
+      setEditorHeight(undefined);
+    }, BLUR_DELAY_MS);
+  }, [eventHandlers, autoGrow, editorRef]);
+
+  const handleInputWithGrow = useCallback(() => {
+    handleInput();
+    if (autoGrow && isFocused) {
+      scheduleSyncHeight();
+    }
+  }, [handleInput, autoGrow, isFocused, scheduleSyncHeight]);
+
+  // Re-measure on value changes (chip insertion, undo/redo, programmatic updates)
+  useEffect(() => {
+    if (autoGrow && isFocused) {
+      scheduleSyncHeight();
+    }
+  }, [value, autoGrow, isFocused, scheduleSyncHeight]);
+
+  // -----------------------------------------------------------------------
+  // Overflow indicator: detect when collapsed content is clipped
+  // -----------------------------------------------------------------------
+
+  const [hasOverflow, setHasOverflow] = useState(false);
+  const overflowTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (!autoGrow) return;
+
+    const checkOverflow = () => {
+      if (isFocused) {
+        setHasOverflow(false);
+        return;
+      }
+      const el = editorRef.current;
+      if (!el) return;
+      setHasOverflow(el.scrollHeight > el.clientHeight);
+    };
+
+    // Delay the check so the CSS height transition (150ms) finishes first;
+    // on initial mount there is no transition so the check still runs quickly.
+    const delay = isFocused ? 0 : 160;
+    overflowTimerRef.current = setTimeout(checkOverflow, delay);
+    return () => {
+      if (overflowTimerRef.current !== null) {
+        clearTimeout(overflowTimerRef.current);
+      }
+    };
+  }, [autoGrow, isFocused, value, editorRef]);
+
+  // -----------------------------------------------------------------------
+  // Compute editor style
+  // -----------------------------------------------------------------------
+
+  const editorStyle = useMemo((): React.CSSProperties => {
+    if (!autoGrow) {
+      const style: React.CSSProperties = { minHeight: `${minHeight}px` };
+      if (maxHeight) {
+        style.maxHeight = `${maxHeight}px`;
+        style.overflowY = "auto";
+      }
+      return style;
+    }
+    return {
+      height: isFocused && editorHeight ? `${editorHeight}px` : `${minHeight}px`,
+      minHeight: `${minHeight}px`,
+      // Respect an explicit maxHeight; otherwise fall back to a viewport-relative
+      // cap so the editor never grows past the screen.
+      maxHeight: maxHeight ? `${maxHeight}px` : "70dvh",
+      overflowY: isFocused ? "auto" : "hidden",
+      // `min-height` is eased so consumers that animate it (e.g. the compact
+      // prompt area's collapse/expand) morph smoothly instead of snapping.
+      transition: "height 150ms ease-out, min-height 240ms cubic-bezier(0.33, 1, 0.68, 1)",
+    };
+  }, [autoGrow, minHeight, maxHeight, isFocused, editorHeight]);
+
+  // Run a consumer's onKeyDown first; if it calls preventDefault, skip all of
+  // PromptArea's built-in key handling (submit, trigger nav, etc.).
+  const handleKeyDownCombined = useCallback(
+    (e: React.KeyboardEvent<HTMLDivElement>) => {
+      onKeyDown?.(e);
+      if (e.defaultPrevented) return;
+      handleKeyDown(e);
+    },
+    [onKeyDown, handleKeyDown],
+  );
+
+  // Forward blur to the consumer (with relatedTarget) alongside the internal
+  // trigger-dismiss / auto-grow-shrink handling.
+  const handleBlurCombined = useCallback(
+    (e: React.FocusEvent<HTMLDivElement>) => {
+      onBlur?.(e);
+      // handleBlurWithShrink already calls eventHandlers.onBlur() and only
+      // shrinks when autoGrow is on, so it covers both modes.
+      handleBlurWithShrink();
+    },
+    [onBlur, handleBlurWithShrink],
+  );
+
+  const isEmpty =
+    value.length === 0 || (value.length === 1 && value[0].type === "text" && value[0].text === "");
+
+  const imageStrip =
+    images.length > 0 ? (
+      <ImageStrip
+        images={images}
+        onRemove={onImageRemove}
+        onClick={onImageClick}
+        className={imagePosition === "above" ? "pb-2" : "pt-2"}
+      />
+    ) : null;
+
+  const fileStrip =
+    files.length > 0 ? (
+      <FileStrip
+        files={files}
+        onRemove={onFileRemove}
+        onClick={onFileClick}
+        className={filePosition === "above" ? "pb-2" : "pt-2"}
+      />
+    ) : null;
+
+  // Typography (font-size/line-height) lives on the container, not the editor, so
+  // it cascades to the editor AND the placeholder overlays — and a consumer can
+  // override all three at once via `className` (e.g. `text-base leading-6`).
+  return (
+    <div className={cn("prompt-area-container relative text-sm leading-relaxed", className)}>
+      {imagePosition === "above" && imageStrip}
+      {filePosition === "above" && fileStrip}
+
+      {/* Editor + placeholder wrapper */}
+      <div className="relative">
+        <div
+          ref={editorRef}
+          contentEditable={!disabled}
+          suppressContentEditableWarning
+          role="textbox"
+          aria-label={ariaLabel ?? "Text input"}
+          aria-multiline="true"
+          aria-disabled={disabled || undefined}
+          aria-describedby={ariaDescribedBy}
+          data-test-id={dataTestId}
+          spellCheck={spellCheck}
+          className={cn(
+            "prompt-area-editor",
+            "w-full min-w-0 break-words whitespace-pre-wrap outline-none",
+            disabled && "cursor-not-allowed opacity-50",
+          )}
+          style={editorStyle}
+          onFocus={handleFocus}
+          onInput={autoGrow ? handleInputWithGrow : handleInput}
+          onKeyDown={handleKeyDownCombined}
+          onMouseDown={handleMouseDown}
+          onClick={handleClick}
+          onPaste={eventHandlers.onPaste}
+          onCopy={eventHandlers.onCopy}
+          onCut={eventHandlers.onCut}
+          onDrop={eventHandlers.onDrop}
+          onDragOver={eventHandlers.onDragOver}
+          onCompositionStart={eventHandlers.onCompositionStart}
+          onCompositionEnd={eventHandlers.onCompositionEnd}
+          onBlur={handleBlurCombined}
+        />
+
+        {/* Overflow gradient indicator – visible when auto-grow is collapsed and content is clipped */}
+        {autoGrow && hasOverflow && !isFocused && (
+          <div
+            aria-hidden="true"
+            className="pointer-events-auto absolute right-0 bottom-0 left-0 cursor-pointer"
+            style={{ height: "32px" }}
+            onClick={() => editorRef.current?.focus()}
+          >
+            <div
+              className="h-full w-full"
+              style={{
+                background:
+                  "linear-gradient(to bottom, transparent, color-mix(in srgb, var(--prompt-area-surface, var(--background)) 80%, transparent), var(--prompt-area-surface, var(--background)))",
+              }}
+            />
+          </div>
+        )}
+
+        {/* Placeholder overlay */}
+        {isEmpty &&
+          placeholder &&
+          (Array.isArray(placeholder) ? (
+            <AnimatedPlaceholder texts={placeholder} />
+          ) : (
+            <div
+              className="pointer-events-none absolute top-0 left-0 select-none"
+              style={{ color: "var(--prompt-area-placeholder, var(--muted-foreground))" }}
+              aria-hidden="true"
+            >
+              {placeholder}
+            </div>
+          ))}
+      </div>
+
+      {filePosition === "below" && fileStrip}
+      {imagePosition === "below" && imageStrip}
+
+      {/* Trigger suggestion popover */}
+      {activeTrigger && activeTrigger.config.mode === "dropdown" && (
+        <TriggerPopover
+          suggestions={suggestions}
+          loading={suggestionsLoading}
+          error={suggestionsError}
+          emptyMessage={activeTrigger.config.emptyMessage}
+          selectedIndex={selectedSuggestionIndex}
+          onSelect={selectSuggestion}
+          onDismiss={dismissTrigger}
+          triggerRect={triggerRect}
+          triggerChar={activeTrigger.config.char}
+        />
+      )}
+    </div>
+  );
+}

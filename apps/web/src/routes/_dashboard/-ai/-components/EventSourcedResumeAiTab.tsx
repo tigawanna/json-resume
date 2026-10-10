@@ -41,18 +41,16 @@ export function EventSourcedResumeAiTab({ resumeId }: { resumeId: string }) {
         sessionGenerating={chat.sessionGenerating}
         status={chat.status}
         onOpenSettings={() => chat.setSettingsOpen(true)}
-        composerRef={chat.composerRef}
+        promptAreaRef={chat.composerRef}
         createdResumeTo="/resumes/$resumeId"
         currentResumeId={resumeId}
         endOfMessagesRef={chat.endOfMessagesRef}
         errorMessage={chat.chatErrorMessage}
         historyPending={false}
-        input={chat.input}
         isBusy={chat.isLoading}
         isReady={chat.isReady}
         messages={chat.messages}
         onEditPastPrompt={chat.editPastPrompt}
-        onInputChange={chat.setInput}
         onResendPastPrompt={(message) => void chat.resendPastPrompt(message)}
         onSend={(message) => void chat.sendText(message)}
         onStop={chat.stop}

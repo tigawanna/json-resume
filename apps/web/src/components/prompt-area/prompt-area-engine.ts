@@ -1,0 +1,711 @@
+import type { Segment, ChipSegment, TriggerConfig, TriggerPosition, ActiveTrigger } from "./types";
+
+// ---------------------------------------------------------------------------
+// Serialization
+// ---------------------------------------------------------------------------
+
+/**
+ * Converts an array of segments to a plain text string.
+ * Chips are represented as `{trigger}{displayText}` (e.g., "@Alice").
+ */
+export function segmentsToPlainText(segments: Segment[]): string {
+  return segments
+    .map((seg) => {
+      if (seg.type === "text") return seg.text;
+      return `${seg.trigger}${seg.displayText}`;
+    })
+    .join("");
+}
+
+/**
+ * Converts plain text into a single text segment.
+ * Used for initial value conversion from plain strings.
+ */
+export function plainTextToSegments(text: string): Segment[] {
+  if (!text) return [];
+  return [{ type: "text", text }];
+}
+
+/**
+ * Truncates segments so their combined plain-text length is at most `maxLength`.
+ * Whole segments are kept while they fit; a text segment that crosses the limit
+ * is sliced to fit, and a chip that would cross the limit is dropped (a chip
+ * can't be partially represented).
+ */
+export function truncateSegmentsToLength(segments: Segment[], maxLength: number): Segment[] {
+  if (maxLength <= 0) return [];
+  const result: Segment[] = [];
+  let length = 0;
+  for (const seg of segments) {
+    const segLength =
+      seg.type === "text" ? seg.text.length : seg.trigger.length + seg.displayText.length;
+    if (length + segLength <= maxLength) {
+      result.push(seg);
+      length += segLength;
+      continue;
+    }
+    if (seg.type === "text") {
+      let remaining = maxLength - length;
+      if (remaining > 0) {
+        // Don't split a surrogate pair: if the cut lands right after a high
+        // surrogate, drop the incomplete code point instead of a lone surrogate.
+        const code = seg.text.charCodeAt(remaining - 1);
+        if (code >= 0xd800 && code <= 0xdbff) remaining -= 1;
+        if (remaining > 0) result.push({ type: "text", text: seg.text.slice(0, remaining) });
+      }
+    }
+    break;
+  }
+  return result;
+}
+
+// ---------------------------------------------------------------------------
+// Whitespace / word boundaries
+// ---------------------------------------------------------------------------
+
+/**
+ * Single source of truth for what counts as an inline-whitespace word boundary
+ * in the editor model: a space, newline, or tab.
+ *
+ * Trigger detection, paste auto-resolution, and position validation all rely
+ * on the *same* notion of a boundary — keeping it here prevents the three
+ * call sites from silently drifting apart (e.g. one handling tabs and the
+ * others not).
+ */
+export function isInlineWhitespace(char: string | undefined): boolean {
+  return char === " " || char === "\n" || char === "\t";
+}
+
+/**
+ * Builds a lookup from trigger character to its config. When two triggers
+ * share a character the first one wins, preserving the previous `Array.find`
+ * semantics while turning the per-character scan into an O(1) map read.
+ */
+function buildTriggerCharMap(triggers: TriggerConfig[]): Map<string, TriggerConfig> {
+  const map = new Map<string, TriggerConfig>();
+  for (const trigger of triggers) {
+    if (!map.has(trigger.char)) map.set(trigger.char, trigger);
+  }
+  return map;
+}
+
+// ---------------------------------------------------------------------------
+// Trigger position validation
+// ---------------------------------------------------------------------------
+
+/**
+ * Checks whether a trigger character at the given position in text
+ * is valid according to the position rule.
+ *
+ * @param text - The full text content
+ * @param charIndex - The index of the trigger character in the text
+ * @param position - The position rule to validate against
+ */
+export function isValidTriggerPosition(
+  text: string,
+  charIndex: number,
+  position: TriggerPosition,
+): boolean {
+  if (charIndex === 0) return true;
+
+  const prevChar = text[charIndex - 1];
+
+  if (position === "start") {
+    return prevChar === "\n";
+  }
+
+  // position === 'any': valid after any whitespace
+  return isInlineWhitespace(prevChar);
+}
+
+// ---------------------------------------------------------------------------
+// Trigger detection
+// ---------------------------------------------------------------------------
+
+/**
+ * Scans backwards from the cursor position to detect if the user is
+ * currently typing a trigger word.
+ *
+ * Returns the active trigger info, or null if no trigger is active.
+ *
+ * @param text - The full plain text content
+ * @param cursorPos - The cursor position (character offset from start)
+ * @param triggers - Available trigger configurations
+ */
+export function detectActiveTrigger(
+  text: string,
+  cursorPos: number,
+  triggers: TriggerConfig[],
+): ActiveTrigger | null {
+  if (!text || cursorPos === 0 || triggers.length === 0) return null;
+
+  const triggerByChar = buildTriggerCharMap(triggers);
+
+  // Scan backwards from cursor to find the nearest trigger character.
+  // Stop at whitespace (trigger word has ended) or start of text.
+  for (let i = cursorPos - 1; i >= 0; i--) {
+    const char = text[i];
+
+    // If we hit whitespace before finding a trigger, check if this whitespace
+    // is immediately followed by a trigger character
+    if (isInlineWhitespace(char)) {
+      // The character after this whitespace could be a trigger
+      if (i + 1 < cursorPos) {
+        const nextChar = text[i + 1];
+        const matchingTrigger = triggerByChar.get(nextChar);
+        if (matchingTrigger && isValidTriggerPosition(text, i + 1, matchingTrigger.position)) {
+          return {
+            config: matchingTrigger,
+            startOffset: i + 1,
+            query: text.slice(i + 2, cursorPos),
+          };
+        }
+      }
+      // No trigger found after this whitespace, stop searching
+      return null;
+    }
+
+    // Check if this character is a trigger character
+    const matchingTrigger = triggerByChar.get(char);
+    if (matchingTrigger && isValidTriggerPosition(text, i, matchingTrigger.position)) {
+      return {
+        config: matchingTrigger,
+        startOffset: i,
+        query: text.slice(i + 1, cursorPos),
+      };
+    }
+  }
+
+  return null;
+}
+
+// ---------------------------------------------------------------------------
+// Chip resolution
+// ---------------------------------------------------------------------------
+
+/**
+ * Resolves an active trigger into a chip within the segments array.
+ * Replaces the trigger text (trigger char + query) with a chip segment.
+ *
+ * @param segments - Current document segments
+ * @param activeTrigger - The active trigger to resolve
+ * @param chip - The chip data (value, displayText, optional data)
+ * @returns New segments array with the chip inserted, and the new cursor position
+ */
+export function resolveChip(
+  segments: Segment[],
+  activeTrigger: ActiveTrigger,
+  chip: { value: string; displayText: string; data?: unknown; autoResolved?: boolean },
+): { segments: Segment[]; cursorOffset: number } {
+  const triggerStart = activeTrigger.startOffset;
+  const triggerEnd = triggerStart + 1 + activeTrigger.query.length; // +1 for trigger char
+
+  // Build the new segments by mapping plain text positions back to segment boundaries
+  const newSegments: Segment[] = [];
+  let offset = 0;
+
+  for (const seg of segments) {
+    if (seg.type === "chip") {
+      const chipText = `${seg.trigger}${seg.displayText}`;
+      const chipStart = offset;
+      const chipEnd = offset + chipText.length;
+
+      // If the trigger range overlaps with this chip, something is wrong.
+      // Chips should not be partially replaced.
+      if (chipEnd <= triggerStart || chipStart >= triggerEnd) {
+        newSegments.push(seg);
+      }
+      offset = chipEnd;
+    } else {
+      const textStart = offset;
+      const textEnd = offset + seg.text.length;
+
+      if (textEnd <= triggerStart) {
+        // Entirely before the trigger - keep as-is
+        newSegments.push(seg);
+      } else if (textStart >= triggerEnd) {
+        // Entirely after the trigger - keep as-is
+        newSegments.push(seg);
+      } else {
+        // This text segment contains (part of) the trigger range
+        const beforeText = seg.text.slice(0, Math.max(0, triggerStart - textStart));
+        const afterText = seg.text.slice(Math.min(seg.text.length, triggerEnd - textStart));
+
+        if (beforeText) {
+          newSegments.push({ type: "text", text: beforeText });
+        }
+
+        const newChip: ChipSegment = {
+          type: "chip",
+          trigger: activeTrigger.config.char,
+          value: chip.value,
+          displayText: chip.displayText,
+          ...(chip.data !== undefined ? { data: chip.data } : {}),
+          ...(chip.autoResolved ? { autoResolved: true } : {}),
+        };
+        newSegments.push(newChip);
+
+        // Add trailing space after chip, then any remaining text
+        if (afterText) {
+          newSegments.push({ type: "text", text: " " + afterText.replace(/^\s/, "") });
+        } else {
+          newSegments.push({ type: "text", text: " " });
+        }
+      }
+
+      offset = textEnd;
+    }
+  }
+
+  // Merge adjacent text segments
+  const merged = mergeAdjacentTextSegments(newSegments);
+
+  // Cursor should be placed after the chip + trailing space.
+  // Find the *last* matching chip so duplicates resolve correctly.
+  let lastChipEndOffset = -1;
+  let runningOffset = 0;
+  for (const seg of merged) {
+    if (seg.type === "text") {
+      runningOffset += seg.text.length;
+    } else {
+      runningOffset += seg.trigger.length + seg.displayText.length;
+      if (
+        seg.value === chip.value &&
+        seg.displayText === chip.displayText &&
+        seg.trigger === activeTrigger.config.char
+      ) {
+        lastChipEndOffset = runningOffset;
+      }
+    }
+  }
+  // +1 accounts for the trailing space after the chip
+  const cursorOffset = lastChipEndOffset === -1 ? runningOffset : lastChipEndOffset + 1;
+
+  return { segments: merged, cursorOffset };
+}
+
+// ---------------------------------------------------------------------------
+// Chip removal
+// ---------------------------------------------------------------------------
+
+/**
+ * Removes a chip at the given segment index and merges adjacent text segments.
+ *
+ * @param segments - Current document segments
+ * @param index - The segment index to remove
+ * @returns New segments array with the chip removed
+ */
+export function removeChipAtIndex(segments: Segment[], index: number): Segment[] {
+  if (index < 0 || index >= segments.length) return segments;
+  if (segments[index].type !== "chip") return segments;
+
+  const result = [...segments.slice(0, index), ...segments.slice(index + 1)];
+  return mergeAdjacentTextSegments(result);
+}
+
+/**
+ * Reverts an auto-resolved chip at the given segment index back to plain text.
+ * The text includes the trigger character + display text (e.g., "#readme").
+ *
+ * @param segments - Current document segments
+ * @param index - The segment index to revert
+ * @returns New segments with the chip replaced by text, or null if not applicable
+ */
+export function revertChipAtIndex(
+  segments: Segment[],
+  index: number,
+): { segments: Segment[]; revertedText: string } | null {
+  if (index < 0 || index >= segments.length) return null;
+  const seg = segments[index];
+  if (seg.type !== "chip" || !seg.autoResolved) return null;
+
+  const revertedText = `${seg.trigger}${seg.displayText}`;
+  const result = [
+    ...segments.slice(0, index),
+    { type: "text" as const, text: revertedText },
+    ...segments.slice(index + 1),
+  ];
+  return { segments: mergeAdjacentTextSegments(result), revertedText };
+}
+
+// ---------------------------------------------------------------------------
+// Paste: resolve trigger patterns in segments
+// ---------------------------------------------------------------------------
+
+/**
+ * Scans text segments for trigger patterns and auto-resolves them into chips.
+ * Only resolves triggers that have `resolveOnSpace: true`.
+ *
+ * Trigger patterns must appear at word boundaries: start of text, after
+ * whitespace, or after a newline. This avoids false positives like email
+ * addresses (user@example.com).
+ */
+export function resolveTriggersInSegments(
+  segments: Segment[],
+  triggers: TriggerConfig[],
+): Segment[] {
+  const autoResolveTriggers = triggers.filter((t) => t.resolveOnSpace);
+  if (autoResolveTriggers.length === 0) return segments;
+
+  const triggerByChar = buildTriggerCharMap(autoResolveTriggers);
+  const result: Segment[] = [];
+
+  for (const seg of segments) {
+    if (seg.type === "chip") {
+      result.push(seg);
+      continue;
+    }
+
+    const parts = splitTextByTriggerPatterns(seg.text, triggerByChar);
+    result.push(...parts);
+  }
+
+  return mergeAdjacentTextSegments(result);
+}
+
+/**
+ * Splits a text string into text and chip segments based on trigger patterns.
+ * A trigger pattern is: (start-of-string | whitespace) + trigger_char + word_chars
+ * followed by whitespace or end-of-string.
+ */
+function splitTextByTriggerPatterns(
+  text: string,
+  triggerByChar: Map<string, TriggerConfig>,
+): Segment[] {
+  if (!text) return [];
+
+  const segments: Segment[] = [];
+  let i = 0;
+
+  while (i < text.length) {
+    const char = text[i];
+
+    if (triggerByChar.has(char)) {
+      const isAtBoundary = i === 0 || isInlineWhitespace(text[i - 1]);
+
+      if (isAtBoundary) {
+        const trigger = triggerByChar.get(char);
+        if (trigger && isValidTriggerPosition(text, i, trigger.position)) {
+          let end = i + 1;
+          while (end < text.length && !isInlineWhitespace(text[end])) {
+            end++;
+          }
+
+          const query = text.slice(i + 1, end);
+          if (query.length > 0) {
+            // Treat both undefined and '' from onSelect as "no custom label"
+            // and fall back to the query — an empty displayText would render
+            // a blank chip.
+            const displayText = trigger.onSelect?.({ value: query, label: query }) || query;
+            segments.push({
+              type: "chip",
+              trigger: char,
+              value: query,
+              displayText,
+              autoResolved: true,
+            });
+            i = end;
+            continue;
+          }
+        }
+      }
+    }
+
+    const start = i;
+    i++;
+    while (i < text.length && !(triggerByChar.has(text[i]) && isInlineWhitespace(text[i - 1]))) {
+      i++;
+    }
+    segments.push({ type: "text", text: text.slice(start, i) });
+  }
+
+  return segments;
+}
+
+// ---------------------------------------------------------------------------
+// Text range replacement
+// ---------------------------------------------------------------------------
+
+/**
+ * Replaces a range of plain text within the segments array.
+ * Handles segment boundaries correctly, preserving chip segments.
+ *
+ * @param segments - Current document segments
+ * @param start - Start offset in plain text
+ * @param end - End offset in plain text
+ * @param replacement - The replacement text
+ * @returns New segments array with the replacement applied
+ */
+export function replaceTextRange(
+  segments: Segment[],
+  start: number,
+  end: number,
+  replacement: string,
+): Segment[] {
+  const newSegments: Segment[] = [];
+  let offset = 0;
+  let inserted = false;
+
+  for (const seg of segments) {
+    if (seg.type === "chip") {
+      const chipText = `${seg.trigger}${seg.displayText}`;
+      const chipStart = offset;
+      const chipEnd = offset + chipText.length;
+
+      // For insertion (start === end), insert before this chip if position matches
+      if (!inserted && start === end && chipStart === start) {
+        newSegments.push({ type: "text", text: replacement });
+        inserted = true;
+      }
+
+      if (chipEnd <= start || chipStart >= end) {
+        newSegments.push(seg);
+      }
+      // Chips within the range are removed
+      offset = chipEnd;
+    } else {
+      const textStart = offset;
+      const textEnd = offset + seg.text.length;
+
+      // Check if this segment contains the insertion/replacement point
+      const isBefore = start === end ? textEnd < start : textEnd <= start;
+      const isAfter = start === end ? textStart > end : textStart >= end;
+
+      if (isBefore) {
+        // Entirely before the range
+        newSegments.push(seg);
+      } else if (isAfter) {
+        // Entirely after the range
+        newSegments.push(seg);
+      } else {
+        // Overlaps with the range (or contains the insertion point)
+        const beforeText = seg.text.slice(0, Math.max(0, start - textStart));
+        const afterText = seg.text.slice(Math.min(seg.text.length, end - textStart));
+
+        if (beforeText) {
+          newSegments.push({ type: "text", text: beforeText });
+        }
+        // Insert replacement only once (when we first enter the range)
+        if (!inserted && textStart <= start) {
+          newSegments.push({ type: "text", text: replacement });
+          inserted = true;
+        }
+        if (afterText) {
+          newSegments.push({ type: "text", text: afterText });
+        }
+      }
+
+      offset = textEnd;
+    }
+  }
+
+  // Fallback: if replacement wasn't inserted (e.g., insertion at very end)
+  if (!inserted && replacement) {
+    newSegments.push({ type: "text", text: replacement });
+  }
+
+  return mergeAdjacentTextSegments(newSegments);
+}
+
+// ---------------------------------------------------------------------------
+// Markdown formatting shortcuts
+// ---------------------------------------------------------------------------
+
+/**
+ * Toggles markdown wrap markers around a selected text range.
+ * If the selection is already wrapped with the marker, unwraps it.
+ * If not wrapped, wraps it.
+ *
+ * @param segments - Current document segments
+ * @param selectionStart - Start offset in plain text
+ * @param selectionEnd - End offset in plain text
+ * @param marker - The markdown marker (e.g., '**' for bold, '*' for italic)
+ * @returns New segments and selection offsets, or null if selection is collapsed
+ */
+export function toggleMarkdownWrap(
+  segments: Segment[],
+  selectionStart: number,
+  selectionEnd: number,
+  marker: string,
+): { segments: Segment[]; selectionStart: number; selectionEnd: number } | null {
+  if (selectionStart === selectionEnd) return null;
+
+  const plainText = segmentsToPlainText(segments);
+  const markerLen = marker.length;
+
+  // Check if already wrapped
+  const hasOpeningMarker =
+    selectionStart >= markerLen &&
+    plainText.slice(selectionStart - markerLen, selectionStart) === marker;
+  const hasClosingMarker =
+    selectionEnd + markerLen <= plainText.length &&
+    plainText.slice(selectionEnd, selectionEnd + markerLen) === marker;
+
+  let isWrapped = hasOpeningMarker && hasClosingMarker;
+
+  // For single-char markers (e.g., '*'), ensure we're not matching
+  // inside a multi-char marker (e.g., '**')
+  if (isWrapped && markerLen === 1) {
+    const charBeforeOpening =
+      selectionStart > markerLen ? plainText[selectionStart - markerLen - 1] : "";
+    const charAfterClosing =
+      selectionEnd + markerLen < plainText.length ? plainText[selectionEnd + markerLen] : "";
+    if (charBeforeOpening === marker || charAfterClosing === marker) {
+      isWrapped = false;
+    }
+  }
+
+  if (isWrapped) {
+    // Unwrap: remove closing marker first (preserves start offsets), then opening
+    const afterClosing = replaceTextRange(segments, selectionEnd, selectionEnd + markerLen, "");
+    const afterOpening = replaceTextRange(
+      afterClosing,
+      selectionStart - markerLen,
+      selectionStart,
+      "",
+    );
+    return {
+      segments: afterOpening,
+      selectionStart: selectionStart - markerLen,
+      selectionEnd: selectionEnd - markerLen,
+    };
+  }
+
+  // Wrap: insert closing marker first (preserves start offsets), then opening
+  const afterClosing = replaceTextRange(segments, selectionEnd, selectionEnd, marker);
+  const afterOpening = replaceTextRange(afterClosing, selectionStart, selectionStart, marker);
+  return {
+    segments: afterOpening,
+    selectionStart: selectionStart + markerLen,
+    selectionEnd: selectionEnd + markerLen,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Inline markdown parsing
+// ---------------------------------------------------------------------------
+
+export type MarkdownToken =
+  | { type: "plain"; text: string }
+  | { type: "bold"; text: string }
+  | { type: "italic"; text: string }
+  | { type: "bold-italic"; text: string }
+  | { type: "url"; text: string };
+
+/**
+ * Parses text for simple inline markdown: bold, italic, bold-italic, and URLs.
+ * Does NOT handle block-level markdown (lists, headings, etc.).
+ */
+export function parseInlineMarkdown(text: string): MarkdownToken[] {
+  if (!text) return [];
+
+  const tokens: MarkdownToken[] = [];
+  // Regex patterns for inline markdown elements:
+  // 1. ***text*** or ___text___ -> bold-italic
+  // 2. **text** or __text__   -> bold
+  // 3. *text* or _text_       -> italic
+  // 4. https://... or http://... -> URL
+  const pattern = /(\*{3}(.+?)\*{3})|(\*{2}(.+?)\*{2})|(\*(.+?)\*)|(https?:\/\/[^\s)]+)/g;
+
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = pattern.exec(text)) !== null) {
+    // Add any plain text before this match
+    if (match.index > lastIndex) {
+      tokens.push({ type: "plain", text: text.slice(lastIndex, match.index) });
+    }
+
+    if (match[1] && match[2]) {
+      // ***bold-italic***
+      tokens.push({ type: "bold-italic", text: match[2] });
+    } else if (match[3] && match[4]) {
+      // **bold**
+      tokens.push({ type: "bold", text: match[4] });
+    } else if (match[5] && match[6]) {
+      // *italic*
+      tokens.push({ type: "italic", text: match[6] });
+    } else if (match[7]) {
+      // URL — trim trailing punctuation that's likely not part of the URL
+      let url = match[7];
+      while (url.length > 0 && /[.,;:!?]$/.test(url)) {
+        url = url.slice(0, -1);
+      }
+      if (url.length > 0) {
+        tokens.push({ type: "url", text: url });
+      }
+      const trimmed = match[7].slice(url.length);
+      if (trimmed) {
+        tokens.push({ type: "plain", text: trimmed });
+      }
+    }
+
+    lastIndex = match.index + match[0].length;
+  }
+
+  // Add any remaining plain text
+  if (lastIndex < text.length) {
+    tokens.push({ type: "plain", text: text.slice(lastIndex) });
+  }
+
+  return tokens;
+}
+
+// ---------------------------------------------------------------------------
+// Segment comparison
+// ---------------------------------------------------------------------------
+
+/**
+ * Shallow equality check for two segment arrays.
+ * Compares type, text, trigger, value, displayText, and autoResolved fields.
+ * Avoids JSON.stringify overhead for the common case.
+ */
+export function segmentsEqual(a: Segment[], b: Segment[]): boolean {
+  if (a === b) return true;
+  if (a.length !== b.length) return false;
+
+  for (let i = 0; i < a.length; i++) {
+    const sa = a[i];
+    const sb = b[i];
+    if (sa.type !== sb.type) return false;
+    if (sa.type === "text") {
+      if (sb.type !== "text" || sa.text !== sb.text) return false;
+    } else {
+      if (
+        sb.type !== "chip" ||
+        sa.trigger !== sb.trigger ||
+        sa.value !== sb.value ||
+        sa.displayText !== sb.displayText ||
+        sa.autoResolved !== sb.autoResolved
+      )
+        return false;
+    }
+  }
+  return true;
+}
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Merges adjacent text segments into single text segments.
+ * Also removes empty text segments.
+ */
+export function mergeAdjacentTextSegments(segments: Segment[]): Segment[] {
+  const result: Segment[] = [];
+
+  for (const seg of segments) {
+    if (seg.type === "text" && seg.text === "") continue;
+
+    const last = result[result.length - 1];
+    if (seg.type === "text" && last?.type === "text") {
+      // Merge with previous text segment
+      result[result.length - 1] = { type: "text", text: last.text + seg.text };
+    } else {
+      result.push(seg);
+    }
+  }
+
+  return result;
+}

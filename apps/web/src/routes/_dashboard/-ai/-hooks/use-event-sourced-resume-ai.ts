@@ -1,10 +1,11 @@
 import { useViewer } from "@/data-access-layer/auth/viewer";
 import { jobListLabel } from "@/data-access-layer/event-sourced/job-rows";
 import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
+import type { PromptAreaHandle } from "@/components/prompt-area/types";
 import { fetchServerSentEvents, useChat, type UIMessage } from "@tanstack/ai-react";
 import { eq, useLiveQuery } from "@tanstack/react-db";
 import { useRouter } from "@tanstack/react-router";
-import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
+import { useEffect, useRef, useState } from "react";
 import { eventSourcedResumeAiClientTools } from "../-utils/client-tools";
 import {
   createEventSourcedChatPersistence,
@@ -21,7 +22,6 @@ import {
 } from "@/routes/_dashboard/resumes/$resumeId/-components/ResumeAiTab/resume-ai-message-utils";
 
 export function useEventSourcedResumeAiChat(resumeId: string) {
-  const [input, setInput] = useState("");
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [clearDialogOpen, setClearDialogOpen] = useState(false);
   const {
@@ -37,7 +37,7 @@ export function useEventSourcedResumeAiChat(resumeId: string) {
   const { viewer } = useViewer();
   const router = useRouter();
   const endOfMessagesRef = useRef<HTMLDivElement>(null);
-  const composerRef = useRef<HTMLTextAreaElement>(null);
+  const composerRef = useRef<PromptAreaHandle>(null);
   const isReady = isLocalMode || !!settings;
   const userId = viewer.user?.id ?? "";
   const dbRef = useRef(db);
@@ -147,29 +147,10 @@ export function useEventSourcedResumeAiChat(resumeId: string) {
     endOfMessagesRef.current?.scrollIntoView({ block: "end" });
   }, [messages.length, isLoading, status]);
 
-  async function submitMessage() {
-    const trimmed = input.trim();
-    if (!trimmed || isLoading || !isReady) return;
-    await chat.sendMessage(trimmed);
-    setInput("");
-  }
-
   async function sendText(text: string) {
     const trimmed = text.trim();
     if (!trimmed || isLoading || !isReady) return;
     await chat.sendMessage(trimmed);
-    setInput("");
-  }
-
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    await submitMessage();
-  }
-
-  function handleComposerKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
-    if (event.key !== "Enter" || event.shiftKey || event.nativeEvent.isComposing) return;
-    event.preventDefault();
-    void submitMessage();
   }
 
   async function sendStarter(message: string) {
@@ -179,14 +160,13 @@ export function useEventSourcedResumeAiChat(resumeId: string) {
 
   function clearLocalConversation() {
     chat.clear();
-    setInput("");
     setClearDialogOpen(false);
   }
 
   function editPastPrompt(message: UIMessage) {
     const text = getMessageText(message);
     if (!text) return;
-    setInput(text);
+    composerRef.current?.setText(text);
     window.setTimeout(() => composerRef.current?.focus(), 0);
   }
 
@@ -222,9 +202,6 @@ export function useEventSourcedResumeAiChat(resumeId: string) {
     editPastPrompt,
     endOfMessagesRef,
     handleClearDialogOpenChange: setClearDialogOpen,
-    handleComposerKeyDown,
-    handleSubmit,
-    input,
     isLoading,
     isReady,
     messages,
@@ -241,7 +218,6 @@ export function useEventSourcedResumeAiChat(resumeId: string) {
     saveSystemPrompt,
     resetSystemPrompt,
     isCustomSystemPrompt,
-    setInput,
     setSettingsOpen,
     status,
     stop: chat.stop,

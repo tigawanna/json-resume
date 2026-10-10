@@ -1,10 +1,11 @@
 import type { UIMessage } from "@tanstack/ai-react";
-import { ResumeAiComposer } from "./ResumeAiComposer";
 import { ResumeAiMessage } from "./ResumeAiMessage";
+import { ResumeAiPromptComposer } from "./ResumeAiPromptComposer";
 import type { ResumeAiMessageAction } from "./resume-ai-types";
-import { useState, type ComponentProps, type RefObject } from "react";
+import { DIRECTIVES } from "./resume-ai-directives";
+import type { ComponentProps, RefObject } from "react";
 
-interface ResumeAiConversationCardProps extends ComponentProps<typeof ResumeAiComposer> {
+interface ResumeAiConversationCardProps extends ComponentProps<typeof ResumeAiPromptComposer> {
   endOfMessagesRef: RefObject<HTMLDivElement | null>;
   historyPending: boolean;
   isReady: boolean;
@@ -24,26 +25,15 @@ export function ResumeAiConversationCard({
   createdResumeTo,
   ...composerProps
 }: ResumeAiConversationCardProps) {
-  const [attachedDirectives, setAttachedDirectives] = useState<string[]>([]);
   const isEmpty = messages.length === 0;
 
-  function toggleDirective(command: string) {
-    setAttachedDirectives((current) =>
-      current.includes(command) ? current.filter((c) => c !== command) : [...current, command],
-    );
-  }
-
-  function sendWithDirectives(message: string) {
-    const directives = DIRECTIVES.filter((directive) =>
-      attachedDirectives.includes(directive.command),
-    );
-    if (directives.length === 0) return composerProps.onSend(message);
-    const directiveBlock = directives
-      .map((directive) => `${directive.command}: ${directive.instruction}`)
-      .join("\n");
-    const result = composerProps.onSend(`${message}\n\n${directiveBlock}`);
-    setAttachedDirectives([]);
-    return result;
+  function attachDirective(command: string) {
+    composerProps.promptAreaRef.current?.insertChip({
+      trigger: "/",
+      value: command,
+      displayText: command,
+    });
+    composerProps.promptAreaRef.current?.focus();
   }
 
   if (isEmpty && !historyPending) {
@@ -60,44 +50,27 @@ export function ResumeAiConversationCard({
             How can I help with your resume?
           </h2>
           <p className="text-sm text-muted-foreground">
-            Type a message, or attach a directive below to steer the response.
+            Type a message — attach a directive below or type <code>/</code> to steer the response.
+            Reference another resume with <code>@</code>.
           </p>
         </div>
-        <div className="w-full max-w-3xl">
-          <ResumeAiComposer
-            {...composerProps}
-            isReady={isReady}
-            onSend={sendWithDirectives}
-            attachedDirectives={attachedDirectives}
-            onRemoveDirective={(command) =>
-              setAttachedDirectives((current) => current.filter((c) => c !== command))
-            }
-          />
-        </div>
+        <ResumeAiPromptComposer {...composerProps} isReady={isReady} />
         <div
           className="flex w-full max-w-3xl flex-wrap justify-center gap-2"
           data-test="resume-ai-suggestions"
         >
-          {DIRECTIVES.map((directive) => {
-            const isAttached = attachedDirectives.includes(directive.command);
-            return (
-              <button
-                key={directive.command}
-                type="button"
-                disabled={!isReady || composerProps.isBusy}
-                aria-pressed={isAttached}
-                onClick={() => toggleDirective(directive.command)}
-                className={`rounded-full border px-4 py-1.5 text-xs transition-colors disabled:pointer-events-none disabled:opacity-50 ${
-                  isAttached
-                    ? "border-primary bg-primary/15 font-medium text-primary"
-                    : "border-border bg-base-200/50 text-base-content/70 hover:bg-base-200 hover:text-base-content"
-                }`}
-                data-test={`resume-ai-directive-${directive.command.slice(1)}`}
-              >
-                {directive.command} · {directive.label}
-              </button>
-            );
-          })}
+          {DIRECTIVES.map((directive) => (
+            <button
+              key={directive.command}
+              type="button"
+              disabled={!isReady || composerProps.isBusy}
+              onClick={() => attachDirective(directive.command)}
+              className="rounded-full border border-border bg-base-200/50 px-4 py-1.5 text-xs text-base-content/70 transition-colors hover:bg-base-200 hover:text-base-content disabled:pointer-events-none disabled:opacity-50"
+              data-test={`resume-ai-directive-${directive.command.slice(1)}`}
+            >
+              {directive.command} · {directive.label}
+            </button>
+          ))}
         </div>
       </div>
     );
@@ -126,37 +99,10 @@ export function ResumeAiConversationCard({
         )}
         <div ref={endOfMessagesRef} />
       </div>
-      <ResumeAiComposer {...composerProps} isReady={isReady} />
+      <ResumeAiPromptComposer {...composerProps} isReady={isReady} />
     </div>
   );
 }
-
-const DIRECTIVES = [
-  {
-    command: "/fit-analysis",
-    label: "Fit analysis",
-    instruction:
-      "Analyze how well my resume fits the job description I provide. Call out strong matches, gaps, and missing keywords.",
-  },
-  {
-    command: "/rewrite-summary",
-    label: "Rewrite summary",
-    instruction:
-      "Rewrite my professional summary to be more impactful, concrete, and results-oriented.",
-  },
-  {
-    command: "/improve-bullets",
-    label: "Improve bullets",
-    instruction:
-      "Improve the bullet points in my most recent role with stronger action verbs and quantified achievements.",
-  },
-  {
-    command: "/tailor",
-    label: "Tailor resume",
-    instruction:
-      "Tailor this resume for the specific role I describe, aligning wording and emphasis with the job description.",
-  },
-];
 
 function ConversationSkeleton() {
   return (
