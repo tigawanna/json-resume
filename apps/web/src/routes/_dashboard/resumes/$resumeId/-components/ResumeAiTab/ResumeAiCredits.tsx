@@ -1,14 +1,35 @@
 import { useOpenRouterCredits } from "@/hooks/use-openrouter-credits";
-import { Coins, Hash } from "lucide-react";
+import { Coins, Hash, TriangleAlert } from "lucide-react";
 
-export function CreditsDisplay({ apiKey, sessionChars }: { apiKey: string; sessionChars: number }) {
+export function CreditsDisplay({
+  apiKey,
+  sessionChars,
+  onOpenSettings,
+}: {
+  apiKey: string;
+  sessionChars: number;
+  onOpenSettings?: () => void;
+}) {
   const { data, isLoading, isError, error } = useOpenRouterCredits(apiKey);
 
   if (isLoading) return <span className="text-xs text-muted-foreground">Checking credits...</span>;
 
   if (isError) {
     const message = error instanceof Error ? error.message : "Failed to load credits";
-    return <span className="text-xs text-destructive">{message}</span>;
+    if (message.toLocaleLowerCase().includes("invalid"))
+      return (
+        <button
+          type="button"
+          onClick={onOpenSettings}
+          aria-label="Invalid API key. Open AI settings"
+          title="Invalid API key. Open AI settings"
+          className="flex items-center gap-1.5 p-1 text-destructive bg-destructive/10 rounded-md hover:bg-destructive/20 transition-colors"
+          data-test="resume-ai-credits-invalid-key"
+        >
+          <TriangleAlert className="size-3 text-destructive" /> check settings
+        </button>
+      );
+    return <span className="text-xs text-destructive p-1">{message}</span>;
   }
 
   if (!data) return null;

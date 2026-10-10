@@ -17,6 +17,7 @@ import {
   LoaderCircle,
   Plus,
   Square,
+  X,
 } from "lucide-react";
 import { useState, type KeyboardEvent, type RefObject } from "react";
 import { CreditsDisplay } from "./ResumeAiCredits";
@@ -41,6 +42,8 @@ export interface ResumeAiComposerProps {
   onOpenSettings: () => void;
   onSend: (message: string) => void | Promise<void>;
   onStop: () => void;
+  attachedDirectives?: string[];
+  onRemoveDirective?: (command: string) => void;
   sessionChars: number;
   sessionGenerating: boolean;
   status: string;
@@ -60,6 +63,8 @@ export function ResumeAiComposer({
   onOpenSettings,
   onSend,
   onStop,
+  attachedDirectives,
+  onRemoveDirective,
   sessionChars,
   sessionGenerating,
   status,
@@ -123,6 +128,33 @@ export function ResumeAiComposer({
             className="overflow-hidden rounded-2xl border border-base-content/15 bg-primary/10 text-base-content shadow-sm"
             data-test="resume-ai-input-shell"
           >
+            {attachedDirectives && attachedDirectives.length > 0 ? (
+              <div
+                className="flex flex-wrap gap-1.5 px-3 pt-3"
+                data-test="resume-ai-attached-directives"
+              >
+                {attachedDirectives.map((command) => (
+                  <span
+                    key={command}
+                    className="flex items-center gap-1 rounded-full border border-primary/40 bg-primary/15 py-0.5 pl-2.5 pr-1 text-xs font-medium text-primary"
+                    data-test={`resume-ai-attached-directive-${command.slice(1)}`}
+                  >
+                    {command}
+                    {onRemoveDirective ? (
+                      <button
+                        type="button"
+                        aria-label={`Remove directive ${command}`}
+                        onClick={() => onRemoveDirective(command)}
+                        className="rounded-full p-0.5 transition-colors hover:bg-primary/20"
+                        data-test={`resume-ai-remove-directive-${command.slice(1)}`}
+                      >
+                        <X className="size-3" />
+                      </button>
+                    ) : null}
+                  </span>
+                ))}
+              </div>
+            ) : null}
             <div className="relative">
               <div
                 aria-hidden
@@ -225,7 +257,13 @@ export function ResumeAiComposer({
                 {getChatStatusLabel(status, isBusy, sessionGenerating)}
               </span>
             ) : null}
-            {apiKey ? <CreditsDisplay apiKey={apiKey} sessionChars={sessionChars} /> : null}
+            {apiKey ? (
+              <CreditsDisplay
+                apiKey={apiKey}
+                sessionChars={sessionChars}
+                onOpenSettings={onOpenSettings}
+              />
+            ) : null}
           </div>
         ) : null}
       </div>

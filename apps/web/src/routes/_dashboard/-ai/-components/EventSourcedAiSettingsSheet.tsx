@@ -147,7 +147,11 @@ export function EventSourcedAiSettingsSheet({
                     autoComplete="off"
                     aria-label="OpenRouter API key"
                     aria-invalid={apiKeyRejected || undefined}
-                    className="pr-11"
+                    className={`pr-11 ${
+                      apiKeyRejected
+                        ? "border-destructive focus-visible:ring-destructive/40 focus-visible:border-destructive"
+                        : ""
+                    }`}
                     data-test="event-sourced-api-key-input"
                   />
                   <button

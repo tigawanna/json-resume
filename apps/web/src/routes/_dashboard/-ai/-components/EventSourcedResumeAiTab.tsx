@@ -6,7 +6,6 @@ import { ToolApprovalCard } from "./ToolApprovalCard";
 
 export function EventSourcedResumeAiTab({ resumeId }: { resumeId: string }) {
   const chat = useEventSourcedResumeAiChat(resumeId);
-
   return (
     <div
       className="mx-auto flex w-full max-w-6xl flex-col gap-3"
