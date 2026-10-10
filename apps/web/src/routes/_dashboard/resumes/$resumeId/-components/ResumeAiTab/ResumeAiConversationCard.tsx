@@ -39,7 +39,7 @@ export function ResumeAiConversationCard({
   if (isEmpty && !historyPending) {
     return (
       <div
-        className="flex min-h-[calc(100dvh-16rem)] flex-col items-center justify-center gap-8"
+        className="flex min-h-[calc(100dvh-16rem)] flex-col items-center justify-center gap-8 "
         data-test="resume-ai-conversation"
       >
         <div

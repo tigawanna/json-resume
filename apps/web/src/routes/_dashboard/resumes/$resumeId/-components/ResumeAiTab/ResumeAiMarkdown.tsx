@@ -34,12 +34,12 @@ const components = {
   ),
 } satisfies MarkdownComponents;
 
-export function ChatText({ content, role }: { content: string; role: ResumeAiRole }) {
+export function ChatText({ content }: { content: string; role: ResumeAiRole }) {
   return (
     <div
       className={cn(
         "resume-ai-markdown space-y-2 text-sm leading-6 wrap-break-word",
-        role === "user" ? "text-primary-foreground" : "text-foreground",
+        // role === "user" ? "text-primary-foreground" : "text-foreground",
       )}
     >
       <Markdown highlighter={highlighter} components={components}>

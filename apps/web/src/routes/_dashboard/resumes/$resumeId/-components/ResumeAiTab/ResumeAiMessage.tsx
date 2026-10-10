@@ -52,19 +52,14 @@ export function ResumeAiMessage({
       <ChatAvatar role={role} />
       <div
         className={cn(
-          "min-w-0 max-w-[min(44rem,calc(100%-3rem))] overflow-hidden rounded-2xl px-4 py-3 shadow-sm ring-1",
+          "min-w-0 max-w-[min(44rem,calc(100%-3rem))] overflow-hidden rounded-2xl px-4 py-3 shadow-sm ring-1 ",
           role === "user"
-            ? "rounded-tr-md bg-primary/10 text-primary/70  ring-[color-mix(in_oklch,var(--color-primary)_34%,transparent)]"
+            ? "rounded-tr-md bg-primary/10 text-5xl    ring-[color-mix(in_oklch,var(--color-primary)_34%,transparent)]"
             : "rounded-tl-md bg-base-100 text-foreground ring-[color-mix(in_oklch,var(--color-base-content)_9%,transparent)]",
         )}
       >
         <div className="mb-2 flex items-center justify-between gap-3">
-          <p
-            className={cn(
-              "text-[0.68rem] font-semibold uppercase tracking-normal",
-              role === "user" ? "text-primary-foreground/70" : "text-muted-foreground",
-            )}
-          >
+          <p className={cn("text-[0.68rem] font-semibold uppercase tracking-normal")}>
             {role === "assistant" ? "Assistant" : "You"}
           </p>
           {role === "user" ? (
@@ -158,7 +153,7 @@ function PromptActionButton({
       size="icon"
       disabled={disabled}
       onClick={onClick}
-      className="size-7 rounded-lg text-primary-foreground/75 hover:bg-primary-foreground/10 hover:text-primary-foreground"
+      className="size-7 rounded-lg hover:bg-primary/30 hover:text-primary"
       data-test={dataTest}
       title={label}
     >
