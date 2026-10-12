@@ -14,6 +14,7 @@ import {
 import type { AiChange, LocalToolContext } from "@/features/agentic-tools/definitions/tool-context";
 import type { WorkbenchTab } from "@/features/agentic-tools/resume-tool-schemas";
 import type { ToolApprovalRequest } from "../-components/ToolApprovalCard";
+import { snapshotResumeJson } from "../-utils/resume-json-diff";
 import { useEventSourcedAiSettings } from "./use-event-sourced-ai-settings";
 import { isLocalMode } from "@/routes/_dashboard/resumes/$resumeId/-components/ResumeAiTab/resume-ai-types";
 import {
@@ -97,6 +98,17 @@ export function useEventSourcedResumeAiChat(resumeId: string) {
     setActiveResumeState({ pageResumeId: resumeId, id: resumeId });
   }
 
+  // Résumé JSON as it was before the current reply, keyed by résumé id, for the
+  // live preview's "Changes" tab. A résumé the reply switches to (a fresh clone)
+  // is captured when it becomes active, so its diff starts from the copy.
+  const [turnBaselines, setTurnBaselines] = useState<Record<string, string>>({});
+
+  function startTurnBaseline() {
+    const activeId = activeResumeIdRef.current;
+    const json = snapshotResumeJson(dbRef.current, activeId);
+    setTurnBaselines(json === null ? {} : { [activeId]: json });
+  }
+
   const context: LocalToolContext = {
     db,
     userId,
@@ -104,6 +116,12 @@ export function useEventSourcedResumeAiChat(resumeId: string) {
     setActiveResumeId(nextResumeId) {
       activeResumeIdRef.current = nextResumeId;
       setActiveResumeState({ pageResumeId: resumeId, id: nextResumeId });
+      const json = snapshotResumeJson(dbRef.current, nextResumeId);
+      if (json !== null) {
+        setTurnBaselines((prev) =>
+          nextResumeId in prev ? prev : { ...prev, [nextResumeId]: json },
+        );
+      }
     },
     openResume(nextResumeId, tab) {
       pendingOpenRef.current = { resumeId: nextResumeId, tab };
@@ -172,16 +190,19 @@ export function useEventSourcedResumeAiChat(resumeId: string) {
   async function sendText(text: string) {
     const trimmed = text.trim();
     if (!trimmed || isLoading || !isReady) return;
+    startTurnBaseline();
     await chat.sendMessage(trimmed);
   }
 
   async function sendStarter(message: string) {
     if (isLoading || !isReady) return;
+    startTurnBaseline();
     await chat.sendMessage(message);
   }
 
   function clearLocalConversation() {
     chat.clear();
+    setTurnBaselines({});
     setClearDialogOpen(false);
   }
 
@@ -195,6 +216,7 @@ export function useEventSourcedResumeAiChat(resumeId: string) {
   async function resendPastPrompt(message: UIMessage) {
     const text = getMessageText(message);
     if (!text || isLoading || !isReady) return;
+    startTurnBaseline();
     await chat.sendMessage(text);
   }
 
@@ -245,5 +267,6 @@ export function useEventSourcedResumeAiChat(resumeId: string) {
     setSettingsOpen,
     status,
     stop: chat.stop,
+    turnBaselines,
   };
 }

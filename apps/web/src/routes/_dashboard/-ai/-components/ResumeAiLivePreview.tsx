@@ -1,17 +1,39 @@
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { asTemplateId } from "@/data-access-layer/event-sourced/assemble-resume-detail";
 import { resumeDetailToDocument } from "@/data-access-layer/resume/resume-converters";
-import { useResumePdf } from "@/features/resume/use-resume-pdf";
+import { RESUME_PAPER_WIDTH, ResumeComponentPaper } from "@/features/resume/ResumeComponentPaper";
+import { resumeDocumentToSpec } from "@/features/resume/resume-to-spec";
+import { useThemeContext } from "@/lib/tanstack/router/theme-provider";
 import { cn } from "@/lib/utils";
 import { useEventSourcedResumeDetail } from "@/routes/_dashboard/resumes/$resumeId/-hooks/use-event-sourced-resume-detail";
-import { FileText, Loader2, Maximize2, Minimize2, PanelRightClose, X } from "lucide-react";
+import {
+  Eye,
+  FileText,
+  GitCompareArrows,
+  Loader2,
+  Maximize2,
+  Minimize2,
+  PanelRightClose,
+  X,
+} from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { diffResumeJson, resumeDetailJson } from "../-utils/resume-json-diff";
 
 type ResumeDetail = NonNullable<ReturnType<typeof useEventSourcedResumeDetail>["detail"]>;
 
 export type LivePreviewLayout = "panel" | "maximized" | "rail" | "sheet";
 
+type LivePreviewView = "preview" | "changes";
+
+function isLivePreviewView(value: string): value is LivePreviewView {
+  return value === "preview" || value === "changes";
+}
+
 interface ResumeAiLivePreviewProps {
   resumeId: string;
+  /** Résumé JSON from before the current reply; undefined when there's nothing to compare. */
+  baselineJson: string | undefined;
   layout: LivePreviewLayout;
   onMinimize: () => void;
   onRestore: () => void;
@@ -21,6 +43,7 @@ interface ResumeAiLivePreviewProps {
 
 export function ResumeAiLivePreview({
   resumeId,
+  baselineJson,
   layout,
   onMinimize,
   onRestore,
@@ -28,6 +51,7 @@ export function ResumeAiLivePreview({
   onClose,
 }: ResumeAiLivePreviewProps) {
   const { detail, isLoading } = useEventSourcedResumeDetail(resumeId);
+  const [view, setView] = useState<LivePreviewView>("preview");
 
   if (layout === "rail") {
     return (
@@ -50,111 +74,204 @@ export function ResumeAiLivePreview({
     );
   }
 
+  const currentJson = detail ? resumeDetailJson(detail) : null;
+  const diff =
+    baselineJson !== undefined && currentJson !== null
+      ? diffResumeJson(baselineJson, currentJson)
+      : null;
+
   return (
-    <section
+    <Tabs
+      value={view}
+      onValueChange={(value) => {
+        if (isLivePreviewView(value)) setView(value);
+      }}
       className={cn(
-        "flex h-full min-h-0 flex-col bg-base-100",
+        "flex h-full min-h-0 flex-col gap-0 bg-base-100",
         layout !== "sheet" && "border-l border-border/60",
       )}
       aria-label="Live résumé preview"
       data-test="resume-ai-preview"
     >
       <header className="flex items-center gap-2 border-b border-border/60 px-3 py-2">
-        <FileText className="text-base-content/50 size-4 shrink-0" />
         <span className="min-w-0 flex-1 truncate text-sm font-medium">
           {detail?.name ?? "Résumé preview"}
         </span>
-        {layout === "panel" ? (
-          <>
+        <TabsList className="h-8">
+          <TabsTrigger
+            value="preview"
+            className="gap-1.5 text-xs"
+            data-test="resume-ai-preview-tab"
+          >
+            <Eye className="size-3.5" />
+            Preview
+          </TabsTrigger>
+          <TabsTrigger
+            value="changes"
+            className="gap-1.5 text-xs"
+            data-test="resume-ai-changes-tab"
+          >
+            <GitCompareArrows className="size-3.5" />
+            Changes
+            {diff && diff.hunks.length > 0 ? (
+              <span className="font-mono text-[0.7rem]">
+                <span className="text-success">+{diff.added}</span>{" "}
+                <span className="text-error">−{diff.removed}</span>
+              </span>
+            ) : null}
+          </TabsTrigger>
+        </TabsList>
+        <div className="flex items-center">
+          {layout === "panel" ? (
+            <>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                onClick={onMinimize}
+                aria-label="Minimize preview"
+                data-test="resume-ai-preview-minimize"
+              >
+                <PanelRightClose className="size-4" />
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                onClick={onMaximize}
+                aria-label="Maximize preview"
+                data-test="resume-ai-preview-maximize"
+              >
+                <Maximize2 className="size-4" />
+              </Button>
+            </>
+          ) : null}
+          {layout === "maximized" ? (
             <Button
               type="button"
               variant="ghost"
               size="icon-sm"
-              onClick={onMinimize}
-              aria-label="Minimize preview"
-              data-test="resume-ai-preview-minimize"
+              onClick={onRestore}
+              aria-label="Show chat beside preview"
+              data-test="resume-ai-preview-unmaximize"
             >
-              <PanelRightClose className="size-4" />
+              <Minimize2 className="size-4" />
             </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-sm"
-              onClick={onMaximize}
-              aria-label="Maximize preview"
-              data-test="resume-ai-preview-maximize"
-            >
-              <Maximize2 className="size-4" />
-            </Button>
-          </>
-        ) : null}
-        {layout === "maximized" ? (
+          ) : null}
           <Button
             type="button"
             variant="ghost"
             size="icon-sm"
-            onClick={onRestore}
-            aria-label="Show chat beside preview"
-            data-test="resume-ai-preview-unmaximize"
+            onClick={onClose}
+            aria-label="Close preview"
+            data-test="resume-ai-preview-close"
           >
-            <Minimize2 className="size-4" />
+            <X className="size-4" />
           </Button>
-        ) : null}
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-sm"
-          onClick={onClose}
-          aria-label="Close preview"
-          data-test="resume-ai-preview-close"
-        >
-          <X className="size-4" />
-        </Button>
+        </div>
       </header>
       {detail ? (
-        <LivePreviewDocument detail={detail} />
+        <>
+          <TabsContent value="preview" className="mt-0 min-h-0 flex-1">
+            <LivePreviewPaper detail={detail} />
+          </TabsContent>
+          <TabsContent value="changes" className="mt-0 min-h-0 flex-1">
+            <LivePreviewChanges diff={diff} />
+          </TabsContent>
+        </>
       ) : (
         <div className="text-base-content/60 flex flex-1 items-center justify-center p-6 text-sm">
           {isLoading ? <Loader2 className="size-6 animate-spin" /> : "This résumé isn't available."}
         </div>
       )}
-    </section>
+    </Tabs>
   );
 }
 
-function LivePreviewDocument({ detail }: { detail: ResumeDetail }) {
+function useElementWidth() {
+  const ref = useRef<HTMLDivElement>(null);
+  const [width, setWidth] = useState(0);
+
+  useEffect(() => {
+    const element = ref.current;
+    if (!element) return;
+    const observer = new ResizeObserver(([entry]) => {
+      if (entry) setWidth(entry.contentRect.width);
+    });
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+
+  return [ref, width] as const;
+}
+
+function LivePreviewPaper({ detail }: { detail: ResumeDetail }) {
+  const { resolvedTheme } = useThemeContext();
+  const [frameRef, frameWidth] = useElementWidth();
   const templateId = asTemplateId(detail.templateId);
-  const doc = resumeDetailToDocument({ ...detail, templateId });
-  const { blobUrl, generating, fileLabel } = useResumePdf({
-    doc,
-    templateId,
-    resumeName: detail.name,
-    debounceMs: 800,
-  });
+  const spec = resumeDocumentToSpec(resumeDetailToDocument({ ...detail, templateId }), templateId);
+  const zoom = frameWidth > 0 ? Math.min(1, frameWidth / RESUME_PAPER_WIDTH) : 1;
 
   return (
-    <div className="relative min-h-0 flex-1 bg-base-200/40 p-2">
-      {blobUrl ? (
-        <iframe
-          src={`${blobUrl}#view=FitH`}
-          title={fileLabel}
-          className="h-full w-full rounded-md border bg-white"
-          data-test="resume-ai-preview-iframe"
-        />
-      ) : (
-        <div className="flex h-full items-center justify-center">
-          <Loader2 className="text-base-content/40 size-6 animate-spin" />
+    <div className="h-full overflow-auto bg-base-200/40 p-3" data-test="resume-ai-preview-paper">
+      <div ref={frameRef} className={cn(frameWidth === 0 && "invisible")}>
+        <div style={{ zoom }}>
+          <ResumeComponentPaper
+            spec={spec}
+            theme={resolvedTheme}
+            className="rounded-sm bg-base-100 shadow-sm ring-1 ring-base-content/10"
+          />
         </div>
-      )}
-      {generating && blobUrl ? (
-        <span
-          className="bg-base-100/90 text-base-content/70 absolute top-4 right-4 flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs shadow-sm"
-          data-test="resume-ai-preview-updating"
-        >
-          <Loader2 className="size-3 animate-spin" />
-          Updating
-        </span>
-      ) : null}
+      </div>
+    </div>
+  );
+}
+
+function LivePreviewChanges({ diff }: { diff: ReturnType<typeof diffResumeJson> | null }) {
+  if (!diff || diff.hunks.length === 0) {
+    return (
+      <p
+        className="text-base-content/60 flex h-full items-center justify-center p-6 text-center text-sm"
+        data-test="resume-ai-changes-empty"
+      >
+        {diff
+          ? "No changes to this résumé since your last message."
+          : "Send a message and the assistant's edits to this résumé show up here."}
+      </p>
+    );
+  }
+
+  return (
+    <div className="h-full overflow-auto" data-test="resume-ai-changes">
+      <p className="text-base-content/60 border-b border-border/60 px-3 py-2 text-xs">
+        Résumé JSON since your last message
+      </p>
+      <div className="font-mono text-xs leading-5">
+        {diff.hunks.map((hunk) => (
+          <div key={`${hunk.oldStart}:${hunk.newStart}`} className="border-b border-border/40">
+            <div className="text-base-content/50 bg-base-200/60 px-3 py-0.5">
+              Line {hunk.newStart}
+            </div>
+            {hunk.lines.map((line, index) => (
+              <div
+                key={index}
+                className={cn(
+                  "flex px-3 whitespace-pre-wrap break-all",
+                  line.kind === "add" && "bg-success/10 text-success",
+                  line.kind === "remove" && "bg-error/10 text-error",
+                  line.kind === "context" && "text-base-content/70",
+                )}
+                data-test={`resume-ai-changes-${line.kind}`}
+              >
+                <span className="w-4 shrink-0 select-none opacity-60">
+                  {line.kind === "add" ? "+" : line.kind === "remove" ? "−" : " "}
+                </span>
+                <span className="min-w-0">{line.text}</span>
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

@@ -99,9 +99,16 @@ Files: `-ai/-components/EventSourcedResumeAiTab.tsx`, `ResumeAiLivePreview.tsx`,
       stays in the same panel whether or not the preview is open, so a typed draft
       survives; in the split, messages scroll and the composer is pinned at the bottom
 - [x] Preview follows the chat's active résumé
-- [x] Debounce PDF renders (800 ms) during a burst of tool calls; keep the last render on
-      screen with an "Updating" badge. The PDF logic moved from the Preview tab into
-      `useResumePdf`, which now keys on document content instead of object identity
+- [x] Panel shows the **component** preview (shared `ResumeComponentPaper`, zoomed to the
+      panel width, app theme) instead of a PDF, so tool writes show up instantly with no
+      render debounce. The Preview tab's PDF logic moved into `useResumePdf`, which keys on
+      document content instead of object identity
+- [x] **Changes** tab: line diff of the résumé JSON since your last message (`+N −M` on the
+      tab). The chat hook snapshots the active résumé on send; a résumé the reply switches
+      to (clone / tailor / create) is snapshotted when it becomes active, so its diff
+      starts from the copy (`-ai/-utils/resume-json-diff.ts`, tested)
+- [ ] Changes: browser-check with a real reply (only the empty state was checked, to avoid
+      spending credits / editing a real résumé)
 - [x] Close / minimize to a 44 px rail / maximize, plus a "Preview" button in the chat
       header
 - [x] Once closed, don't auto-reopen in the same conversation (clearing the chat resets it)

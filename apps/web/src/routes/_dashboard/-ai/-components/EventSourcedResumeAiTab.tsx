@@ -126,6 +126,7 @@ export function EventSourcedResumeAiTab({ resumeId }: { resumeId: string }) {
             >
               <ResumeAiLivePreview
                 resumeId={chat.activeResume.id}
+                baselineJson={chat.turnBaselines[chat.activeResume.id]}
                 layout={previewCollapsed ? "rail" : chatCollapsed ? "maximized" : "panel"}
                 onMinimize={() => previewPanelRef.current?.collapse()}
                 onRestore={() => {
@@ -155,6 +156,7 @@ export function EventSourcedResumeAiTab({ resumeId }: { resumeId: string }) {
           <SheetTitle className="sr-only">Résumé preview</SheetTitle>
           <ResumeAiLivePreview
             resumeId={chat.activeResume.id}
+            baselineJson={chat.turnBaselines[chat.activeResume.id]}
             layout="sheet"
             onMinimize={closePreview}
             onRestore={closePreview}

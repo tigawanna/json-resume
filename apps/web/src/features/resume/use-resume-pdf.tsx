@@ -14,13 +14,10 @@ export function useResumePdf({
   doc,
   templateId,
   resumeName,
-  debounceMs = 0,
 }: {
   doc: ResumeDocumentV1;
   templateId: TemplateId;
   resumeName: string;
-  /** Wait for edits to settle before rendering (live previews). */
-  debounceMs?: number;
 }) {
   const docKey = JSON.stringify(doc);
   const fileStem = resumePdfFileStem(resumeName, doc);
@@ -61,20 +58,13 @@ export function useResumePdf({
   }
 
   useEffect(() => {
-    if (debounceMs <= 0) {
-      void build(doc, templateId, fileStem);
-      return () => {
-        generationSeqRef.current++;
-      };
-    }
-    const timer = window.setTimeout(() => void build(doc, templateId, fileStem), debounceMs);
+    void build(doc, templateId, fileStem);
     return () => {
-      window.clearTimeout(timer);
       generationSeqRef.current++;
     };
     // Refresh only when the document content, template or file name changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [docKey, templateId, fileStem, debounceMs]);
+  }, [docKey, templateId, fileStem]);
 
   useEffect(() => {
     return () => {

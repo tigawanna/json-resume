@@ -2,13 +2,12 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
-import { resumeRegistry } from "@/features/resume/resume-catalog";
+import { ResumeComponentPaper } from "@/features/resume/ResumeComponentPaper";
 import type { ResumeDocumentV1, TemplateId } from "@/features/resume/resume-schema";
 import { resumeDocumentToSpec } from "@/features/resume/resume-to-spec";
 import { useResumePdf } from "@/features/resume/use-resume-pdf";
 import { useThemeContext } from "@/lib/tanstack/router/theme-provider";
 import type { Spec } from "@json-render/core";
-import { JSONUIProvider, Renderer } from "@json-render/react";
 import { eq, useLiveSuspenseQuery } from "@tanstack/react-db";
 import { Download, FileText, Loader2, Moon, RefreshCw, Sun } from "lucide-react";
 import { useState } from "react";
@@ -233,15 +232,7 @@ function ResumeComponentPreviewPanel({ spec, theme }: { spec: Spec; theme: Previ
         className="h-[72vh] min-h-150 overflow-auto bg-base-100 p-6"
         data-test={`resume-preview-paper-${theme}`}
       >
-        <div
-          className={`mx-auto text-base-content ${theme === "dark" ? "dark" : ""}`}
-          style={{ width: 794, minHeight: 1123 }}
-          data-theme={theme}
-        >
-          <JSONUIProvider registry={resumeRegistry}>
-            <Renderer spec={spec} registry={resumeRegistry} />
-          </JSONUIProvider>
-        </div>
+        <ResumeComponentPaper spec={spec} theme={theme} />
       </div>
     </section>
   );
