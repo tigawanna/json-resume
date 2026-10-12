@@ -14,6 +14,12 @@ export default defineConfig({
   lint: {
     options: { typeAware: true, typeCheck: true },
     jsPlugins: ["@shadcn/lint"],
-    rules: {},
+    categories: { correctness: "error" },
+    rules: {
+      "no-unused-vars": [
+        "error",
+        { argsIgnorePattern: "^_", varsIgnorePattern: "^_", ignoreRestSiblings: true },
+      ],
+    },
   },
 });
