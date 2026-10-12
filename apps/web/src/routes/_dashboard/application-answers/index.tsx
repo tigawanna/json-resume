@@ -1,9 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
-import { eventSourcedListSearchSchema } from "../-utils/list-search";
+import { resumeFilteredListSearchSchema } from "../-utils/list-search";
 import { ApplicationAnswerList } from "./-components/ApplicationAnswerList";
 
-const searchSchema = eventSourcedListSearchSchema.extend({
+const searchSchema = resumeFilteredListSearchSchema.extend({
   /** Only the answers for this job's application. */
   jobId: z.string().optional(),
 });

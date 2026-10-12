@@ -1,5 +1,5 @@
 import { ADMIN_LIST_PER_PAGE } from "@/components/pagination/constants";
-import { usePageSearchQuery } from "@/components/search/use-page-search-query";
+import { useResumeFilter } from "../../-hooks/use-resume-filter";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -12,7 +12,7 @@ import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
 import type { ResumeSkill, ResumeSkillGroup } from "@/data-access-layer/event-sourced/schemas";
 import { RouterPendingComponent } from "@/lib/tanstack/router/RouterPendingComponent";
 import { unwrapUnknownError } from "@/utils/errors";
-import { count, useLiveQuery } from "@tanstack/react-db";
+import { count, inArray, useLiveQuery } from "@tanstack/react-db";
 import { deleteWithReferences } from "@/data-access-layer/event-sourced/library-resolve";
 import { skillsUsedUnderGroup } from "../-utils/group-skills";
 import { Plus, Wrench } from "lucide-react";
@@ -43,7 +43,8 @@ type SkillGroupRow = ResumeSkillGroup & { skills: ResumeSkill[] };
 export function SkillGroupList() {
   const db = useEventSourcedDb();
   const { page = 1, q = "", sortBy, sortDirection } = Route.useSearch();
-  const { clearSearch } = usePageSearchQuery(ROUTE_ID);
+  const resumeFilter = useResumeFilter(ROUTE_ID);
+  const libraryIds = resumeFilter.libraryIds("skillGroups");
   const [createOpen, setCreateOpen] = useState(false);
   const [editing, setEditing] = useState<SkillGroupRow | null>(null);
 
@@ -64,7 +65,8 @@ export function SkillGroupList() {
 
   const { data: groups, isLoading } = useLiveQuery(
     (query) => {
-      const base = query.from({ row: db.collections.resumeSkillGroup });
+      const all = query.from({ row: db.collections.resumeSkillGroup });
+      const base = libraryIds ? all.where(({ row }) => inArray(row.id, libraryIds)) : all;
       const filtered = keyword
         ? base.where(({ row }) => orIlike(keyword, row.name, row.searchableText))
         : base;
@@ -73,7 +75,7 @@ export function SkillGroupList() {
         .limit(ADMIN_LIST_PER_PAGE)
         .offset(offset);
     },
-    [keyword, offset, sortBy, sortDir],
+    [keyword, offset, sortBy, sortDir, libraryIds?.join(",")],
   );
   const { data: skillRows } = useLiveQuery(
     (query) => query.from({ skill: db.collections.resumeSkill }),
@@ -90,18 +92,19 @@ export function SkillGroupList() {
 
   const { data: totals } = useLiveQuery(
     (query) => {
-      const base = query.from({ row: db.collections.resumeSkillGroup });
+      const all = query.from({ row: db.collections.resumeSkillGroup });
+      const base = libraryIds ? all.where(({ row }) => inArray(row.id, libraryIds)) : all;
       const filtered = keyword
         ? base.where(({ row }) => orIlike(keyword, row.name, row.searchableText))
         : base;
       return filtered.select(({ row }) => ({ total: count(row.id) }));
     },
-    [keyword],
+    [keyword, libraryIds?.join(",")],
   );
 
   const totalItems = totals?.[0]?.total ?? 0;
   const totalPages = totalPagesFromCount(totalItems);
-  const hasSearch = keyword.length > 0;
+  const hasSearch = keyword.length > 0 || resumeFilter.active;
 
   function handleDelete(groupId: string) {
     try {
@@ -130,6 +133,7 @@ export function SkillGroupList() {
     return (
       <EventSourcedListScaffold
         routeID={ROUTE_ID}
+        resumeFilter
         title="Skills"
         description="Skill groups in your local library."
         searchPlaceholder="Search skill groups…"
@@ -146,6 +150,7 @@ export function SkillGroupList() {
     return (
       <EventSourcedListScaffold
         routeID={ROUTE_ID}
+        resumeFilter
         title="Skills"
         description="Skill groups in your local library."
         searchPlaceholder="Search skill groups…"
@@ -161,7 +166,7 @@ export function SkillGroupList() {
           actionLabel="Create Skill Group"
           onAction={() => setCreateOpen(true)}
           hasSearch={hasSearch}
-          onClearSearch={clearSearch}
+          onClearSearch={resumeFilter.clearAll}
           dataTest="skill-groups-empty"
         />
         <SkillGroupCreateFormDialog open={createOpen} setOpen={setCreateOpen} />
@@ -172,6 +177,7 @@ export function SkillGroupList() {
   return (
     <EventSourcedListScaffold
       routeID={ROUTE_ID}
+      resumeFilter
       title="Skills"
       description="Skill groups in your local library."
       searchPlaceholder="Search skill groups…"

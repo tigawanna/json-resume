@@ -1,11 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { eventSourcedListSearchSchema } from "../-utils/list-search";
+import { resumeFilteredListSearchSchema } from "../-utils/list-search";
 import { NoteList } from "./-components/NoteList";
 
 export const Route = createFileRoute("/_dashboard/notes/")({
   component: RouteComponent,
   ssr: false,
-  validateSearch: (search) => eventSourcedListSearchSchema.parse(search),
+  validateSearch: (search) => resumeFilteredListSearchSchema.parse(search),
   head: () => ({
     meta: [
       {

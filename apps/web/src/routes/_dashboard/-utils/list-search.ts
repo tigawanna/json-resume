@@ -12,6 +12,16 @@ export const eventSourcedListSearchSchema = z.object({
 
 export type EventSourcedListSearch = z.infer<typeof eventSourcedListSearchSchema>;
 
+/**
+ * Lists that can be narrowed to what one or more résumés use. Declaring
+ * `resumeIds` and passing `resumeFilter` to `EventSourcedListScaffold` is all a
+ * list needs for the picker; it reads the ids back through `useResumeFilter`.
+ */
+export const resumeFilteredListSearchSchema = eventSourcedListSearchSchema.extend({
+  /** Most recently picked first. */
+  resumeIds: z.array(z.string()).optional().catch(undefined),
+});
+
 export const eventQueueTabSchema = z.enum(["outbox", "inbox", "deadletter"]);
 export type EventQueueTab = z.infer<typeof eventQueueTabSchema>;
 

@@ -1,6 +1,6 @@
 import { ADMIN_LIST_PER_PAGE } from "@/components/pagination/constants";
 import { deleteWithReferences } from "@/data-access-layer/event-sourced/library-resolve";
-import { usePageSearchQuery } from "@/components/search/use-page-search-query";
+import { useResumeFilter } from "../../-hooks/use-resume-filter";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -12,7 +12,7 @@ import {
 import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
 import type { ResumeVolunteer } from "@/data-access-layer/event-sourced/schemas";
 import { RouterPendingComponent } from "@/lib/tanstack/router/RouterPendingComponent";
-import { count, useLiveQuery } from "@tanstack/react-db";
+import { count, inArray, useLiveQuery } from "@tanstack/react-db";
 import { Heart, Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -44,7 +44,8 @@ const ROUTE_ID = "/_dashboard/volunteers/" as const;
 export function VolunteerList() {
   const db = useEventSourcedDb();
   const { page = 1, q = "", sortBy, sortDirection } = Route.useSearch();
-  const { clearSearch } = usePageSearchQuery(ROUTE_ID);
+  const resumeFilter = useResumeFilter(ROUTE_ID);
+  const libraryIds = resumeFilter.libraryIds("volunteers");
   const [createOpen, setCreateOpen] = useState(false);
   const [editing, setEditing] = useState<ResumeVolunteer | null>(null);
 
@@ -68,7 +69,8 @@ export function VolunteerList() {
 
   const { data: items, isLoading } = useLiveQuery(
     (query) => {
-      const base = query.from({ row: db.collections.resumeVolunteer });
+      const all = query.from({ row: db.collections.resumeVolunteer });
+      const base = libraryIds ? all.where(({ row }) => inArray(row.id, libraryIds)) : all;
       const filtered = keyword
         ? base.where(({ row }) =>
             orIlike(
@@ -87,12 +89,13 @@ export function VolunteerList() {
         .limit(ADMIN_LIST_PER_PAGE)
         .offset(offset);
     },
-    [keyword, offset, sortBy, sortDir],
+    [keyword, offset, sortBy, sortDir, libraryIds?.join(",")],
   );
 
   const { data: totals } = useLiveQuery(
     (query) => {
-      const base = query.from({ row: db.collections.resumeVolunteer });
+      const all = query.from({ row: db.collections.resumeVolunteer });
+      const base = libraryIds ? all.where(({ row }) => inArray(row.id, libraryIds)) : all;
       const filtered = keyword
         ? base.where(({ row }) =>
             orIlike(
@@ -108,12 +111,12 @@ export function VolunteerList() {
         : base;
       return filtered.select(({ row }) => ({ total: count(row.id) }));
     },
-    [keyword],
+    [keyword, libraryIds?.join(",")],
   );
 
   const totalItems = totals?.[0]?.total ?? 0;
   const totalPages = totalPagesFromCount(totalItems);
-  const hasSearch = keyword.length > 0;
+  const hasSearch = keyword.length > 0 || resumeFilter.active;
 
   function handleDelete(id: string) {
     try {
@@ -142,6 +145,7 @@ export function VolunteerList() {
     return (
       <EventSourcedListScaffold
         routeID={ROUTE_ID}
+        resumeFilter
         title="Volunteers"
         description="Volunteer roles in your local library."
         searchPlaceholder="Search volunteer roles…"
@@ -158,6 +162,7 @@ export function VolunteerList() {
     return (
       <EventSourcedListScaffold
         routeID={ROUTE_ID}
+        resumeFilter
         title="Volunteers"
         description="Volunteer roles in your local library."
         searchPlaceholder="Search volunteer roles…"
@@ -173,7 +178,7 @@ export function VolunteerList() {
           actionLabel="Create Volunteer"
           onAction={() => setCreateOpen(true)}
           hasSearch={hasSearch}
-          onClearSearch={clearSearch}
+          onClearSearch={resumeFilter.clearAll}
           dataTest="volunteers-empty"
         />
         <VolunteerCreateFormDialog open={createOpen} setOpen={setCreateOpen} />
@@ -184,6 +189,7 @@ export function VolunteerList() {
   return (
     <EventSourcedListScaffold
       routeID={ROUTE_ID}
+      resumeFilter
       title="Volunteers"
       description="Volunteer roles in your local library."
       searchPlaceholder="Search volunteer roles…"

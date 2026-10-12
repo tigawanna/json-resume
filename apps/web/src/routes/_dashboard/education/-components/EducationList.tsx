@@ -1,6 +1,6 @@
 import { ADMIN_LIST_PER_PAGE } from "@/components/pagination/constants";
 import { deleteWithReferences } from "@/data-access-layer/event-sourced/library-resolve";
-import { usePageSearchQuery } from "@/components/search/use-page-search-query";
+import { useResumeFilter } from "../../-hooks/use-resume-filter";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -12,7 +12,7 @@ import {
 import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
 import type { ResumeEducation } from "@/data-access-layer/event-sourced/schemas";
 import { RouterPendingComponent } from "@/lib/tanstack/router/RouterPendingComponent";
-import { count, useLiveQuery } from "@tanstack/react-db";
+import { count, inArray, useLiveQuery } from "@tanstack/react-db";
 import { GraduationCap, Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -44,7 +44,8 @@ const ROUTE_ID = "/_dashboard/education/" as const;
 export function EducationList() {
   const db = useEventSourcedDb();
   const { page = 1, q = "", sortBy, sortDirection } = Route.useSearch();
-  const { clearSearch } = usePageSearchQuery(ROUTE_ID);
+  const resumeFilter = useResumeFilter(ROUTE_ID);
+  const libraryIds = resumeFilter.libraryIds("education");
   const [createOpen, setCreateOpen] = useState(false);
   const [editing, setEditing] = useState<ResumeEducation | null>(null);
 
@@ -69,7 +70,8 @@ export function EducationList() {
 
   const { data: items, isLoading } = useLiveQuery(
     (query) => {
-      const base = query.from({ row: db.collections.resumeEducation });
+      const all = query.from({ row: db.collections.resumeEducation });
+      const base = libraryIds ? all.where(({ row }) => inArray(row.id, libraryIds)) : all;
       const filtered = keyword
         ? base.where(({ row }) =>
             orIlike(
@@ -89,12 +91,13 @@ export function EducationList() {
         .limit(ADMIN_LIST_PER_PAGE)
         .offset(offset);
     },
-    [keyword, offset, sortBy, sortDir],
+    [keyword, offset, sortBy, sortDir, libraryIds?.join(",")],
   );
 
   const { data: totals } = useLiveQuery(
     (query) => {
-      const base = query.from({ row: db.collections.resumeEducation });
+      const all = query.from({ row: db.collections.resumeEducation });
+      const base = libraryIds ? all.where(({ row }) => inArray(row.id, libraryIds)) : all;
       const filtered = keyword
         ? base.where(({ row }) =>
             orIlike(
@@ -111,12 +114,12 @@ export function EducationList() {
         : base;
       return filtered.select(({ row }) => ({ total: count(row.id) }));
     },
-    [keyword],
+    [keyword, libraryIds?.join(",")],
   );
 
   const totalItems = totals?.[0]?.total ?? 0;
   const totalPages = totalPagesFromCount(totalItems);
-  const hasSearch = keyword.length > 0;
+  const hasSearch = keyword.length > 0 || resumeFilter.active;
 
   function handleDelete(id: string) {
     try {
@@ -145,6 +148,7 @@ export function EducationList() {
     return (
       <EventSourcedListScaffold
         routeID={ROUTE_ID}
+        resumeFilter
         title="Education"
         description="Education entries in your local library."
         searchPlaceholder="Search education…"
@@ -161,6 +165,7 @@ export function EducationList() {
     return (
       <EventSourcedListScaffold
         routeID={ROUTE_ID}
+        resumeFilter
         title="Education"
         description="Education entries in your local library."
         searchPlaceholder="Search education…"
@@ -176,7 +181,7 @@ export function EducationList() {
           actionLabel="Create Education"
           onAction={() => setCreateOpen(true)}
           hasSearch={hasSearch}
-          onClearSearch={clearSearch}
+          onClearSearch={resumeFilter.clearAll}
           dataTest="education-empty"
         />
         <EducationCreateFormDialog open={createOpen} setOpen={setCreateOpen} />
@@ -187,6 +192,7 @@ export function EducationList() {
   return (
     <EventSourcedListScaffold
       routeID={ROUTE_ID}
+      resumeFilter
       title="Education"
       description="Education entries in your local library."
       searchPlaceholder="Search education…"

@@ -85,7 +85,7 @@ export function ResumeAiAnswersPreview({ jobId, resumeId }: ResumeAiAnswersPrevi
         <Button asChild variant="ghost" size="sm" className="h-8 gap-1.5">
           <Link
             to="/application-answers"
-            search={targetJobId ? { jobId: targetJobId } : {}}
+            search={{ resumeIds: [resumeId] }}
             data-test="resume-ai-answers-open"
             aria-label="Open in Application answers"
           >

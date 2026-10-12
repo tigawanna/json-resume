@@ -1,6 +1,6 @@
 import { ADMIN_LIST_PER_PAGE } from "@/components/pagination/constants";
 import { deleteWithReferences } from "@/data-access-layer/event-sourced/library-resolve";
-import { usePageSearchQuery } from "@/components/search/use-page-search-query";
+import { useResumeFilter } from "../../-hooks/use-resume-filter";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -12,7 +12,7 @@ import {
 import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
 import type { ResumeTalk } from "@/data-access-layer/event-sourced/schemas";
 import { RouterPendingComponent } from "@/lib/tanstack/router/RouterPendingComponent";
-import { count, useLiveQuery } from "@tanstack/react-db";
+import { count, inArray, useLiveQuery } from "@tanstack/react-db";
 import { Mic, Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -41,7 +41,8 @@ const ROUTE_ID = "/_dashboard/talks/" as const;
 export function TalkList() {
   const db = useEventSourcedDb();
   const { page = 1, q = "", sortBy, sortDirection } = Route.useSearch();
-  const { clearSearch } = usePageSearchQuery(ROUTE_ID);
+  const resumeFilter = useResumeFilter(ROUTE_ID);
+  const libraryIds = resumeFilter.libraryIds("talks");
   const [createOpen, setCreateOpen] = useState(false);
   const [editing, setEditing] = useState<ResumeTalk | null>(null);
 
@@ -64,7 +65,8 @@ export function TalkList() {
 
   const { data: items, isLoading } = useLiveQuery(
     (query) => {
-      const base = query.from({ row: db.collections.resumeTalk });
+      const all = query.from({ row: db.collections.resumeTalk });
+      const base = libraryIds ? all.where(({ row }) => inArray(row.id, libraryIds)) : all;
       const filtered = keyword
         ? base.where(({ row }) =>
             orIlike(keyword, row.title, row.event, row.date, row.description, row.searchableText),
@@ -75,12 +77,13 @@ export function TalkList() {
         .limit(ADMIN_LIST_PER_PAGE)
         .offset(offset);
     },
-    [keyword, offset, sortBy, sortDir],
+    [keyword, offset, sortBy, sortDir, libraryIds?.join(",")],
   );
 
   const { data: totals } = useLiveQuery(
     (query) => {
-      const base = query.from({ row: db.collections.resumeTalk });
+      const all = query.from({ row: db.collections.resumeTalk });
+      const base = libraryIds ? all.where(({ row }) => inArray(row.id, libraryIds)) : all;
       const filtered = keyword
         ? base.where(({ row }) =>
             orIlike(keyword, row.title, row.event, row.date, row.description, row.searchableText),
@@ -88,12 +91,12 @@ export function TalkList() {
         : base;
       return filtered.select(({ row }) => ({ total: count(row.id) }));
     },
-    [keyword],
+    [keyword, libraryIds?.join(",")],
   );
 
   const totalItems = totals?.[0]?.total ?? 0;
   const totalPages = totalPagesFromCount(totalItems);
-  const hasSearch = keyword.length > 0;
+  const hasSearch = keyword.length > 0 || resumeFilter.active;
 
   function handleDelete(id: string) {
     try {
@@ -122,6 +125,7 @@ export function TalkList() {
     return (
       <EventSourcedListScaffold
         routeID={ROUTE_ID}
+        resumeFilter
         title="Talks"
         description="Talks and presentations in your local library."
         searchPlaceholder="Search talks…"
@@ -138,6 +142,7 @@ export function TalkList() {
     return (
       <EventSourcedListScaffold
         routeID={ROUTE_ID}
+        resumeFilter
         title="Talks"
         description="Talks and presentations in your local library."
         searchPlaceholder="Search talks…"
@@ -153,7 +158,7 @@ export function TalkList() {
           actionLabel="Create Talk"
           onAction={() => setCreateOpen(true)}
           hasSearch={hasSearch}
-          onClearSearch={clearSearch}
+          onClearSearch={resumeFilter.clearAll}
           dataTest="talks-empty"
         />
         <TalkCreateFormDialog open={createOpen} setOpen={setCreateOpen} />
@@ -164,6 +169,7 @@ export function TalkList() {
   return (
     <EventSourcedListScaffold
       routeID={ROUTE_ID}
+      resumeFilter
       title="Talks"
       description="Talks and presentations in your local library."
       searchPlaceholder="Search talks…"

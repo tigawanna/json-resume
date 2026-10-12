@@ -1,5 +1,37 @@
+import { createCollection, localOnlyCollectionOptions, queryOnce } from "@tanstack/db";
 import { describe, expect, it } from "vitest";
-import { keywordPattern, listOffset, listSortDirection, totalPagesFromCount } from "./list-query";
+import {
+  keywordPattern,
+  listOffset,
+  listSortDirection,
+  totalPagesFromCount,
+  writtenForResumes,
+} from "./list-query";
+
+type LinkedRow = { id: string; resumeId?: string | null; jobId: string | null };
+
+describe("writtenForResumes", () => {
+  it("keeps rows written with a picked résumé, and résumé-less rows for its job", async () => {
+    const rows = createCollection(
+      localOnlyCollectionOptions({
+        getKey: (row: LinkedRow) => row.id,
+        initialData: [
+          { id: "picked", resumeId: "r1", jobId: "j-elsewhere" },
+          { id: "job-only", resumeId: null, jobId: "j1" },
+          { id: "job-only-legacy", jobId: "j1" },
+          { id: "other-resume-same-job", resumeId: "r2", jobId: "j1" },
+          { id: "unrelated", resumeId: null, jobId: "j2" },
+        ],
+      }),
+    );
+    const matched = await queryOnce((q) =>
+      q
+        .from({ row: rows })
+        .where(({ row }) => writtenForResumes(row.resumeId, row.jobId, ["r1"], ["j1"])),
+    );
+    expect(matched.map((row) => row.id).sort()).toEqual(["job-only", "job-only-legacy", "picked"]);
+  });
+});
 
 describe("listOffset", () => {
   it("uses page 1 for invalid page numbers", () => {

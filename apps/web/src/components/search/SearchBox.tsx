@@ -1,23 +1,42 @@
-import { Input } from "@/components/ui/input";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from "@/components/ui/input-group";
 import { Loader, X } from "lucide-react";
-import { useRef } from "react";
+import type { ReactNode } from "react";
 
 interface SearchBoxProps {
   keyword: string;
   setKeyword: (value: string) => void;
   isDebouncing: boolean;
   inputProps?: React.InputHTMLAttributes<HTMLInputElement>;
+  /** Filter chips shown before the text, inside the box. */
+  leading?: ReactNode;
 }
 
-export function SearchBox({ isDebouncing, setKeyword, keyword, inputProps }: SearchBoxProps) {
-  const inputRef = useRef<HTMLInputElement | null>(null);
+export function SearchBox({
+  isDebouncing,
+  setKeyword,
+  keyword,
+  inputProps,
+  leading,
+}: SearchBoxProps) {
   return (
     <div className="sticky top-0 w-full">
-      <div className="relative w-full">
-        <Input
-          ref={inputRef}
+      <InputGroup className="bg-base-200/30 h-auto min-h-9 flex-wrap">
+        {leading ? (
+          <InputGroupAddon
+            align="inline-start"
+            className="flex-wrap justify-start gap-1 py-1 pl-1.5"
+          >
+            {leading}
+          </InputGroupAddon>
+        ) : null}
+        <InputGroupInput
           placeholder="Search"
-          className="bg-base-200/30 w-full"
+          className="h-9 min-w-40"
           value={keyword}
           onChange={(e) => {
             setKeyword(e.target.value);
@@ -25,22 +44,22 @@ export function SearchBox({ isDebouncing, setKeyword, keyword, inputProps }: Sea
           {...inputProps}
           data-test="list-search-input"
         />
-        {keyword && keyword.length > 0 && (
-          <div className="absolute inset-y-0 right-0 flex items-center pr-2">
-            <X
-              className="size-4"
-              onClick={() => {
-                setKeyword("");
-              }}
-            />
-          </div>
-        )}
-        {isDebouncing && (
-          <div className="absolute inset-y-0 right-[3%] flex items-center pr-3">
-            <Loader className="size-4 animate-spin" />
-          </div>
-        )}
-      </div>
+        {isDebouncing || keyword.length > 0 ? (
+          <InputGroupAddon align="inline-end">
+            {isDebouncing ? <Loader className="size-4 animate-spin" /> : null}
+            {keyword.length > 0 ? (
+              <InputGroupButton
+                size="icon-xs"
+                aria-label="Clear search"
+                onClick={() => setKeyword("")}
+                data-test="list-search-clear"
+              >
+                <X />
+              </InputGroupButton>
+            ) : null}
+          </InputGroupAddon>
+        ) : null}
+      </InputGroup>
     </div>
   );
 }

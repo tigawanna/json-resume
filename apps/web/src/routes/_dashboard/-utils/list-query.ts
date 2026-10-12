@@ -1,5 +1,5 @@
 import { ADMIN_LIST_PER_PAGE } from "@/components/pagination/constants";
-import { ilike, or } from "@tanstack/db";
+import { and, ilike, inArray, isNull, isUndefined, or } from "@tanstack/db";
 
 type IlikeField = Parameters<typeof ilike>[0];
 
@@ -17,6 +17,24 @@ export function orIlike(q: string, first: IlikeField, second: IlikeField, ...res
     ilike(first, pattern),
     ilike(second, pattern),
     ...rest.map((field) => ilike(field, pattern)),
+  );
+}
+
+type ExpressionArg = Parameters<typeof inArray>[0];
+
+/**
+ * Rows written with one of `resumeIds`, plus rows with no résumé that belong
+ * to one of `jobIds` (the picked résumés' target jobs).
+ */
+export function writtenForResumes(
+  resumeId: ExpressionArg,
+  jobId: ExpressionArg,
+  resumeIds: ReadonlyArray<string>,
+  jobIds: ReadonlyArray<string>,
+) {
+  return or(
+    inArray(resumeId, [...resumeIds]),
+    and(or(isNull(resumeId), isUndefined(resumeId)), inArray(jobId, [...jobIds])),
   );
 }
 

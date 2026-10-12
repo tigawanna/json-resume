@@ -1,6 +1,6 @@
 import { ADMIN_LIST_PER_PAGE } from "@/components/pagination/constants";
 import { deleteWithReferences } from "@/data-access-layer/event-sourced/library-resolve";
-import { usePageSearchQuery } from "@/components/search/use-page-search-query";
+import { useResumeFilter } from "../../-hooks/use-resume-filter";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -12,7 +12,7 @@ import {
 import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
 import type { ResumeLanguage } from "@/data-access-layer/event-sourced/schemas";
 import { RouterPendingComponent } from "@/lib/tanstack/router/RouterPendingComponent";
-import { count, useLiveQuery } from "@tanstack/react-db";
+import { count, inArray, useLiveQuery } from "@tanstack/react-db";
 import { Globe, Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -40,7 +40,8 @@ const ROUTE_ID = "/_dashboard/languages/" as const;
 export function LanguageList() {
   const db = useEventSourcedDb();
   const { page = 1, q = "", sortBy, sortDirection } = Route.useSearch();
-  const { clearSearch } = usePageSearchQuery(ROUTE_ID);
+  const resumeFilter = useResumeFilter(ROUTE_ID);
+  const libraryIds = resumeFilter.libraryIds("languages");
   const [createOpen, setCreateOpen] = useState(false);
   const [editing, setEditing] = useState<ResumeLanguage | null>(null);
 
@@ -62,7 +63,8 @@ export function LanguageList() {
 
   const { data: items, isLoading } = useLiveQuery(
     (query) => {
-      const base = query.from({ row: db.collections.resumeLanguage });
+      const all = query.from({ row: db.collections.resumeLanguage });
+      const base = libraryIds ? all.where(({ row }) => inArray(row.id, libraryIds)) : all;
       const filtered = keyword
         ? base.where(({ row }) => orIlike(keyword, row.name, row.proficiency, row.searchableText))
         : base;
@@ -71,23 +73,24 @@ export function LanguageList() {
         .limit(ADMIN_LIST_PER_PAGE)
         .offset(offset);
     },
-    [keyword, offset, sortBy, sortDir],
+    [keyword, offset, sortBy, sortDir, libraryIds?.join(",")],
   );
 
   const { data: totals } = useLiveQuery(
     (query) => {
-      const base = query.from({ row: db.collections.resumeLanguage });
+      const all = query.from({ row: db.collections.resumeLanguage });
+      const base = libraryIds ? all.where(({ row }) => inArray(row.id, libraryIds)) : all;
       const filtered = keyword
         ? base.where(({ row }) => orIlike(keyword, row.name, row.proficiency, row.searchableText))
         : base;
       return filtered.select(({ row }) => ({ total: count(row.id) }));
     },
-    [keyword],
+    [keyword, libraryIds?.join(",")],
   );
 
   const totalItems = totals?.[0]?.total ?? 0;
   const totalPages = totalPagesFromCount(totalItems);
-  const hasSearch = keyword.length > 0;
+  const hasSearch = keyword.length > 0 || resumeFilter.active;
 
   function handleDelete(id: string) {
     try {
@@ -116,6 +119,7 @@ export function LanguageList() {
     return (
       <EventSourcedListScaffold
         routeID={ROUTE_ID}
+        resumeFilter
         title="Languages"
         description="Languages in your local library (not yet attached to a résumé)."
         searchPlaceholder="Search languages…"
@@ -132,6 +136,7 @@ export function LanguageList() {
     return (
       <EventSourcedListScaffold
         routeID={ROUTE_ID}
+        resumeFilter
         title="Languages"
         description="Languages in your local library (not yet attached to a résumé)."
         searchPlaceholder="Search languages…"
@@ -147,7 +152,7 @@ export function LanguageList() {
           actionLabel="Create Language"
           onAction={() => setCreateOpen(true)}
           hasSearch={hasSearch}
-          onClearSearch={clearSearch}
+          onClearSearch={resumeFilter.clearAll}
           dataTest="languages-empty"
         />
         <LanguageCreateFormDialog open={createOpen} setOpen={setCreateOpen} />
@@ -158,6 +163,7 @@ export function LanguageList() {
   return (
     <EventSourcedListScaffold
       routeID={ROUTE_ID}
+      resumeFilter
       title="Languages"
       description="Languages in your local library (not yet attached to a résumé)."
       searchPlaceholder="Search languages…"

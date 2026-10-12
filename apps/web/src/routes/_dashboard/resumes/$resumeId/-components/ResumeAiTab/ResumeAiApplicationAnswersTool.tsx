@@ -63,7 +63,7 @@ export function ResumeAiSaveApplicationAnswersTool({
             <Button asChild size="sm" className="gap-1.5">
               <Link
                 to="/application-answers"
-                search={jobId ? { jobId } : {}}
+                search={first.resumeId ? { resumeIds: [first.resumeId] } : jobId ? { jobId } : {}}
                 data-test="resume-ai-answers-card-edit"
               >
                 Edit

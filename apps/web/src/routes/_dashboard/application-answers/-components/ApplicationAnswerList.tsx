@@ -1,4 +1,3 @@
-import { usePageSearchQuery } from "@/components/search/use-page-search-query";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useViewer } from "@/data-access-layer/auth/viewer";
@@ -20,7 +19,8 @@ import { useState, type ReactNode } from "react";
 import { toast } from "sonner";
 import { EventSourcedListScaffold } from "../../-components/EventSourcedListScaffold";
 import { LibraryEmpty } from "../../-components/LibraryEmpty";
-import { orIlike } from "../../-utils/list-query";
+import { useResumeFilter } from "../../-hooks/use-resume-filter";
+import { orIlike, writtenForResumes } from "../../-utils/list-query";
 import { AddQuestionsDialog } from "./AddQuestionsDialog";
 import { ApplicationAnswerEditor } from "@/features/application-answers/ApplicationAnswerEditor";
 import { Route } from "..";
@@ -54,7 +54,9 @@ export function ApplicationAnswerList() {
   const { viewer } = useViewer();
   const navigate = Route.useNavigate();
   const { q = "", jobId } = Route.useSearch();
-  const { clearSearch } = usePageSearchQuery(ROUTE_ID);
+  const resumeFilter = useResumeFilter(ROUTE_ID);
+  const { resumeIds, jobIds } = resumeFilter;
+  const scopeKey = resumeFilter.active ? `${resumeIds.join(",")}|${jobIds.join(",")}` : "";
   const [addOpen, setAddOpen] = useState(false);
   const keyword = q.trim();
 
@@ -62,9 +64,14 @@ export function ApplicationAnswerList() {
     (query) => {
       let base = query.from({ row: db.collections.applicationAnswer });
       if (jobId) base = base.where(({ row }) => eq(row.jobId, jobId));
+      if (resumeFilter.active) {
+        base = base.where(({ row }) =>
+          writtenForResumes(row.resumeId, row.jobId, resumeIds, jobIds),
+        );
+      }
       return keyword ? base.where(({ row }) => orIlike(keyword, row.question, row.answer)) : base;
     },
-    [keyword, jobId],
+    [keyword, jobId, scopeKey],
   );
   const { data: jobs } = useLiveQuery((query) => query.from({ job: db.collections.job }), []);
 
@@ -93,6 +100,7 @@ export function ApplicationAnswerList() {
   const scaffold = (children: ReactNode) => (
     <EventSourcedListScaffold
       routeID={ROUTE_ID}
+      resumeFilter
       title={TITLE}
       description={DESCRIPTION}
       searchPlaceholder="Search questions and answers…"
@@ -114,7 +122,11 @@ export function ApplicationAnswerList() {
       dataTest="application-answers-page"
     >
       {children}
-      <AddQuestionsDialog open={addOpen} onOpenChange={setAddOpen} defaultJobId={jobId ?? null} />
+      <AddQuestionsDialog
+        open={addOpen}
+        onOpenChange={setAddOpen}
+        defaultJobId={jobId ?? (jobIds.length === 1 ? jobIds[0] : null) ?? null}
+      />
     </EventSourcedListScaffold>
   );
 
@@ -128,8 +140,8 @@ export function ApplicationAnswerList() {
         description="Paste an application's questions into the résumé assistant (try /answer-questions) for starting points, or add them here."
         actionLabel="Add questions"
         onAction={() => setAddOpen(true)}
-        hasSearch={keyword.length > 0}
-        onClearSearch={clearSearch}
+        hasSearch={keyword.length > 0 || resumeFilter.active}
+        onClearSearch={resumeFilter.clearAll}
         dataTest="application-answers-empty"
       />,
     );

@@ -1,5 +1,4 @@
 import { ADMIN_LIST_PER_PAGE } from "@/components/pagination/constants";
-import { usePageSearchQuery } from "@/components/search/use-page-search-query";
 import { Button } from "@/components/ui/button";
 import { useViewer } from "@/data-access-layer/auth/viewer";
 import {
@@ -29,7 +28,9 @@ import {
   listSortDirection,
   orIlike,
   totalPagesFromCount,
+  writtenForResumes,
 } from "../../-utils/list-query";
+import { useResumeFilter } from "../../-hooks/use-resume-filter";
 import { usePersistedListTablePrefs } from "../../-utils/use-persisted-list-table-prefs";
 import { Route } from "..";
 
@@ -44,7 +45,9 @@ export function CoverLetterList() {
   const navigate = useNavigate();
   const search = Route.useSearch();
   const { page = 1, q = "", sortBy, sortDirection } = search;
-  const { clearSearch } = usePageSearchQuery(ROUTE_ID);
+  const resumeFilter = useResumeFilter(ROUTE_ID);
+  const { resumeIds, jobIds } = resumeFilter;
+  const scopeKey = resumeFilter.active ? `${resumeIds.join(",")}|${jobIds.join(",")}` : "";
   usePersistedListTablePrefs(db, "cover-letters", search);
 
   const keyword = q.trim();
@@ -65,7 +68,10 @@ export function CoverLetterList() {
 
   const { data: items, isLoading } = useLiveQuery(
     (query) => {
-      const base = query.from({ row: db.collections.coverLetter });
+      const all = query.from({ row: db.collections.coverLetter });
+      const base = resumeFilter.active
+        ? all.where(({ row }) => writtenForResumes(row.resumeId, row.jobId, resumeIds, jobIds))
+        : all;
       const filtered = keyword
         ? base.where(({ row }) => orIlike(keyword, row.title, row.body))
         : base;
@@ -74,23 +80,26 @@ export function CoverLetterList() {
         .limit(ADMIN_LIST_PER_PAGE)
         .offset(offset);
     },
-    [keyword, offset, sortBy, sortDir],
+    [keyword, offset, sortBy, sortDir, scopeKey],
   );
 
   const { data: totals } = useLiveQuery(
     (query) => {
-      const base = query.from({ row: db.collections.coverLetter });
+      const all = query.from({ row: db.collections.coverLetter });
+      const base = resumeFilter.active
+        ? all.where(({ row }) => writtenForResumes(row.resumeId, row.jobId, resumeIds, jobIds))
+        : all;
       const filtered = keyword
         ? base.where(({ row }) => orIlike(keyword, row.title, row.body))
         : base;
       return filtered.select(({ row }) => ({ total: count(row.id) }));
     },
-    [keyword],
+    [keyword, scopeKey],
   );
 
   const totalItems = totals?.[0]?.total ?? 0;
   const totalPages = totalPagesFromCount(totalItems);
-  const hasSearch = keyword.length > 0;
+  const hasSearch = keyword.length > 0 || resumeFilter.active;
 
   function openLetter(coverLetterId: string) {
     void navigate({ to: "/cover-letters/$coverLetterId", params: { coverLetterId } });
@@ -126,6 +135,7 @@ export function CoverLetterList() {
     return (
       <EventSourcedListScaffold
         routeID={ROUTE_ID}
+        resumeFilter
         title={TITLE}
         description={DESCRIPTION}
         searchPlaceholder="Search cover letters…"
@@ -142,6 +152,7 @@ export function CoverLetterList() {
     return (
       <EventSourcedListScaffold
         routeID={ROUTE_ID}
+        resumeFilter
         title={TITLE}
         description={DESCRIPTION}
         searchPlaceholder="Search cover letters…"
@@ -157,7 +168,7 @@ export function CoverLetterList() {
           actionLabel="New cover letter"
           onAction={handleCreate}
           hasSearch={hasSearch}
-          onClearSearch={clearSearch}
+          onClearSearch={resumeFilter.clearAll}
           dataTest="cover-letters-empty"
         />
       </EventSourcedListScaffold>
@@ -167,6 +178,7 @@ export function CoverLetterList() {
   return (
     <EventSourcedListScaffold
       routeID={ROUTE_ID}
+      resumeFilter
       title={TITLE}
       description={DESCRIPTION}
       searchPlaceholder="Search cover letters…"
