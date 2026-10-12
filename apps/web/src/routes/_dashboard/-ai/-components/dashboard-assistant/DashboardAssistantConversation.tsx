@@ -9,8 +9,10 @@ import {
 } from "@/routes/_dashboard/resumes/$resumeId/-components/ResumeAiTab/resume-ai-prompt";
 import { ArrowUp, Square } from "lucide-react";
 import { useState, type RefObject } from "react";
+import type { ContextCompaction } from "../../-utils/context-compaction";
 import { ChatErrorNotice } from "../ChatErrorNotice";
 import { AssistantFace } from "./AssistantFace";
+import { ContextCompactionBadge, ContextCompactionLiveNotice } from "./ContextCompactionNotice";
 import type { DashboardAssistantChat } from "./dashboard-assistant-chat-options";
 import { DashboardAssistantChatUI } from "./dashboard-assistant-chat-ui";
 
@@ -41,6 +43,9 @@ interface DashboardAssistantConversationProps {
   /** A tool approval is pending; sending declines it. */
   awaitingApproval: boolean;
   chat: DashboardAssistantChat;
+  compacting: boolean;
+  lastCompaction: ContextCompaction | null;
+  compactedThisTurn: boolean;
   composerRef: RefObject<PromptAreaHandle | null>;
   endOfMessagesRef: RefObject<HTMLDivElement | null>;
   errorMessage: string | null;
@@ -60,6 +65,9 @@ export function DashboardAssistantConversation({
   apiKey,
   awaitingApproval,
   chat,
+  compacting,
+  lastCompaction,
+  compactedThisTurn,
   composerRef,
   endOfMessagesRef,
   errorMessage,
@@ -135,6 +143,9 @@ export function DashboardAssistantConversation({
             </DashboardAssistantChatUI.Messages>
           </DashboardAssistantChatUI.Provider>
         )}
+        {isWorking && (compacting || compactedThisTurn) ? (
+          <ContextCompactionLiveNotice compaction={compacting ? null : lastCompaction} />
+        ) : null}
         {isWorking ? (
           <div className="shrink-0 py-1" data-test="dashboard-assistant-working">
             <DotsPulse label="Assistant is working" />
@@ -220,13 +231,18 @@ export function DashboardAssistantConversation({
             </div>
           </div>
         </form>
-        {apiKey ? (
-          <div className="px-1" data-test="dashboard-assistant-credits">
-            <CreditsDisplay
-              apiKey={apiKey}
-              sessionChars={sessionChars}
-              onOpenSettings={onOpenSettings}
-            />
+        {apiKey || lastCompaction ? (
+          <div className="flex items-center justify-between gap-2 px-1">
+            {apiKey ? (
+              <div data-test="dashboard-assistant-credits">
+                <CreditsDisplay
+                  apiKey={apiKey}
+                  sessionChars={sessionChars}
+                  onOpenSettings={onOpenSettings}
+                />
+              </div>
+            ) : null}
+            {lastCompaction ? <ContextCompactionBadge compaction={lastCompaction} /> : null}
           </div>
         ) : null}
       </div>

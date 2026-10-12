@@ -10,6 +10,7 @@ import {
   type TokenUsage,
   type Tool,
 } from "@tanstack/ai";
+import { withCompaction, type CompactionOptions } from "@tanstack/ai-compaction";
 import {
   createOpenRouterText,
   type OpenRouterConfig,
@@ -151,6 +152,8 @@ export function streamAgentChat(
       systemPrompt: string;
       tools: ReadonlyArray<Tool>;
       maxIterations: number;
+      /** Shrinks the history sent to the model once it passes `maxTokens`. */
+      compaction?: CompactionOptions;
     },
 ): AsyncIterable<StreamChunk> {
   const isOpenRouter = !serverEnv.LMSTUDIO_BASE_URL;
@@ -165,6 +168,33 @@ export function streamAgentChat(
         user: input.userId,
       }
     : undefined;
+
+  const middleware: ChatMiddleware[] = [];
+  if (isOpenRouter) {
+    middleware.push(
+      usageLogMiddleware({ agent: input.agent, model, userId: input.userId, routing }),
+    );
+  }
+  if (input.compaction) {
+    const compaction = input.compaction;
+    middleware.push(
+      withCompaction({
+        ...compaction,
+        onCompact(info) {
+          log.info({
+            message: "AI context compacted",
+            aiCompaction: {
+              agent: input.agent,
+              threadId: input.threadId,
+              maxTokens: compaction.maxTokens,
+              ...info,
+            },
+          });
+          compaction.onCompact?.(info);
+        },
+      }),
+    );
+  }
 
   return chat({
     adapter: buildTextAdapter(input.apiKey, input.model),
@@ -187,8 +217,6 @@ export function streamAgentChat(
     tools: [...input.tools],
     lazyToolsConfig: { includeDescription: "first-sentence" },
     agentLoopStrategy: maxIterations(input.maxIterations),
-    middleware: isOpenRouter
-      ? [usageLogMiddleware({ agent: input.agent, model, userId: input.userId, routing })]
-      : undefined,
+    middleware: middleware.length > 0 ? middleware : undefined,
   });
 }

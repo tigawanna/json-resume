@@ -9,9 +9,10 @@ import { getSessionChars } from "@/routes/_dashboard/resumes/$resumeId/-componen
 import { isLocalMode } from "@/routes/_dashboard/resumes/$resumeId/-components/ResumeAiTab/resume-ai-types";
 import { fetchServerSentEvents, useChat } from "@tanstack/ai-react";
 import { useRouter } from "@tanstack/react-router";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { aiModelLabels } from "../-utils/ai-model-labels";
 import { CONTINUE_AFTER_ERROR_PROMPT, failedRunHasReply } from "../-utils/chat-error";
+import { INITIAL_CONTEXT_COMPACTION, reduceContextCompaction } from "../-utils/context-compaction";
 import { dashboardAssistantClientTools } from "../-utils/dashboard-client-tools";
 import { appendChatMessages } from "../-utils/event-sourced-chat-persistence";
 import { isApiKeyErrorMessage } from "../-utils/is-api-key-error";
@@ -50,6 +51,8 @@ export function useDashboardAssistantChat(options: { onHandedOff: () => void }) 
   );
   const pendingHandoffRef = useRef<ResumeHandoff | null>(null);
   const changesRef = useRef<DashboardToolContext["changes"]>([]);
+  const [turn, setTurn] = useState(0);
+  const [compaction, setCompaction] = useState(INITIAL_CONTEXT_COMPACTION);
 
   const context: DashboardToolContext = {
     db,
@@ -71,6 +74,9 @@ export function useDashboardAssistantChat(options: { onHandedOff: () => void }) 
     context,
     queue: "drop",
     devtools: { name: "Dashboard assistant" },
+    onCustomEvent(eventType, data) {
+      setCompaction((state) => reduceContextCompaction(state, eventType, data, turn));
+    },
     forwardedProps: {
       today: localDate(),
       slopGuard,
@@ -108,13 +114,20 @@ export function useDashboardAssistantChat(options: { onHandedOff: () => void }) 
   async function sendText(text: string) {
     const trimmed = text.trim();
     if (!trimmed || isLoading || !isReady) return;
+    setTurn((value) => value + 1);
     await send(trimmed);
   }
 
   async function retryLastRun() {
     if (isLoading || !isReady) return;
+    setTurn((value) => value + 1);
     if (failedRunHasReply(messages)) await send(CONTINUE_AFTER_ERROR_PROMPT);
     else await chat.reload();
+  }
+
+  function clear() {
+    setCompaction(INITIAL_CONTEXT_COMPACTION);
+    chat.clear();
   }
 
   const errorMessage = chat.error?.message ?? null;
@@ -126,7 +139,11 @@ export function useDashboardAssistantChat(options: { onHandedOff: () => void }) 
     apiKeyRejected: isApiKeyErrorMessage(errorMessage),
     awaitingApproval,
     chat,
-    clear: chat.clear,
+    clear,
+    compacting: compaction.running?.turn === turn,
+    /** The latest compaction that shrank the history sent to the model. */
+    lastCompaction: compaction.last,
+    compactedThisTurn: compaction.last?.turn === turn,
     composerRef,
     endOfMessagesRef,
     errorMessage,

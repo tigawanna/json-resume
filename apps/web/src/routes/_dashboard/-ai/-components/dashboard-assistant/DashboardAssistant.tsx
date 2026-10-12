@@ -135,6 +135,9 @@ export function DashboardAssistant() {
               apiKey={assistant.settings?.apiKey ?? null}
               awaitingApproval={assistant.awaitingApproval}
               chat={assistant.chat}
+              compacting={assistant.compacting}
+              lastCompaction={assistant.lastCompaction}
+              compactedThisTurn={assistant.compactedThisTurn}
               composerRef={assistant.composerRef}
               endOfMessagesRef={assistant.endOfMessagesRef}
               errorMessage={assistant.errorMessage}

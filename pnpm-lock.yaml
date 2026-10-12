@@ -127,6 +127,9 @@ importers:
       '@tanstack/ai-client':
         specifier: ^0.39.1
         version: 0.39.1(@opentelemetry/api@1.9.1)(zod@4.3.6)
+      '@tanstack/ai-compaction':
+        specifier: ^0.1.17
+        version: 0.1.17(@tanstack/ai@0.67.0(@opentelemetry/api@1.9.1)(zod@4.3.6))
       '@tanstack/ai-mcp':
         specifier: ^0.8.2
         version: 0.8.2(@opentelemetry/api@1.9.1)(zod@4.3.6)
@@ -3169,6 +3172,11 @@ packages:
 
   '@tanstack/ai-client@0.39.1':
     resolution: {integrity: sha512-17g78dvtn3p4zwOTmdYmHSaQsiXhajCawuH1uGAUxpe9Q3CDX5Ty3ZoFOdFPUtTopZZ6HWUnUoGREmHA032HNA==}
+
+  '@tanstack/ai-compaction@0.1.17':
+    resolution: {integrity: sha512-wGvAEUQ5GmzdEfHGVAthfjqVZeYYpyCLfc+7/tlpCgolCbjO8aemDOj0MvhQ3qCsBr1Kkwj/twL5lJJ2SreUUA==}
+    peerDependencies:
+      '@tanstack/ai': ^0.68.0
 
   '@tanstack/ai-devtools-core@0.5.23':
     resolution: {integrity: sha512-QNalp163CkYuqetWjKQ4bIDQKsFZiWOYN9HphbMRyqyvkiG78PaHZWclOOBt62MtWsZqT55I/w6mSTaV9EacDQ==}
@@ -10776,6 +10784,10 @@ snapshots:
     transitivePeerDependencies:
       - '@opentelemetry/api'
       - zod
+
+  '@tanstack/ai-compaction@0.1.17(@tanstack/ai@0.67.0(@opentelemetry/api@1.9.1)(zod@4.3.6))':
+    dependencies:
+      '@tanstack/ai': 0.67.0(@opentelemetry/api@1.9.1)(zod@4.3.6)
 
   '@tanstack/ai-devtools-core@0.5.23(@opentelemetry/api@1.9.1)(@types/react@19.2.14)(csstype@3.2.3)(react@19.2.5)(zod@4.3.6)':
     dependencies:
