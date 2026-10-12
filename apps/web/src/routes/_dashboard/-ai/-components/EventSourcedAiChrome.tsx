@@ -15,7 +15,6 @@ import {
   useResumeWorkbenchActions,
 } from "@/routes/_dashboard/resumes/$resumeId/-components/resume-workbench/ResumeWorkbenchProvider";
 import { FileText, Settings, Trash2 } from "lucide-react";
-import { useEventSourcedAiSettings } from "../-hooks/use-event-sourced-ai-settings";
 import { EventSourcedAiSettingsSheet } from "./EventSourcedAiSettingsSheet";
 
 interface EventSourcedAiChromeProps {
@@ -36,7 +35,6 @@ export function EventSourcedAiChrome({
   const previewOpen = useResumeWorkbench((state) => state.ai.previewOpen);
   const settingsOpen = useResumeWorkbench((state) => state.dialog === "ai-settings");
   const { openDialog, setDialogOpen } = useResumeWorkbenchActions();
-  const aiSettings = useEventSourcedAiSettings();
 
   return (
     <>
@@ -100,16 +98,7 @@ export function EventSourcedAiChrome({
       <EventSourcedAiSettingsSheet
         open={settingsOpen}
         apiKeyRejected={apiKeyRejected}
-        settings={aiSettings.settings}
-        systemPrompt={aiSettings.systemPrompt}
-        isCustomSystemPrompt={aiSettings.isCustomSystemPrompt}
-        slopGuard={aiSettings.slopGuard}
-        onSaveSlopGuard={aiSettings.saveSlopGuard}
         onOpenChange={(open) => setDialogOpen("ai-settings", open)}
-        onClearSettings={aiSettings.clearSettings}
-        onSaveSettings={aiSettings.saveSettings}
-        onSaveSystemPrompt={aiSettings.saveSystemPrompt}
-        onResetSystemPrompt={aiSettings.resetSystemPrompt}
       />
     </>
   );

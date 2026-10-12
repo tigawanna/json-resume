@@ -6,6 +6,8 @@ import { fetchServerSentEvents, useChat, type UIMessage } from "@tanstack/ai-rea
 import { eq, useLiveQuery } from "@tanstack/react-db";
 import { useRouter } from "@tanstack/react-router";
 import { useEffect, useRef } from "react";
+import { aiModelLabels } from "../-utils/ai-model-labels";
+import { CONTINUE_AFTER_ERROR_PROMPT, failedRunHasReply } from "../-utils/chat-error";
 import { eventSourcedResumeAiClientTools } from "../-utils/client-tools";
 import {
   createEventSourcedChatPersistence,
@@ -13,8 +15,10 @@ import {
 } from "../-utils/event-sourced-chat-persistence";
 import type { AiChange, LocalToolContext } from "@/features/agentic-tools/definitions/tool-context";
 import type { WorkbenchTab } from "@/features/agentic-tools/resume-tool-schemas";
+import { takeHandoffPrompt } from "../-utils/resume-handoff";
 import { snapshotResumeJson } from "../-utils/resume-json-diff";
 import { useEventSourcedAiSettings } from "./use-event-sourced-ai-settings";
+import { useSendPastApprovals } from "./use-send-past-approvals";
 import { isLocalMode } from "@/routes/_dashboard/resumes/$resumeId/-components/ResumeAiTab/resume-ai-types";
 import {
   getMessageText,
@@ -156,10 +160,28 @@ export function useEventSourcedResumeAiChat() {
     endOfMessagesRef.current?.scrollIntoView({ block: "end" });
   }, [messages.length, isLoading, status]);
 
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      const prompt = takeHandoffPrompt(resumeId);
+      if (!prompt) return;
+      composerRef.current?.setText(prompt);
+      composerRef.current?.focus();
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [resumeId]);
+
+  const { awaitingApproval, send } = useSendPastApprovals(chat);
+
   async function sendText(text: string) {
     const trimmed = text.trim();
     if (!trimmed || isLoading || !isReady) return;
-    await chat.sendMessage(trimmed);
+    await send(trimmed);
+  }
+
+  async function retryLastRun() {
+    if (isLoading || !isReady) return;
+    if (failedRunHasReply(messages)) await send(CONTINUE_AFTER_ERROR_PROMPT);
+    else await chat.reload();
   }
 
   function clearLocalConversation() {
@@ -177,26 +199,17 @@ export function useEventSourcedResumeAiChat() {
   async function resendPastPrompt(message: UIMessage) {
     const text = getMessageText(message);
     if (!text || isLoading || !isReady) return;
-    await chat.sendMessage(text);
+    await send(text);
   }
 
-  const activeModelLabel = settings?.model
-    ? (settings.model.split("/").pop() ?? settings.model)
-    : null;
-  const routing = settings?.routing;
-  const activeRoutingLabel =
-    !routing || isLocalMode
-      ? null
-      : routing.mode === "auto"
-        ? routing.sort
-          ? `Auto · ${routing.sort}`
-          : "Auto routing"
-        : `${routing.mode === "official" ? "Official" : "Pinned"}: ${routing.providers.join(", ")}`;
+  const { modelLabel: activeModelLabel, routingLabel: activeRoutingLabel } =
+    aiModelLabels(settings);
 
   return {
     activeModelLabel,
     activeResume,
     activeRoutingLabel,
+    awaitingApproval,
     chat,
     chatErrorMessage: chat.error?.message ?? null,
     clearLocalConversation,
@@ -208,6 +221,7 @@ export function useEventSourcedResumeAiChat() {
     messages,
     reload: chat.reload,
     resendPastPrompt,
+    retryLastRun,
     sendText,
     sessionChars: getSessionChars(messages),
     sessionGenerating,

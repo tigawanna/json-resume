@@ -8,7 +8,7 @@ export function TanstackDevtools() {
   return (
     <TanStackDevtools
       config={{
-        position: "bottom-right",
+        position: "middle-right",
       }}
       eventBusConfig={{
         connectToServerBus: true,

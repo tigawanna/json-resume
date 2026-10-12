@@ -1,3 +1,4 @@
+import { withoutStackedHandoffs } from "@/routes/_dashboard/-ai/-utils/resume-handoff";
 import type { MessageProps } from "@tanstack/ai-react/ui";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import type { RefObject } from "react";
@@ -14,7 +15,9 @@ interface ResumeAiVirtualMessagesProps {
 export function ResumeAiVirtualMessages({ scrollRef }: ResumeAiVirtualMessagesProps) {
   return (
     <ResumeAiChatUI.Messages>
-      {(messages) => <VirtualMessageRows messages={messages} scrollRef={scrollRef} />}
+      {(messages) => (
+        <VirtualMessageRows messages={withoutStackedHandoffs(messages)} scrollRef={scrollRef} />
+      )}
     </ResumeAiChatUI.Messages>
   );
 }

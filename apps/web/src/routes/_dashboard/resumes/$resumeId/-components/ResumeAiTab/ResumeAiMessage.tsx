@@ -3,7 +3,10 @@ import { cn } from "@/lib/utils";
 import type { MessageProps } from "@tanstack/ai-react/ui";
 import type { ReactNode } from "react";
 import { PencilLine, RefreshCcw } from "lucide-react";
+import { isHandoffMessage } from "@/routes/_dashboard/-ai/-utils/resume-handoff";
+import { ResumeAiHandoffDivider } from "./ResumeAiHandoffDivider";
 import { useResumeAiChatActions } from "./resume-ai-chat-actions";
+import { getMessageText } from "./resume-ai-message-utils";
 import type { ResumeAiChatOptions } from "./resume-ai-chat-options";
 
 export function ResumeAiMessage({ message, Parts }: MessageProps<ResumeAiChatOptions>) {
@@ -11,6 +14,10 @@ export function ResumeAiMessage({ message, Parts }: MessageProps<ResumeAiChatOpt
   const isUser = message.role === "user";
   const isInProgress = isUser && message.id === inProgressUserMessageId;
   const bubbleShape = isUser ? "rounded-2xl rounded-tr-md" : "rounded-2xl rounded-tl-md";
+
+  if (isHandoffMessage(message)) {
+    return <ResumeAiHandoffDivider context={getMessageText(message)} />;
+  }
 
   return (
     <div

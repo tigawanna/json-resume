@@ -1,116 +1,23 @@
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Sheet,
   SheetContent,
   SheetDescription,
-  SheetFooter,
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
-import { openRouterModelEndpointsQueryOptions } from "@/data-access-layer/openrouter/model-endpoints";
-import { ModelPicker } from "@/features/agentic-tools/ModelPicker";
-import { ProviderRoutingPicker } from "@/features/agentic-tools/ProviderRoutingPicker";
-import {
-  DEFAULT_AI_ROUTING,
-  resolveRouting,
-  type AiRouting,
-} from "@/features/agentic-tools/openrouter-routing";
-import { useOpenRouterModels } from "@/hooks/use-openrouter-models";
-import type { AiSettings } from "@/types/ai-settings";
-import { useQuery } from "@tanstack/react-query";
-import { AlertTriangle, Eye, EyeOff, KeyRound } from "lucide-react";
-import { useEffect, useState, type ReactNode } from "react";
-import { isLocalMode } from "@/routes/_dashboard/resumes/$resumeId/-components/ResumeAiTab/resume-ai-types";
-import {
-  EVENT_SOURCED_SYSTEM_PROMPT_MAX_CHARS,
-  DEFAULT_EVENT_SOURCED_SYSTEM_PROMPT,
-} from "../-utils/system-prompt";
-
-const DEFAULT_MODEL = "deepseek/deepseek-chat-v3-0324";
+import { AiSettingsForm } from "./AiSettingsForm";
 
 interface EventSourcedAiSettingsSheetProps {
   open: boolean;
   apiKeyRejected: boolean;
-  settings: AiSettings | null;
-  systemPrompt: string;
-  isCustomSystemPrompt: boolean;
-  slopGuard: boolean;
   onOpenChange: (open: boolean) => void;
-  onClearSettings: () => void;
-  onSaveSettings: (settings: AiSettings) => void;
-  onSaveSystemPrompt: (value: string) => void;
-  onResetSystemPrompt: () => void;
-  onSaveSlopGuard: (enabled: boolean) => void;
 }
 
 export function EventSourcedAiSettingsSheet({
   open,
   apiKeyRejected,
-  settings,
-  systemPrompt,
-  isCustomSystemPrompt,
-  slopGuard,
   onOpenChange,
-  onClearSettings,
-  onSaveSettings,
-  onSaveSystemPrompt,
-  onResetSystemPrompt,
-  onSaveSlopGuard,
 }: EventSourcedAiSettingsSheetProps) {
-  const [apiKey, setApiKey] = useState(settings?.apiKey ?? "");
-  const [model, setModel] = useState(settings?.model ?? DEFAULT_MODEL);
-  const [routing, setRouting] = useState<AiRouting>(settings?.routing ?? DEFAULT_AI_ROUTING);
-  const [promptDraft, setPromptDraft] = useState(systemPrompt);
-  const [slopGuardDraft, setSlopGuardDraft] = useState(slopGuard);
-  const [showKey, setShowKey] = useState(false);
-  const promptDirty = promptDraft !== systemPrompt;
-
-  const { data: models } = useOpenRouterModels();
-  const { data: endpoints } = useQuery({
-    ...openRouterModelEndpointsQueryOptions(model),
-    enabled: open && !isLocalMode && model.length > 0,
-  });
-
-  useEffect(() => {
-    if (!open) return;
-    setApiKey(settings?.apiKey ?? "");
-    setModel(settings?.model ?? DEFAULT_MODEL);
-    setRouting(settings?.routing ?? DEFAULT_AI_ROUTING);
-    setPromptDraft(systemPrompt);
-    setSlopGuardDraft(slopGuard);
-    setShowKey(false);
-  }, [open, settings, systemPrompt, slopGuard]);
-
-  function handleModelChange(next: string) {
-    if (next === model) return;
-    setModel(next);
-    if (routing.mode === "custom") setRouting({ ...routing, providers: [] });
-  }
-
-  function handleSave() {
-    if (!isLocalMode) {
-      if (!apiKey.trim() || !model) return;
-      onSaveSettings({
-        apiKey: apiKey.trim(),
-        model,
-        storageType: "local",
-        routing: resolveRouting(
-          model,
-          routing,
-          endpoints,
-          models?.find((candidate) => candidate.id === model),
-        ),
-      });
-    }
-    if (promptDirty) onSaveSystemPrompt(promptDraft);
-    if (slopGuardDraft !== slopGuard) onSaveSlopGuard(slopGuardDraft);
-    onOpenChange(false);
-  }
-
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
@@ -121,169 +28,17 @@ export function EventSourcedAiSettingsSheet({
         <SheetHeader className="border-border/60 border-b px-6 py-4">
           <SheetTitle>AI settings</SheetTitle>
           <SheetDescription>
-            Key, model, provider routing, and system prompt. Stored in the local database and synced
-            when sync is on.
+            Key, model, provider routing, and system prompt, shared by every assistant. Stored in
+            the local database and synced when sync is on.
           </SheetDescription>
         </SheetHeader>
-
-        <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto px-6 py-5">
-          {isLocalMode ? (
-            <p className="text-muted-foreground text-sm">Using LM Studio. No API key required.</p>
-          ) : (
-            <>
-              <SettingsSection title="OpenRouter API key">
-                {apiKeyRejected ? (
-                  <div
-                    role="alert"
-                    className="flex items-start gap-2 rounded-lg bg-destructive/10 px-3 py-2.5 text-sm text-destructive"
-                    data-test="event-sourced-api-key-invalid"
-                  >
-                    <AlertTriangle className="mt-0.5 size-4 shrink-0" />
-                    <p>
-                      Invalid API key. OpenRouter rejected the saved key. Check it for typos or
-                      create a new one at openrouter.ai/keys.
-                    </p>
-                  </div>
-                ) : null}
-                <div className="relative">
-                  <Input
-                    id="event-sourced-api-key"
-                    type={showKey ? "text" : "password"}
-                    value={apiKey}
-                    onChange={(event) => setApiKey(event.target.value)}
-                    placeholder="sk-or-v1-..."
-                    autoComplete="off"
-                    aria-label="OpenRouter API key"
-                    aria-invalid={apiKeyRejected || undefined}
-                    className={`pr-11 ${
-                      apiKeyRejected
-                        ? "border-destructive focus-visible:ring-destructive/40 focus-visible:border-destructive"
-                        : ""
-                    }`}
-                    data-test="event-sourced-api-key-input"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowKey((value) => !value)}
-                    className="text-muted-foreground hover:text-foreground absolute top-1/2 right-2 flex size-8 -translate-y-1/2 items-center justify-center rounded-md"
-                    aria-label={showKey ? "Hide key" : "Show key"}
-                  >
-                    {showKey ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-                  </button>
-                </div>
-              </SettingsSection>
-
-              <SettingsSection
-                title="Model"
-                aside={<span className="truncate font-mono text-xs">{model}</span>}
-              >
-                <ModelPicker value={model} onChange={handleModelChange} />
-              </SettingsSection>
-
-              <SettingsSection title="Provider routing">
-                <ProviderRoutingPicker modelId={model} value={routing} onChange={setRouting} />
-              </SettingsSection>
-            </>
-          )}
-
-          <SettingsSection
-            title="System prompt"
-            aside={isCustomSystemPrompt || promptDirty ? "Custom" : "Default"}
-          >
-            <Textarea
-              id="event-sourced-system-prompt"
-              value={promptDraft}
-              onChange={(event) =>
-                setPromptDraft(event.target.value.slice(0, EVENT_SOURCED_SYSTEM_PROMPT_MAX_CHARS))
-              }
-              rows={10}
-              aria-label="System prompt"
-              className="min-h-40 font-mono text-xs leading-5"
-              data-test="event-sourced-system-prompt-input"
-            />
-            <div className="flex items-center justify-between gap-2">
-              <p className="text-muted-foreground text-xs">
-                {promptDraft.length.toLocaleString()} /{" "}
-                {EVENT_SOURCED_SYSTEM_PROMPT_MAX_CHARS.toLocaleString()}
-              </p>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                disabled={!isCustomSystemPrompt && !promptDirty}
-                onClick={() => {
-                  onResetSystemPrompt();
-                  setPromptDraft(DEFAULT_EVENT_SOURCED_SYSTEM_PROMPT);
-                }}
-                data-test="event-sourced-system-prompt-reset"
-              >
-                Reset default
-              </Button>
-            </div>
-          </SettingsSection>
-
-          <div className="flex items-start justify-between gap-4">
-            <div className="grid gap-1">
-              <Label htmlFor="event-sourced-slop-guard">Slop guard</Label>
-              <p className="text-muted-foreground text-xs">
-                Adds strict writing-style rules against filler, stock phrases, and empty polish.
-                Some models follow them too literally, so it is off by default.
-              </p>
-            </div>
-            <Switch
-              id="event-sourced-slop-guard"
-              checked={slopGuardDraft}
-              onCheckedChange={setSlopGuardDraft}
-              data-test="event-sourced-slop-guard-toggle"
-            />
-          </div>
-        </div>
-
-        <SheetFooter className="border-border/60 flex-row justify-end border-t px-6 py-4">
-          {settings && !isLocalMode ? (
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="mr-auto"
-              onClick={onClearSettings}
-            >
-              Clear key
-            </Button>
-          ) : null}
-          <Button
-            type="button"
-            size="sm"
-            className="gap-2"
-            disabled={!isLocalMode && (!apiKey.trim() || !model)}
-            onClick={handleSave}
-            data-test="event-sourced-ai-settings-save"
-          >
-            <KeyRound className="size-3.5" />
-            Save
-          </Button>
-        </SheetFooter>
+        <AiSettingsForm
+          apiKeyRejected={apiKeyRejected}
+          bodyClassName="min-h-0 flex-1 overflow-y-auto px-6 py-5"
+          footerClassName="border-border/60 border-t px-6 py-4"
+          onSaved={() => onOpenChange(false)}
+        />
       </SheetContent>
     </Sheet>
-  );
-}
-
-function SettingsSection({
-  title,
-  aside,
-  children,
-}: {
-  title: string;
-  aside?: ReactNode;
-  children: ReactNode;
-}) {
-  return (
-    <section className="grid gap-2.5">
-      <div className="flex min-w-0 items-center justify-between gap-3">
-        <Label className="shrink-0">{title}</Label>
-        {aside ? <span className="text-muted-foreground min-w-0 text-xs">{aside}</span> : null}
-      </div>
-      {children}
-    </section>
   );
 }

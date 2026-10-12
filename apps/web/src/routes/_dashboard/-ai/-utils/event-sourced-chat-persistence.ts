@@ -16,7 +16,7 @@ function isPersistedState<TTools extends ClientTools>(
   );
 }
 
-function parseStoredMessages<TTools extends ClientTools>(
+export function parseStoredMessages<TTools extends ClientTools>(
   raw: string,
 ): ChatPersistedState<TTools> | null {
   try {
@@ -51,6 +51,43 @@ export function handOverChatMessages(
     id: toResumeId,
     userId,
     resumeId: toResumeId,
+    messages: payload,
+    createdAt: ts,
+    updatedAt: ts,
+  });
+}
+
+/**
+ * Adds messages to the end of a résumé's chat, creating it when missing. Drops any
+ * paused run, since the appended messages come after it. `replaceTrailing` drops
+ * matching messages at the end first, so repeated markers do not stack.
+ */
+export function appendChatMessages(
+  db: AppDb,
+  userId: string,
+  resumeId: string,
+  messages: ReadonlyArray<unknown>,
+  options: { replaceTrailing?: (message: unknown) => boolean } = {},
+) {
+  if (!userId || messages.length === 0) return;
+  const existing = db.collections.resumeAiChat.get(resumeId);
+  const previous: unknown[] = existing
+    ? [...(parseStoredMessages(existing.messages)?.messages ?? [])]
+    : [];
+  while (previous.length > 0 && options.replaceTrailing?.(previous.at(-1))) previous.pop();
+  const payload = JSON.stringify({ messages: [...previous, ...messages] });
+  const ts = nowMs();
+  if (existing) {
+    db.collections.resumeAiChat.update(resumeId, (draft) => {
+      draft.messages = payload;
+      draft.updatedAt = ts;
+    });
+    return;
+  }
+  db.collections.resumeAiChat.insert({
+    id: resumeId,
+    userId,
+    resumeId,
     messages: payload,
     createdAt: ts,
     updatedAt: ts,

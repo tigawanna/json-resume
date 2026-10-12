@@ -8,6 +8,7 @@ import type { PromptAreaHandle, Segment } from "@/components/prompt-area/types";
 import { Button } from "@/components/ui/button";
 import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
 import { cn } from "@/lib/utils";
+import { ChatErrorNotice } from "@/routes/_dashboard/-ai/-components/ChatErrorNotice";
 import { listLocalResumes } from "@/routes/_dashboard/-ai/-utils/local-resume-tools";
 import { ArrowUp, FileText, LoaderCircle, Plus, Square, X } from "lucide-react";
 import { useState, type RefObject } from "react";
@@ -38,11 +39,15 @@ export interface ResumeAiPromptComposerProps {
   activeResume: ActiveResumeSummary | null;
   activeRoutingLabel: string | null;
   apiKey: string | null;
+  /** A tool approval is pending; sending declines it. */
+  awaitingApproval: boolean;
   errorMessage: string | null;
   hasMessages: boolean;
   isBusy: boolean;
   isReady: boolean;
   onSend: (message: string) => void | Promise<void>;
+  /** Re-runs the failed request: resends the prompt, or asks to continue a partial run. */
+  onRetry: () => void | Promise<void>;
   onStop: () => void;
   promptAreaRef: RefObject<PromptAreaHandle | null>;
   sessionChars: number;
@@ -60,11 +65,13 @@ export function ResumeAiPromptComposer({
   activeResume,
   activeRoutingLabel,
   apiKey,
+  awaitingApproval,
   errorMessage,
   hasMessages,
   isBusy,
   isReady,
   onSend,
+  onRetry,
   onStop,
   promptAreaRef,
   sessionChars,
@@ -109,13 +116,14 @@ export function ResumeAiPromptComposer({
 
   return (
     <div className="mx-auto w-full max-w-3xl" data-test="resume-ai-composer">
-      {errorMessage ? (
-        <p
-          className="mb-3 rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive"
-          data-test="resume-ai-error"
-        >
-          {errorMessage}
-        </p>
+      {errorMessage && !isBusy ? (
+        <ChatErrorNotice
+          message={errorMessage}
+          onRetry={() => void onRetry()}
+          onOpenSettings={() => openDialog("ai-settings")}
+          retryDisabled={!isReady}
+          className="mb-3"
+        />
       ) : null}
       <form
         onSubmit={async (event) => {
@@ -137,9 +145,11 @@ export function ResumeAiPromptComposer({
             placeholder={
               !isReady
                 ? "Configure your OpenRouter API key in settings to start chatting..."
-                : hasMessages
-                  ? "Ask for another change..."
-                  : emptyChatPlaceholders
+                : awaitingApproval
+                  ? "Approve the change above, or reply here to decline it..."
+                  : hasMessages
+                    ? "Ask for another change..."
+                    : emptyChatPlaceholders
             }
             disabled={!isReady || isBusy}
             markdown

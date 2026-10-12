@@ -9,6 +9,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { AlertCircle, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { AiAssistantSection } from "./-components/AiAssistantSection";
 import { LocalBackupSection } from "./-components/LocalBackupSection";
 import { ManagedSyncSection } from "./-components/ManagedSyncSection";
 
@@ -106,6 +107,8 @@ function SettingsPage() {
           </CardContent>
         </Card>
       )}
+
+      <AiAssistantSection />
 
       <ManagedSyncSection />
 

@@ -80,6 +80,7 @@ export function EventSourcedResumeAiTab() {
               activeResume={chat.activeResume}
               activeRoutingLabel={chat.activeRoutingLabel}
               apiKey={chat.settings?.apiKey ?? null}
+              awaitingApproval={chat.awaitingApproval}
               sessionChars={chat.sessionChars}
               sessionGenerating={chat.sessionGenerating}
               status={chat.status}
@@ -92,6 +93,7 @@ export function EventSourcedResumeAiTab() {
               onEditPastPrompt={chat.editPastPrompt}
               onResendPastPrompt={(message) => void chat.resendPastPrompt(message)}
               onSend={(message) => void chat.sendText(message)}
+              onRetry={chat.retryLastRun}
               onStop={chat.stop}
             />
           </div>

@@ -45,6 +45,7 @@ import { Route as DashboardTalksIndexRouteImport } from './routes/_dashboard/tal
 import { Route as DashboardVolunteersIndexRouteImport } from './routes/_dashboard/volunteers/index'
 import { Route as ApiAgenticSplatRouteImport } from './routes/api/agentic/$'
 import { Route as ApiAgenticOpenapiRouteImport } from './routes/api/agentic/openapi'
+import { Route as ApiAiDashboardAssistantRouteImport } from './routes/api/ai/dashboard-assistant'
 import { Route as ApiAiEventSourcedResumeTailorRouteImport } from './routes/api/ai/event-sourced-resume-tailor'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ApiCronProjectSyncEventsRouteImport } from './routes/api/cron/project-sync-events'
@@ -250,6 +251,11 @@ const ApiAgenticOpenapiRoute = ApiAgenticOpenapiRouteImport.update({
   path: '/api/agentic/openapi',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAiDashboardAssistantRoute = ApiAiDashboardAssistantRouteImport.update({
+  id: '/api/ai/dashboard-assistant',
+  path: '/api/ai/dashboard-assistant',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAiEventSourcedResumeTailorRoute =
   ApiAiEventSourcedResumeTailorRouteImport.update({
     id: '/api/ai/event-sourced-resume-tailor',
@@ -352,6 +358,7 @@ export interface FileRoutesByFullPath {
   '/admin/route': typeof DashboardAdminRouteRoute
   '/api/agentic/$': typeof ApiAgenticSplatRoute
   '/api/agentic/openapi': typeof ApiAgenticOpenapiRouteWithChildren
+  '/api/ai/dashboard-assistant': typeof ApiAiDashboardAssistantRoute
   '/api/ai/event-sourced-resume-tailor': typeof ApiAiEventSourcedResumeTailorRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/cron/project-sync-events': typeof ApiCronProjectSyncEventsRoute
@@ -404,6 +411,7 @@ export interface FileRoutesByTo {
   '/admin/route': typeof DashboardAdminRouteRoute
   '/api/agentic/$': typeof ApiAgenticSplatRoute
   '/api/agentic/openapi': typeof ApiAgenticOpenapiRouteWithChildren
+  '/api/ai/dashboard-assistant': typeof ApiAiDashboardAssistantRoute
   '/api/ai/event-sourced-resume-tailor': typeof ApiAiEventSourcedResumeTailorRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/cron/project-sync-events': typeof ApiCronProjectSyncEventsRoute
@@ -459,6 +467,7 @@ export interface FileRoutesById {
   '/_dashboard/admin/route': typeof DashboardAdminRouteRoute
   '/api/agentic/$': typeof ApiAgenticSplatRoute
   '/api/agentic/openapi': typeof ApiAgenticOpenapiRouteWithChildren
+  '/api/ai/dashboard-assistant': typeof ApiAiDashboardAssistantRoute
   '/api/ai/event-sourced-resume-tailor': typeof ApiAiEventSourcedResumeTailorRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/cron/project-sync-events': typeof ApiCronProjectSyncEventsRoute
@@ -514,6 +523,7 @@ export interface FileRouteTypes {
     | '/admin/route'
     | '/api/agentic/$'
     | '/api/agentic/openapi'
+    | '/api/ai/dashboard-assistant'
     | '/api/ai/event-sourced-resume-tailor'
     | '/api/auth/$'
     | '/api/cron/project-sync-events'
@@ -566,6 +576,7 @@ export interface FileRouteTypes {
     | '/admin/route'
     | '/api/agentic/$'
     | '/api/agentic/openapi'
+    | '/api/ai/dashboard-assistant'
     | '/api/ai/event-sourced-resume-tailor'
     | '/api/auth/$'
     | '/api/cron/project-sync-events'
@@ -620,6 +631,7 @@ export interface FileRouteTypes {
     | '/_dashboard/admin/route'
     | '/api/agentic/$'
     | '/api/agentic/openapi'
+    | '/api/ai/dashboard-assistant'
     | '/api/ai/event-sourced-resume-tailor'
     | '/api/auth/$'
     | '/api/cron/project-sync-events'
@@ -670,6 +682,7 @@ export interface RootRouteChildren {
   TestIndexRoute: typeof TestIndexRoute
   ApiAgenticSplatRoute: typeof ApiAgenticSplatRoute
   ApiAgenticOpenapiRoute: typeof ApiAgenticOpenapiRouteWithChildren
+  ApiAiDashboardAssistantRoute: typeof ApiAiDashboardAssistantRoute
   ApiAiEventSourcedResumeTailorRoute: typeof ApiAiEventSourcedResumeTailorRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiCronProjectSyncEventsRoute: typeof ApiCronProjectSyncEventsRoute
@@ -934,6 +947,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAgenticOpenapiRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/ai/dashboard-assistant': {
+      id: '/api/ai/dashboard-assistant'
+      path: '/api/ai/dashboard-assistant'
+      fullPath: '/api/ai/dashboard-assistant'
+      preLoaderRoute: typeof ApiAiDashboardAssistantRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/ai/event-sourced-resume-tailor': {
       id: '/api/ai/event-sourced-resume-tailor'
       path: '/api/ai/event-sourced-resume-tailor'
@@ -1161,6 +1181,7 @@ const rootRouteChildren: RootRouteChildren = {
   TestIndexRoute: TestIndexRoute,
   ApiAgenticSplatRoute: ApiAgenticSplatRoute,
   ApiAgenticOpenapiRoute: ApiAgenticOpenapiRouteWithChildren,
+  ApiAiDashboardAssistantRoute: ApiAiDashboardAssistantRoute,
   ApiAiEventSourcedResumeTailorRoute: ApiAiEventSourcedResumeTailorRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiCronProjectSyncEventsRoute: ApiCronProjectSyncEventsRoute,

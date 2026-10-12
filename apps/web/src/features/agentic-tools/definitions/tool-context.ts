@@ -29,6 +29,24 @@ export type LocalToolContext = {
   changes: AiChange[];
 };
 
+/** What the dashboard assistant hands to the résumé editor's assistant. */
+export type ResumeHandoff = {
+  resumeId: string;
+  name: string;
+  mode: "reuse" | "copy";
+  baseResumeName: string;
+  jobLabel: string;
+  jobAttached: boolean;
+  reason: string;
+  suggestedPrompt: string;
+};
+
+/** The dashboard assistant has no active résumé; it opens one through `handOff`. */
+export type DashboardToolContext = LocalToolContext & {
+  /** Queues the handoff until the current reply finishes, so the run is not cut off. */
+  handOff: (handoff: ResumeHandoff) => void;
+};
+
 /** Request context for remote (Drizzle-backed) tool implementations. */
 export type RemoteToolContext = {
   userId: string;

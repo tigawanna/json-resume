@@ -5,7 +5,7 @@ import { streamEventSourcedResumeAgentChat } from "@/routes/_dashboard/-ai/-util
 import { EVENT_SOURCED_SYSTEM_PROMPT_MAX_CHARS } from "@/routes/_dashboard/-ai/-utils/system-prompt";
 import { aiRoutingSchema } from "@/features/agentic-tools/openrouter-routing";
 import { auth } from "@/lib/auth";
-import { serverEnv } from "@/lib/server-env";
+import { isAllowedOrigin, jsonError, preflightResponse, withCors } from "./-utils/same-origin-cors";
 
 const forwardedSchema = z.object({
   resumeId: z.string().trim().min(1),
@@ -19,39 +19,6 @@ const forwardedSchema = z.object({
   model: z.string().trim().optional(),
   routing: aiRoutingSchema.optional(),
 });
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": serverEnv.FRONTEND_URL,
-  "Access-Control-Allow-Credentials": "true",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type",
-  Vary: "Origin",
-} as const;
-
-function isAllowedOrigin(request: Request): boolean {
-  return request.headers.get("origin") === serverEnv.FRONTEND_URL;
-}
-
-function withCors(response: Response): Response {
-  const headers = new Headers(response.headers);
-  for (const [key, value] of Object.entries(corsHeaders)) {
-    headers.set(key, value);
-  }
-  return new Response(response.body, {
-    status: response.status,
-    statusText: response.statusText,
-    headers,
-  });
-}
-
-function jsonError(message: string, status: number) {
-  return withCors(
-    new Response(JSON.stringify({ error: message }), {
-      status,
-      headers: { "Content-Type": "application/json" },
-    }),
-  );
-}
 
 export const Route = createFileRoute("/api/ai/event-sourced-resume-tailor")({
   server: {
@@ -97,11 +64,7 @@ export const Route = createFileRoute("/api/ai/event-sourced-resume-tailor")({
           return jsonError(message, 400);
         }
       },
-      OPTIONS: async () =>
-        new Response(null, {
-          status: 204,
-          headers: corsHeaders,
-        }),
+      OPTIONS: async () => preflightResponse(),
     },
   },
 });
