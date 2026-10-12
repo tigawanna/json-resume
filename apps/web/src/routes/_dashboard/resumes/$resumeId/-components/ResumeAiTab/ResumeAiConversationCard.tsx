@@ -1,10 +1,12 @@
+import { DotsPulse } from "@/components/loaders/DotsPulse";
 import { ResumeAiPromptComposer } from "./ResumeAiPromptComposer";
+import { ResumeAiVirtualMessages } from "./ResumeAiVirtualMessages";
 import { ResumeAiChatActionsContext } from "./resume-ai-chat-actions";
 import type { ResumeAiChat } from "./resume-ai-chat-options";
 import { ResumeAiChatUI } from "./resume-ai-chat-ui";
 import type { ResumeAiMessageAction } from "./resume-ai-types";
 import { DIRECTIVES } from "./resume-ai-directives";
-import type { ComponentProps, RefObject } from "react";
+import { useRef, type ComponentProps, type RefObject } from "react";
 
 interface ResumeAiConversationCardProps extends Omit<
   ComponentProps<typeof ResumeAiPromptComposer>,
@@ -28,6 +30,7 @@ export function ResumeAiConversationCard({
   onResendPastPrompt,
   ...composerProps
 }: ResumeAiConversationCardProps) {
+  const scrollRef = useRef<HTMLDivElement>(null);
   const isEmpty = chat.messages.length === 0;
   const isWorking = composerProps.isBusy || composerProps.sessionGenerating;
   const inProgressUserMessageId = isWorking
@@ -86,7 +89,8 @@ export function ResumeAiConversationCard({
   return (
     <div className="flex h-full flex-col" data-test="resume-ai-conversation">
       <div
-        className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-1 py-2 pr-3"
+        ref={scrollRef}
+        className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-1 pr-3 pb-2"
         data-test="resume-ai-messages"
       >
         {isEmpty && historyPending ? (
@@ -96,15 +100,21 @@ export function ResumeAiConversationCard({
             value={{
               isBusy: composerProps.isBusy,
               isReady,
-              isWorking,
               inProgressUserMessageId,
               onEdit: onEditPastPrompt,
               onResend: onResendPastPrompt,
             }}
           >
-            <ResumeAiChatUI.Chat chat={chat} />
+            <ResumeAiChatUI.Provider chat={chat}>
+              <ResumeAiVirtualMessages scrollRef={scrollRef} />
+            </ResumeAiChatUI.Provider>
           </ResumeAiChatActionsContext>
         )}
+        {isWorking ? (
+          <div className="shrink-0 px-4 py-2" data-test="resume-ai-working">
+            <DotsPulse label="Assistant is working" />
+          </div>
+        ) : null}
         <div ref={endOfMessagesRef} />
       </div>
       <div className="shrink-0 pt-2 pb-1">

@@ -1,5 +1,5 @@
 import { createChatUI } from "@tanstack/ai-react/ui";
-import { ResumeAiChatLayout, ResumeAiMessage } from "./ResumeAiMessage";
+import { ResumeAiMessage } from "./ResumeAiMessage";
 import {
   ResumeAiCloneResumeTool,
   ResumeAiCreateResumeTool,
@@ -16,10 +16,11 @@ import { resumeAiChatOptions } from "./resume-ai-chat-options";
 /**
  * Every tool needs an entry. A tool listed here gets its approval as the
  * `interrupt` prop, so `replace_resume_document` asks inline.
+ * `layout` only serves `.Chat`; the conversation card virtualizes the list through `.Provider`.
  */
 export const ResumeAiChatUI = createChatUI(resumeAiChatOptions, {
   components: {
-    layout: ResumeAiChatLayout,
+    layout: ({ Messages }) => <Messages />,
     message: ResumeAiMessage,
   },
   partsComponents: {

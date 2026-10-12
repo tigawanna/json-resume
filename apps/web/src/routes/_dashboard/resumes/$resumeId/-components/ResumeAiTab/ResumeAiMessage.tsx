@@ -1,25 +1,10 @@
-import { DotsPulse } from "@/components/loaders/DotsPulse";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import type { LayoutProps, MessageProps } from "@tanstack/ai-react/ui";
+import type { MessageProps } from "@tanstack/ai-react/ui";
 import type { ReactNode } from "react";
 import { PencilLine, RefreshCcw } from "lucide-react";
 import { useResumeAiChatActions } from "./resume-ai-chat-actions";
 import type { ResumeAiChatOptions } from "./resume-ai-chat-options";
-
-export function ResumeAiChatLayout({ Messages }: LayoutProps<ResumeAiChatOptions, undefined>) {
-  const { isWorking } = useResumeAiChatActions();
-  return (
-    <>
-      <Messages />
-      {isWorking ? (
-        <div className="px-4 py-2" data-test="resume-ai-working">
-          <DotsPulse label="Assistant is working" />
-        </div>
-      ) : null}
-    </>
-  );
-}
 
 export function ResumeAiMessage({ message, Parts }: MessageProps<ResumeAiChatOptions>) {
   const { isBusy, isReady, inProgressUserMessageId, onEdit, onResend } = useResumeAiChatActions();

@@ -4,8 +4,6 @@ import type { ResumeAiMessageAction } from "./resume-ai-types";
 export interface ResumeAiChatActions {
   isBusy: boolean;
   isReady: boolean;
-  /** This tab's run or another tab's run on the same session is still going. */
-  isWorking: boolean;
   /** The user message whose response is still being worked on. */
   inProgressUserMessageId: string | undefined;
   onEdit: ResumeAiMessageAction;
