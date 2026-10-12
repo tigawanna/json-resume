@@ -99,42 +99,43 @@ export interface ResumeSearchAdapter {
   jobs?: (query: string) => Promise<WorkspaceJobOption[]>;
 }
 
+/** Members are function properties, not methods: forms destructure them off the context. */
 export interface ResumeWorkspaceAdapter {
   mode: "remote" | "local";
   resume: ResumeDetailDTO;
   searches?: ResumeSearchAdapter;
-  updateMetadata(values: ResumeMetadataDraft): Promise<void>;
+  updateMetadata: (values: ResumeMetadataDraft) => Promise<void>;
   /** Links an existing job (or none) as this résumé's target. */
-  attachJob(jobId: string | null): Promise<void>;
+  attachJob: (jobId: string | null) => Promise<void>;
   /** Edits the linked job, or creates a job from the draft and links it. */
   saveTargetJob(values: TargetJobDraft): Promise<{ id: string }>;
   /** Adds existing library rows to the résumé by id, skipping ones it already shows. */
-  attachLibraryRows(key: AttachableLibraryKey, ids: string[]): Promise<void>;
-  updateContacts(contacts: ContactDraft[]): Promise<void>;
-  updateLinks(links: LinkDraft[]): Promise<void>;
-  updateSummary(text: string): Promise<void>;
-  updateNotes(values: { label: string; text: string }): Promise<void>;
-  updateSkillGroups(groups: SkillGroupDraft[]): Promise<void>;
-  createExperience(values: ExperienceDraft): Promise<{ id: string }>;
-  updateExperience(id: string, values: ExperienceDraft): Promise<void>;
-  deleteExperience(id: string): Promise<void>;
-  reorderExperience(idA: string, idB: string): Promise<void>;
-  updateExperienceBullets(experienceId: string, bullets: string[]): Promise<void>;
-  createEducation(values: EducationDraft): Promise<{ id: string }>;
-  updateEducation(id: string, values: EducationDraft): Promise<void>;
-  deleteEducation(id: string): Promise<void>;
-  reorderEducation(idA: string, idB: string): Promise<void>;
-  createProject(values: ProjectDraft): Promise<{ id: string }>;
-  updateProject(id: string, values: ProjectDraft): Promise<void>;
-  deleteProject(id: string): Promise<void>;
-  reorderProject(idA: string, idB: string): Promise<void>;
-  createTalk(values: TalkDraft): Promise<{ id: string }>;
-  updateTalk(id: string, values: TalkDraft): Promise<void>;
-  deleteTalk(id: string): Promise<void>;
-  reorderTalk(idA: string, idB: string): Promise<void>;
+  attachLibraryRows: (key: AttachableLibraryKey, ids: string[]) => Promise<void>;
+  updateContacts: (contacts: ContactDraft[]) => Promise<void>;
+  updateLinks: (links: LinkDraft[]) => Promise<void>;
+  updateSummary: (text: string) => Promise<void>;
+  updateNotes: (values: { label: string; text: string }) => Promise<void>;
+  updateSkillGroups: (groups: SkillGroupDraft[]) => Promise<void>;
+  createExperience: (values: ExperienceDraft) => Promise<{ id: string }>;
+  updateExperience: (id: string, values: ExperienceDraft) => Promise<void>;
+  deleteExperience: (id: string) => Promise<void>;
+  reorderExperience: (idA: string, idB: string) => Promise<void>;
+  updateExperienceBullets: (experienceId: string, bullets: string[]) => Promise<void>;
+  createEducation: (values: EducationDraft) => Promise<{ id: string }>;
+  updateEducation: (id: string, values: EducationDraft) => Promise<void>;
+  deleteEducation: (id: string) => Promise<void>;
+  reorderEducation: (idA: string, idB: string) => Promise<void>;
+  createProject: (values: ProjectDraft) => Promise<{ id: string }>;
+  updateProject: (id: string, values: ProjectDraft) => Promise<void>;
+  deleteProject: (id: string) => Promise<void>;
+  reorderProject: (idA: string, idB: string) => Promise<void>;
+  createTalk: (values: TalkDraft) => Promise<{ id: string }>;
+  updateTalk: (id: string, values: TalkDraft) => Promise<void>;
+  deleteTalk: (id: string) => Promise<void>;
+  reorderTalk: (idA: string, idB: string) => Promise<void>;
   /** Matches a document against the library without writing; review it, then `applyDocumentImport`. */
-  planDocumentImport(doc: ResumeDocumentV1): ResumeImportPlan;
-  applyDocumentImport(plan: ResumeImportPlan, choices?: ImportChoices): Promise<void>;
+  planDocumentImport: (doc: ResumeDocumentV1) => ResumeImportPlan;
+  applyDocumentImport: (plan: ResumeImportPlan, choices?: ImportChoices) => Promise<void>;
   /** `planDocumentImport` + `applyDocumentImport` with every item's default action. */
-  replaceDocument(doc: ResumeDocumentV1): Promise<void>;
+  replaceDocument: (doc: ResumeDocumentV1) => Promise<void>;
 }

@@ -124,9 +124,10 @@ export async function streamEventSourcedResumeAgentChat(
   input: ChatRunParams & {
     resumeId: string;
     userId: string;
-    activeResumeId?: string;
+    activeResumeId?: string | null;
     activeJob?: ActiveJobContext;
     systemPrompt?: string;
+    slopGuard?: boolean;
     apiKey?: string;
     model?: string;
     routing?: AiRouting;
@@ -141,6 +142,7 @@ export async function streamEventSourcedResumeAgentChat(
     resumeId: input.resumeId,
     activeResumeId: input.activeResumeId,
     activeJob: input.activeJob,
+    slopGuard: input.slopGuard,
   });
 
   const modelOptions: OpenRouterTextModelOptions | undefined = isOpenRouter

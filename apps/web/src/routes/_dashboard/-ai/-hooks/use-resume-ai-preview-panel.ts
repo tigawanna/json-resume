@@ -1,11 +1,24 @@
 import { resumeWriteToolNames } from "@/features/agentic-tools/resume-write-tools";
+import {
+  useResumeWorkbench,
+  useResumeWorkbenchActions,
+} from "@/routes/_dashboard/resumes/$resumeId/-components/resume-workbench/ResumeWorkbenchProvider";
 import type { UIMessage } from "@tanstack/ai-react";
-import { useState } from "react";
+import { useEffect } from "react";
+
+/** True while an in-flight reply calls a résumé write tool; history loaded on open doesn't count. */
+export function isReplyWritingResume(messages: UIMessage[], isLoading: boolean) {
+  const latest = messages.at(-1);
+  return (
+    isLoading &&
+    latest?.role === "assistant" &&
+    latest.parts.some((part) => part.type === "tool-call" && resumeWriteToolNames.has(part.name))
+  );
+}
 
 /**
- * Open state for the live preview beside the AI chat. It opens itself the first
- * time a reply writes to a résumé, and stays shut once the user closes it until
- * the chat is cleared.
+ * Opens the live preview beside the AI chat the first time a reply writes to a
+ * résumé. Once the user closes it, it stays shut until the chat is cleared.
  */
 export function useResumeAiPreviewPanel({
   messages,
@@ -14,34 +27,18 @@ export function useResumeAiPreviewPanel({
   messages: UIMessage[];
   isLoading: boolean;
 }) {
-  const [open, setOpen] = useState(false);
-  const [dismissed, setDismissed] = useState(false);
+  const open = useResumeWorkbench((state) => state.ai.previewOpen);
+  const { autoOpenPreview, allowPreviewAutoOpen } = useResumeWorkbenchActions();
+  const isWritingResume = isReplyWritingResume(messages, isLoading);
+  const isEmpty = messages.length === 0;
 
-  const latest = messages.at(-1);
-  const isWritingResume =
-    isLoading &&
-    latest?.role === "assistant" &&
-    latest.parts.some((part) => part.type === "tool-call" && resumeWriteToolNames.has(part.name));
+  useEffect(() => {
+    if (isWritingResume) autoOpenPreview();
+  }, [isWritingResume, autoOpenPreview]);
 
-  if (isWritingResume && !open && !dismissed) setOpen(true);
-  if (messages.length === 0 && dismissed) setDismissed(false);
+  useEffect(() => {
+    if (isEmpty) allowPreviewAutoOpen();
+  }, [isEmpty, allowPreviewAutoOpen]);
 
-  return {
-    open,
-    show() {
-      setOpen(true);
-    },
-    close() {
-      setOpen(false);
-      setDismissed(true);
-    },
-    toggle() {
-      if (open) {
-        setOpen(false);
-        setDismissed(true);
-      } else {
-        setOpen(true);
-      }
-    },
-  };
+  return open;
 }

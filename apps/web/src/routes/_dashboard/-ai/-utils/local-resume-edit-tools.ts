@@ -56,11 +56,11 @@ import {
   type LayoutEntityKey,
 } from "@/features/resume/resume-layout";
 import { nowMs } from "../../-utils/row-helpers";
-import { requireDetail } from "./local-resume-tools";
+import { requireDetail, targetResumeId } from "./local-resume-tools";
 
 /** The target résumé (given or active) with a workspace over its current rows. */
 export function openWorkspace(ctx: LocalToolContext, resumeId: string | undefined) {
-  const id = resumeId || ctx.getActiveResumeId();
+  const id = targetResumeId(ctx, resumeId);
   const { snapshots, detail } = requireDetail(ctx.db, id);
   return {
     resumeId: id,

@@ -16,11 +16,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 
-interface EducationSectionProps {
-  resumeId: string;
-}
-
-export function EducationSection({ resumeId }: EducationSectionProps) {
+export function EducationSection() {
   const { resume, searches, attachLibraryRows, reorderEducation } = useResumeWorkspace();
   const searchEducation = searches?.education;
 
@@ -57,8 +53,6 @@ export function EducationSection({ resumeId }: EducationSectionProps) {
         <EducationCard
           key={edu.id}
           education={edu}
-          resumeId={resume.id}
-          allEducation={resume.education}
           onMoveUp={
             index > 0
               ? () =>
@@ -81,11 +75,7 @@ export function EducationSection({ resumeId }: EducationSectionProps) {
       ))}
 
       <div className="flex gap-2">
-        <AddEducationForm
-          resumeId={resume.id}
-          existingCount={resume.education.length}
-          allEducation={resume.education}
-        />
+        <AddEducationForm />
         {searchEducation && (
           <Button variant="outline" size="sm" onClick={() => setPickOpen(true)}>
             <Library className="mr-1 size-3" /> Pick from Existing
@@ -120,14 +110,10 @@ export function EducationSection({ resumeId }: EducationSectionProps) {
 
 function EducationCard({
   education,
-  resumeId,
-  allEducation,
   onMoveUp,
   onMoveDown,
 }: {
   education: ResumeDetailDTO["education"][number];
-  resumeId: string;
-  allEducation: ResumeDetailDTO["education"];
   onMoveUp?: () => void;
   onMoveDown?: () => void;
 }) {
@@ -296,15 +282,7 @@ const addEduOpts = formOptions({
   },
 });
 
-function AddEducationForm({
-  resumeId,
-  existingCount,
-  allEducation,
-}: {
-  resumeId: string;
-  existingCount: number;
-  allEducation: ResumeDetailDTO["education"];
-}) {
+function AddEducationForm() {
   const { createEducation } = useResumeWorkspace();
   const [open, setOpen] = useState(false);
 

@@ -1,5 +1,4 @@
 import { useResumeWorkspace } from "@/components/resume/resume-workspace/ResumeWorkspaceContext";
-import { resumeDetailToDocument } from "@/data-access-layer/resume/resume-converters";
 import {
   resumeDocumentV1Schema,
   safeParseResumeJson,
@@ -7,24 +6,34 @@ import {
 } from "@/features/resume/resume-schema";
 import { useDebouncedValue } from "@/hooks/use-debouncer";
 import { buildSchemaPrompt } from "@/features/resume/resume-prompt";
-import { useResumeImport } from "@/components/resume/resume-import/use-resume-import";
 import type { JsonValue } from "@visual-json/core";
 import { DiffView, JsonEditor } from "@visual-json/react";
 import { X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import {
+  useResumeImportPending,
+  useResumeWorkbench,
+  useResumeWorkbenchActions,
+  useWorkbenchDocument,
+} from "../resume-workbench/ResumeWorkbenchProvider";
 import { PasteDialog, SettingsDialog } from "./dialogs";
 import { JsonToolbar } from "./json-toolbar";
 import { VJ_THEME_VARS } from "./theme-vars";
 import type { ViewMode } from "./types";
 
-export function ResumeJsonTab() {
-  const workspace = useResumeWorkspace();
-  const { resume } = workspace;
+function asJsonValue(doc: ResumeDocumentV1) {
+  return doc as unknown as JsonValue;
+}
 
-  const doc = resume ? resumeDetailToDocument(resume) : null;
-  const [jsonValue, setJsonValue] = useState<JsonValue>({} as JsonValue);
-  const [originalJson, setOriginalJson] = useState<JsonValue>({} as JsonValue);
+export function ResumeJsonTab() {
+  const { resume } = useResumeWorkspace();
+  const doc = useWorkbenchDocument();
+  const openedJson = asJsonValue(useResumeWorkbench((state) => state.openedDocument));
+  const { importDocument } = useResumeWorkbenchActions();
+  const isImporting = useResumeImportPending();
+
+  const [jsonValue, setJsonValue] = useState<JsonValue>(() => asJsonValue(doc));
   const [viewMode, setViewMode] = useState<ViewMode>("tree");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [rawText, setRawText] = useState("");
@@ -54,14 +63,12 @@ export function ResumeJsonTab() {
   // Sync editor state when the collection loads (on-demand) or updates externally
   const lastSyncedDocRef = useRef<string | null>(null);
   useEffect(() => {
-    if (!doc) return;
     const docStr = JSON.stringify(doc);
     if (lastSyncedDocRef.current === docStr) return;
     lastSyncedDocRef.current = docStr;
 
-    const asJson = doc as unknown as JsonValue;
+    const asJson = asJsonValue(doc);
     setJsonValue(asJson);
-    setOriginalJson(structuredClone(asJson));
     setRawText(JSON.stringify(doc, null, 2));
     lastPropagatedRef.current = asJson;
     setPendingDoc(null);
@@ -79,13 +86,9 @@ export function ResumeJsonTab() {
 
   // ─── Save (matched against the library, reviewed when ambiguous) ──
 
-  const { importDocument, isImporting, reviewDialog } = useResumeImport(workspace, {
-    onApplied: () => setPendingDoc(null),
-  });
-
   function handleSave() {
     if (!pendingDoc) return;
-    importDocument(pendingDoc);
+    importDocument(pendingDoc, { onApplied: () => setPendingDoc(null) });
   }
 
   /* ---- helpers ---- */
@@ -93,7 +96,7 @@ export function ResumeJsonTab() {
   function loadAndValidateJson(text: string) {
     const result = safeParseResumeJson(text);
     if (result.ok) {
-      setJsonValue(result.data as unknown as JsonValue);
+      setJsonValue(asJsonValue(result.data));
       setRawText(JSON.stringify(result.data, null, 2));
       setRawError(null);
       setParseError(null);
@@ -119,7 +122,7 @@ export function ResumeJsonTab() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${(resume?.name ?? "resume").replace(/\s+/g, "_").toLowerCase()}.json`;
+    a.download = `${(resume.name || "resume").replace(/\s+/g, "_").toLowerCase()}.json`;
     a.click();
     URL.revokeObjectURL(url);
   }
@@ -249,7 +252,7 @@ export function ResumeJsonTab() {
             />
           </div>
         ) : viewMode === "diff" ? (
-          <DiffView originalJson={originalJson} currentJson={jsonValue} />
+          <DiffView originalJson={openedJson} currentJson={jsonValue} />
         ) : (
           <div className="flex h-full p-5" style={VJ_THEME_VARS}>
             <JsonEditor
@@ -287,7 +290,6 @@ export function ResumeJsonTab() {
         onOpenChange={setPasteDialogOpen}
         onSubmit={loadAndValidateJson}
       />
-      {reviewDialog}
     </div>
   );
 }

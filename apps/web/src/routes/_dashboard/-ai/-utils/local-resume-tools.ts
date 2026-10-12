@@ -19,6 +19,18 @@ import { nextOffset, searchTerms } from "@/features/agentic-tools/shared/search-
 import { count, eq, queryOnce, type InitialQueryBuilder } from "@tanstack/db";
 import { orIlike } from "../../-utils/list-query";
 
+/** The résumé a tool works on: the one it was given, else the active one. */
+export function targetResumeId(
+  ctx: Pick<LocalToolContext, "getActiveResumeId">,
+  resumeId: string | undefined,
+): string {
+  const id = resumeId || ctx.getActiveResumeId();
+  if (!id) {
+    throw new Error("No résumé is active. Pass resumeId, or call set_active_resume first.");
+  }
+  return id;
+}
+
 export function requireDetail(db: AppDb, resumeId: string) {
   const snapshots = snapshotEventSourcedResume(db, resumeId);
   const detail = assembleResumeDetail(resumeId, snapshots);
@@ -107,7 +119,7 @@ export function getLocalResume(
   input: GetResumeToolInput,
 ): GetResumeToolOutput {
   const data = getResumeToolInputSchema.parse(input);
-  const { detail } = requireDetail(ctx.db, data.resumeId || ctx.getActiveResumeId());
+  const { detail } = requireDetail(ctx.db, targetResumeId(ctx, data.resumeId));
   return { resume: resumeView(detail, data.sections) };
 }
 

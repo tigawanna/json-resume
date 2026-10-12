@@ -10,83 +10,61 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import type { AiSettings } from "@/types/ai-settings";
+import {
+  useResumeWorkbench,
+  useResumeWorkbenchActions,
+} from "@/routes/_dashboard/resumes/$resumeId/-components/resume-workbench/ResumeWorkbenchProvider";
 import { FileText, Settings, Trash2 } from "lucide-react";
+import { useEventSourcedAiSettings } from "../-hooks/use-event-sourced-ai-settings";
 import { EventSourcedAiSettingsSheet } from "./EventSourcedAiSettingsSheet";
 
 interface EventSourcedAiChromeProps {
-  activeModelLabel: string | null;
-  activeRoutingLabel: string | null;
   apiKeyRejected: boolean;
-  clearDialogOpen: boolean;
   hasMessages: boolean;
   isBusy: boolean;
-  isCustomSystemPrompt: boolean;
-  isReady: boolean;
-  settings: AiSettings | null;
-  settingsOpen: boolean;
-  systemPrompt: string;
   onClearChat: () => void;
-  onClearDialogOpenChange: (open: boolean) => void;
-  onClearSettings: () => void;
-  onOpenSettings: () => void;
-  onResetSystemPrompt: () => void;
-  onSaveSettings: (settings: AiSettings) => void;
-  onSaveSystemPrompt: (value: string) => void;
-  onSettingsOpenChange: (open: boolean) => void;
-  previewOpen?: boolean;
-  onTogglePreview?: () => void;
+  onTogglePreview: () => void;
 }
 
 export function EventSourcedAiChrome({
   apiKeyRejected,
-  previewOpen = false,
-  onTogglePreview,
-  clearDialogOpen,
   hasMessages,
   isBusy,
-  isCustomSystemPrompt,
-  settings,
-  settingsOpen,
-  systemPrompt,
   onClearChat,
-  onClearDialogOpenChange,
-  onClearSettings,
-  onOpenSettings,
-  onResetSystemPrompt,
-  onSaveSettings,
-  onSaveSystemPrompt,
-  onSettingsOpenChange,
+  onTogglePreview,
 }: EventSourcedAiChromeProps) {
+  const previewOpen = useResumeWorkbench((state) => state.ai.previewOpen);
+  const settingsOpen = useResumeWorkbench((state) => state.dialog === "ai-settings");
+  const { openDialog, setDialogOpen } = useResumeWorkbenchActions();
+  const aiSettings = useEventSourcedAiSettings();
+
   return (
     <>
       <div className="flex items-center justify-end gap-1" data-test="event-sourced-ai-chrome">
-        {onTogglePreview ? (
-          <Button
-            type="button"
-            variant={previewOpen ? "secondary" : "ghost"}
-            size="sm"
-            className="gap-1.5 text-muted-foreground"
-            onClick={onTogglePreview}
-            aria-pressed={previewOpen}
-            data-test="resume-ai-preview-toggle"
-          >
-            <FileText className="size-4" />
-            Preview
-          </Button>
-        ) : null}
+        <Button
+          type="button"
+          variant={previewOpen ? "secondary" : "ghost"}
+          size="sm"
+          className="gap-1.5 text-muted-foreground"
+          onClick={onTogglePreview}
+          aria-pressed={previewOpen}
+          data-test="resume-ai-preview-toggle"
+        >
+          <FileText className="size-4" />
+          Preview
+        </Button>
         <Button
           type="button"
           variant="ghost"
           size="icon-sm"
           className="text-muted-foreground"
-          onClick={onOpenSettings}
+          onClick={() => openDialog("ai-settings")}
           aria-label="AI settings"
           data-test="event-sourced-ai-settings"
         >
           <Settings className="size-4" />
         </Button>
-        <AlertDialog open={clearDialogOpen} onOpenChange={onClearDialogOpenChange}>
+        <AlertDialog>
           <AlertDialogTrigger asChild>
             <Button
               type="button"
@@ -122,14 +100,16 @@ export function EventSourcedAiChrome({
       <EventSourcedAiSettingsSheet
         open={settingsOpen}
         apiKeyRejected={apiKeyRejected}
-        settings={settings}
-        systemPrompt={systemPrompt}
-        isCustomSystemPrompt={isCustomSystemPrompt}
-        onOpenChange={onSettingsOpenChange}
-        onClearSettings={onClearSettings}
-        onSaveSettings={onSaveSettings}
-        onSaveSystemPrompt={onSaveSystemPrompt}
-        onResetSystemPrompt={onResetSystemPrompt}
+        settings={aiSettings.settings}
+        systemPrompt={aiSettings.systemPrompt}
+        isCustomSystemPrompt={aiSettings.isCustomSystemPrompt}
+        slopGuard={aiSettings.slopGuard}
+        onSaveSlopGuard={aiSettings.saveSlopGuard}
+        onOpenChange={(open) => setDialogOpen("ai-settings", open)}
+        onClearSettings={aiSettings.clearSettings}
+        onSaveSettings={aiSettings.saveSettings}
+        onSaveSystemPrompt={aiSettings.saveSystemPrompt}
+        onResetSystemPrompt={aiSettings.resetSystemPrompt}
       />
     </>
   );

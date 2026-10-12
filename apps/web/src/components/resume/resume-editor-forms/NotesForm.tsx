@@ -5,15 +5,11 @@ import { formOptions } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-interface NotesFormProps {
-  resumeId: string;
-}
-
 const formOpts = formOptions({
   defaultValues: { label: "Notes", text: "" },
 });
 
-export function NotesForm(_props: NotesFormProps) {
+export function NotesForm() {
   const { resume, updateNotes } = useResumeWorkspace();
 
   const mutation = useMutation({

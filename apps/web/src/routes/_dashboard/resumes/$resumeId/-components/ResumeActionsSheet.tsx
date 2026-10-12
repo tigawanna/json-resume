@@ -18,37 +18,32 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import type { AppDb } from "@/data-access-layer/event-sourced/collection";
+import { useResumeWorkspace } from "@/components/resume/resume-workspace/ResumeWorkspaceContext";
 import { deleteWithReferences } from "@/data-access-layer/event-sourced/library-resolve";
+import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
 import { useViewer } from "@/data-access-layer/auth/viewer";
-import type { ResumeDocumentV1 } from "@/features/resume/resume-schema";
 import { unwrapUnknownError } from "@/utils/errors";
 import { useNavigate } from "@tanstack/react-router";
 import { FileUp, GitFork, PanelRight, Trash2 } from "lucide-react";
-import { useState } from "react";
 import { toast } from "sonner";
 import { cloneResume } from "@/data-access-layer/event-sourced/clone-resume";
 import { PublishResumeButton } from "./PublishResumeButton";
 import { ResumeHistory } from "./ResumeHistory";
+import {
+  useResumeWorkbench,
+  useResumeWorkbenchActions,
+  useWorkbenchDocument,
+} from "./resume-workbench/ResumeWorkbenchProvider";
 
-interface ResumeActionsSheetProps {
-  db: AppDb;
-  resumeId: string;
-  title: string;
-  document: ResumeDocumentV1;
-  onImportJson: () => void;
-}
-
-export function ResumeActionsSheet({
-  db,
-  resumeId,
-  title,
-  document,
-  onImportJson,
-}: ResumeActionsSheetProps) {
+export function ResumeActionsSheet() {
   const { viewer } = useViewer();
   const navigate = useNavigate();
-  const [open, setOpen] = useState(false);
+  const db = useEventSourcedDb();
+  const { resume } = useResumeWorkspace();
+  const { id: resumeId, name: title } = resume;
+  const document = useWorkbenchDocument();
+  const open = useResumeWorkbench((state) => state.dialog === "actions");
+  const { openDialog, closeDialog, setDialogOpen } = useResumeWorkbenchActions();
 
   function handleClone() {
     const userId = viewer.user?.id;
@@ -59,7 +54,7 @@ export function ResumeActionsSheet({
     try {
       const result = cloneResume(db, resumeId);
       toast.success(`Cloned as “${result.name}”`);
-      setOpen(false);
+      closeDialog();
       void navigate({
         to: "/resumes/$resumeId",
         params: { resumeId: result.resumeId },
@@ -81,7 +76,7 @@ export function ResumeActionsSheet({
   }
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
+    <Sheet open={open} onOpenChange={(next) => setDialogOpen("actions", next)}>
       <SheetTrigger asChild>
         <Button variant="outline" size="sm" className="gap-2" data-test="resume-actions-btn">
           <PanelRight className="size-4" />
@@ -128,10 +123,7 @@ export function ResumeActionsSheet({
               variant="outline"
               size="sm"
               className="w-full justify-start gap-2"
-              onClick={() => {
-                setOpen(false);
-                onImportJson();
-              }}
+              onClick={() => openDialog("import-json")}
               data-test="import-resume-json-btn"
             >
               <FileUp className="size-4" />
@@ -143,7 +135,7 @@ export function ResumeActionsSheet({
             <h3 className="text-xs font-medium tracking-wide text-base-content/60 uppercase">
               History
             </h3>
-            <ResumeHistory db={db} resumeId={resumeId} onOpenFull={() => setOpen(false)} />
+            <ResumeHistory db={db} resumeId={resumeId} onOpenFull={closeDialog} />
           </section>
 
           <section className="mt-auto flex flex-col gap-2 rounded-lg border border-error/30 p-3">

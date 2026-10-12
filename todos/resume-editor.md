@@ -117,8 +117,9 @@ Files: `-ai/-components/EventSourcedResumeAiTab.tsx`, `ResumeAiLivePreview.tsx`,
 - [x] `data-test` ids: `resume-ai-preview`, `-toggle`, `-iframe`, `-updating`, `-minimize`,
       `-maximize`, `-unmaximize`, `-restore`, `-rail`, `-close`, `-sheet`,
       `resume-ai-split`, `resume-ai-split-handle`
-- [ ] Unsaved template picks on the page don't reach the side preview; it renders the
-      saved template
+- [x] Unsaved template picks on the page don't reach the side preview; it renders the
+      saved template. The pick now lives in the workbench store (`resume-workbench/`), and
+      the side preview uses it while it shows the page's résumé
 
 ## Batch 5 — Browser verification (needs the dev server and a signed-in user)
 

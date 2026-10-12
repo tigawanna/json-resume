@@ -173,8 +173,9 @@ async function searchSection(
   }
 }
 
-/** Library ids the résumé shows (items, bullets and skills). */
-function idsOnResume(db: AppDb, resumeId: string): Set<string> {
+/** Library ids the résumé shows (items, bullets and skills); none without a résumé. */
+function idsOnResume(db: AppDb, resumeId: string | null): Set<string> {
+  if (resumeId === null) return new Set();
   if (!db.collections.resume.has(resumeId)) {
     throw new Error(`Resume ${resumeId} was not found. Use list_resumes to find its id.`);
   }
@@ -186,7 +187,7 @@ export async function searchLocalLibrary(
   input: SearchLibraryToolInput,
 ): Promise<SearchLibraryToolOutput> {
   const data = searchLibraryToolInputSchema.parse(input);
-  const resumeId = data.resumeId || ctx.getActiveResumeId();
+  const resumeId = data.resumeId || ctx.getActiveResumeId() || null;
   const onResume = idsOnResume(ctx.db, resumeId);
   const { items, total } = await searchSection(ctx.db, data.section, {
     terms: searchTerms(data.keyword),
@@ -265,7 +266,7 @@ export async function rankLocalLibraryForJob(
 ): Promise<RankLibraryForJobToolOutput> {
   const data = rankLibraryForJobToolInputSchema.parse(input);
   const job = resolveJobTarget(ctx, data);
-  const resumeId = data.resumeId || ctx.getActiveResumeId();
+  const resumeId = data.resumeId || ctx.getActiveResumeId() || null;
   const onResume = idsOnResume(ctx.db, resumeId);
   const keywords = jobKeywords(job);
 

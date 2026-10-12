@@ -59,7 +59,7 @@ async function fetchAttachPage(
   kind: AttachKind,
   keyword: string,
   offset: number,
-  activeResumeId: string,
+  activeResumeId: string | null,
 ) {
   if (kind === "resume") {
     const page = await listLocalResumes({ db }, { keyword, offset, limit: PAGE_SIZE });
@@ -93,7 +93,7 @@ async function fetchAttachPage(
 interface ResumeAiAttachSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  activeResumeId: string;
+  activeResumeId: string | null;
   /** Chips already in the message, highlighted in the lists. */
   attachedIds: ReadonlyArray<string>;
   onAttach: (item: AttachChipData) => void;
@@ -189,7 +189,7 @@ export function ResumeAiAttachSheet({
 interface AttachListProps {
   kind: AttachKind;
   label: string;
-  activeResumeId: string;
+  activeResumeId: string | null;
   attachedIds: ReadonlyArray<string>;
   onAttach: (item: AttachChipData) => void;
 }

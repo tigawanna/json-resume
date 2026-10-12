@@ -112,6 +112,10 @@ export function useEventSourcedAiSettings() {
     updateAppSettings(db, { aiSystemPrompt: "" });
   }
 
+  function saveSlopGuard(next: boolean) {
+    updateAppSettings(db, { aiSlopGuard: next });
+  }
+
   return {
     settings,
     saveSettings,
@@ -120,5 +124,7 @@ export function useEventSourcedAiSettings() {
     saveSystemPrompt,
     resetSystemPrompt,
     isCustomSystemPrompt: Boolean(row.aiSystemPrompt?.trim()),
+    slopGuard: row.aiSlopGuard ?? false,
+    saveSlopGuard,
   };
 }

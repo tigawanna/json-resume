@@ -33,6 +33,7 @@ import {
 import { nextOffset, searchTerms } from "@/features/agentic-tools/shared/search-page";
 import { count, eq, inArray, queryOnce, type InitialQueryBuilder } from "@tanstack/db";
 import { orIlike } from "../../-utils/list-query";
+import { targetResumeId } from "./local-resume-tools";
 
 async function linkedResumeIds(db: AppDb, jobIds: string[]) {
   if (jobIds.length === 0) return new Map<string, string[]>();
@@ -63,8 +64,13 @@ export function resolveJobTarget(
   input: { jobId?: string; jobText?: string },
 ): { id: string | null; title: string; description: string } {
   if (input.jobText) return { id: null, title: "", description: input.jobText };
-  const jobId = input.jobId || ctx.db.collections.resume.get(ctx.getActiveResumeId())?.jobId;
-  if (!jobId) throw new Error("Pass jobId or jobText; the active résumé has no target job.");
+  const activeResumeId = ctx.getActiveResumeId();
+  const jobId =
+    input.jobId ||
+    (activeResumeId ? ctx.db.collections.resume.get(activeResumeId)?.jobId : undefined);
+  if (!jobId) {
+    throw new Error("Pass jobId or jobText; there is no active résumé with a target job.");
+  }
   return requireJob(ctx.db, jobId);
 }
 
@@ -115,7 +121,7 @@ export async function getLocalJob(
   const data = getJobToolInputSchema.parse(input);
   let jobId = data.jobId;
   if (!jobId) {
-    const resumeId = data.resumeId || ctx.getActiveResumeId();
+    const resumeId = targetResumeId(ctx, data.resumeId);
     jobId = ctx.db.collections.resume.get(resumeId)?.jobId ?? undefined;
     if (!jobId) {
       throw new Error(
@@ -182,7 +188,7 @@ export async function attachLocalJob(
   input: AttachJobToolInput,
 ): Promise<AttachJobToolOutput> {
   const data = attachJobToolInputSchema.parse(input);
-  const resumeId = requireResumeId(ctx.db, data.resumeId || ctx.getActiveResumeId());
+  const resumeId = requireResumeId(ctx.db, targetResumeId(ctx, data.resumeId));
   const job = data.jobId ? requireJob(ctx.db, data.jobId) : null;
   attachJobToResume(ctx.db, resumeId, job?.id ?? null);
   return { resumeId, job: job ? await jobRow(ctx.db, job) : null };

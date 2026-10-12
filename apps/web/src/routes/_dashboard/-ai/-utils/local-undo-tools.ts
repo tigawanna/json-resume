@@ -60,6 +60,7 @@ export function undoLocalAiChange(
     undoneTool: change?.tool ?? null,
     ...result,
     remaining: ctx.changes.length,
-    activeResumeId: ctx.db.collections.resume.has(activeResumeId) ? activeResumeId : null,
+    activeResumeId:
+      activeResumeId && ctx.db.collections.resume.has(activeResumeId) ? activeResumeId : null,
   };
 }

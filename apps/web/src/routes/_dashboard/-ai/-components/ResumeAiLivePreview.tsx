@@ -6,6 +6,10 @@ import { RESUME_PAPER_WIDTH, ResumeComponentPaper } from "@/features/resume/Resu
 import { resumeDocumentToSpec } from "@/features/resume/resume-to-spec";
 import { useThemeContext } from "@/lib/tanstack/router/theme-provider";
 import { cn } from "@/lib/utils";
+import {
+  useResumeWorkbench,
+  useWorkbenchTemplate,
+} from "@/routes/_dashboard/resumes/$resumeId/-components/resume-workbench/ResumeWorkbenchProvider";
 import { useEventSourcedResumeDetail } from "@/routes/_dashboard/resumes/$resumeId/-hooks/use-event-sourced-resume-detail";
 import {
   Eye,
@@ -31,9 +35,6 @@ function isLivePreviewView(value: string): value is LivePreviewView {
 }
 
 interface ResumeAiLivePreviewProps {
-  resumeId: string;
-  /** Résumé JSON from before the current reply; undefined when there's nothing to compare. */
-  baselineJson: string | undefined;
   layout: LivePreviewLayout;
   onMinimize: () => void;
   onRestore: () => void;
@@ -42,16 +43,19 @@ interface ResumeAiLivePreviewProps {
 }
 
 export function ResumeAiLivePreview({
-  resumeId,
-  baselineJson,
   layout,
   onMinimize,
   onRestore,
   onMaximize,
   onClose,
 }: ResumeAiLivePreviewProps) {
+  const resumeId = useResumeWorkbench((state) => state.ai.activeResumeId ?? state.resumeId);
+  const isPageResume = useResumeWorkbench((state) => state.resumeId === resumeId);
+  const baselineJson = useResumeWorkbench((state) => state.ai.turnBaselines[resumeId]);
+  const pageTemplate = useWorkbenchTemplate();
   const { detail, isLoading } = useEventSourcedResumeDetail(resumeId);
   const [view, setView] = useState<LivePreviewView>("preview");
+  const templateId = isPageResume ? pageTemplate.templateId : detail?.templateId;
 
   if (layout === "rail") {
     return (
@@ -170,10 +174,10 @@ export function ResumeAiLivePreview({
           </Button>
         </div>
       </header>
-      {detail ? (
+      {detail && templateId ? (
         <>
           <TabsContent value="preview" className="mt-0 min-h-0 flex-1">
-            <LivePreviewPaper detail={detail} />
+            <LivePreviewPaper detail={{ ...detail, templateId }} />
           </TabsContent>
           <TabsContent value="changes" className="mt-0 min-h-0 flex-1">
             <LivePreviewChanges diff={diff} />
@@ -208,8 +212,7 @@ function useElementWidth() {
 function LivePreviewPaper({ detail }: { detail: ResumeDetail }) {
   const { resolvedTheme } = useThemeContext();
   const [frameRef, frameWidth] = useElementWidth();
-  const templateId = asTemplateId(detail.templateId);
-  const spec = resumeDocumentToSpec(resumeDetailToDocument({ ...detail, templateId }), templateId);
+  const spec = resumeDocumentToSpec(resumeDetailToDocument(detail), detail.templateId);
   const zoom = frameWidth > 0 ? Math.min(1, frameWidth / RESUME_PAPER_WIDTH) : 1;
 
   return (

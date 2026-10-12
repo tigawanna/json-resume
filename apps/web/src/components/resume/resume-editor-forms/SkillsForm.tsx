@@ -10,10 +10,6 @@ import { Library, Plus, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
-interface SkillsFormProps {
-  resumeId: string;
-}
-
 interface SkillGroupDraft {
   name: string;
   items: string[];
@@ -32,7 +28,7 @@ function skillGroupDraftsEqual(a: SkillGroupDraft[], b: SkillGroupDraft[]) {
   return JSON.stringify(a) === JSON.stringify(b);
 }
 
-export function SkillsForm({ resumeId }: SkillsFormProps) {
+export function SkillsForm() {
   const { resume, updateSkillGroups, searches } = useResumeWorkspace();
   const searchSkills = searches?.skills;
 

@@ -1,29 +1,20 @@
 import { PromptCopySection } from "@/components/resume/PromptCopySection";
-import { useResumeImport } from "@/components/resume/resume-import/use-resume-import";
 import { useResumeWorkspace } from "@/components/resume/resume-workspace/ResumeWorkspaceContext";
 import { Button } from "@/components/ui/button";
-import type { ResumeDocumentV1 } from "@/features/resume/resume-schema";
 import { useSessionStorage } from "@/hooks/use-storage";
 import { ArrowRight, TriangleAlert, X } from "lucide-react";
-
-interface ResumePromptTabProps {
-  doc: ResumeDocumentV1;
-  jobDescription: string;
-  onImported: () => void;
-  onAddTargetJob: () => void;
-}
+import {
+  useResumeImportPending,
+  useResumeWorkbenchActions,
+  useWorkbenchDocument,
+} from "./resume-workbench/ResumeWorkbenchProvider";
 
 /** Copy a tailoring prompt for any external LLM, then paste its JSON back to reconcile it. */
-export function ResumePromptTab({
-  doc,
-  jobDescription,
-  onImported,
-  onAddTargetJob,
-}: ResumePromptTabProps) {
-  const workspace = useResumeWorkspace();
-  const { importDocument, isImporting, reviewDialog } = useResumeImport(workspace, {
-    onApplied: onImported,
-  });
+export function ResumePromptTab() {
+  const jobDescription = useResumeWorkspace().resume.jobDescription;
+  const doc = useWorkbenchDocument();
+  const { importDocument, goToTab, focusTargetJob } = useResumeWorkbenchActions();
+  const isImporting = useResumeImportPending();
   const [noJobDismissed, setNoJobDismissed] = useSessionStorage(
     "resume-prompt-no-target-job-dismissed",
     false,
@@ -50,7 +41,7 @@ export function ResumePromptTab({
               variant="outline"
               size="sm"
               className="border-warning/40 h-7 gap-1 text-xs"
-              onClick={onAddTargetJob}
+              onClick={() => void focusTargetJob()}
               data-test="prompt-add-target-job"
             >
               Add target job
@@ -73,10 +64,11 @@ export function ResumePromptTab({
       <PromptCopySection
         doc={doc}
         jobDescription={jobDescription}
-        onApplyResult={importDocument}
+        onApplyResult={(result) =>
+          importDocument(result, { onApplied: () => void goToTab("edit") })
+        }
         isApplying={isImporting}
       />
-      {reviewDialog}
     </div>
   );
 }

@@ -11,6 +11,10 @@ import { cn } from "@/lib/utils";
 import { listLocalResumes } from "@/routes/_dashboard/-ai/-utils/local-resume-tools";
 import { ArrowUp, FileText, LoaderCircle, Plus, Square, X } from "lucide-react";
 import { useState, type RefObject } from "react";
+import {
+  useResumeWorkbench,
+  useResumeWorkbenchActions,
+} from "../resume-workbench/ResumeWorkbenchProvider";
 import { ResumeAiAttachSheet } from "./ResumeAiAttachSheet";
 import { CreditsDisplay } from "./ResumeAiCredits";
 import { DIRECTIVES, SECTION_TAGS } from "./resume-ai-directives";
@@ -30,16 +34,14 @@ export interface ActiveResumeSummary {
 
 export interface ResumeAiPromptComposerProps {
   activeModelLabel: string | null;
-  activeResume: ActiveResumeSummary;
+  /** Null when the user detached the résumé from the conversation. */
+  activeResume: ActiveResumeSummary | null;
   activeRoutingLabel: string | null;
   apiKey: string | null;
-  currentResumeId: string;
   errorMessage: string | null;
   hasMessages: boolean;
   isBusy: boolean;
   isReady: boolean;
-  onOpenSettings: () => void;
-  onResetActiveResume: () => void;
   onSend: (message: string) => void | Promise<void>;
   onStop: () => void;
   promptAreaRef: RefObject<PromptAreaHandle | null>;
@@ -58,13 +60,10 @@ export function ResumeAiPromptComposer({
   activeResume,
   activeRoutingLabel,
   apiKey,
-  currentResumeId,
   errorMessage,
   hasMessages,
   isBusy,
   isReady,
-  onOpenSettings,
-  onResetActiveResume,
   onSend,
   onStop,
   promptAreaRef,
@@ -75,6 +74,8 @@ export function ResumeAiPromptComposer({
   const [segments, setSegments] = useState<Segment[]>([]);
   const [attachOpen, setAttachOpen] = useState(false);
   const db = useEventSourcedDb();
+  const currentResumeId = useResumeWorkbench((state) => state.resumeId);
+  const { openDialog, resetActiveResume, detachActiveResume } = useResumeWorkbenchActions();
   const attachedIds = attachedChips(segments).map((item) => item.id);
 
   function insertAttachment(item: AttachChipData) {
@@ -203,7 +204,7 @@ export function ResumeAiPromptComposer({
               </Button>
               <button
                 type="button"
-                onClick={onOpenSettings}
+                onClick={() => openDialog("ai-settings")}
                 className="text-muted-foreground hover:text-foreground flex min-w-0 items-center gap-1.5 rounded-md px-2 py-1 text-xs transition-colors"
                 data-test="resume-ai-model-selector"
               >
@@ -214,7 +215,11 @@ export function ResumeAiPromptComposer({
                   <span className="truncate opacity-70">· {activeRoutingLabel}</span>
                 ) : null}
               </button>
-              <ActiveResumeChip activeResume={activeResume} onReset={onResetActiveResume} />
+              <ActiveResumeChip
+                activeResume={activeResume}
+                onReset={resetActiveResume}
+                onDetach={detachActiveResume}
+              />
             </div>
             <div className="flex shrink-0 items-center gap-1">
               {isBusy ? (
@@ -258,7 +263,7 @@ export function ResumeAiPromptComposer({
             <CreditsDisplay
               apiKey={apiKey}
               sessionChars={sessionChars}
-              onOpenSettings={onOpenSettings}
+              onOpenSettings={() => openDialog("ai-settings")}
             />
           ) : null}
         </div>
@@ -266,7 +271,7 @@ export function ResumeAiPromptComposer({
       <ResumeAiAttachSheet
         open={attachOpen}
         onOpenChange={setAttachOpen}
-        activeResumeId={activeResume.id}
+        activeResumeId={activeResume?.id ?? null}
         attachedIds={attachedIds}
         onAttach={insertAttachment}
       />
@@ -277,17 +282,34 @@ export function ResumeAiPromptComposer({
 function ActiveResumeChip({
   activeResume,
   onReset,
+  onDetach,
 }: {
-  activeResume: ActiveResumeSummary;
+  activeResume: ActiveResumeSummary | null;
   onReset: () => void;
+  onDetach: () => void;
 }) {
+  if (!activeResume) {
+    return (
+      <button
+        type="button"
+        onClick={onReset}
+        title="Let the assistant work on this page's résumé again"
+        className="flex shrink-0 items-center gap-1 rounded-full border border-dashed border-base-content/20 px-2 py-0.5 text-xs text-muted-foreground transition-colors hover:border-base-content/40 hover:text-foreground"
+        data-test="resume-ai-attach-page-resume"
+      >
+        <FileText className="size-3 shrink-0" />
+        Use this résumé
+      </button>
+    );
+  }
+
   return (
     <span
       className={cn(
-        "flex min-w-0 items-center gap-1 rounded-full py-0.5 pr-2 pl-2 text-xs",
+        "flex min-w-0 items-center gap-1 rounded-full py-0.5 pr-0.5 pl-2 text-xs",
         activeResume.isPageResume
           ? "text-muted-foreground"
-          : "bg-primary/15 pr-0.5 font-medium text-primary",
+          : "bg-primary/15 font-medium text-primary",
       )}
       title={
         activeResume.isPageResume
@@ -298,7 +320,18 @@ function ActiveResumeChip({
     >
       <FileText className="size-3 shrink-0" />
       <span className="max-w-40 truncate">{activeResume.name}</span>
-      {activeResume.isPageResume ? null : (
+      {activeResume.isPageResume ? (
+        <button
+          type="button"
+          onClick={onDetach}
+          aria-label="Remove this résumé from the conversation"
+          title="Remove this résumé from the conversation"
+          className="flex size-5 shrink-0 items-center justify-center rounded-full hover:bg-base-content/10 hover:text-foreground"
+          data-test="resume-ai-active-resume-detach"
+        >
+          <X className="size-3" />
+        </button>
+      ) : (
         <button
           type="button"
           onClick={onReset}

@@ -30,11 +30,7 @@ const EDITOR_SECTIONS = [
   "notes",
 ];
 
-interface ResumeEditPanelProps {
-  resumeId: string;
-}
-
-export function ResumeEditPanel({ resumeId }: ResumeEditPanelProps) {
+export function ResumeEditPanel() {
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6" data-test="resume-edit-tab">
       <Accordion type="multiple" defaultValue={EDITOR_SECTIONS} className="w-full">
@@ -62,56 +58,56 @@ export function ResumeEditPanel({ resumeId }: ResumeEditPanelProps) {
         <AccordionItem value="links">
           <AccordionTrigger>Links</AccordionTrigger>
           <AccordionContent>
-            <LinksForm resumeId={resumeId} />
+            <LinksForm />
           </AccordionContent>
         </AccordionItem>
 
         <AccordionItem value="summary">
           <AccordionTrigger>Summary</AccordionTrigger>
           <AccordionContent>
-            <SummaryForm resumeId={resumeId} />
+            <SummaryForm />
           </AccordionContent>
         </AccordionItem>
 
         <AccordionItem value="experience">
           <AccordionTrigger>Experience</AccordionTrigger>
           <AccordionContent>
-            <ExperienceSection resumeId={resumeId} />
+            <ExperienceSection />
           </AccordionContent>
         </AccordionItem>
 
         <AccordionItem value="education">
           <AccordionTrigger>Education</AccordionTrigger>
           <AccordionContent>
-            <EducationSection resumeId={resumeId} />
+            <EducationSection />
           </AccordionContent>
         </AccordionItem>
 
         <AccordionItem value="projects">
           <AccordionTrigger>Projects</AccordionTrigger>
           <AccordionContent>
-            <ProjectSection resumeId={resumeId} />
+            <ProjectSection />
           </AccordionContent>
         </AccordionItem>
 
         <AccordionItem value="skills">
           <AccordionTrigger>Skills</AccordionTrigger>
           <AccordionContent>
-            <SkillsForm resumeId={resumeId} />
+            <SkillsForm />
           </AccordionContent>
         </AccordionItem>
 
         <AccordionItem value="talks">
           <AccordionTrigger>Talks</AccordionTrigger>
           <AccordionContent>
-            <TalksSection resumeId={resumeId} />
+            <TalksSection />
           </AccordionContent>
         </AccordionItem>
 
         <AccordionItem value="notes">
           <AccordionTrigger>Notes / cover letter</AccordionTrigger>
           <AccordionContent>
-            <NotesForm resumeId={resumeId} />
+            <NotesForm />
           </AccordionContent>
         </AccordionItem>
       </Accordion>

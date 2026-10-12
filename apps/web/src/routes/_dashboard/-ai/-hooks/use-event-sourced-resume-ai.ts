@@ -5,7 +5,7 @@ import type { PromptAreaHandle } from "@/components/prompt-area/types";
 import { fetchServerSentEvents, useChat, type UIMessage } from "@tanstack/ai-react";
 import { eq, useLiveQuery } from "@tanstack/react-db";
 import { useRouter } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { eventSourcedResumeAiClientTools } from "../-utils/client-tools";
 import {
   createEventSourcedChatPersistence,
@@ -21,19 +21,16 @@ import {
   getMessageText,
   getSessionChars,
 } from "@/routes/_dashboard/resumes/$resumeId/-components/ResumeAiTab/resume-ai-message-utils";
+import {
+  useResumeWorkbench,
+  useResumeWorkbenchActions,
+} from "@/routes/_dashboard/resumes/$resumeId/-components/resume-workbench/ResumeWorkbenchProvider";
 
-export function useEventSourcedResumeAiChat(resumeId: string) {
-  const [settingsOpen, setSettingsOpen] = useState(false);
-  const [clearDialogOpen, setClearDialogOpen] = useState(false);
-  const {
-    settings,
-    saveSettings,
-    clearSettings,
-    systemPrompt,
-    saveSystemPrompt,
-    resetSystemPrompt,
-    isCustomSystemPrompt,
-  } = useEventSourcedAiSettings();
+export function useEventSourcedResumeAiChat() {
+  const { settings, systemPrompt, slopGuard } = useEventSourcedAiSettings();
+  const resumeId = useResumeWorkbench((state) => state.resumeId);
+  const activeResumeId = useResumeWorkbench((state) => state.ai.activeResumeId);
+  const workbench = useResumeWorkbenchActions();
   const db = useEventSourcedDb();
   const { viewer } = useViewer();
   const router = useRouter();
@@ -53,75 +50,56 @@ export function useEventSourcedResumeAiChat(resumeId: string) {
     }),
   );
 
-  const [activeResumeState, setActiveResumeState] = useState({
-    pageResumeId: resumeId,
-    id: resumeId,
-  });
-  const activeResumeId =
-    activeResumeState.pageResumeId === resumeId ? activeResumeState.id : resumeId;
-  const activeResumeIdRef = useRef(activeResumeId);
-  activeResumeIdRef.current = activeResumeId;
   const pendingOpenRef = useRef<{ resumeId: string; tab: WorkbenchTab } | null>(null);
   const changesRef = useRef<AiChange[]>([]);
 
   const { data: activeJobRows } = useLiveQuery(
     (q) =>
-      q
-        .from({ resume: db.collections.resume })
-        .innerJoin({ job: db.collections.job }, ({ resume, job }) => eq(resume.jobId, job.id))
-        .where(({ resume }) => eq(resume.id, activeResumeId))
-        .select(({ job }) => ({
-          id: job.id,
-          company: job.company,
-          title: job.title,
-          description: job.description,
-        })),
+      activeResumeId === null
+        ? undefined
+        : q
+            .from({ resume: db.collections.resume })
+            .innerJoin({ job: db.collections.job }, ({ resume, job }) => eq(resume.jobId, job.id))
+            .where(({ resume }) => eq(resume.id, activeResumeId))
+            .select(({ job }) => ({
+              id: job.id,
+              company: job.company,
+              title: job.title,
+              description: job.description,
+            })),
     [db, activeResumeId],
   );
   const activeJob = activeJobRows?.[0];
   const { data: activeResumeRows } = useLiveQuery(
     (q) =>
-      q
-        .from({ resume: db.collections.resume })
-        .where(({ resume }) => eq(resume.id, activeResumeId))
-        .select(({ resume }) => ({ id: resume.id, name: resume.name })),
+      activeResumeId === null
+        ? undefined
+        : q
+            .from({ resume: db.collections.resume })
+            .where(({ resume }) => eq(resume.id, activeResumeId))
+            .select(({ resume }) => ({ id: resume.id, name: resume.name })),
     [db, activeResumeId],
   );
-  const activeResume = {
-    id: activeResumeId,
-    name: activeResumeRows?.[0]?.name ?? "Untitled résumé",
-    isPageResume: activeResumeId === resumeId,
-  };
-
-  function resetActiveResume() {
-    activeResumeIdRef.current = resumeId;
-    setActiveResumeState({ pageResumeId: resumeId, id: resumeId });
-  }
-
-  // Résumé JSON as it was before the current reply, keyed by résumé id, for the
-  // live preview's "Changes" tab. A résumé the reply switches to (a fresh clone)
-  // is captured when it becomes active, so its diff starts from the copy.
-  const [turnBaselines, setTurnBaselines] = useState<Record<string, string>>({});
+  const activeResume =
+    activeResumeId === null
+      ? null
+      : {
+          id: activeResumeId,
+          name: activeResumeRows?.[0]?.name ?? "Untitled résumé",
+          isPageResume: activeResumeId === resumeId,
+        };
 
   function startTurnBaseline() {
-    const activeId = activeResumeIdRef.current;
-    const json = snapshotResumeJson(dbRef.current, activeId);
-    setTurnBaselines(json === null ? {} : { [activeId]: json });
+    const id = workbench.getActiveResumeId();
+    workbench.startTurn(id === null ? null : snapshotResumeJson(dbRef.current, id));
   }
 
   const context: LocalToolContext = {
     db,
     userId,
-    getActiveResumeId: () => activeResumeIdRef.current,
+    getActiveResumeId: workbench.getActiveResumeId,
     setActiveResumeId(nextResumeId) {
-      activeResumeIdRef.current = nextResumeId;
-      setActiveResumeState({ pageResumeId: resumeId, id: nextResumeId });
-      const json = snapshotResumeJson(dbRef.current, nextResumeId);
-      if (json !== null) {
-        setTurnBaselines((prev) =>
-          nextResumeId in prev ? prev : { ...prev, [nextResumeId]: json },
-        );
-      }
+      workbench.setActiveResume(nextResumeId, snapshotResumeJson(dbRef.current, nextResumeId));
     },
     openResume(nextResumeId, tab) {
       pendingOpenRef.current = { resumeId: nextResumeId, tab };
@@ -144,6 +122,7 @@ export function useEventSourcedResumeAiChat(resumeId: string) {
       activeJobId: activeJob?.id,
       activeJobLabel: activeJob ? jobListLabel(activeJob) : undefined,
       systemPrompt,
+      slopGuard,
       apiKey: settings?.apiKey,
       model: settings?.model,
       routing: settings?.routing,
@@ -159,7 +138,9 @@ export function useEventSourcedResumeAiChat(resumeId: string) {
       {
         id: interrupt.id,
         toolName: interrupt.toolName,
-        title: `Rewrite "${db.collections.resume.get(targetId)?.name ?? targetId}"`,
+        title: targetId
+          ? `Rewrite "${db.collections.resume.get(targetId)?.name ?? targetId}"`
+          : "Rewrite a résumé",
         detail:
           "The assistant wants to replace this résumé's whole content. Library items are reused where they match.",
         args: interrupt.originalArgs,
@@ -202,8 +183,7 @@ export function useEventSourcedResumeAiChat(resumeId: string) {
 
   function clearLocalConversation() {
     chat.clear();
-    setTurnBaselines({});
-    setClearDialogOpen(false);
+    workbench.clearTurns();
   }
 
   function editPastPrompt(message: UIMessage) {
@@ -240,33 +220,21 @@ export function useEventSourcedResumeAiChat(resumeId: string) {
     approvals,
     approvalsResuming: chat.resuming,
     chatErrorMessage: chat.error?.message ?? null,
-    clearDialogOpen,
     clearLocalConversation,
-    clearSettings,
     composerRef,
     editPastPrompt,
     endOfMessagesRef,
-    handleClearDialogOpenChange: setClearDialogOpen,
     isLoading,
     isReady,
     messages,
     reload: chat.reload,
     resendPastPrompt,
-    resetActiveResume,
-    saveSettings,
     sendStarter,
     sendText,
     sessionChars: getSessionChars(messages),
     sessionGenerating,
     settings,
-    settingsOpen,
-    systemPrompt,
-    saveSystemPrompt,
-    resetSystemPrompt,
-    isCustomSystemPrompt,
-    setSettingsOpen,
     status,
     stop: chat.stop,
-    turnBaselines,
   };
 }

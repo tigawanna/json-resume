@@ -3,6 +3,7 @@ import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { cn } from "@/lib/utils";
 import { ResumeAiConversationCard } from "@/routes/_dashboard/resumes/$resumeId/-components/ResumeAiTab/ResumeAiConversationCard";
+import { useResumeWorkbenchActions } from "@/routes/_dashboard/resumes/$resumeId/-components/resume-workbench/ResumeWorkbenchProvider";
 import { useEffect, useRef, useState } from "react";
 import { usePanelRef } from "react-resizable-panels";
 import { useEventSourcedResumeAiChat } from "../-hooks/use-event-sourced-resume-ai";
@@ -12,11 +13,15 @@ import { EventSourcedAiChrome } from "./EventSourcedAiChrome";
 import { ResumeAiLivePreview } from "./ResumeAiLivePreview";
 import { ToolApprovalCard } from "./ToolApprovalCard";
 
-export function EventSourcedResumeAiTab({ resumeId }: { resumeId: string }) {
-  const chat = useEventSourcedResumeAiChat(resumeId);
-  const preview = useResumeAiPreviewPanel({ messages: chat.messages, isLoading: chat.isLoading });
+export function EventSourcedResumeAiTab() {
+  const chat = useEventSourcedResumeAiChat();
+  const previewOpen = useResumeAiPreviewPanel({
+    messages: chat.messages,
+    isLoading: chat.isLoading,
+  });
+  const workbench = useResumeWorkbenchActions();
   const isDesktop = useMediaQuery("(min-width: 1024px)");
-  const split = isDesktop && preview.open;
+  const split = isDesktop && previewOpen;
   const chatPanelRef = usePanelRef();
   const previewPanelRef = usePanelRef();
   const [chatCollapsed, setChatCollapsed] = useState(false);
@@ -33,12 +38,12 @@ export function EventSourcedResumeAiTab({ resumeId }: { resumeId: string }) {
   function closePreview() {
     setChatCollapsed(false);
     setPreviewCollapsed(false);
-    preview.close();
+    workbench.closePreview();
   }
 
   function togglePreview() {
-    if (preview.open) closePreview();
-    else preview.show();
+    if (previewOpen) closePreview();
+    else workbench.showPreview();
   }
 
   return (
@@ -48,26 +53,10 @@ export function EventSourcedResumeAiTab({ resumeId }: { resumeId: string }) {
       data-test="event-sourced-resume-ai-tab"
     >
       <EventSourcedAiChrome
-        activeModelLabel={chat.activeModelLabel}
-        activeRoutingLabel={chat.activeRoutingLabel}
         apiKeyRejected={isApiKeyErrorMessage(chat.chatErrorMessage)}
-        clearDialogOpen={chat.clearDialogOpen}
         hasMessages={chat.messages.length > 0}
         isBusy={chat.isLoading}
-        isCustomSystemPrompt={chat.isCustomSystemPrompt}
-        isReady={chat.isReady}
-        previewOpen={preview.open}
-        settings={chat.settings}
-        settingsOpen={chat.settingsOpen}
-        systemPrompt={chat.systemPrompt}
         onClearChat={chat.clearLocalConversation}
-        onClearDialogOpenChange={chat.handleClearDialogOpenChange}
-        onClearSettings={chat.clearSettings}
-        onOpenSettings={() => chat.setSettingsOpen(true)}
-        onResetSystemPrompt={chat.resetSystemPrompt}
-        onSaveSettings={chat.saveSettings}
-        onSaveSystemPrompt={chat.saveSystemPrompt}
-        onSettingsOpenChange={chat.setSettingsOpen}
         onTogglePreview={togglePreview}
       />
 
@@ -91,14 +80,11 @@ export function EventSourcedResumeAiTab({ resumeId }: { resumeId: string }) {
               activeResume={chat.activeResume}
               activeRoutingLabel={chat.activeRoutingLabel}
               apiKey={chat.settings?.apiKey ?? null}
-              onResetActiveResume={chat.resetActiveResume}
               sessionChars={chat.sessionChars}
               sessionGenerating={chat.sessionGenerating}
               status={chat.status}
-              onOpenSettings={() => chat.setSettingsOpen(true)}
               promptAreaRef={chat.composerRef}
               createdResumeTo="/resumes/$resumeId"
-              currentResumeId={resumeId}
               endOfMessagesRef={chat.endOfMessagesRef}
               errorMessage={chat.chatErrorMessage}
               historyPending={false}
@@ -125,8 +111,6 @@ export function EventSourcedResumeAiTab({ resumeId }: { resumeId: string }) {
               onResize={() => setPreviewCollapsed(previewPanelRef.current?.isCollapsed() ?? false)}
             >
               <ResumeAiLivePreview
-                resumeId={chat.activeResume.id}
-                baselineJson={chat.turnBaselines[chat.activeResume.id]}
                 layout={previewCollapsed ? "rail" : chatCollapsed ? "maximized" : "panel"}
                 onMinimize={() => previewPanelRef.current?.collapse()}
                 onRestore={() => {
@@ -142,7 +126,7 @@ export function EventSourcedResumeAiTab({ resumeId }: { resumeId: string }) {
       </ResizablePanelGroup>
 
       <Sheet
-        open={preview.open && !isDesktop}
+        open={previewOpen && !isDesktop}
         onOpenChange={(open) => {
           if (!open) closePreview();
         }}
@@ -155,8 +139,6 @@ export function EventSourcedResumeAiTab({ resumeId }: { resumeId: string }) {
         >
           <SheetTitle className="sr-only">Résumé preview</SheetTitle>
           <ResumeAiLivePreview
-            resumeId={chat.activeResume.id}
-            baselineJson={chat.turnBaselines[chat.activeResume.id]}
             layout="sheet"
             onMinimize={closePreview}
             onRestore={closePreview}

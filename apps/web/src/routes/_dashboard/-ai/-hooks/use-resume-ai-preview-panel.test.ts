@@ -1,8 +1,7 @@
 import { resumeWriteToolNames } from "@/features/agentic-tools/resume-write-tools";
 import type { UIMessage } from "@tanstack/ai-react";
-import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { useResumeAiPreviewPanel } from "./use-resume-ai-preview-panel";
+import { isReplyWritingResume } from "./use-resume-ai-preview-panel";
 
 const userMessage: UIMessage = {
   id: "u1",
@@ -18,10 +17,6 @@ function replyCalling(name: string): UIMessage {
   };
 }
 
-function renderPanel(initial: { messages: UIMessage[]; isLoading: boolean }) {
-  return renderHook((props) => useResumeAiPreviewPanel(props), { initialProps: initial });
-}
-
 describe("resumeWriteToolNames", () => {
   it("covers résumé writes but not job tracker writes", () => {
     expect(resumeWriteToolNames.has("set_summary")).toBe(true);
@@ -31,37 +26,14 @@ describe("resumeWriteToolNames", () => {
   });
 });
 
-describe("useResumeAiPreviewPanel", () => {
-  it("opens when an in-flight reply writes to a résumé", () => {
-    const { result, rerender } = renderPanel({ messages: [userMessage], isLoading: true });
-    expect(result.current.open).toBe(false);
-
-    rerender({ messages: [userMessage, replyCalling("set_summary")], isLoading: true });
-    expect(result.current.open).toBe(true);
+describe("isReplyWritingResume", () => {
+  it("is true while an in-flight reply writes to a résumé", () => {
+    expect(isReplyWritingResume([userMessage], true)).toBe(false);
+    expect(isReplyWritingResume([userMessage, replyCalling("set_summary")], true)).toBe(true);
   });
 
   it("ignores reads and writes from loaded history", () => {
-    const { result, rerender } = renderPanel({
-      messages: [userMessage, replyCalling("set_summary")],
-      isLoading: false,
-    });
-    expect(result.current.open).toBe(false);
-
-    rerender({ messages: [userMessage, replyCalling("get_resume")], isLoading: true });
-    expect(result.current.open).toBe(false);
-  });
-
-  it("stays closed after the user closes it until the chat is cleared", () => {
-    const writing = { messages: [userMessage, replyCalling("set_skills")], isLoading: true };
-    const { result, rerender } = renderPanel(writing);
-    expect(result.current.open).toBe(true);
-
-    act(() => result.current.close());
-    rerender({ ...writing, messages: [...writing.messages] });
-    expect(result.current.open).toBe(false);
-
-    rerender({ messages: [], isLoading: false });
-    rerender(writing);
-    expect(result.current.open).toBe(true);
+    expect(isReplyWritingResume([userMessage, replyCalling("set_summary")], false)).toBe(false);
+    expect(isReplyWritingResume([userMessage, replyCalling("get_resume")], true)).toBe(false);
   });
 });

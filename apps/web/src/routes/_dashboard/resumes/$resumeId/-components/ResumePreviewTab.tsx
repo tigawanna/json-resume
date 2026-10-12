@@ -1,14 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
 import { ResumeComponentPaper } from "@/features/resume/ResumeComponentPaper";
 import type { ResumeDocumentV1, TemplateId } from "@/features/resume/resume-schema";
 import { resumeDocumentToSpec } from "@/features/resume/resume-to-spec";
 import { useResumePdf } from "@/features/resume/use-resume-pdf";
 import { useThemeContext } from "@/lib/tanstack/router/theme-provider";
 import type { Spec } from "@json-render/core";
-import { eq, useLiveSuspenseQuery } from "@tanstack/react-db";
 import { Download, FileText, Loader2, Moon, RefreshCw, Sun } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -18,32 +16,6 @@ type PreviewTheme = "light" | "dark";
 
 function isPreviewPane(value: string): value is PreviewPane {
   return value === "component" || value === "pdf";
-}
-
-interface ResumePreviewTabProps {
-  resumeId: string;
-  selectedTemplate: TemplateId;
-  doc: ResumeDocumentV1;
-}
-
-export function ResumePreviewTab({ resumeId, selectedTemplate, doc }: ResumePreviewTabProps) {
-  const db = useEventSourcedDb();
-  const { data: resume } = useLiveSuspenseQuery(
-    (q) =>
-      q
-        .from({ resume: db.collections.resume })
-        .where(({ resume }) => eq(resume.id, resumeId))
-        .findOne(),
-    [resumeId],
-  );
-
-  return (
-    <ResumePreviewView
-      resumeName={resume?.name ?? "Resume"}
-      selectedTemplate={selectedTemplate}
-      doc={doc}
-    />
-  );
 }
 
 interface ResumePreviewViewProps {

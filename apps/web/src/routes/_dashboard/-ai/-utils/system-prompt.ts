@@ -24,6 +24,13 @@ export const DEFAULT_EVENT_SOURCED_SYSTEM_PROMPT = [
   "- Do not use em dashes. Prefer commas and similar punctuation.",
 ].join("\n\n");
 
+/** Opt-in "slop guard" style rules, appended after any prompt. Strong enough to bend some models' output, so off by default. */
+export const SLOP_GUARD_INSTRUCTIONS = [
+  "Writing style:",
+  "- Write like a person with something specific to say, not like a template: skip filler openers and closers (“Great question!”, “I hope this helps”), stock phrases (“delve,” “tapestry,” “it’s important to note,” “in today’s fast-paced world”), reflexive “not just X, but Y” framings and rule-of-three lists, em-dash overuse, vague hedging, and summary paragraphs that restate what you just said. Lead with the answer, use concrete details over generalities, and vary sentence length and structure.",
+  "- Optimize for authentic thought, not the appearance of good writing: avoid manufactured insight, hollow profundity, corporate polish, motivational platitudes, generic observations dressed up as revelations, and conclusions that sound meaningful without actually saying anything. Don't inflate simple ideas into elaborate explanations, force metaphors or analogies, invent nuance where none exists, or turn every observation into a lesson. Follow the actual logic of the conversation, engage with specifics, and make claims that can be defended. Prefer an imperfect but precise sentence over an elegant but empty one. If a sentence could fit almost any conversation, delete it or make it specific. If the point is obvious, don't pretend it's profound. If there's nothing useful to add, stop writing.",
+].join("\n\n");
+
 export interface ActiveJobContext {
   id: string;
   label: string;
@@ -32,10 +39,21 @@ export interface ActiveJobContext {
 export function buildEventSourcedSystemPrompt(input: {
   instructions: string;
   resumeId: string;
-  activeResumeId?: string;
+  /** Null when the user detached the résumé; omitted means the one open in the editor. */
+  activeResumeId?: string | null;
   activeJob?: ActiveJobContext;
+  slopGuard?: boolean;
 }): string {
-  const instructions = input.instructions.trim() || DEFAULT_EVENT_SOURCED_SYSTEM_PROMPT;
+  const basePrompt = input.instructions.trim() || DEFAULT_EVENT_SOURCED_SYSTEM_PROMPT;
+  const instructions = input.slopGuard ? `${basePrompt}\n\n${SLOP_GUARD_INSTRUCTIONS}` : basePrompt;
+
+  if (input.activeResumeId === null) {
+    return [
+      instructions,
+      `No resume is attached to this conversation; the user wants to talk about something else. The editor has "${input.resumeId}" open, but do not read or change it unless the user asks. Resume tools need a resumeId until you call set_active_resume.`,
+    ].join("\n\n");
+  }
+
   const activeResumeId = input.activeResumeId || input.resumeId;
 
   return [

@@ -20,7 +20,8 @@ export type AiChange = {
 export type LocalToolContext = {
   db: AppDb;
   userId: string;
-  getActiveResumeId: () => string;
+  /** Null when the user detached the résumé from the conversation. */
+  getActiveResumeId: () => string | null;
   setActiveResumeId: (resumeId: string) => void;
   /** Queues navigation until the current reply finishes, so the run is not cut off. */
   openResume: (resumeId: string, tab: WorkbenchTab) => void;

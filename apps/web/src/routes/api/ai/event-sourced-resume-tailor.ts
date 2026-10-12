@@ -9,10 +9,12 @@ import { serverEnv } from "@/lib/server-env";
 
 const forwardedSchema = z.object({
   resumeId: z.string().trim().min(1),
-  activeResumeId: z.string().trim().min(1).optional(),
+  /** Null when the user detached the résumé from the conversation. */
+  activeResumeId: z.string().trim().min(1).nullable().optional(),
   activeJobId: z.string().trim().min(1).optional(),
   activeJobLabel: z.string().trim().max(400).optional(),
   systemPrompt: z.string().max(EVENT_SOURCED_SYSTEM_PROMPT_MAX_CHARS).optional(),
+  slopGuard: z.boolean().optional(),
   apiKey: z.string().trim().optional(),
   model: z.string().trim().optional(),
   routing: aiRoutingSchema.optional(),
@@ -72,6 +74,7 @@ export const Route = createFileRoute("/api/ai/event-sourced-resume-tailor")({
               ? { id: data.activeJobId, label: data.activeJobLabel ?? "" }
               : undefined,
             systemPrompt: data.systemPrompt,
+            slopGuard: data.slopGuard,
             messages: params.messages,
             threadId: params.threadId,
             runId: params.runId,

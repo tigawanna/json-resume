@@ -9,6 +9,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { openRouterModelEndpointsQueryOptions } from "@/data-access-layer/openrouter/model-endpoints";
 import { ModelPicker } from "@/features/agentic-tools/ModelPicker";
@@ -37,11 +38,13 @@ interface EventSourcedAiSettingsSheetProps {
   settings: AiSettings | null;
   systemPrompt: string;
   isCustomSystemPrompt: boolean;
+  slopGuard: boolean;
   onOpenChange: (open: boolean) => void;
   onClearSettings: () => void;
   onSaveSettings: (settings: AiSettings) => void;
   onSaveSystemPrompt: (value: string) => void;
   onResetSystemPrompt: () => void;
+  onSaveSlopGuard: (enabled: boolean) => void;
 }
 
 export function EventSourcedAiSettingsSheet({
@@ -50,16 +53,19 @@ export function EventSourcedAiSettingsSheet({
   settings,
   systemPrompt,
   isCustomSystemPrompt,
+  slopGuard,
   onOpenChange,
   onClearSettings,
   onSaveSettings,
   onSaveSystemPrompt,
   onResetSystemPrompt,
+  onSaveSlopGuard,
 }: EventSourcedAiSettingsSheetProps) {
   const [apiKey, setApiKey] = useState(settings?.apiKey ?? "");
   const [model, setModel] = useState(settings?.model ?? DEFAULT_MODEL);
   const [routing, setRouting] = useState<AiRouting>(settings?.routing ?? DEFAULT_AI_ROUTING);
   const [promptDraft, setPromptDraft] = useState(systemPrompt);
+  const [slopGuardDraft, setSlopGuardDraft] = useState(slopGuard);
   const [showKey, setShowKey] = useState(false);
   const promptDirty = promptDraft !== systemPrompt;
 
@@ -75,8 +81,9 @@ export function EventSourcedAiSettingsSheet({
     setModel(settings?.model ?? DEFAULT_MODEL);
     setRouting(settings?.routing ?? DEFAULT_AI_ROUTING);
     setPromptDraft(systemPrompt);
+    setSlopGuardDraft(slopGuard);
     setShowKey(false);
-  }, [open, settings, systemPrompt]);
+  }, [open, settings, systemPrompt, slopGuard]);
 
   function handleModelChange(next: string) {
     if (next === model) return;
@@ -100,6 +107,7 @@ export function EventSourcedAiSettingsSheet({
       });
     }
     if (promptDirty) onSaveSystemPrompt(promptDraft);
+    if (slopGuardDraft !== slopGuard) onSaveSlopGuard(slopGuardDraft);
     onOpenChange(false);
   }
 
@@ -213,6 +221,22 @@ export function EventSourcedAiSettingsSheet({
               </Button>
             </div>
           </SettingsSection>
+
+          <div className="flex items-start justify-between gap-4">
+            <div className="grid gap-1">
+              <Label htmlFor="event-sourced-slop-guard">Slop guard</Label>
+              <p className="text-muted-foreground text-xs">
+                Adds strict writing-style rules against filler, stock phrases, and empty polish.
+                Some models follow them too literally, so it is off by default.
+              </p>
+            </div>
+            <Switch
+              id="event-sourced-slop-guard"
+              checked={slopGuardDraft}
+              onCheckedChange={setSlopGuardDraft}
+              data-test="event-sourced-slop-guard-toggle"
+            />
+          </div>
         </div>
 
         <SheetFooter className="border-border/60 flex-row justify-end border-t px-6 py-4">

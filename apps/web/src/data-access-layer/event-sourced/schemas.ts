@@ -38,6 +38,8 @@ export const appSettingsSchema = z.object({
   aiModel: z.string().optional(),
   aiApiKey: z.string().optional(),
   aiSystemPrompt: z.string().optional(),
+  /** Appends the opt-in writing-style rules to the system prompt. */
+  aiSlopGuard: z.boolean().optional(),
   /** OpenRouter provider routing for the selected model. */
   aiRouting: aiRoutingSchema.optional(),
   /** Column visibility + sort per list route (e.g. `resumes`). */

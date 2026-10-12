@@ -28,11 +28,7 @@ function techLabel(raw: string) {
   }
 }
 
-interface ProjectSectionProps {
-  resumeId: string;
-}
-
-export function ProjectSection({ resumeId }: ProjectSectionProps) {
+export function ProjectSection() {
   const { resume, searches, attachLibraryRows, reorderProject } = useResumeWorkspace();
   const searchProjects = searches?.projects;
 
@@ -69,8 +65,6 @@ export function ProjectSection({ resumeId }: ProjectSectionProps) {
         <ProjectCard
           key={project.id}
           project={project}
-          resumeId={resume.id}
-          allProjects={resume.projects}
           onMoveUp={
             index > 0
               ? () =>
@@ -93,11 +87,7 @@ export function ProjectSection({ resumeId }: ProjectSectionProps) {
       ))}
 
       <div className="flex gap-2">
-        <AddProjectForm
-          resumeId={resume.id}
-          existingCount={resume.projects.length}
-          allProjects={resume.projects}
-        />
+        <AddProjectForm />
         {searchProjects && (
           <Button variant="outline" size="sm" onClick={() => setPickOpen(true)}>
             <Library className="mr-1 size-3" /> Pick from Existing
@@ -133,14 +123,10 @@ export function ProjectSection({ resumeId }: ProjectSectionProps) {
 
 function ProjectCard({
   project,
-  resumeId,
-  allProjects,
   onMoveUp,
   onMoveDown,
 }: {
   project: ResumeDetailDTO["projects"][number];
-  resumeId: string;
-  allProjects: ResumeDetailDTO["projects"];
   onMoveUp?: () => void;
   onMoveDown?: () => void;
 }) {
@@ -334,15 +320,7 @@ const addProjectOpts = formOptions({
   },
 });
 
-function AddProjectForm({
-  resumeId,
-  existingCount,
-  allProjects,
-}: {
-  resumeId: string;
-  existingCount: number;
-  allProjects: ResumeDetailDTO["projects"];
-}) {
+function AddProjectForm() {
   const { createProject } = useResumeWorkspace();
   const [open, setOpen] = useState(false);
   const [techTags, setTechTags] = useState<string[]>([]);

@@ -14,11 +14,7 @@ interface LinkRow {
   icon?: string;
 }
 
-interface LinksFormProps {
-  resumeId: string;
-}
-
-export function LinksForm({ resumeId }: LinksFormProps) {
+export function LinksForm() {
   const { resume, updateLinks } = useResumeWorkspace();
 
   const [links, setLinks] = useState<LinkRow[]>(

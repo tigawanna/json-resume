@@ -31,7 +31,7 @@ import { emptyResumeLayout } from "@/features/resume/resume-layout";
 import { SECTION_KEYS, type ResumeDocumentV1 } from "@/features/resume/resume-schema";
 import { joinSearchable, libraryRowBase } from "../../-utils/row-helpers";
 import { requireJob, resolveJobTarget } from "./local-job-tools";
-import { requireDetail } from "./local-resume-tools";
+import { requireDetail, targetResumeId } from "./local-resume-tools";
 
 /** Ranking assembles every résumé, so it looks at the most recently updated ones only. */
 const MAX_RANKED_RESUMES = 200;
@@ -111,7 +111,7 @@ export function cloneLocalResume(
   input: CloneResumeToolInput,
 ): CloneResumeToolOutput {
   const data = cloneResumeToolInputSchema.parse(input);
-  const sourceResumeId = data.sourceResumeId || ctx.getActiveResumeId();
+  const sourceResumeId = targetResumeId(ctx, data.sourceResumeId);
   const jobId = data.jobId ? requireJob(ctx.db, data.jobId).id : undefined;
   const { resumeId, name } = cloneResume(ctx.db, sourceResumeId, {
     name: data.name,
@@ -153,7 +153,7 @@ export function openLocalResume(
   input: OpenResumeToolInput,
 ): OpenResumeToolOutput {
   const data = openResumeToolInputSchema.parse(input);
-  const resumeId = requireResume(ctx.db, data.resumeId || ctx.getActiveResumeId()).id;
+  const resumeId = requireResume(ctx.db, targetResumeId(ctx, data.resumeId)).id;
   ctx.openResume(resumeId, data.tab);
   return { resumeId, tab: data.tab, opensAfterReply: true };
 }

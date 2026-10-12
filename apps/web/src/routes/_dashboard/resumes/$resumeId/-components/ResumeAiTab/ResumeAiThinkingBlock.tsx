@@ -1,8 +1,19 @@
 import { Brain, ChevronDown } from "lucide-react";
+import { useState } from "react";
 
-export function ResumeAiThinkingBlock({ content }: { content: string }) {
+interface ResumeAiThinkingBlockProps {
+  content: string;
+  /** Read once on mount: opens for thinking that streams in live, stays closed for history. */
+  defaultOpen: boolean;
+}
+
+export function ResumeAiThinkingBlock({ content, defaultOpen }: ResumeAiThinkingBlockProps) {
+  const [open, setOpen] = useState(defaultOpen);
+
   return (
     <details
+      open={open}
+      onToggle={(event) => setOpen(event.currentTarget.open)}
       className="group max-w-full overflow-hidden text-xs text-muted-foreground/75"
       data-test="resume-ai-thinking"
     >

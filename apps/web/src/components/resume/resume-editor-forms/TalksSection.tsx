@@ -34,11 +34,7 @@ function parseLinks(raw: string): { label: string; url: string }[] {
   }
 }
 
-interface TalksSectionProps {
-  resumeId: string;
-}
-
-export function TalksSection({ resumeId }: TalksSectionProps) {
+export function TalksSection() {
   const { resume, searches, attachLibraryRows, reorderTalk } = useResumeWorkspace();
   const searchTalks = searches?.talks;
 
@@ -74,8 +70,6 @@ export function TalksSection({ resumeId }: TalksSectionProps) {
         <TalkCard
           key={talk.id}
           talk={talk}
-          resumeId={resumeId}
-          allTalks={resume.talks}
           onMoveUp={
             index > 0
               ? () =>
@@ -97,11 +91,7 @@ export function TalksSection({ resumeId }: TalksSectionProps) {
         />
       ))}
       <div className="flex gap-2">
-        <AddTalkForm
-          resumeId={resumeId}
-          existingCount={resume.talks.length}
-          allTalks={resume.talks}
-        />
+        <AddTalkForm />
         {searchTalks && (
           <Button variant="outline" size="sm" onClick={() => setPickOpen(true)}>
             <Library className="mr-1 size-3" /> Pick from Existing
@@ -136,13 +126,11 @@ export function TalksSection({ resumeId }: TalksSectionProps) {
 
 interface TalkCardProps {
   talk: ResumeDetailDTO["talks"][number];
-  resumeId: string;
-  allTalks: ResumeDetailDTO["talks"];
   onMoveUp?: () => void;
   onMoveDown?: () => void;
 }
 
-function TalkCard({ talk, resumeId, allTalks, onMoveUp, onMoveDown }: TalkCardProps) {
+function TalkCard({ talk, onMoveUp, onMoveDown }: TalkCardProps) {
   const { updateTalk, deleteTalk } = useResumeWorkspace();
   const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState(talk.title);
@@ -348,15 +336,7 @@ const addTalkFormOpts = formOptions({
   },
 });
 
-function AddTalkForm({
-  resumeId,
-  existingCount,
-  allTalks,
-}: {
-  resumeId: string;
-  existingCount: number;
-  allTalks: ResumeDetailDTO["talks"];
-}) {
+function AddTalkForm() {
   const { createTalk } = useResumeWorkspace();
   const [open, setOpen] = useState(false);
 

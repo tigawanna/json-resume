@@ -89,12 +89,13 @@ export function ResumeAiConversationCard({
         {isEmpty && historyPending ? (
           <ConversationSkeleton />
         ) : (
-          messages.map((message) => (
+          messages.map((message, index) => (
             <ResumeAiMessage
               key={message.id}
               message={message}
               isBusy={composerProps.isBusy}
               isReady={isReady}
+              isStreaming={composerProps.isBusy && index === messages.length - 1}
               onEdit={onEditPastPrompt}
               onResend={onResendPastPrompt}
               createdResumeTo={createdResumeTo}
@@ -114,8 +115,7 @@ function ConversationSkeleton() {
   return (
     <div className="flex h-full flex-1 flex-col gap-4 py-8">
       {[80, 60, 95, 50].map((width) => (
-        <div key={width} className="flex items-start gap-3">
-          <div className="size-9 shrink-0 animate-pulse rounded-full bg-[color-mix(in_oklch,var(--color-base-content)_10%,transparent)]" />
+        <div key={width} className="flex items-start">
           <div className="flex flex-1 flex-col gap-2 pt-1">
             <div
               className="h-3 animate-pulse rounded-full bg-[color-mix(in_oklch,var(--color-base-content)_10%,transparent)]"

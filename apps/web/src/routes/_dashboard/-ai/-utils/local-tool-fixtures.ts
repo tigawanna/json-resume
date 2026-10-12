@@ -23,7 +23,7 @@ export function useLocalToolDb() {
   return {
     db: () => db,
 
-    context: (activeResumeId = ""): LocalToolContext & { opened: string[] } => {
+    context: (activeResumeId: string | null = null): LocalToolContext & { opened: string[] } => {
       let active = activeResumeId;
       const opened: string[] = [];
       return {

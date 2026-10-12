@@ -15,11 +15,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 
-interface ExperienceSectionProps {
-  resumeId: string;
-}
-
-export function ExperienceSection({ resumeId }: ExperienceSectionProps) {
+export function ExperienceSection() {
   const { resume, searches, attachLibraryRows, reorderExperience } = useResumeWorkspace();
   const searchExperiences = searches?.experiences;
 
@@ -55,9 +51,7 @@ export function ExperienceSection({ resumeId }: ExperienceSectionProps) {
       {resume.experiences.map((exp, index) => (
         <ExperienceCard
           key={exp.id}
-          resumeId={resume.id}
           experience={exp}
-          allExperiences={resume.experiences}
           onMoveUp={
             index > 0
               ? () =>
@@ -80,11 +74,7 @@ export function ExperienceSection({ resumeId }: ExperienceSectionProps) {
       ))}
 
       <div className="flex gap-2">
-        <AddExperienceForm
-          resumeId={resume.id}
-          existingCount={resume.experiences.length}
-          allExperiences={resume.experiences}
-        />
+        <AddExperienceForm />
         {searchExperiences && (
           <Button variant="outline" size="sm" onClick={() => setPickOpen(true)}>
             <Library className="mr-1 size-3" /> Pick from Existing
@@ -118,20 +108,12 @@ export function ExperienceSection({ resumeId }: ExperienceSectionProps) {
 // ─── Single Experience Card (editable) ─────────────────────
 
 interface ExperienceCardProps {
-  resumeId: string;
   experience: ResumeDetailDTO["experiences"][number];
-  allExperiences: ResumeDetailDTO["experiences"];
   onMoveUp?: () => void;
   onMoveDown?: () => void;
 }
 
-function ExperienceCard({
-  resumeId,
-  experience,
-  allExperiences,
-  onMoveUp,
-  onMoveDown,
-}: ExperienceCardProps) {
+function ExperienceCard({ experience, onMoveUp, onMoveDown }: ExperienceCardProps) {
   const { deleteExperience, updateExperience, updateExperienceBullets, searches } =
     useResumeWorkspace();
   const searchExperienceBullets = searches?.experienceBullets;
@@ -385,15 +367,7 @@ const addExpOpts = formOptions({
   },
 });
 
-function AddExperienceForm({
-  resumeId,
-  existingCount,
-  allExperiences,
-}: {
-  resumeId: string;
-  existingCount: number;
-  allExperiences: ResumeDetailDTO["experiences"];
-}) {
+function AddExperienceForm() {
   const { createExperience } = useResumeWorkspace();
   const [open, setOpen] = useState(false);
 

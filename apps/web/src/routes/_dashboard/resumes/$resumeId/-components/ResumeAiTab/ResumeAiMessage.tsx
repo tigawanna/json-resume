@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { UIMessage } from "@tanstack/ai-react";
 import type { ReactNode } from "react";
-import { MessageSquareText, PencilLine, RefreshCcw, Sparkles } from "lucide-react";
+import { PencilLine, RefreshCcw } from "lucide-react";
 import { ChatText } from "./ResumeAiMarkdown";
 import { ResumeAiThinkingBlock } from "./ResumeAiThinkingBlock";
 import { ToolCallPanel, ToolResultPanel } from "./ResumeAiToolPanels";
@@ -14,33 +14,18 @@ interface ResumeAiMessageProps {
   message: UIMessage;
   isBusy: boolean;
   isReady: boolean;
+  /** This message is the one currently being streamed in. */
+  isStreaming: boolean;
   onEdit: ResumeAiMessageAction;
   onResend: ResumeAiMessageAction;
   createdResumeTo?: "/resumes/$resumeId";
-}
-
-function ChatAvatar({ role }: { role: ResumeAiRole }) {
-  const isAssistant = role === "assistant";
-
-  return (
-    <div
-      className={cn(
-        "flex size-9 shrink-0 items-center justify-center rounded-full ring-1",
-        isAssistant
-          ? "bg-[color-mix(in_oklch,var(--color-primary)_18%,var(--color-base-200))] text-primary ring-[color-mix(in_oklch,var(--color-primary)_32%,transparent)]"
-          : "bg-primary text-primary-foreground ring-[color-mix(in_oklch,var(--color-primary)_42%,transparent)]",
-      )}
-      aria-hidden="true"
-    >
-      {isAssistant ? <Sparkles className="size-4" /> : <MessageSquareText className="size-4" />}
-    </div>
-  );
 }
 
 export function ResumeAiMessage({
   message,
   isBusy,
   isReady,
+  isStreaming,
   onEdit,
   onResend,
   createdResumeTo,
@@ -55,8 +40,9 @@ export function ResumeAiMessage({
   );
 
   return (
-    <div className={cn("flex w-full items-start gap-3", role === "user" && "flex-row-reverse")}>
-      <ChatAvatar role={role} />
+    <div
+      className={cn("flex w-full flex-col gap-1", role === "user" ? "items-end" : "items-start")}
+    >
       <div
         className={cn(
           "min-w-0 max-w-[min(44rem,calc(100%-3rem))] overflow-hidden rounded-2xl px-4 py-3 shadow-sm ring-1 ",
@@ -65,37 +51,13 @@ export function ResumeAiMessage({
             : "rounded-tl-md bg-base-100 text-foreground ring-[color-mix(in_oklch,var(--color-base-content)_9%,transparent)]",
         )}
       >
-        <div className="mb-2 flex items-center justify-between gap-3">
-          <p className={cn("text-[0.68rem] font-semibold uppercase tracking-normal")}>
-            {role === "assistant" ? "Assistant" : "You"}
-          </p>
-          {role === "user" ? (
-            <div className="flex items-center gap-1">
-              <PromptActionButton
-                label="Edit prompt"
-                disabled={isBusy || !isReady}
-                onClick={() => onEdit(message)}
-                dataTest="resume-ai-edit-past-prompt"
-              >
-                <PencilLine className="size-3.5" />
-              </PromptActionButton>
-              <PromptActionButton
-                label="Resend prompt"
-                disabled={isBusy || !isReady}
-                onClick={() => onResend(message)}
-                dataTest="resume-ai-resend-past-prompt"
-              >
-                <RefreshCcw className="size-3.5" />
-              </PromptActionButton>
-            </div>
-          ) : null}
-        </div>
         <div className="flex min-w-0 flex-col gap-2">
           {message.parts.map((part, index) => (
             <MessagePartView
               key={part.type === "tool-call" ? part.id : index}
               part={part}
               role={role}
+              isStreaming={isStreaming}
               result={part.type === "tool-call" ? resultsByCallId.get(part.id) : undefined}
               hasCall={part.type === "tool-result" && callIds.has(part.toolCallId)}
               createdResumeTo={createdResumeTo}
@@ -103,6 +65,26 @@ export function ResumeAiMessage({
           ))}
         </div>
       </div>
+      {role === "user" ? (
+        <div className="flex items-center gap-1">
+          <PromptActionButton
+            label="Edit prompt"
+            disabled={isBusy || !isReady}
+            onClick={() => onEdit(message)}
+            dataTest="resume-ai-edit-past-prompt"
+          >
+            <PencilLine className="size-3.5" />
+          </PromptActionButton>
+          <PromptActionButton
+            label="Resend prompt"
+            disabled={isBusy || !isReady}
+            onClick={() => onResend(message)}
+            dataTest="resume-ai-resend-past-prompt"
+          >
+            <RefreshCcw className="size-3.5" />
+          </PromptActionButton>
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -113,6 +95,7 @@ type ToolResultPart = Extract<MessagePart, { type: "tool-result" }>;
 interface MessagePartViewProps {
   part: MessagePart;
   role: ResumeAiRole;
+  isStreaming: boolean;
   /** The tool-result for a tool-call part, merged into the call's row. */
   result: ToolResultPart | undefined;
   /** For a tool-result part: its call is in the same message and already shows it. */
@@ -120,12 +103,21 @@ interface MessagePartViewProps {
   createdResumeTo?: "/resumes/$resumeId";
 }
 
-function MessagePartView({ part, role, result, hasCall, createdResumeTo }: MessagePartViewProps) {
+function MessagePartView({
+  part,
+  role,
+  isStreaming,
+  result,
+  hasCall,
+  createdResumeTo,
+}: MessagePartViewProps) {
   switch (part.type) {
     case "text":
       return part.content.trim() ? <ChatText content={part.content} role={role} /> : null;
     case "thinking":
-      return part.content.trim() ? <ResumeAiThinkingBlock content={part.content} /> : null;
+      return part.content.trim() ? (
+        <ResumeAiThinkingBlock content={part.content} defaultOpen={isStreaming} />
+      ) : null;
     case "tool-call": {
       const createdResume = getCreatedResumeOutput(part);
       return (

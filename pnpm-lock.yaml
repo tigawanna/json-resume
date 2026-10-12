@@ -188,8 +188,8 @@ importers:
         specifier: ^1.168.60
         version: 1.168.60(@voidzero-dev/vite-plus-core@1.0.0(@types/node@25.3.2)(esbuild@0.27.7)(jiti@2.7.0)(terser@5.46.0)(tsx@4.21.0)(typescript@6.0.3)(yaml@2.9.0))(crossws@0.4.5(srvx@0.11.15))(esbuild@0.27.7)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(rollup@4.63.1)
       '@tanstack/react-store':
-        specifier: ^0.10.0
-        version: 0.10.0(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+        specifier: ^0.11.2
+        version: 0.11.2(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       '@tanstack/router-plugin':
         specifier: ^1.168.42
         version: 1.168.42(@tanstack/react-router@1.170.41(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@voidzero-dev/vite-plus-core@1.0.0(@types/node@25.3.2)(esbuild@0.27.7)(jiti@2.7.0)(terser@5.46.0)(tsx@4.21.0)(typescript@6.0.3)(yaml@2.9.0))(esbuild@0.27.7)(rollup@4.63.1)
@@ -3578,12 +3578,6 @@ packages:
       vite:
         optional: true
 
-  '@tanstack/react-store@0.10.0':
-    resolution: {integrity: sha512-S1rdnL5OtGLpUBlM9hrQ0heGZFBIzjIwhqrboFWq4pAAufpOuf2eL/dqyupXO9OCblwxBhuB2n43ZcDNqrtoDw==}
-    peerDependencies:
-      react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-      react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-
   '@tanstack/react-store@0.11.2':
     resolution: {integrity: sha512-oj5O5DmiMWE+ih+SioX2ayC1kbK7d3fpLx0B75fPJr9nY3zU+hoW010yr64qXsY/9fyiLVE2bn5mGNV3owm8RQ==}
     peerDependencies:
@@ -3678,9 +3672,6 @@ packages:
   '@tanstack/start-storage-context@1.167.36':
     resolution: {integrity: sha512-x+xCXK2GtFzY6NbXqAg8YpU6cwAjDfMeYSNzxfGzntpjbwBRHHrXeC/kYUnBBQCV7wK4kJ8vBBQGP0OyYTasUg==}
     engines: {node: '>=22.12.0'}
-
-  '@tanstack/store@0.10.0':
-    resolution: {integrity: sha512-KXAPlXun5J9DjO5LYo+EVjVHGdHfOl5YWE9TVPh4MeHl6gIngIV0fC5rE22JTRZa9KCMiKidh5FG6ufE2usr7Q==}
 
   '@tanstack/store@0.11.2':
     resolution: {integrity: sha512-sJ4mjol8uQsHV0gOJzzjwXfh2Fwm+Sz0+8deqiTm4jGbMdjzNSW+xZCFm0kUa870uhd8yi+DpKnZb5Kc4apa0Q==}
@@ -11343,13 +11334,6 @@ snapshots:
       - webpack
     optional: true
 
-  '@tanstack/react-store@0.10.0(react-dom@19.2.5(react@19.2.5))(react@19.2.5)':
-    dependencies:
-      '@tanstack/store': 0.10.0
-      react: 19.2.5
-      react-dom: 19.2.5(react@19.2.5)
-      use-sync-external-store: 1.6.0(react@19.2.5)
-
   '@tanstack/react-store@0.11.2(react-dom@19.2.5(react@19.2.5))(react@19.2.5)':
     dependencies:
       '@tanstack/store': 0.11.2
@@ -11580,8 +11564,6 @@ snapshots:
   '@tanstack/start-storage-context@1.167.36':
     dependencies:
       '@tanstack/router-core': 1.171.34
-
-  '@tanstack/store@0.10.0': {}
 
   '@tanstack/store@0.11.2': {}
 
