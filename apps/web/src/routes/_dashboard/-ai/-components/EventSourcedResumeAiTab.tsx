@@ -11,7 +11,6 @@ import { useResumeAiPreviewPanel } from "../-hooks/use-resume-ai-preview-panel";
 import { isApiKeyErrorMessage } from "../-utils/is-api-key-error";
 import { EventSourcedAiChrome } from "./EventSourcedAiChrome";
 import { ResumeAiLivePreview } from "./ResumeAiLivePreview";
-import { ToolApprovalCard } from "./ToolApprovalCard";
 
 export function EventSourcedResumeAiTab() {
   const chat = useEventSourcedResumeAiChat();
@@ -76,6 +75,7 @@ export function EventSourcedResumeAiTab() {
         >
           <div className={cn("h-full", split && "px-3")}>
             <ResumeAiConversationCard
+              chat={chat.chat}
               activeModelLabel={chat.activeModelLabel}
               activeResume={chat.activeResume}
               activeRoutingLabel={chat.activeRoutingLabel}
@@ -84,13 +84,11 @@ export function EventSourcedResumeAiTab() {
               sessionGenerating={chat.sessionGenerating}
               status={chat.status}
               promptAreaRef={chat.composerRef}
-              createdResumeTo="/resumes/$resumeId"
               endOfMessagesRef={chat.endOfMessagesRef}
               errorMessage={chat.chatErrorMessage}
               historyPending={false}
               isBusy={chat.isLoading}
               isReady={chat.isReady}
-              messages={chat.messages}
               onEditPastPrompt={chat.editPastPrompt}
               onResendPastPrompt={(message) => void chat.resendPastPrompt(message)}
               onSend={(message) => void chat.sendText(message)}
@@ -147,8 +145,6 @@ export function EventSourcedResumeAiTab() {
           />
         </SheetContent>
       </Sheet>
-
-      <ToolApprovalCard approvals={chat.approvals} resuming={chat.approvalsResuming} />
     </div>
   );
 }

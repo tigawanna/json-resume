@@ -17,10 +17,10 @@ describe("serializeSegments", () => {
 
   it("appends directive instructions, with or without the slash", () => {
     const message = serializeSegments([
-      chip("/", "/tailor", "/tailor"),
+      chip("/", "/tailor", "tailor"),
       text(" for this role "),
-      chip("/", "fit-analysis", "/fit-analysis"),
-      chip("/", "nope", "/nope"),
+      chip("/", "fit-analysis", "fit-analysis"),
+      chip("/", "nope", "nope"),
     ]);
     expect(message.split("\n\n")[0]).toBe("/tailor for this role /fit-analysis/nope");
     expect(message).toContain("/tailor: Tailor this resume");
@@ -31,10 +31,10 @@ describe("serializeSegments", () => {
   it("lists focus sections once", () => {
     const message = serializeSegments([
       text("tighten "),
-      chip("#", "summary", "#summary"),
+      chip("#", "summary", "summary"),
       text(" and "),
-      chip("#", "experience", "#experience"),
-      chip("#", "summary", "#summary"),
+      chip("#", "experience", "experience"),
+      chip("#", "summary", "summary"),
     ]);
     expect(message).toContain("Focus sections: summary, experience (");
   });
@@ -62,15 +62,16 @@ describe("serializeSegments", () => {
 
   it("treats a typed @mention without kind as a résumé", () => {
     const message = serializeSegments([
-      chip("@", "r2", "@Frontend", { id: "r2", name: "Frontend" }),
+      chip("@", "r2", "Frontend", { id: "r2", name: "Frontend" }),
     ]);
+    expect(message.split("\n\n")[0]).toBe("@Frontend");
     expect(message).toContain('Referenced resumes:\n- "Frontend" (id: r2)');
   });
 
   it("shortens long chip labels but keeps the full name in the reference", () => {
     const name = "Led the migration of a monolith to services across four teams";
     const attached = attachChip({ kind: "experience_bullet", id: "b2", name });
-    expect(attached.displayText.length).toBeLessThanOrEqual(41);
+    expect(attached.displayText.length).toBeLessThanOrEqual(40);
     const message = serializeSegments([
       chip(attached.trigger, attached.value, attached.displayText, attached.data),
     ]);

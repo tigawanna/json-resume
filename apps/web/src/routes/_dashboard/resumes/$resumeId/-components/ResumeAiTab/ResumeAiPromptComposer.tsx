@@ -148,10 +148,9 @@ export function ResumeAiPromptComposer({
               commandTrigger({
                 position: "start",
                 emptyMessage: "No matching directive",
-                chipClassName: "bg-primary/15 text-primary",
+                chipClassName: "rounded-md bg-primary/15 px-1 font-medium text-primary",
                 resolveOnSpace: true,
-                onSelect: (suggestion) =>
-                  suggestion.value.startsWith("/") ? suggestion.value : `/${suggestion.value}`,
+                onSelect: (suggestion) => suggestion.value.replace(/^\//, ""),
                 onSearch: (query) =>
                   DIRECTIVES.filter(
                     (directive) =>
@@ -166,12 +165,13 @@ export function ResumeAiPromptComposer({
               mentionTrigger({
                 emptyMessage: "No other resumes",
                 searchDebounceMs: 150,
+                chipClassName: "rounded-md bg-primary/15 px-1 font-medium text-primary",
                 onSearch: searchResumeMentions,
-                onSelect: (suggestion) => `@${suggestion.label}`,
               }),
               hashtagTrigger({
                 resolveOnSpace: false,
                 emptyMessage: "No matching section",
+                onSelect: (suggestion) => suggestion.value,
                 onSearch: (query) =>
                   SECTION_TAGS.filter((tag) => tag.value.includes(query.toLowerCase())).map(
                     (tag) => ({
@@ -184,7 +184,7 @@ export function ResumeAiPromptComposer({
             ]}
             minHeight={26}
             maxHeight={240}
-            className="px-4 pt-3 pb-1 text-base"
+            className="px-4 pt-3 pb-1 text-base [--prompt-area-placeholder:color-mix(in_oklch,var(--color-base-content)_35%,transparent)]"
             aria-label="Ask the resume AI"
             data-test-id="resume-ai-input"
           />

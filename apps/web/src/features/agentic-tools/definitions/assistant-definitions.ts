@@ -4,6 +4,8 @@ import {
   getPlaybookToolOutputSchema,
   undoLastAiChangeToolInputSchema,
   undoLastAiChangeToolOutputSchema,
+  wrapUpToolInputSchema,
+  wrapUpToolOutputSchema,
 } from "../resume-tool-schemas";
 
 export const getPlaybookToolDefinition = toolDefinition({
@@ -22,4 +24,13 @@ export const undoLastAiChangeToolDefinition = toolDefinition({
   inputSchema: undoLastAiChangeToolInputSchema,
   outputSchema: undoLastAiChangeToolOutputSchema,
   lazy: true,
+});
+
+export const wrapUpToolDefinition = toolDefinition({
+  name: "wrap_up",
+  description:
+    "Close a reply that created, changed or compared résumés: a short summary for the user plus every résumé involved (created, edited, or used as inspiration), which the chat shows as links. Call it last and write nothing after it.",
+  inputSchema: wrapUpToolInputSchema,
+  outputSchema: wrapUpToolOutputSchema,
+  metadata: { title: "Wrap Up", annotations: { readOnlyHint: true } },
 });

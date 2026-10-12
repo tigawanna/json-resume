@@ -1,4 +1,8 @@
-import { getPlaybookToolDefinition, undoLastAiChangeToolDefinition } from "./assistant-definitions";
+import {
+  getPlaybookToolDefinition,
+  undoLastAiChangeToolDefinition,
+  wrapUpToolDefinition,
+} from "./assistant-definitions";
 import {
   attachJobToolDefinition,
   getJobToolDefinition,
@@ -76,4 +80,5 @@ export const chatToolDefinitions = [
   attachJobToolDefinition,
   getPlaybookToolDefinition,
   undoLastAiChangeToolDefinition,
+  wrapUpToolDefinition,
 ] as const;

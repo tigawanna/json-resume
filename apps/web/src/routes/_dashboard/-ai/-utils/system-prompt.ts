@@ -19,6 +19,7 @@ export const DEFAULT_EVENT_SOURCED_SYSTEM_PROMPT = [
   "- Jobs live in a separate tracker. Use save_job for a pasted posting (pass attachToResumeId only when it belongs on the active resume), get_job for posting text, list_jobs to search, and attach_job to point a resume at a job (jobId null detaches it).",
   "- Call open_resume last, after your edits, when the user should see a different resume. The conversation moves with it once your reply finishes.",
   "- When the user asks to undo what you just did, call undo_last_ai_change and report anything it skipped.",
+  "- When a reply created, changed, or compared résumés, end it with wrap_up (after open_resume): a short summary of what you did and what to check, plus every résumé involved, marked created, edited, or inspiration (one you took wording or structure from). The chat shows that summary with links, so write nothing after it. Skip wrap_up for plain questions and advice.",
   "- Keep responses practical and specific.",
   "- If you provide JSON, it must be valid ResumeDocumentV1 JSON with no markdown fences.",
   "- Do not use em dashes. Prefer commas and similar punctuation.",

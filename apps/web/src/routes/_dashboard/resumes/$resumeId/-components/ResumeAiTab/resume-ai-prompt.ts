@@ -30,14 +30,12 @@ export type AttachChipData = z.infer<typeof attachChipDataSchema>;
 
 export function attachChip(data: AttachChipData) {
   const label = data.name.length > 40 ? `${data.name.slice(0, 39).trimEnd()}…` : data.name;
-  return { trigger: "@", value: data.id, displayText: `@${label}`, data };
+  return { trigger: "@", value: data.id, displayText: label, data };
 }
 
 export function readAttachChip(chip: ChipSegment): AttachChipData {
   const parsed = attachChipDataSchema.safeParse(chip.data);
-  return parsed.success
-    ? parsed.data
-    : { kind: "resume", id: chip.value, name: chip.displayText.replace(/^@/, "") };
+  return parsed.success ? parsed.data : { kind: "resume", id: chip.value, name: chip.displayText };
 }
 
 export function attachedChips(segments: Segment[]): AttachChipData[] {
@@ -53,12 +51,14 @@ export function hasText(segments: Segment[]) {
 
 /**
  * Serialize segments into the outgoing prompt. Text and chips render inline
- * (chips as their display text), followed by one block per extra: directive
+ * (chips as trigger + display text), followed by one block per extra: directive
  * instructions, focus sections, and one reference block per attached type.
  */
 export function serializeSegments(segments: Segment[]) {
   const inline = segments
-    .map((segment) => (segment.type === "text" ? segment.text : segment.displayText))
+    .map((segment) =>
+      segment.type === "text" ? segment.text : `${segment.trigger}${segment.displayText}`,
+    )
     .join("")
     .trim();
   if (!inline) return "";

@@ -403,6 +403,61 @@
   }
 }
 
+/* A primary arc travelling around the parent's rounded border. */
+@property --ai-glow-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@keyframes ai-glow-spin {
+  to {
+    --ai-glow-angle: 360deg;
+  }
+}
+
+.ai-glow-ring {
+  position: absolute;
+  inset: -1px;
+  padding: 2px;
+  border-radius: inherit;
+  pointer-events: none;
+  background: conic-gradient(
+    from var(--ai-glow-angle),
+    transparent 0deg 200deg,
+    color-mix(in oklch, var(--color-primary) 35%, transparent) 280deg,
+    var(--color-primary) 345deg,
+    transparent 360deg
+  );
+  mask:
+    linear-gradient(#000 0 0) content-box exclude,
+    linear-gradient(#000 0 0);
+  animation: ai-glow-spin 2.4s linear infinite;
+}
+
+/* Blurred copy behind the bubble. The blur sits on this wrapper because a mask clips its own element's filter. */
+.ai-glow-halo {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  filter: blur(6px);
+  opacity: 0.8;
+}
+
+.ai-glow-halo > .ai-glow-ring {
+  inset: -2px;
+  padding: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ai-glow-ring {
+    animation: none;
+    background: color-mix(in oklch, var(--color-primary) 60%, transparent);
+  }
+}
+
 @utility animate-fade-in {
   animation: fade-in 0.6s ease-out both;
 }

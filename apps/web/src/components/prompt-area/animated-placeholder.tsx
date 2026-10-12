@@ -14,7 +14,7 @@ type AnimatedPlaceholderProps = {
  * `tw-animate-css` enter animation (slide down + fade in). No animation
  * library is required.
  */
-export function AnimatedPlaceholder({ texts, interval = 3000 }: AnimatedPlaceholderProps) {
+export function AnimatedPlaceholder({ texts, interval = 5000 }: AnimatedPlaceholderProps) {
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
@@ -30,13 +30,10 @@ export function AnimatedPlaceholder({ texts, interval = 3000 }: AnimatedPlacehol
   return (
     <div
       className="pointer-events-none absolute top-0 left-0 overflow-hidden select-none"
-      style={{ color: "var(--prompt-area-placeholder, var(--muted-foreground))" }}
+      style={{ color: "var(--prompt-area-placeholder, var(--color-muted-foreground))" }}
       aria-hidden="true"
     >
-      <div
-        key={index}
-        className="animate-in fade-in-0 slide-in-from-top-4 duration-300 ease-in-out"
-      >
+      <div key={index} className="animate-in fade-in-0 slide-in-from-top-2 duration-700 ease-out">
         {texts[index]}
       </div>
     </div>

@@ -13,7 +13,6 @@ import {
 } from "../-utils/event-sourced-chat-persistence";
 import type { AiChange, LocalToolContext } from "@/features/agentic-tools/definitions/tool-context";
 import type { WorkbenchTab } from "@/features/agentic-tools/resume-tool-schemas";
-import type { ToolApprovalRequest } from "../-components/ToolApprovalCard";
 import { snapshotResumeJson } from "../-utils/resume-json-diff";
 import { useEventSourcedAiSettings } from "./use-event-sourced-ai-settings";
 import { isLocalMode } from "@/routes/_dashboard/resumes/$resumeId/-components/ResumeAiTab/resume-ai-types";
@@ -89,11 +88,6 @@ export function useEventSourcedResumeAiChat() {
           isPageResume: activeResumeId === resumeId,
         };
 
-  function startTurnBaseline() {
-    const id = workbench.getActiveResumeId();
-    workbench.startTurn(id === null ? null : snapshotResumeJson(dbRef.current, id));
-  }
-
   const context: LocalToolContext = {
     db,
     userId,
@@ -113,6 +107,8 @@ export function useEventSourcedResumeAiChat() {
     persistence: persistenceRef.current,
     tools: eventSourcedResumeAiClientTools,
     context,
+    // ai-client 0.39 loses messages queued during client-tool rounds; see todos/chat-prompt-queue.md.
+    queue: "drop",
     devtools: {
       name: "Event-sourced resume AI",
     },
@@ -131,24 +127,16 @@ export function useEventSourcedResumeAiChat() {
 
   const { messages, isLoading, status, sessionGenerating } = chat;
 
-  const approvals: ToolApprovalRequest[] = chat.interrupts.flatMap((interrupt) => {
-    if (interrupt.kind !== "tool-approval") return [];
-    const targetId = interrupt.originalArgs.resumeId || activeResumeId;
-    return [
-      {
-        id: interrupt.id,
-        toolName: interrupt.toolName,
-        title: targetId
-          ? `Rewrite "${db.collections.resume.get(targetId)?.name ?? targetId}"`
-          : "Rewrite a résumé",
-        detail:
-          "The assistant wants to replace this résumé's whole content. Library items are reused where they match.",
-        args: interrupt.originalArgs,
-        approve: () => interrupt.resolveInterrupt(true),
-        deny: () => interrupt.resolveInterrupt(false),
-      },
-    ];
-  });
+  // The diff start is taken when a prompt's run begins, so sends from any entry point get one.
+  const latestUserMessageId = messages.filter((message) => message.role === "user").at(-1)?.id;
+  const baselinedMessageIdRef = useRef<string | undefined>(undefined);
+  useEffect(() => {
+    if (!isLoading || !latestUserMessageId) return;
+    if (baselinedMessageIdRef.current === latestUserMessageId) return;
+    baselinedMessageIdRef.current = latestUserMessageId;
+    const id = workbench.getActiveResumeId();
+    workbench.startTurn(id === null ? null : snapshotResumeJson(dbRef.current, id));
+  }, [isLoading, latestUserMessageId, workbench]);
 
   useEffect(() => {
     const pending = pendingOpenRef.current;
@@ -171,14 +159,7 @@ export function useEventSourcedResumeAiChat() {
   async function sendText(text: string) {
     const trimmed = text.trim();
     if (!trimmed || isLoading || !isReady) return;
-    startTurnBaseline();
     await chat.sendMessage(trimmed);
-  }
-
-  async function sendStarter(message: string) {
-    if (isLoading || !isReady) return;
-    startTurnBaseline();
-    await chat.sendMessage(message);
   }
 
   function clearLocalConversation() {
@@ -196,7 +177,6 @@ export function useEventSourcedResumeAiChat() {
   async function resendPastPrompt(message: UIMessage) {
     const text = getMessageText(message);
     if (!text || isLoading || !isReady) return;
-    startTurnBaseline();
     await chat.sendMessage(text);
   }
 
@@ -217,8 +197,7 @@ export function useEventSourcedResumeAiChat() {
     activeModelLabel,
     activeResume,
     activeRoutingLabel,
-    approvals,
-    approvalsResuming: chat.resuming,
+    chat,
     chatErrorMessage: chat.error?.message ?? null,
     clearLocalConversation,
     composerRef,
@@ -229,7 +208,6 @@ export function useEventSourcedResumeAiChat() {
     messages,
     reload: chat.reload,
     resendPastPrompt,
-    sendStarter,
     sendText,
     sessionChars: getSessionChars(messages),
     sessionGenerating,

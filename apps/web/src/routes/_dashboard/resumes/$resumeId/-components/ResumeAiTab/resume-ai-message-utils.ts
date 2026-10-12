@@ -3,16 +3,8 @@ import type {
   ResumeAiChatMessage,
   ResumeAiChatMessagePart,
 } from "@/data-access-layer/resume/ai-chat/ai-chat.types";
-import {
-  createdResumeToolNames,
-  getCreatedResumeOutput,
-  type CreatedResumeOutput,
-} from "@/features/agentic-tools/created-resume-output";
 import type { UIMessage } from "@tanstack/ai-react";
 import type { ToolCallViewPart } from "./resume-ai-types";
-
-export type { CreatedResumeOutput };
-export { createdResumeToolNames, getCreatedResumeOutput };
 
 export function toJsonValue(value: unknown): JsonValue | undefined {
   if (

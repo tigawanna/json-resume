@@ -1,6 +1,7 @@
-import type { UIMessage } from "@tanstack/ai-react";
-import { ResumeAiMessage } from "./ResumeAiMessage";
 import { ResumeAiPromptComposer } from "./ResumeAiPromptComposer";
+import { ResumeAiChatActionsContext } from "./resume-ai-chat-actions";
+import type { ResumeAiChat } from "./resume-ai-chat-options";
+import { ResumeAiChatUI } from "./resume-ai-chat-ui";
 import type { ResumeAiMessageAction } from "./resume-ai-types";
 import { DIRECTIVES } from "./resume-ai-directives";
 import type { ComponentProps, RefObject } from "react";
@@ -9,33 +10,35 @@ interface ResumeAiConversationCardProps extends Omit<
   ComponentProps<typeof ResumeAiPromptComposer>,
   "hasMessages"
 > {
+  chat: ResumeAiChat;
   endOfMessagesRef: RefObject<HTMLDivElement | null>;
   historyPending: boolean;
   isReady: boolean;
-  messages: UIMessage[];
   onEditPastPrompt: ResumeAiMessageAction;
   onResendPastPrompt: ResumeAiMessageAction;
-  createdResumeTo?: "/resumes/$resumeId";
 }
 
 /** Fills a fixed-height parent: messages scroll, the composer stays pinned below them. */
 export function ResumeAiConversationCard({
+  chat,
   endOfMessagesRef,
   historyPending,
   isReady,
-  messages,
   onEditPastPrompt,
   onResendPastPrompt,
-  createdResumeTo,
   ...composerProps
 }: ResumeAiConversationCardProps) {
-  const isEmpty = messages.length === 0;
+  const isEmpty = chat.messages.length === 0;
+  const isWorking = composerProps.isBusy || composerProps.sessionGenerating;
+  const inProgressUserMessageId = isWorking
+    ? chat.messages.filter((message) => message.role === "user").at(-1)?.id
+    : undefined;
 
   function attachDirective(command: string) {
     composerProps.promptAreaRef.current?.insertChip({
       trigger: "/",
       value: command,
-      displayText: command,
+      displayText: command.replace(/^\//, ""),
     });
     composerProps.promptAreaRef.current?.focus();
   }
@@ -54,7 +57,7 @@ export function ResumeAiConversationCard({
             How can I help with your resume?
           </h2>
           <p className="text-sm text-muted-foreground">
-            Type a message — attach a directive below or type <code>/</code> to steer the response.
+            Type a message. Attach a directive below or type <code>/</code> to steer the response.
             Focus a section with <code>#</code>, reference another resume with <code>@</code>.
           </p>
         </div>
@@ -67,7 +70,7 @@ export function ResumeAiConversationCard({
             <button
               key={directive.command}
               type="button"
-              disabled={!isReady || composerProps.isBusy}
+              disabled={!isReady}
               onClick={() => attachDirective(directive.command)}
               className="rounded-full border border-border bg-base-200/50 px-4 py-1.5 text-xs text-base-content/70 transition-colors hover:bg-base-200 hover:text-base-content disabled:pointer-events-none disabled:opacity-50"
               data-test={`resume-ai-directive-${directive.command.slice(1)}`}
@@ -89,18 +92,18 @@ export function ResumeAiConversationCard({
         {isEmpty && historyPending ? (
           <ConversationSkeleton />
         ) : (
-          messages.map((message, index) => (
-            <ResumeAiMessage
-              key={message.id}
-              message={message}
-              isBusy={composerProps.isBusy}
-              isReady={isReady}
-              isStreaming={composerProps.isBusy && index === messages.length - 1}
-              onEdit={onEditPastPrompt}
-              onResend={onResendPastPrompt}
-              createdResumeTo={createdResumeTo}
-            />
-          ))
+          <ResumeAiChatActionsContext
+            value={{
+              isBusy: composerProps.isBusy,
+              isReady,
+              isWorking,
+              inProgressUserMessageId,
+              onEdit: onEditPastPrompt,
+              onResend: onResendPastPrompt,
+            }}
+          >
+            <ResumeAiChatUI.Chat chat={chat} />
+          </ResumeAiChatActionsContext>
         )}
         <div ref={endOfMessagesRef} />
       </div>

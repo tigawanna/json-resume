@@ -729,7 +729,7 @@ export const setNotesToolOutputSchema = z.object({
   notes: z.object({ id: z.string(), label: z.string(), text: z.string() }).nullable(),
 });
 
-// ─── Assistant (playbooks, undo) ──────────────────────────────────────────────
+// ─── Assistant (playbooks, undo, wrap-up) ─────────────────────────────────────
 
 export const playbookNameSchema = z.enum([
   "edit_resume",
@@ -765,6 +765,50 @@ export const undoLastAiChangeToolOutputSchema = z.object({
     .string()
     .nullable()
     .describe("Null when the undo removed the active résumé; call set_active_resume."),
+});
+
+export const wrapUpResumeRoleSchema = z.enum(["created", "edited", "inspiration"]);
+
+export const wrapUpToolInputSchema = z.object({
+  summary: z
+    .string()
+    .trim()
+    .min(1)
+    .max(4000)
+    .describe(
+      "Markdown, a few lines: what you did and why, and anything the user should check or fill in. Do not list the résumés here; they show as links.",
+    ),
+  resumes: z
+    .array(
+      z.object({
+        resumeId: z.string().trim().min(1),
+        role: wrapUpResumeRoleSchema.describe(
+          '"created" for a résumé you made this reply, "edited" for one you changed, "inspiration" for one you took wording or structure from.',
+        ),
+        note: z
+          .string()
+          .trim()
+          .max(200)
+          .optional()
+          .describe("What it contributed, in a few words."),
+      }),
+    )
+    .max(12)
+    .default([]),
+});
+
+export const wrapUpToolOutputSchema = z.object({
+  resumes: z.array(
+    z.object({
+      resumeId: z.string(),
+      role: wrapUpResumeRoleSchema,
+      name: z.string(),
+      note: z.string().optional(),
+    }),
+  ),
+  unknownResumeIds: z
+    .array(z.string())
+    .describe("Ids that match none of the user's résumés; they were left out."),
 });
 
 export type ListResumesToolInput = z.input<typeof listResumesToolInputSchema>;
@@ -845,3 +889,6 @@ export type GetPlaybookToolInput = z.input<typeof getPlaybookToolInputSchema>;
 export type GetPlaybookToolOutput = z.infer<typeof getPlaybookToolOutputSchema>;
 export type UndoLastAiChangeToolInput = z.input<typeof undoLastAiChangeToolInputSchema>;
 export type UndoLastAiChangeToolOutput = z.infer<typeof undoLastAiChangeToolOutputSchema>;
+export type WrapUpResumeRole = z.infer<typeof wrapUpResumeRoleSchema>;
+export type WrapUpToolInput = z.input<typeof wrapUpToolInputSchema>;
+export type WrapUpToolOutput = z.infer<typeof wrapUpToolOutputSchema>;

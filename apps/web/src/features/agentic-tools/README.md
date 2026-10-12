@@ -142,6 +142,7 @@ Current AI tools (`definitions/chat-tool-definitions.ts`, with browser implement
 - `list_jobs`, `get_job`, `save_job`, `update_job`, `attach_job` (`jobId: null` detaches)
 - `get_playbook` (the tool order for edit_resume, pasted_job, tailored_copy, fill_from_library, import_resume; static text, so the prompt stays short)
 - `undo_last_ai_change` (reverts the last write tool call; call again to step further back)
+- `wrap_up` (the reply's closing summary plus the résumés it created, edited or drew on; the browser drops ids that are not local résumés and the chat shows the rest as links)
 
 Rarely used tools are `lazy: true` (`create_resume`, `update_job`, `set_contacts`, `set_links`, `set_notes`, `reorder_section`, `replace_resume_document`, `undo_last_ai_change`). The model sees them by name and first sentence in TanStack AI's `__lazy__tool__discovery__` tool and loads a schema only when it needs one. Only client-only tools are lazy; `get_playbook` stays client-only because its steps name the browser write tools.
 
@@ -149,7 +150,11 @@ Undo: every write tool runs through `journaled()` in `client-tools.ts`, which re
 
 The prompt only names the active résumé's job (id and label); the model calls `get_job` when it needs the posting text. `list_jobs` and `get_job` also run remotely (MCP tools and `POST /jobs/list`, `POST /jobs/get`), sharing `shared/job-view.ts` with the local versions. `rank_resumes_for_job` runs remotely too (`POST /resumes/rank-for-job`), sharing the keyword scorer in `shared/rank.ts`.
 
-Tools defined with `needsApproval: true` pause the run. The chat tab renders an Approve / Deny card (`ToolApprovalCard.tsx`) from `useChat`'s bound `interrupts`, and the route forwards `resume`, `threadId`, `runId`, and `parentRunId` into `chat()` so the run continues after the answer.
+The chat renders messages with `createChatUI` from `@tanstack/ai-react/ui` (`ResumeAiTab/resume-ai-chat-ui.tsx`). It needs a widget for every tool name, so a new tool fails the type check until it is registered there.
+
+Tools defined with `needsApproval: true` pause the run. Their widget gets the approval as the `interrupt` prop and shows Approve / Deny inline (`ResumeAiReplaceDocumentTool`), and the route forwards `resume`, `threadId`, `runId`, and `parentRunId` into `chat()` so the run continues after the answer.
+
+The composer is disabled while a reply streams and `useChat` runs with `queue: "drop"`. Queueing follow-ups is on hold until an `@tanstack/ai-client` fix lands; see `todos/chat-prompt-queue.md`.
 
 ### API Key Architecture
 

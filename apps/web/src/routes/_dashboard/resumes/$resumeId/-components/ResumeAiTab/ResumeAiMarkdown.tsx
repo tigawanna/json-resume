@@ -12,7 +12,6 @@ import {
 import { Check, Copy } from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
-import type { ResumeAiRole } from "./resume-ai-types";
 
 import { createThemeCss } from "@tanstack/highlight/theme";
 import { githubDarkTheme } from "@tanstack/highlight/themes/github-dark";
@@ -157,7 +156,7 @@ const components = {
   ),
 } satisfies MarkdownComponents;
 
-export function ChatText({ content }: { content: string; role: ResumeAiRole }) {
+export function ChatText({ content }: { content: string }) {
   return (
     <div
       className={cn(

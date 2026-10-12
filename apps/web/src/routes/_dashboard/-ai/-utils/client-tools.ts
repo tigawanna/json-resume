@@ -1,6 +1,7 @@
 import {
   getPlaybookToolDefinition,
   undoLastAiChangeToolDefinition,
+  wrapUpToolDefinition,
 } from "@/features/agentic-tools/definitions/assistant-definitions";
 import {
   attachJobToolDefinition,
@@ -78,6 +79,7 @@ import {
   updateLocalJob,
 } from "./local-job-tools";
 import { trackAiChange, undoLocalAiChange } from "./local-undo-tools";
+import { wrapUpLocal } from "./local-wrap-up-tool";
 import { getPlaybook } from "@/features/agentic-tools/shared/playbooks";
 
 type ClientToolCtx = { context: LocalToolContext };
@@ -219,6 +221,10 @@ export const undoLastAiChangeClientTool = undoLastAiChangeToolDefinition.client(
   (input, ctx: ClientToolCtx) => undoLocalAiChange(ctx.context, input),
 );
 
+export const wrapUpClientTool = wrapUpToolDefinition.client((input, ctx: ClientToolCtx) =>
+  wrapUpLocal(ctx.context, input),
+);
+
 export const eventSourcedResumeAiClientTools = [
   listResumesClientTool,
   getResumeClientTool,
@@ -252,4 +258,5 @@ export const eventSourcedResumeAiClientTools = [
   attachJobClientTool,
   getPlaybookClientTool,
   undoLastAiChangeClientTool,
+  wrapUpClientTool,
 ];

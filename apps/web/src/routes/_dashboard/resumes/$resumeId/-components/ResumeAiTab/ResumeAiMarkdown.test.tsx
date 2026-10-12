@@ -32,7 +32,7 @@ const answer = 42;
 `;
 
 function render(content: string) {
-  return renderToStaticMarkup(<ChatText content={content} role="assistant" />);
+  return renderToStaticMarkup(<ChatText content={content} />);
 }
 
 describe("ChatText", () => {

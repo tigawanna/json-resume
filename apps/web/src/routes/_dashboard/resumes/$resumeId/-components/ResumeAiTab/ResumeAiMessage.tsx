@@ -1,75 +1,67 @@
-import { CreatedResumeCard } from "@/components/agentic-tools/CreatedResumeCard";
-import { getCreatedResumeOutput } from "@/features/agentic-tools/created-resume-output";
+import { DotsPulse } from "@/components/loaders/DotsPulse";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import type { UIMessage } from "@tanstack/ai-react";
+import type { LayoutProps, MessageProps } from "@tanstack/ai-react/ui";
 import type { ReactNode } from "react";
 import { PencilLine, RefreshCcw } from "lucide-react";
-import { ChatText } from "./ResumeAiMarkdown";
-import { ResumeAiThinkingBlock } from "./ResumeAiThinkingBlock";
-import { ToolCallPanel, ToolResultPanel } from "./ResumeAiToolPanels";
-import type { ResumeAiMessageAction, ResumeAiRole } from "./resume-ai-types";
+import { useResumeAiChatActions } from "./resume-ai-chat-actions";
+import type { ResumeAiChatOptions } from "./resume-ai-chat-options";
 
-interface ResumeAiMessageProps {
-  message: UIMessage;
-  isBusy: boolean;
-  isReady: boolean;
-  /** This message is the one currently being streamed in. */
-  isStreaming: boolean;
-  onEdit: ResumeAiMessageAction;
-  onResend: ResumeAiMessageAction;
-  createdResumeTo?: "/resumes/$resumeId";
+export function ResumeAiChatLayout({ Messages }: LayoutProps<ResumeAiChatOptions, undefined>) {
+  const { isWorking } = useResumeAiChatActions();
+  return (
+    <>
+      <Messages />
+      {isWorking ? (
+        <div className="px-4 py-2" data-test="resume-ai-working">
+          <DotsPulse label="Assistant is working" />
+        </div>
+      ) : null}
+    </>
+  );
 }
 
-export function ResumeAiMessage({
-  message,
-  isBusy,
-  isReady,
-  isStreaming,
-  onEdit,
-  onResend,
-  createdResumeTo,
-}: ResumeAiMessageProps) {
-  const role: ResumeAiRole = message.role === "assistant" ? "assistant" : "user";
-  const resultsByCallId = new Map<string, ToolResultPart>();
-  for (const part of message.parts) {
-    if (part.type === "tool-result") resultsByCallId.set(part.toolCallId, part);
-  }
-  const callIds = new Set(
-    message.parts.flatMap((part) => (part.type === "tool-call" ? [part.id] : [])),
-  );
+export function ResumeAiMessage({ message, Parts }: MessageProps<ResumeAiChatOptions>) {
+  const { isBusy, isReady, inProgressUserMessageId, onEdit, onResend } = useResumeAiChatActions();
+  const isUser = message.role === "user";
+  const isInProgress = isUser && message.id === inProgressUserMessageId;
+  const bubbleShape = isUser ? "rounded-2xl rounded-tr-md" : "rounded-2xl rounded-tl-md";
 
   return (
     <div
-      className={cn("flex w-full flex-col gap-1", role === "user" ? "items-end" : "items-start")}
+      className={cn("flex w-full flex-col gap-1", isUser ? "items-end" : "items-start")}
+      data-test={`resume-ai-message-${isUser ? "user" : "assistant"}`}
     >
       <div
-        className={cn(
-          "min-w-0 max-w-[min(44rem,calc(100%-3rem))] overflow-hidden rounded-2xl px-4 py-3 shadow-sm ring-1 ",
-          role === "user"
-            ? "rounded-tr-md bg-primary/10 ring-[color-mix(in_oklch,var(--color-primary)_34%,transparent)]"
-            : "rounded-tl-md bg-base-100 text-foreground ring-[color-mix(in_oklch,var(--color-base-content)_9%,transparent)]",
-        )}
+        className={cn("relative isolate min-w-0 max-w-[min(44rem,calc(100%-3rem))]", bubbleShape)}
       >
-        <div className="flex min-w-0 flex-col gap-2">
-          {message.parts.map((part, index) => (
-            <MessagePartView
-              key={part.type === "tool-call" ? part.id : index}
-              part={part}
-              role={role}
-              isStreaming={isStreaming}
-              result={part.type === "tool-call" ? resultsByCallId.get(part.id) : undefined}
-              hasCall={part.type === "tool-result" && callIds.has(part.toolCallId)}
-              createdResumeTo={createdResumeTo}
-            />
-          ))}
+        <div
+          className={cn(
+            "min-w-0 overflow-hidden px-4 py-3 shadow-sm ring-1",
+            bubbleShape,
+            isUser
+              ? "bg-primary/10 ring-[color-mix(in_oklch,var(--color-primary)_34%,transparent)]"
+              : "bg-base-100 text-foreground ring-[color-mix(in_oklch,var(--color-base-content)_9%,transparent)]",
+          )}
+        >
+          <div className="flex min-w-0 flex-col gap-2">
+            <Parts />
+          </div>
         </div>
+        {isInProgress ? (
+          <>
+            <span aria-hidden className="ai-glow-halo">
+              <span className="ai-glow-ring" />
+            </span>
+            <span aria-hidden className="ai-glow-ring" data-test="resume-ai-in-progress-glow" />
+          </>
+        ) : null}
       </div>
-      {role === "user" ? (
+      {isUser ? (
         <div className="flex items-center gap-1">
           <PromptActionButton
             label="Edit prompt"
-            disabled={isBusy || !isReady}
+            disabled={!isReady}
             onClick={() => onEdit(message)}
             dataTest="resume-ai-edit-past-prompt"
           >
@@ -77,7 +69,7 @@ export function ResumeAiMessage({
           </PromptActionButton>
           <PromptActionButton
             label="Resend prompt"
-            disabled={isBusy || !isReady}
+            disabled={!isReady || isBusy}
             onClick={() => onResend(message)}
             dataTest="resume-ai-resend-past-prompt"
           >
@@ -87,76 +79,6 @@ export function ResumeAiMessage({
       ) : null}
     </div>
   );
-}
-
-type MessagePart = UIMessage["parts"][number];
-type ToolResultPart = Extract<MessagePart, { type: "tool-result" }>;
-
-interface MessagePartViewProps {
-  part: MessagePart;
-  role: ResumeAiRole;
-  isStreaming: boolean;
-  /** The tool-result for a tool-call part, merged into the call's row. */
-  result: ToolResultPart | undefined;
-  /** For a tool-result part: its call is in the same message and already shows it. */
-  hasCall: boolean;
-  createdResumeTo?: "/resumes/$resumeId";
-}
-
-function MessagePartView({
-  part,
-  role,
-  isStreaming,
-  result,
-  hasCall,
-  createdResumeTo,
-}: MessagePartViewProps) {
-  switch (part.type) {
-    case "text":
-      return part.content.trim() ? <ChatText content={part.content} role={role} /> : null;
-    case "thinking":
-      return part.content.trim() ? (
-        <ResumeAiThinkingBlock content={part.content} defaultOpen={isStreaming} />
-      ) : null;
-    case "tool-call": {
-      const createdResume = getCreatedResumeOutput(part);
-      return (
-        <>
-          <ToolCallPanel
-            part={{
-              id: part.id,
-              name: part.name,
-              arguments: part.arguments,
-              state: part.state,
-              output: part.output,
-              ...(result?.error ? { error: result.error } : {}),
-            }}
-          />
-          {createdResume ? (
-            <CreatedResumeCard
-              output={createdResume}
-              to={createdResumeTo}
-              dataTest="resume-ai-created-resume-card"
-            />
-          ) : null}
-        </>
-      );
-    }
-    case "tool-result":
-      if (hasCall) return null;
-      return (
-        <ToolResultPanel
-          part={{
-            toolCallId: part.toolCallId,
-            content: typeof part.content === "string" ? part.content : JSON.stringify(part.content),
-            state: part.state,
-            error: part.error,
-          }}
-        />
-      );
-    default:
-      return null;
-  }
 }
 
 interface PromptActionButtonProps {

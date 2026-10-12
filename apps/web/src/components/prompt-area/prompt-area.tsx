@@ -360,7 +360,7 @@ export function PromptArea({
               className="h-full w-full"
               style={{
                 background:
-                  "linear-gradient(to bottom, transparent, color-mix(in srgb, var(--prompt-area-surface, var(--background)) 80%, transparent), var(--prompt-area-surface, var(--background)))",
+                  "linear-gradient(to bottom, transparent, color-mix(in srgb, var(--prompt-area-surface, var(--color-background)) 80%, transparent), var(--prompt-area-surface, var(--color-background)))",
               }}
             />
           </div>
@@ -374,7 +374,7 @@ export function PromptArea({
           ) : (
             <div
               className="pointer-events-none absolute top-0 left-0 select-none"
-              style={{ color: "var(--prompt-area-placeholder, var(--muted-foreground))" }}
+              style={{ color: "var(--prompt-area-placeholder, var(--color-muted-foreground))" }}
               aria-hidden="true"
             >
               {placeholder}
