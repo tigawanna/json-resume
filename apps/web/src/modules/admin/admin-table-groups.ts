@@ -26,6 +26,6 @@ export function adminTableGroup(name: string): AdminTableGroupId {
     return "resume";
   }
   if (AUTH_TABLES.has(name) || name.startsWith("oauth_")) return "auth";
-  if (name === "job" || name === "cover_letter") return "jobs";
+  if (name === "job" || name === "cover_letter" || name === "application_answer") return "jobs";
   return "system";
 }

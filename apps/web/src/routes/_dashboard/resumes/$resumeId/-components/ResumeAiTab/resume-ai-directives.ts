@@ -36,6 +36,12 @@ export const DIRECTIVES: ResumeAiDirective[] = [
     instruction:
       "Write a cover letter for this resume and its job (follow the cover_letter playbook) and save it with save_cover_letter. If I attached a previous cover letter, keep its voice and strongest stories but rewrite the company, role, and specifics to fit this job.",
   },
+  {
+    command: "/answer-questions",
+    label: "Answer application questions",
+    instruction:
+      "These are questions from the application form for this resume's job (follow the application_questions playbook). Draft a starting-point answer for each, reusing stories from my past answers, mark the details only I know as [[...]], and save them with save_application_answers.",
+  },
 ];
 
 /** Accepts the command with or without its slash (space-resolved chips drop it). */

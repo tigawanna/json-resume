@@ -64,6 +64,17 @@ const PLAYBOOKS: Record<PlaybookName, Playbook> = {
       "Reply with one or two lines about the angle you took; the chat already shows the letter. Use wrap_up only if you also changed a résumé.",
     ],
   },
+  application_questions: {
+    when: "The user pastes questions from a job application form (why this role, tell us about a time you...), or asks to revise those answers.",
+    steps: [
+      "get_resume for the active résumé with the header, summary, experience, projects and job sections. Without a target job, ask which job this is for, or save_job when they pasted the posting.",
+      'Split the paste into separate questions, word for word. For each, search_application_answers with one or two topic words (e.g. "performance", "conflict", "why") to find stories the user already told; read any "Referenced application answers" with search_application_answers answerIds.',
+      "Draft each answer as a starting point in the user's voice: reuse past stories and facts, adapted to this company and question, and the résumé. Never invent numbers, names or outcomes; put [[short hint]] where only the user knows the detail.",
+      "Plain text, no markdown. Keep to any word limit in the question; otherwise 80 to 200 words.",
+      "save_application_answers once with every question in form order. To revise, pass answerId with the whole new answer.",
+      "Reply briefly: which answers reused a past story and which [[gaps]] the user should fill. The chat already shows the answers.",
+    ],
+  },
 };
 
 export function getPlaybook(input: GetPlaybookToolInput): GetPlaybookToolOutput {

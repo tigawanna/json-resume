@@ -3,6 +3,7 @@ import "@tanstack/react-start/server-only";
 import { db } from "@/lib/drizzle/client";
 import { unwrapUnknownError } from "@/utils/errors";
 import {
+  applicationAnswer,
   coverLetter,
   resume,
   resumeAiChat,
@@ -99,6 +100,7 @@ export const tablesByCollection = {
   savedProject,
   job,
   coverLetter,
+  applicationAnswer,
 } satisfies Record<string, SQLiteTable>;
 
 export type ProjectableCollectionId = keyof typeof tablesByCollection;

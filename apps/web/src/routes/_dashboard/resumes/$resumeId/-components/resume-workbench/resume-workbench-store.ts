@@ -5,7 +5,7 @@ import { Store } from "@tanstack/react-store";
 /** Modals the workbench opens from more than one place; only one is open at a time. */
 export type WorkbenchDialog = "actions" | "import-json" | "ai-settings";
 
-export type AiPreviewView = "preview" | "changes" | "cover-letter";
+export type AiPreviewView = "preview" | "changes" | "cover-letter" | "answers";
 
 export interface WorkbenchImportReview {
   plan: ResumeImportPlan;
@@ -36,6 +36,8 @@ export interface ResumeWorkbenchState {
     previewView: AiPreviewView;
     /** Letter the cover-letter view shows; null falls back to the active résumé's newest one. */
     coverLetterId: string | null;
+    /** Job whose application answers the answers view shows; null falls back to the active résumé's. */
+    answersJobId: string | null;
   };
 }
 
@@ -56,6 +58,7 @@ export function createResumeWorkbenchStore(init: {
       previewDismissed: false,
       previewView: "preview",
       coverLetterId: null,
+      answersJobId: null,
     },
   });
 
@@ -147,6 +150,14 @@ export function createResumeWorkbenchStore(init: {
       updateAi((ai) => ({
         coverLetterId,
         previewView: "cover-letter",
+        ...(open === "always" || !ai.previewDismissed ? { previewOpen: true } : {}),
+      }));
+    },
+    /** Points the answers view at a job's application; `open` also shows the panel. */
+    focusAnswers: (jobId: string | null, open: "always" | "unless-dismissed") => {
+      updateAi((ai) => ({
+        answersJobId: jobId,
+        previewView: "answers",
         ...(open === "always" || !ai.previewDismissed ? { previewOpen: true } : {}),
       }));
     },

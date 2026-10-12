@@ -1,4 +1,6 @@
+import { saveApplicationAnswersToolOutputSchema } from "@/features/agentic-tools/application-answer-tool-schemas";
 import { saveCoverLetterToolOutputSchema } from "@/features/agentic-tools/cover-letter-tool-schemas";
+import { saveApplicationAnswersToolDefinition } from "@/features/agentic-tools/definitions/application-answer-definitions";
 import { saveCoverLetterToolDefinition } from "@/features/agentic-tools/definitions/cover-letter-definitions";
 import { resumeWriteToolNames } from "@/features/agentic-tools/resume-write-tools";
 import {
@@ -30,9 +32,26 @@ export function coverLetterSavedByReply(messages: UIMessage[], isLoading: boolea
   return null;
 }
 
+/** The job of the application answers an in-flight reply saved last, or null when it saved none. */
+export function answersSavedByReply(
+  messages: UIMessage[],
+  isLoading: boolean,
+): { jobId: string | null } | null {
+  const latest = messages.at(-1);
+  if (!isLoading || latest?.role !== "assistant") return null;
+  for (const part of [...latest.parts].reverse()) {
+    if (part.type !== "tool-call" || part.name !== saveApplicationAnswersToolDefinition.name) {
+      continue;
+    }
+    const saved = saveApplicationAnswersToolOutputSchema.safeParse(part.output);
+    if (saved.success) return { jobId: saved.data.answers[0]?.jobId ?? null };
+  }
+  return null;
+}
+
 /**
  * Opens the live preview beside the AI chat the first time a reply writes to a
- * résumé or saves a cover letter. Once the user closes it, it stays shut until
+ * résumé or saves a cover letter or application answers. Once the user closes it, it stays shut until
  * the chat is cleared.
  */
 export function useResumeAiPreviewPanel({
@@ -43,9 +62,13 @@ export function useResumeAiPreviewPanel({
   isLoading: boolean;
 }) {
   const open = useResumeWorkbench((state) => state.ai.previewOpen);
-  const { autoOpenPreview, allowPreviewAutoOpen, focusCoverLetter } = useResumeWorkbenchActions();
+  const { autoOpenPreview, allowPreviewAutoOpen, focusCoverLetter, focusAnswers } =
+    useResumeWorkbenchActions();
   const isWritingResume = isReplyWritingResume(messages, isLoading);
   const savedCoverLetterId = coverLetterSavedByReply(messages, isLoading);
+  const savedAnswers = answersSavedByReply(messages, isLoading);
+  const hasSavedAnswers = savedAnswers !== null;
+  const savedAnswersJobId = savedAnswers?.jobId ?? null;
   const isEmpty = messages.length === 0;
 
   useEffect(() => {
@@ -55,6 +78,10 @@ export function useResumeAiPreviewPanel({
   useEffect(() => {
     if (savedCoverLetterId) focusCoverLetter(savedCoverLetterId, "unless-dismissed");
   }, [savedCoverLetterId, focusCoverLetter]);
+
+  useEffect(() => {
+    if (hasSavedAnswers) focusAnswers(savedAnswersJobId, "unless-dismissed");
+  }, [hasSavedAnswers, savedAnswersJobId, focusAnswers]);
 
   useEffect(() => {
     if (isEmpty) allowPreviewAutoOpen();

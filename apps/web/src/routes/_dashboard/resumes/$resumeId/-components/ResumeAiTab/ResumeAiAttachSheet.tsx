@@ -12,6 +12,7 @@ import type { AppDb } from "@/data-access-layer/event-sourced/collection";
 import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
 import { useDebouncedValue } from "@/hooks/use-debouncer";
 import { cn } from "@/lib/utils";
+import { searchLocalApplicationAnswers } from "@/routes/_dashboard/-ai/-utils/local-application-answer-tools";
 import { listLocalCoverLetters } from "@/routes/_dashboard/-ai/-utils/local-cover-letter-tools";
 import { searchLocalLibrary } from "@/routes/_dashboard/-ai/-utils/local-library-tools";
 import { listLocalResumes } from "@/routes/_dashboard/-ai/-utils/local-resume-tools";
@@ -27,6 +28,7 @@ import {
   List,
   Loader2,
   Mail,
+  MessageSquareText,
   Mic,
   Search,
   Sparkles,
@@ -48,6 +50,7 @@ const KIND_ICONS = {
   skills: Sparkles,
   summary: AlignLeft,
   cover_letter: Mail,
+  application_answer: MessageSquareText,
 } satisfies Record<AttachKind, LucideIcon>;
 
 interface AttachRow {
@@ -84,6 +87,19 @@ async function fetchAttachPage(
         id: letter.id,
         title: letter.title,
         detail: letter.preview,
+        onResume: false,
+      })),
+      total: page.total,
+      nextOffset: page.nextOffset,
+    };
+  }
+  if (kind === "application_answer") {
+    const page = await searchLocalApplicationAnswers({ db }, { keyword, offset, limit: PAGE_SIZE });
+    return {
+      rows: page.answers.map((row): AttachRow => ({
+        id: row.id,
+        title: row.question,
+        detail: [row.jobLabel, row.answer].filter(Boolean).join(" · "),
         onResume: false,
       })),
       total: page.total,
@@ -159,7 +175,7 @@ export function ResumeAiAttachSheet({
           <SheetDescription>
             {current
               ? "Pick items to reference in your message. The assistant works with them directly."
-              : "Point the assistant at a résumé, a past cover letter, or items from your library."}
+              : "Point the assistant at a résumé, past cover letters or answers, or items from your library."}
           </SheetDescription>
         </SheetHeader>
         {current ? (

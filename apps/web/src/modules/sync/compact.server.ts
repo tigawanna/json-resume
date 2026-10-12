@@ -35,7 +35,8 @@ async function loadUserRows(userId: string): Promise<Record<string, Row[]>> {
     if (
       collectionId === "savedProject" ||
       collectionId === "job" ||
-      collectionId === "coverLetter"
+      collectionId === "coverLetter" ||
+      collectionId === "applicationAnswer"
     ) {
       continue;
     }

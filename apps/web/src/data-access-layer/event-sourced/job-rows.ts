@@ -217,6 +217,13 @@ export function deleteJob(db: AppDb, jobId: string) {
       row.updatedAt = nowMs();
     });
   }
+  for (const answer of db.collections.applicationAnswer.toArray) {
+    if (answer.jobId !== jobId) continue;
+    db.collections.applicationAnswer.update(answer.id, (row) => {
+      row.jobId = null;
+      row.updatedAt = nowMs();
+    });
+  }
   db.collections.job.delete(jobId);
 }
 

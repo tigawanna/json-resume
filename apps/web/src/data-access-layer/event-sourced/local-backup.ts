@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import type { AppCollectionDefs, AppDb } from "./collection";
 import {
+  applicationAnswerSchema,
   appSettingsSchema,
   coverLetterSchema,
   resumeAiChatSchema,
@@ -53,6 +54,7 @@ const userCollectionIds = [
   "resumeAiMessage",
   "savedProject",
   "coverLetter",
+  "applicationAnswer",
   "settings",
 ] as const satisfies ReadonlyArray<keyof AppCollectionDefs>;
 
@@ -82,6 +84,7 @@ const rowSchemaByCollection = {
   resumeAiMessage: resumeAiMessageSchema,
   savedProject: savedProjectSchema,
   coverLetter: coverLetterSchema,
+  applicationAnswer: applicationAnswerSchema,
   settings: appSettingsSchema,
 } satisfies Record<UserCollectionId, z.ZodType>;
 

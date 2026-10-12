@@ -353,6 +353,22 @@ export const coverLetterSchema = z.object({
 });
 export type CoverLetter = z.infer<typeof coverLetterSchema>;
 
+// --- application answers (questions asked on job application forms) ---
+
+export const applicationAnswerSchema = z.object({
+  id: z.string(),
+  userId: z.string().nullable().optional(),
+  question: z.string(),
+  /** Plain text, pasted as-is into application forms. */
+  answer: z.string(),
+  resumeId: z.string().nullable().optional(),
+  jobId: z.string().nullable().optional(),
+  sortOrder: z.number(),
+  ...embeddableSchema.shape,
+  ...timestampsSchema.shape,
+});
+export type ApplicationAnswer = z.infer<typeof applicationAnswerSchema>;
+
 // --- saved project ---
 
 export const savedProjectSchema = z.object({

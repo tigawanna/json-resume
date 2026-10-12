@@ -738,6 +738,7 @@ export const playbookNameSchema = z.enum([
   "fill_from_library",
   "import_resume",
   "cover_letter",
+  "application_questions",
 ]);
 
 export const getPlaybookToolInputSchema = z.object({

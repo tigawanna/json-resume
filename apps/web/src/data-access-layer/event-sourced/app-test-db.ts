@@ -42,6 +42,7 @@ export function openTestAppDb() {
       savedProject: byId,
       job: byId,
       coverLetter: byId,
+      applicationAnswer: byId,
       settings: { ...byId, localOnly: true },
     },
     modules: {

@@ -21,6 +21,7 @@ import { Route as AuthSignupRouteImport } from './routes/auth/signup'
 import { Route as TestIndexRouteImport } from './routes/test/index'
 import { Route as DashboardAdminIndexRouteImport } from './routes/_dashboard/admin/index'
 import { Route as DashboardAdminRouteRouteImport } from './routes/_dashboard/admin/route'
+import { Route as DashboardApplicationAnswersIndexRouteImport } from './routes/_dashboard/application-answers/index'
 import { Route as DashboardCertificationsIndexRouteImport } from './routes/_dashboard/certifications/index'
 import { Route as DashboardContactsIndexRouteImport } from './routes/_dashboard/contacts/index'
 import { Route as DashboardCoverLettersIndexRouteImport } from './routes/_dashboard/cover-letters/index'
@@ -120,6 +121,12 @@ const DashboardAdminRouteRoute = DashboardAdminRouteRouteImport.update({
   path: '/admin/route',
   getParentRoute: () => DashboardLayoutRoute,
 } as any)
+const DashboardApplicationAnswersIndexRoute =
+  DashboardApplicationAnswersIndexRouteImport.update({
+    id: '/application-answers/',
+    path: '/application-answers/',
+    getParentRoute: () => DashboardLayoutRoute,
+  } as any)
 const DashboardCertificationsIndexRoute =
   DashboardCertificationsIndexRouteImport.update({
     id: '/certifications/',
@@ -352,6 +359,7 @@ export interface FileRoutesByFullPath {
   '/api/sync/compact': typeof ApiSyncCompactRoute
   '/api/sync/events': typeof ApiSyncEventsRoute
   '/admin/': typeof DashboardAdminIndexRoute
+  '/application-answers/': typeof DashboardApplicationAnswersIndexRoute
   '/certifications/': typeof DashboardCertificationsIndexRoute
   '/contacts/': typeof DashboardContactsIndexRoute
   '/cover-letters/': typeof DashboardCoverLettersIndexRoute
@@ -403,6 +411,7 @@ export interface FileRoutesByTo {
   '/api/sync/compact': typeof ApiSyncCompactRoute
   '/api/sync/events': typeof ApiSyncEventsRoute
   '/admin': typeof DashboardAdminIndexRoute
+  '/application-answers': typeof DashboardApplicationAnswersIndexRoute
   '/certifications': typeof DashboardCertificationsIndexRoute
   '/contacts': typeof DashboardContactsIndexRoute
   '/cover-letters': typeof DashboardCoverLettersIndexRoute
@@ -457,6 +466,7 @@ export interface FileRoutesById {
   '/api/sync/compact': typeof ApiSyncCompactRoute
   '/api/sync/events': typeof ApiSyncEventsRoute
   '/_dashboard/admin/': typeof DashboardAdminIndexRoute
+  '/_dashboard/application-answers/': typeof DashboardApplicationAnswersIndexRoute
   '/_dashboard/certifications/': typeof DashboardCertificationsIndexRoute
   '/_dashboard/contacts/': typeof DashboardContactsIndexRoute
   '/_dashboard/cover-letters/': typeof DashboardCoverLettersIndexRoute
@@ -511,6 +521,7 @@ export interface FileRouteTypes {
     | '/api/sync/compact'
     | '/api/sync/events'
     | '/admin/'
+    | '/application-answers/'
     | '/certifications/'
     | '/contacts/'
     | '/cover-letters/'
@@ -562,6 +573,7 @@ export interface FileRouteTypes {
     | '/api/sync/compact'
     | '/api/sync/events'
     | '/admin'
+    | '/application-answers'
     | '/certifications'
     | '/contacts'
     | '/cover-letters'
@@ -615,6 +627,7 @@ export interface FileRouteTypes {
     | '/api/sync/compact'
     | '/api/sync/events'
     | '/_dashboard/admin/'
+    | '/_dashboard/application-answers/'
     | '/_dashboard/certifications/'
     | '/_dashboard/contacts/'
     | '/_dashboard/cover-letters/'
@@ -751,6 +764,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/route'
       fullPath: '/admin/route'
       preLoaderRoute: typeof DashboardAdminRouteRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
+    '/_dashboard/application-answers/': {
+      id: '/_dashboard/application-answers/'
+      path: '/application-answers'
+      fullPath: '/application-answers/'
+      preLoaderRoute: typeof DashboardApplicationAnswersIndexRouteImport
       parentRoute: typeof DashboardLayoutRoute
     }
     '/_dashboard/certifications/': {
@@ -1033,6 +1053,7 @@ interface DashboardLayoutRouteChildren {
   DashboardDashboardRoute: typeof DashboardDashboardRoute
   DashboardAdminRouteRoute: typeof DashboardAdminRouteRoute
   DashboardAdminIndexRoute: typeof DashboardAdminIndexRoute
+  DashboardApplicationAnswersIndexRoute: typeof DashboardApplicationAnswersIndexRoute
   DashboardCertificationsIndexRoute: typeof DashboardCertificationsIndexRoute
   DashboardContactsIndexRoute: typeof DashboardContactsIndexRoute
   DashboardCoverLettersIndexRoute: typeof DashboardCoverLettersIndexRoute
@@ -1067,6 +1088,7 @@ const DashboardLayoutRouteChildren: DashboardLayoutRouteChildren = {
   DashboardDashboardRoute: DashboardDashboardRoute,
   DashboardAdminRouteRoute: DashboardAdminRouteRoute,
   DashboardAdminIndexRoute: DashboardAdminIndexRoute,
+  DashboardApplicationAnswersIndexRoute: DashboardApplicationAnswersIndexRoute,
   DashboardCertificationsIndexRoute: DashboardCertificationsIndexRoute,
   DashboardContactsIndexRoute: DashboardContactsIndexRoute,
   DashboardCoverLettersIndexRoute: DashboardCoverLettersIndexRoute,

@@ -83,4 +83,14 @@ describe("createResumeWorkbenchStore", () => {
     actions.focusCoverLetter("letter-2", "always");
     expect(store.state.ai).toMatchObject({ previewOpen: true, coverLetterId: "letter-2" });
   });
+
+  it("switches the preview to a job's application answers", () => {
+    const { store, actions } = createWorkbench();
+    actions.focusAnswers("job-1", "unless-dismissed");
+    expect(store.state.ai).toMatchObject({
+      previewOpen: true,
+      previewView: "answers",
+      answersJobId: "job-1",
+    });
+  });
 });

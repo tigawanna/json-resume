@@ -34,6 +34,7 @@ import type {
   SavedProject,
   Job,
   CoverLetter,
+  ApplicationAnswer,
 } from "./schemas";
 
 /**
@@ -69,6 +70,7 @@ export type AppCollectionDefs = {
   savedProject: CollectionDef<SavedProject, string>;
   job: CollectionDef<Job, string>;
   coverLetter: CollectionDef<CoverLetter, string>;
+  applicationAnswer: CollectionDef<ApplicationAnswer, string>;
   settings: CollectionDef<AppSettings, string>;
 };
 
@@ -260,6 +262,17 @@ const {
         byUserId<CoverLetter>(),
         { select: (r) => r.resumeId, indexType: BasicIndex, name: "by-resume" },
         byUpdatedAt<CoverLetter>(),
+      ],
+    },
+
+    applicationAnswer: {
+      getKey: (row) => row.id,
+      indexes: [
+        byId<ApplicationAnswer>(),
+        byUserId<ApplicationAnswer>(),
+        { select: (r) => r.jobId, indexType: BasicIndex, name: "by-job" },
+        { select: (r) => r.resumeId, indexType: BasicIndex, name: "by-resume" },
+        byUpdatedAt<ApplicationAnswer>(),
       ],
     },
 

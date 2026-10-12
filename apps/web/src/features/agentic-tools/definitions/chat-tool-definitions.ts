@@ -9,6 +9,10 @@ import {
   saveCoverLetterToolDefinition,
 } from "./cover-letter-definitions";
 import {
+  saveApplicationAnswersToolDefinition,
+  searchApplicationAnswersToolDefinition,
+} from "./application-answer-definitions";
+import {
   attachJobToolDefinition,
   getJobToolDefinition,
   listJobsToolDefinition,
@@ -86,6 +90,8 @@ export const chatToolDefinitions = [
   saveCoverLetterToolDefinition,
   getCoverLetterToolDefinition,
   listCoverLettersToolDefinition,
+  saveApplicationAnswersToolDefinition,
+  searchApplicationAnswersToolDefinition,
   getPlaybookToolDefinition,
   undoLastAiChangeToolDefinition,
   wrapUpToolDefinition,

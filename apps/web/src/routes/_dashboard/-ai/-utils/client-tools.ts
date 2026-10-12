@@ -9,6 +9,10 @@ import {
   saveCoverLetterToolDefinition,
 } from "@/features/agentic-tools/definitions/cover-letter-definitions";
 import {
+  saveApplicationAnswersToolDefinition,
+  searchApplicationAnswersToolDefinition,
+} from "@/features/agentic-tools/definitions/application-answer-definitions";
+import {
   attachJobToolDefinition,
   getJobToolDefinition,
   listJobsToolDefinition,
@@ -88,6 +92,10 @@ import {
   listLocalCoverLetters,
   saveLocalCoverLetter,
 } from "./local-cover-letter-tools";
+import {
+  saveLocalApplicationAnswers,
+  searchLocalApplicationAnswers,
+} from "./local-application-answer-tools";
 import { trackAiChange, undoLocalAiChange } from "./local-undo-tools";
 import { wrapUpLocal } from "./local-wrap-up-tool";
 import { getPlaybook } from "@/features/agentic-tools/shared/playbooks";
@@ -235,6 +243,14 @@ export const listCoverLettersClientTool = listCoverLettersToolDefinition.client(
   (input, ctx: ClientToolCtx) => listLocalCoverLetters(ctx.context, input),
 );
 
+export const saveApplicationAnswersClientTool = saveApplicationAnswersToolDefinition.client(
+  journaled(saveApplicationAnswersToolDefinition.name, saveLocalApplicationAnswers),
+);
+
+export const searchApplicationAnswersClientTool = searchApplicationAnswersToolDefinition.client(
+  (input, ctx: ClientToolCtx) => searchLocalApplicationAnswers(ctx.context, input),
+);
+
 export const getPlaybookClientTool = getPlaybookToolDefinition.client((input) =>
   getPlaybook(input),
 );
@@ -281,6 +297,8 @@ export const eventSourcedResumeAiClientTools = [
   saveCoverLetterClientTool,
   getCoverLetterClientTool,
   listCoverLettersClientTool,
+  saveApplicationAnswersClientTool,
+  searchApplicationAnswersClientTool,
   getPlaybookClientTool,
   undoLastAiChangeClientTool,
   wrapUpClientTool,

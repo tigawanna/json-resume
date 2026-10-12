@@ -1,7 +1,11 @@
 import { resumeWriteToolNames } from "@/features/agentic-tools/resume-write-tools";
 import type { UIMessage } from "@tanstack/ai-react";
 import { describe, expect, it } from "vitest";
-import { coverLetterSavedByReply, isReplyWritingResume } from "./use-resume-ai-preview-panel";
+import {
+  answersSavedByReply,
+  coverLetterSavedByReply,
+  isReplyWritingResume,
+} from "./use-resume-ai-preview-panel";
 
 const userMessage: UIMessage = {
   id: "u1",
@@ -73,6 +77,50 @@ describe("coverLetterSavedByReply", () => {
     expect(coverLetterSavedByReply([userMessage, savedLetter], false)).toBeNull();
     expect(
       coverLetterSavedByReply([userMessage, replyCalling("save_cover_letter")], true),
+    ).toBeNull();
+  });
+});
+
+describe("answersSavedByReply", () => {
+  const savedAnswers: UIMessage = {
+    id: "a3",
+    role: "assistant",
+    parts: [
+      {
+        type: "tool-call",
+        id: "call-3",
+        name: "save_application_answers",
+        arguments: "{}",
+        state: "input-complete",
+        output: {
+          created: 1,
+          updated: 0,
+          answers: [
+            {
+              id: "answer-1",
+              question: "Why Acme?",
+              answer: "Because [[reason]].",
+              resumeId: "page",
+              jobId: "acme",
+              jobLabel: "Acme — Engineer",
+              wordCount: 2,
+              placeholders: 1,
+              updatedAt: "2026-10-12T10:00:00.000Z",
+            },
+          ],
+        },
+      },
+    ],
+  };
+
+  it("returns the job whose answers an in-flight reply saved", () => {
+    expect(answersSavedByReply([userMessage, savedAnswers], true)).toEqual({ jobId: "acme" });
+  });
+
+  it("ignores history and calls that have not finished", () => {
+    expect(answersSavedByReply([userMessage, savedAnswers], false)).toBeNull();
+    expect(
+      answersSavedByReply([userMessage, replyCalling("save_application_answers")], true),
     ).toBeNull();
   });
 });

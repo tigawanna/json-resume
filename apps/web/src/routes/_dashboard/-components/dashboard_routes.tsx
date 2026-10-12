@@ -13,6 +13,7 @@ import {
   LayoutDashboard,
   Link,
   Mail,
+  MessageSquareText,
   Mic,
   Notebook,
   Settings,
@@ -36,6 +37,7 @@ export function getDashboardPrimaryRoutes(): SidebarItem[] {
     { title: "Public résumés", href: "/public-resumes", icon: Globe },
     { title: "Jobs", href: "/jobs", icon: Briefcase },
     { title: "Cover letters", href: "/cover-letters", icon: Mail },
+    { title: "Application answers", href: "/application-answers", icon: MessageSquareText },
     {
       title: "Resume Data",
       href: "/experiences",

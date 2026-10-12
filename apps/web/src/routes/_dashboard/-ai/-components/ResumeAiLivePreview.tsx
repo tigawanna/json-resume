@@ -19,12 +19,14 @@ import {
   Loader2,
   Mail,
   Maximize2,
+  MessageSquareText,
   Minimize2,
   PanelRightClose,
   X,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { diffResumeJson, resumeDetailJson } from "../-utils/resume-json-diff";
+import { ResumeAiAnswersPreview } from "./ResumeAiAnswersPreview";
 import { ResumeAiCoverLetterPreview } from "./ResumeAiCoverLetterPreview";
 
 type ResumeDetail = NonNullable<ReturnType<typeof useEventSourcedResumeDetail>["detail"]>;
@@ -32,7 +34,9 @@ type ResumeDetail = NonNullable<ReturnType<typeof useEventSourcedResumeDetail>["
 export type LivePreviewLayout = "panel" | "maximized" | "rail" | "sheet";
 
 function isLivePreviewView(value: string): value is AiPreviewView {
-  return value === "preview" || value === "changes" || value === "cover-letter";
+  return (
+    value === "preview" || value === "changes" || value === "cover-letter" || value === "answers"
+  );
 }
 
 interface ResumeAiLivePreviewProps {
@@ -55,6 +59,7 @@ export function ResumeAiLivePreview({
   const baselineJson = useResumeWorkbench((state) => state.ai.turnBaselines[resumeId]);
   const view = useResumeWorkbench((state) => state.ai.previewView);
   const coverLetterId = useResumeWorkbench((state) => state.ai.coverLetterId);
+  const answersJobId = useResumeWorkbench((state) => state.ai.answersJobId);
   const { setPreviewView } = useResumeWorkbenchActions();
   const pageTemplate = useWorkbenchTemplate();
   const { detail, isLoading } = useEventSourcedResumeDetail(resumeId);
@@ -94,17 +99,17 @@ export function ResumeAiLivePreview({
         if (isLivePreviewView(value)) setPreviewView(value);
       }}
       className={cn(
-        "flex h-full min-h-0 flex-col gap-0 bg-base-100",
+        "@container flex h-full min-h-0 flex-col gap-0 bg-base-100",
         layout !== "sheet" && "border-l border-border/60",
       )}
       aria-label="Live résumé preview"
       data-test="resume-ai-preview"
     >
-      <header className="flex items-center gap-2 border-b border-border/60 px-3 py-2">
+      <header className="flex flex-wrap items-center gap-2 border-b border-border/60 px-3 py-2">
         <span className="min-w-0 flex-1 truncate text-sm font-medium">
           {detail?.name ?? "Résumé preview"}
         </span>
-        <TabsList className="h-8">
+        <TabsList className="order-last h-8 w-full @3xl:order-none @3xl:w-fit">
           <TabsTrigger
             value="preview"
             className="gap-1.5 text-xs"
@@ -134,6 +139,14 @@ export function ResumeAiLivePreview({
           >
             <Mail className="size-3.5" />
             Letter
+          </TabsTrigger>
+          <TabsTrigger
+            value="answers"
+            className="gap-1.5 text-xs"
+            data-test="resume-ai-answers-tab"
+          >
+            <MessageSquareText className="size-3.5" />
+            Q&amp;A
           </TabsTrigger>
         </TabsList>
         <div className="flex items-center">
@@ -188,6 +201,10 @@ export function ResumeAiLivePreview({
       {view === "cover-letter" ? (
         <TabsContent value="cover-letter" className="mt-0 min-h-0 flex-1">
           <ResumeAiCoverLetterPreview coverLetterId={coverLetterId} resumeId={resumeId} />
+        </TabsContent>
+      ) : view === "answers" ? (
+        <TabsContent value="answers" className="mt-0 min-h-0 flex-1">
+          <ResumeAiAnswersPreview jobId={answersJobId} resumeId={resumeId} />
         </TabsContent>
       ) : detail && templateId ? (
         <>
