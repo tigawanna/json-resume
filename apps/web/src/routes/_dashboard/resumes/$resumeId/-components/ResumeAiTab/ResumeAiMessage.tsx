@@ -108,6 +108,7 @@ type MessagePart = UIMessage["parts"][number];
 
 type MessageBlock = { type: "text"; content: string } | { type: "thinking"; parts: MessagePart[] };
 
+// TODO this should be pushed upwards so we can show granular blocks for certain tool results, no need to pre collect the way itis being done here
 function getMessageBlocks(message: UIMessage): MessageBlock[] {
   const blocks: MessageBlock[] = [];
   let thinkingParts: MessagePart[] = [];

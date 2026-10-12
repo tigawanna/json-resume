@@ -1,15 +1,26 @@
 import { cn } from "@/lib/utils";
-import { Markdown, type MarkdownComponents } from "@tanstack/markdown/react";
 import { createHighlighter } from "@tanstack/highlight/core";
-import { createTanStackMarkdownHighlighter } from "@tanstack/highlight/markdown";
 import * as languages from "@tanstack/highlight/languages";
+import { createTanStackMarkdownHighlighter } from "@tanstack/highlight/markdown";
+import { Markdown, type MarkdownComponents } from "@tanstack/markdown/react";
 import type { ResumeAiRole } from "./resume-ai-types";
 
+import { createThemeCss } from "@tanstack/highlight/theme";
+import { githubDarkTheme } from "@tanstack/highlight/themes/github-dark";
+import { githubLightTheme } from "@tanstack/highlight/themes/github-light";
+
+const themeCss = createThemeCss({
+  light: githubLightTheme,
+  dark: githubDarkTheme,
+  darkSelector: ".dark",
+});
 const highlighter = createTanStackMarkdownHighlighter(
   createHighlighter({
     languages: Object.values(languages),
   }),
 );
+
+// TODO the code highlighting just doent work as expected, it should be fixed it might have smeting todo with @apps/web/src/routes/_dashboard/resumes/$resumeId/-components/ResumeAiTab/ResumeAiMessage.tsx:111
 
 const components = {
   table: (props) => (
@@ -36,12 +47,8 @@ const components = {
 
 export function ChatText({ content }: { content: string; role: ResumeAiRole }) {
   return (
-    <div
-      className={cn(
-        "resume-ai-markdown space-y-2 text-sm leading-6 wrap-break-word",
-        // role === "user" ? "text-primary-foreground" : "text-foreground",
-      )}
-    >
+    <div className={cn("resume-ai-markdown space-y-2 text-sm leading-6 wrap-break-word")}>
+      <style>{themeCss}</style>
       <Markdown highlighter={highlighter} components={components}>
         {content}
       </Markdown>
