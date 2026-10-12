@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { asTemplateId } from "@/data-access-layer/event-sourced/assemble-resume-detail";
 import { resumeDetailToDocument } from "@/data-access-layer/resume/resume-converters";
 import { RESUME_PAPER_WIDTH, ResumeComponentPaper } from "@/features/resume/ResumeComponentPaper";
 import { resumeDocumentToSpec } from "@/features/resume/resume-to-spec";

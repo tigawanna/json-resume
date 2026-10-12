@@ -145,8 +145,10 @@ function asBool(value: unknown, fallback = true): boolean {
 
 function asStr(value: unknown): string {
   if (typeof value === "string") return value;
-  if (value == null) return "";
-  return String(value);
+  if (typeof value === "number" || typeof value === "boolean" || typeof value === "bigint") {
+    return String(value);
+  }
+  return "";
 }
 
 function asStringArray(value: unknown): string[] {

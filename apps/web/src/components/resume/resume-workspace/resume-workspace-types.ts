@@ -108,7 +108,7 @@ export interface ResumeWorkspaceAdapter {
   /** Links an existing job (or none) as this résumé's target. */
   attachJob: (jobId: string | null) => Promise<void>;
   /** Edits the linked job, or creates a job from the draft and links it. */
-  saveTargetJob(values: TargetJobDraft): Promise<{ id: string }>;
+  saveTargetJob: (values: TargetJobDraft) => Promise<{ id: string }>;
   /** Adds existing library rows to the résumé by id, skipping ones it already shows. */
   attachLibraryRows: (key: AttachableLibraryKey, ids: string[]) => Promise<void>;
   updateContacts: (contacts: ContactDraft[]) => Promise<void>;
