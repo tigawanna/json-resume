@@ -30,6 +30,12 @@ export const DIRECTIVES: ResumeAiDirective[] = [
     instruction:
       "Tailor this resume for the specific role I describe, aligning wording and emphasis with the job description.",
   },
+  {
+    command: "/cover-letter",
+    label: "Cover letter",
+    instruction:
+      "Write a cover letter for this resume and its job (follow the cover_letter playbook) and save it with save_cover_letter. If I attached a previous cover letter, keep its voice and strongest stories but rewrite the company, role, and specifics to fit this job.",
+  },
 ];
 
 /** Accepts the command with or without its slash (space-resolved chips drop it). */

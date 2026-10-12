@@ -69,4 +69,18 @@ describe("createResumeWorkbenchStore", () => {
     actions.autoOpenPreview();
     expect(store.state.ai.previewOpen).toBe(true);
   });
+
+  it("switches the preview to a written cover letter, opening it only if the user hasn't closed it", () => {
+    const { store, actions } = createWorkbench();
+    actions.closePreview();
+    actions.focusCoverLetter("letter-1", "unless-dismissed");
+    expect(store.state.ai).toMatchObject({
+      previewOpen: false,
+      previewView: "cover-letter",
+      coverLetterId: "letter-1",
+    });
+
+    actions.focusCoverLetter("letter-2", "always");
+    expect(store.state.ai).toMatchObject({ previewOpen: true, coverLetterId: "letter-2" });
+  });
 });

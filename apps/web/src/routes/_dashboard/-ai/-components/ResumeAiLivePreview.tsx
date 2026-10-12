@@ -7,14 +7,17 @@ import { useThemeContext } from "@/lib/tanstack/router/theme-provider";
 import { cn } from "@/lib/utils";
 import {
   useResumeWorkbench,
+  useResumeWorkbenchActions,
   useWorkbenchTemplate,
 } from "@/routes/_dashboard/resumes/$resumeId/-components/resume-workbench/ResumeWorkbenchProvider";
+import type { AiPreviewView } from "@/routes/_dashboard/resumes/$resumeId/-components/resume-workbench/resume-workbench-store";
 import { useEventSourcedResumeDetail } from "@/routes/_dashboard/resumes/$resumeId/-hooks/use-event-sourced-resume-detail";
 import {
   Eye,
   FileText,
   GitCompareArrows,
   Loader2,
+  Mail,
   Maximize2,
   Minimize2,
   PanelRightClose,
@@ -22,15 +25,14 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { diffResumeJson, resumeDetailJson } from "../-utils/resume-json-diff";
+import { ResumeAiCoverLetterPreview } from "./ResumeAiCoverLetterPreview";
 
 type ResumeDetail = NonNullable<ReturnType<typeof useEventSourcedResumeDetail>["detail"]>;
 
 export type LivePreviewLayout = "panel" | "maximized" | "rail" | "sheet";
 
-type LivePreviewView = "preview" | "changes";
-
-function isLivePreviewView(value: string): value is LivePreviewView {
-  return value === "preview" || value === "changes";
+function isLivePreviewView(value: string): value is AiPreviewView {
+  return value === "preview" || value === "changes" || value === "cover-letter";
 }
 
 interface ResumeAiLivePreviewProps {
@@ -51,9 +53,11 @@ export function ResumeAiLivePreview({
   const resumeId = useResumeWorkbench((state) => state.ai.activeResumeId ?? state.resumeId);
   const isPageResume = useResumeWorkbench((state) => state.resumeId === resumeId);
   const baselineJson = useResumeWorkbench((state) => state.ai.turnBaselines[resumeId]);
+  const view = useResumeWorkbench((state) => state.ai.previewView);
+  const coverLetterId = useResumeWorkbench((state) => state.ai.coverLetterId);
+  const { setPreviewView } = useResumeWorkbenchActions();
   const pageTemplate = useWorkbenchTemplate();
   const { detail, isLoading } = useEventSourcedResumeDetail(resumeId);
-  const [view, setView] = useState<LivePreviewView>("preview");
   const templateId = isPageResume ? pageTemplate.templateId : detail?.templateId;
 
   if (layout === "rail") {
@@ -87,7 +91,7 @@ export function ResumeAiLivePreview({
     <Tabs
       value={view}
       onValueChange={(value) => {
-        if (isLivePreviewView(value)) setView(value);
+        if (isLivePreviewView(value)) setPreviewView(value);
       }}
       className={cn(
         "flex h-full min-h-0 flex-col gap-0 bg-base-100",
@@ -122,6 +126,14 @@ export function ResumeAiLivePreview({
                 <span className="text-error">−{diff.removed}</span>
               </span>
             ) : null}
+          </TabsTrigger>
+          <TabsTrigger
+            value="cover-letter"
+            className="gap-1.5 text-xs"
+            data-test="resume-ai-cover-letter-tab"
+          >
+            <Mail className="size-3.5" />
+            Letter
           </TabsTrigger>
         </TabsList>
         <div className="flex items-center">
@@ -173,7 +185,11 @@ export function ResumeAiLivePreview({
           </Button>
         </div>
       </header>
-      {detail && templateId ? (
+      {view === "cover-letter" ? (
+        <TabsContent value="cover-letter" className="mt-0 min-h-0 flex-1">
+          <ResumeAiCoverLetterPreview coverLetterId={coverLetterId} resumeId={resumeId} />
+        </TabsContent>
+      ) : detail && templateId ? (
         <>
           <TabsContent value="preview" className="mt-0 min-h-0 flex-1">
             <LivePreviewPaper detail={{ ...detail, templateId }} />

@@ -41,6 +41,7 @@ export function openTestAppDb() {
       resumeAiMessage: { ...byId, localOnly: true },
       savedProject: byId,
       job: byId,
+      coverLetter: byId,
       settings: { ...byId, localOnly: true },
     },
     modules: {

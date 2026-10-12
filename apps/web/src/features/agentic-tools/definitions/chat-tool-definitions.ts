@@ -4,6 +4,11 @@ import {
   wrapUpToolDefinition,
 } from "./assistant-definitions";
 import {
+  getCoverLetterToolDefinition,
+  listCoverLettersToolDefinition,
+  saveCoverLetterToolDefinition,
+} from "./cover-letter-definitions";
+import {
   attachJobToolDefinition,
   getJobToolDefinition,
   listJobsToolDefinition,
@@ -78,6 +83,9 @@ export const chatToolDefinitions = [
   saveJobToolDefinition,
   updateJobToolDefinition,
   attachJobToolDefinition,
+  saveCoverLetterToolDefinition,
+  getCoverLetterToolDefinition,
+  listCoverLettersToolDefinition,
   getPlaybookToolDefinition,
   undoLastAiChangeToolDefinition,
   wrapUpToolDefinition,

@@ -53,6 +53,17 @@ const PLAYBOOKS: Record<PlaybookName, Playbook> = {
       "open_resume so the user sees it, then wrap_up with it as created.",
     ],
   },
+  cover_letter: {
+    when: "The user asks for a cover letter, or to revise one.",
+    steps: [
+      "get_resume for the résumé the letter goes with (the active one by default) with the header, summary, experience, projects and job sections.",
+      "Without a target job, ask for the posting, or save_job when they pasted one. Use get_job for more posting detail.",
+      "If the user referenced a cover letter, get_cover_letter it and take inspiration: keep the voice and the strongest stories, but swap in this company, this role and what this posting cares about, drop details that belonged to the old application, and reorder the story so it reads fresh.",
+      "Ground every claim in the résumé. Write markdown: greeting, three or four short paragraphs, sign-off with the user's full name. No address block or date unless asked.",
+      "save_cover_letter with the whole letter. To revise, pass coverLetterId and the whole new body.",
+      "Reply with one or two lines about the angle you took; the chat already shows the letter. Use wrap_up only if you also changed a résumé.",
+    ],
+  },
 };
 
 export function getPlaybook(input: GetPlaybookToolInput): GetPlaybookToolOutput {

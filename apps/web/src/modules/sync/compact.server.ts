@@ -32,7 +32,13 @@ async function loadUserRows(userId: string): Promise<Record<string, Row[]>> {
   for (const collectionId of Object.keys(tablesByCollection)) {
     if (!isProjectableCollectionId(collectionId)) continue;
     if (LOCAL_ONLY_COLLECTIONS.includes(collectionId)) continue;
-    if (collectionId === "savedProject" || collectionId === "job") continue;
+    if (
+      collectionId === "savedProject" ||
+      collectionId === "job" ||
+      collectionId === "coverLetter"
+    ) {
+      continue;
+    }
     const table = tablesByCollection[collectionId];
     rows[collectionId] = await db.select().from(table).where(ownerFilter(collectionId, userId));
   }

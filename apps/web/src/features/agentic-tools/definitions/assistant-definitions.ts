@@ -11,7 +11,7 @@ import {
 export const getPlaybookToolDefinition = toolDefinition({
   name: "get_playbook",
   description:
-    "Read the step-by-step tool order for a common workflow: edit_resume, pasted_job, tailored_copy, fill_from_library or import_resume. Call it when unsure which tools to chain.",
+    "Read the step-by-step tool order for a common workflow: edit_resume, pasted_job, tailored_copy, fill_from_library, import_resume or cover_letter. Call it when unsure which tools to chain.",
   inputSchema: getPlaybookToolInputSchema,
   outputSchema: getPlaybookToolOutputSchema,
   metadata: { title: "Get Playbook", annotations: { readOnlyHint: true } },

@@ -210,6 +210,13 @@ export function unlinkJobFromResumes(db: AppDb, jobId: string) {
 
 export function deleteJob(db: AppDb, jobId: string) {
   unlinkJobFromResumes(db, jobId);
+  for (const letter of db.collections.coverLetter.toArray) {
+    if (letter.jobId !== jobId) continue;
+    db.collections.coverLetter.update(letter.id, (row) => {
+      row.jobId = null;
+      row.updatedAt = nowMs();
+    });
+  }
   db.collections.job.delete(jobId);
 }
 

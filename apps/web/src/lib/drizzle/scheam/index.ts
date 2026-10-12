@@ -1,4 +1,5 @@
 export * from "./auth-schema";
+export * from "./cover-letter-schema";
 export * from "./job-schema";
 export * from "./resume";
 export * from "./saved-project-schema";

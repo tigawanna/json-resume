@@ -3,7 +3,7 @@ import type { LibrarySection } from "@/features/agentic-tools/resume-tool-schema
 import { z } from "zod";
 import { directiveByCommand } from "./resume-ai-directives";
 
-export type AttachKind = "resume" | LibrarySection;
+export type AttachKind = "resume" | "cover_letter" | LibrarySection;
 
 /** What the `+` sheet can attach, in picker order. `section` is the tool section name. */
 export const ATTACH_KINDS = [
@@ -15,6 +15,7 @@ export const ATTACH_KINDS = [
   { kind: "talks", label: "Talks", heading: "Referenced talks" },
   { kind: "skills", label: "Skills", heading: "Referenced skills" },
   { kind: "summary", label: "Summaries", heading: "Referenced summaries" },
+  { kind: "cover_letter", label: "Cover letters", heading: "Referenced cover letters" },
 ] as const satisfies ReadonlyArray<{ kind: AttachKind; label: string; heading: string }>;
 
 const attachKindSchema = z.enum(ATTACH_KINDS.map((entry) => entry.kind));
@@ -93,9 +94,9 @@ export function serializeSegments(segments: Segment[]) {
     const lines = attached.flatMap((item) => {
       if (item.kind !== kind || seen.has(item.id)) return [];
       seen.add(item.id);
-      return kind === "resume"
-        ? [`- "${item.name}" (id: ${item.id})`]
-        : [`- "${item.name}" (section: ${kind}, id: ${item.id})`];
+      if (kind === "resume") return [`- "${item.name}" (id: ${item.id})`];
+      if (kind === "cover_letter") return [`- "${item.name}" (cover letter id: ${item.id})`];
+      return [`- "${item.name}" (section: ${kind}, id: ${item.id})`];
     });
     if (lines.length > 0) parts.push(`${heading}:\n${lines.join("\n")}`);
   }

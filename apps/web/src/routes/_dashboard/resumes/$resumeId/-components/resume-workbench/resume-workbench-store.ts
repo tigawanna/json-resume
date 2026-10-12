@@ -5,6 +5,8 @@ import { Store } from "@tanstack/react-store";
 /** Modals the workbench opens from more than one place; only one is open at a time. */
 export type WorkbenchDialog = "actions" | "import-json" | "ai-settings";
 
+export type AiPreviewView = "preview" | "changes" | "cover-letter";
+
 export interface WorkbenchImportReview {
   plan: ResumeImportPlan;
   /** Remounts the review dialog so its choices start fresh for each import. */
@@ -31,6 +33,9 @@ export interface ResumeWorkbenchState {
     previewOpen: boolean;
     /** Set when the user closes the preview so a later write doesn't reopen it. */
     previewDismissed: boolean;
+    previewView: AiPreviewView;
+    /** Letter the cover-letter view shows; null falls back to the active résumé's newest one. */
+    coverLetterId: string | null;
   };
 }
 
@@ -49,6 +54,8 @@ export function createResumeWorkbenchStore(init: {
       turnBaselines: {},
       previewOpen: false,
       previewDismissed: false,
+      previewView: "preview",
+      coverLetterId: null,
     },
   });
 
@@ -131,6 +138,17 @@ export function createResumeWorkbenchStore(init: {
     },
     allowPreviewAutoOpen: () => {
       updateAi(() => ({ previewDismissed: false }));
+    },
+    setPreviewView: (previewView: AiPreviewView) => {
+      updateAi(() => ({ previewView }));
+    },
+    /** Points the cover-letter view at a letter; `open` also shows the panel. */
+    focusCoverLetter: (coverLetterId: string, open: "always" | "unless-dismissed") => {
+      updateAi((ai) => ({
+        coverLetterId,
+        previewView: "cover-letter",
+        ...(open === "always" || !ai.previewDismissed ? { previewOpen: true } : {}),
+      }));
     },
   };
 

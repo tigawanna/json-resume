@@ -201,6 +201,7 @@ function rowWriters(db: AppDb) {
     resumeAiMessage: rowWriter(c.resumeAiMessage, s.resumeAiMessageSchema),
     savedProject: rowWriter(c.savedProject, s.savedProjectSchema),
     job: rowWriter(c.job, s.jobSchema),
+    coverLetter: rowWriter(c.coverLetter, s.coverLetterSchema),
   } satisfies Record<Exclude<keyof AppCollectionDefs, "settings">, RowWriter>;
 }
 

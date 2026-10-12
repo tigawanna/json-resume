@@ -4,6 +4,11 @@ import {
   wrapUpToolDefinition,
 } from "@/features/agentic-tools/definitions/assistant-definitions";
 import {
+  getCoverLetterToolDefinition,
+  listCoverLettersToolDefinition,
+  saveCoverLetterToolDefinition,
+} from "@/features/agentic-tools/definitions/cover-letter-definitions";
+import {
   attachJobToolDefinition,
   getJobToolDefinition,
   listJobsToolDefinition,
@@ -78,6 +83,11 @@ import {
   saveLocalJob,
   updateLocalJob,
 } from "./local-job-tools";
+import {
+  getLocalCoverLetter,
+  listLocalCoverLetters,
+  saveLocalCoverLetter,
+} from "./local-cover-letter-tools";
 import { trackAiChange, undoLocalAiChange } from "./local-undo-tools";
 import { wrapUpLocal } from "./local-wrap-up-tool";
 import { getPlaybook } from "@/features/agentic-tools/shared/playbooks";
@@ -213,6 +223,18 @@ export const attachJobClientTool = attachJobToolDefinition.client(
   journaled(attachJobToolDefinition.name, attachLocalJob),
 );
 
+export const saveCoverLetterClientTool = saveCoverLetterToolDefinition.client(
+  journaled(saveCoverLetterToolDefinition.name, saveLocalCoverLetter),
+);
+
+export const getCoverLetterClientTool = getCoverLetterToolDefinition.client(
+  (input, ctx: ClientToolCtx) => getLocalCoverLetter(ctx.context, input),
+);
+
+export const listCoverLettersClientTool = listCoverLettersToolDefinition.client(
+  (input, ctx: ClientToolCtx) => listLocalCoverLetters(ctx.context, input),
+);
+
 export const getPlaybookClientTool = getPlaybookToolDefinition.client((input) =>
   getPlaybook(input),
 );
@@ -256,6 +278,9 @@ export const eventSourcedResumeAiClientTools = [
   saveJobClientTool,
   updateJobClientTool,
   attachJobClientTool,
+  saveCoverLetterClientTool,
+  getCoverLetterClientTool,
+  listCoverLettersClientTool,
   getPlaybookClientTool,
   undoLastAiChangeClientTool,
   wrapUpClientTool,

@@ -33,6 +33,7 @@ import type {
   ResumeVolunteer,
   SavedProject,
   Job,
+  CoverLetter,
 } from "./schemas";
 
 /**
@@ -67,6 +68,7 @@ export type AppCollectionDefs = {
 
   savedProject: CollectionDef<SavedProject, string>;
   job: CollectionDef<Job, string>;
+  coverLetter: CollectionDef<CoverLetter, string>;
   settings: CollectionDef<AppSettings, string>;
 };
 
@@ -248,6 +250,16 @@ const {
         byUserId<Job>(),
         { select: (r) => r.status, indexType: BasicIndex, name: "by-status" },
         byUpdatedAt<Job>(),
+      ],
+    },
+
+    coverLetter: {
+      getKey: (row) => row.id,
+      indexes: [
+        byId<CoverLetter>(),
+        byUserId<CoverLetter>(),
+        { select: (r) => r.resumeId, indexType: BasicIndex, name: "by-resume" },
+        byUpdatedAt<CoverLetter>(),
       ],
     },
 

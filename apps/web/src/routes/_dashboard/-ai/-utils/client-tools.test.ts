@@ -25,6 +25,7 @@ describe("in-app assistant tools", () => {
 
     expect(lazy.map((definition) => definition.name).sort()).toEqual([
       "create_resume",
+      "list_cover_letters",
       "reorder_section",
       "replace_resume_document",
       "set_contacts",

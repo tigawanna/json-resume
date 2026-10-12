@@ -1,7 +1,7 @@
 import { resumeWriteToolNames } from "@/features/agentic-tools/resume-write-tools";
 import type { UIMessage } from "@tanstack/ai-react";
 import { describe, expect, it } from "vitest";
-import { isReplyWritingResume } from "./use-resume-ai-preview-panel";
+import { coverLetterSavedByReply, isReplyWritingResume } from "./use-resume-ai-preview-panel";
 
 const userMessage: UIMessage = {
   id: "u1",
@@ -35,5 +35,44 @@ describe("isReplyWritingResume", () => {
   it("ignores reads and writes from loaded history", () => {
     expect(isReplyWritingResume([userMessage, replyCalling("set_summary")], false)).toBe(false);
     expect(isReplyWritingResume([userMessage, replyCalling("get_resume")], true)).toBe(false);
+  });
+});
+
+describe("coverLetterSavedByReply", () => {
+  const savedLetter: UIMessage = {
+    id: "a2",
+    role: "assistant",
+    parts: [
+      {
+        type: "tool-call",
+        id: "call-2",
+        name: "save_cover_letter",
+        arguments: "{}",
+        state: "input-complete",
+        output: {
+          created: true,
+          coverLetter: {
+            id: "letter-1",
+            title: "Acme",
+            resumeId: "page",
+            jobId: null,
+            wordCount: 120,
+            preview: "Dear team",
+            updatedAt: "2026-10-12T10:00:00.000Z",
+          },
+        },
+      },
+    ],
+  };
+
+  it("returns the letter an in-flight reply saved", () => {
+    expect(coverLetterSavedByReply([userMessage, savedLetter], true)).toBe("letter-1");
+  });
+
+  it("ignores history and calls that have not finished", () => {
+    expect(coverLetterSavedByReply([userMessage, savedLetter], false)).toBeNull();
+    expect(
+      coverLetterSavedByReply([userMessage, replyCalling("save_cover_letter")], true),
+    ).toBeNull();
   });
 });

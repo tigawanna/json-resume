@@ -338,6 +338,21 @@ export const jobSchema = z.object({
 });
 export type Job = z.infer<typeof jobSchema>;
 
+// --- cover letter (optional companion to a résumé) ---
+
+export const coverLetterSchema = z.object({
+  id: z.string(),
+  userId: z.string().nullable().optional(),
+  title: z.string(),
+  /** Markdown; preview, PDF and rich-text copy are all rendered from it. */
+  body: z.string(),
+  resumeId: z.string().nullable().optional(),
+  jobId: z.string().nullable().optional(),
+  ...embeddableSchema.shape,
+  ...timestampsSchema.shape,
+});
+export type CoverLetter = z.infer<typeof coverLetterSchema>;
+
 // --- saved project ---
 
 export const savedProjectSchema = z.object({

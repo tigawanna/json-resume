@@ -1,4 +1,5 @@
 import { createChatUI } from "@tanstack/ai-react/ui";
+import { ResumeAiSaveCoverLetterTool } from "./ResumeAiCoverLetterTool";
 import { ResumeAiMessage } from "./ResumeAiMessage";
 import {
   ResumeAiCloneResumeTool,
@@ -60,6 +61,9 @@ export const ResumeAiChatUI = createChatUI(resumeAiChatOptions, {
     save_job: ResumeAiToolCall,
     update_job: ResumeAiToolCall,
     attach_job: ResumeAiToolCall,
+    save_cover_letter: ResumeAiSaveCoverLetterTool,
+    get_cover_letter: ResumeAiToolCall,
+    list_cover_letters: ResumeAiToolCall,
     get_playbook: ResumeAiToolCall,
     undo_last_ai_change: ResumeAiToolCall,
     wrap_up: ResumeAiWrapUpTool,

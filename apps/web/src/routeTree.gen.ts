@@ -23,6 +23,7 @@ import { Route as DashboardAdminIndexRouteImport } from './routes/_dashboard/adm
 import { Route as DashboardAdminRouteRouteImport } from './routes/_dashboard/admin/route'
 import { Route as DashboardCertificationsIndexRouteImport } from './routes/_dashboard/certifications/index'
 import { Route as DashboardContactsIndexRouteImport } from './routes/_dashboard/contacts/index'
+import { Route as DashboardCoverLettersIndexRouteImport } from './routes/_dashboard/cover-letters/index'
 import { Route as DashboardEducationIndexRouteImport } from './routes/_dashboard/education/index'
 import { Route as DashboardEventsIndexRouteImport } from './routes/_dashboard/events/index'
 import { Route as DashboardExperiencesIndexRouteImport } from './routes/_dashboard/experiences/index'
@@ -53,6 +54,7 @@ import { Route as RPublicIdIndexRouteImport } from './routes/r/$publicId/index'
 import { Route as DashboardAdminDataIndexRouteImport } from './routes/_dashboard/admin/data/index'
 import { Route as DashboardAdminTablesIndexRouteImport } from './routes/_dashboard/admin/tables/index'
 import { Route as DashboardAdminUsersIndexRouteImport } from './routes/_dashboard/admin/users/index'
+import { Route as DashboardCoverLettersCoverLetterIdIndexRouteImport } from './routes/_dashboard/cover-letters/$coverLetterId/index'
 import { Route as DashboardResumesResumeIdIndexRouteImport } from './routes/_dashboard/resumes/$resumeId/index'
 import { Route as ApiAgenticOpenapiJsonRouteImport } from './routes/api/agentic/openapi.json'
 import { Route as ApiAgenticRpcSplatRouteImport } from './routes/api/agentic/rpc/$'
@@ -129,6 +131,12 @@ const DashboardContactsIndexRoute = DashboardContactsIndexRouteImport.update({
   path: '/contacts/',
   getParentRoute: () => DashboardLayoutRoute,
 } as any)
+const DashboardCoverLettersIndexRoute =
+  DashboardCoverLettersIndexRouteImport.update({
+    id: '/cover-letters/',
+    path: '/cover-letters/',
+    getParentRoute: () => DashboardLayoutRoute,
+  } as any)
 const DashboardEducationIndexRoute = DashboardEducationIndexRouteImport.update({
   id: '/education/',
   path: '/education/',
@@ -289,6 +297,12 @@ const DashboardAdminUsersIndexRoute =
     path: '/admin/users/',
     getParentRoute: () => DashboardLayoutRoute,
   } as any)
+const DashboardCoverLettersCoverLetterIdIndexRoute =
+  DashboardCoverLettersCoverLetterIdIndexRouteImport.update({
+    id: '/cover-letters/$coverLetterId/',
+    path: '/cover-letters/$coverLetterId/',
+    getParentRoute: () => DashboardLayoutRoute,
+  } as any)
 const DashboardResumesResumeIdIndexRoute =
   DashboardResumesResumeIdIndexRouteImport.update({
     id: '/resumes/$resumeId/',
@@ -340,6 +354,7 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof DashboardAdminIndexRoute
   '/certifications/': typeof DashboardCertificationsIndexRoute
   '/contacts/': typeof DashboardContactsIndexRoute
+  '/cover-letters/': typeof DashboardCoverLettersIndexRoute
   '/education/': typeof DashboardEducationIndexRoute
   '/events/': typeof DashboardEventsIndexRoute
   '/experiences/': typeof DashboardExperiencesIndexRoute
@@ -364,6 +379,7 @@ export interface FileRoutesByFullPath {
   '/admin/data/': typeof DashboardAdminDataIndexRoute
   '/admin/tables/': typeof DashboardAdminTablesIndexRoute
   '/admin/users/': typeof DashboardAdminUsersIndexRoute
+  '/cover-letters/$coverLetterId/': typeof DashboardCoverLettersCoverLetterIdIndexRoute
   '/resumes/$resumeId/': typeof DashboardResumesResumeIdIndexRoute
   '/admin/tables/$table/': typeof DashboardAdminTablesTableIndexRoute
   '/resumes/$resumeId/events/': typeof DashboardResumesResumeIdEventsIndexRoute
@@ -389,6 +405,7 @@ export interface FileRoutesByTo {
   '/admin': typeof DashboardAdminIndexRoute
   '/certifications': typeof DashboardCertificationsIndexRoute
   '/contacts': typeof DashboardContactsIndexRoute
+  '/cover-letters': typeof DashboardCoverLettersIndexRoute
   '/education': typeof DashboardEducationIndexRoute
   '/events': typeof DashboardEventsIndexRoute
   '/experiences': typeof DashboardExperiencesIndexRoute
@@ -413,6 +430,7 @@ export interface FileRoutesByTo {
   '/admin/data': typeof DashboardAdminDataIndexRoute
   '/admin/tables': typeof DashboardAdminTablesIndexRoute
   '/admin/users': typeof DashboardAdminUsersIndexRoute
+  '/cover-letters/$coverLetterId': typeof DashboardCoverLettersCoverLetterIdIndexRoute
   '/resumes/$resumeId': typeof DashboardResumesResumeIdIndexRoute
   '/admin/tables/$table': typeof DashboardAdminTablesTableIndexRoute
   '/resumes/$resumeId/events': typeof DashboardResumesResumeIdEventsIndexRoute
@@ -441,6 +459,7 @@ export interface FileRoutesById {
   '/_dashboard/admin/': typeof DashboardAdminIndexRoute
   '/_dashboard/certifications/': typeof DashboardCertificationsIndexRoute
   '/_dashboard/contacts/': typeof DashboardContactsIndexRoute
+  '/_dashboard/cover-letters/': typeof DashboardCoverLettersIndexRoute
   '/_dashboard/education/': typeof DashboardEducationIndexRoute
   '/_dashboard/events/': typeof DashboardEventsIndexRoute
   '/_dashboard/experiences/': typeof DashboardExperiencesIndexRoute
@@ -465,6 +484,7 @@ export interface FileRoutesById {
   '/_dashboard/admin/data/': typeof DashboardAdminDataIndexRoute
   '/_dashboard/admin/tables/': typeof DashboardAdminTablesIndexRoute
   '/_dashboard/admin/users/': typeof DashboardAdminUsersIndexRoute
+  '/_dashboard/cover-letters/$coverLetterId/': typeof DashboardCoverLettersCoverLetterIdIndexRoute
   '/_dashboard/resumes/$resumeId/': typeof DashboardResumesResumeIdIndexRoute
   '/_dashboard/admin/tables/$table/': typeof DashboardAdminTablesTableIndexRoute
   '/_dashboard/resumes/$resumeId/events/': typeof DashboardResumesResumeIdEventsIndexRoute
@@ -493,6 +513,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/certifications/'
     | '/contacts/'
+    | '/cover-letters/'
     | '/education/'
     | '/events/'
     | '/experiences/'
@@ -517,6 +538,7 @@ export interface FileRouteTypes {
     | '/admin/data/'
     | '/admin/tables/'
     | '/admin/users/'
+    | '/cover-letters/$coverLetterId/'
     | '/resumes/$resumeId/'
     | '/admin/tables/$table/'
     | '/resumes/$resumeId/events/'
@@ -542,6 +564,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/certifications'
     | '/contacts'
+    | '/cover-letters'
     | '/education'
     | '/events'
     | '/experiences'
@@ -566,6 +589,7 @@ export interface FileRouteTypes {
     | '/admin/data'
     | '/admin/tables'
     | '/admin/users'
+    | '/cover-letters/$coverLetterId'
     | '/resumes/$resumeId'
     | '/admin/tables/$table'
     | '/resumes/$resumeId/events'
@@ -593,6 +617,7 @@ export interface FileRouteTypes {
     | '/_dashboard/admin/'
     | '/_dashboard/certifications/'
     | '/_dashboard/contacts/'
+    | '/_dashboard/cover-letters/'
     | '/_dashboard/education/'
     | '/_dashboard/events/'
     | '/_dashboard/experiences/'
@@ -617,6 +642,7 @@ export interface FileRouteTypes {
     | '/_dashboard/admin/data/'
     | '/_dashboard/admin/tables/'
     | '/_dashboard/admin/users/'
+    | '/_dashboard/cover-letters/$coverLetterId/'
     | '/_dashboard/resumes/$resumeId/'
     | '/_dashboard/admin/tables/$table/'
     | '/_dashboard/resumes/$resumeId/events/'
@@ -739,6 +765,13 @@ declare module '@tanstack/react-router' {
       path: '/contacts'
       fullPath: '/contacts/'
       preLoaderRoute: typeof DashboardContactsIndexRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
+    '/_dashboard/cover-letters/': {
+      id: '/_dashboard/cover-letters/'
+      path: '/cover-letters'
+      fullPath: '/cover-letters/'
+      preLoaderRoute: typeof DashboardCoverLettersIndexRouteImport
       parentRoute: typeof DashboardLayoutRoute
     }
     '/_dashboard/education/': {
@@ -951,6 +984,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardAdminUsersIndexRouteImport
       parentRoute: typeof DashboardLayoutRoute
     }
+    '/_dashboard/cover-letters/$coverLetterId/': {
+      id: '/_dashboard/cover-letters/$coverLetterId/'
+      path: '/cover-letters/$coverLetterId'
+      fullPath: '/cover-letters/$coverLetterId/'
+      preLoaderRoute: typeof DashboardCoverLettersCoverLetterIdIndexRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
     '/_dashboard/resumes/$resumeId/': {
       id: '/_dashboard/resumes/$resumeId/'
       path: '/resumes/$resumeId'
@@ -995,6 +1035,7 @@ interface DashboardLayoutRouteChildren {
   DashboardAdminIndexRoute: typeof DashboardAdminIndexRoute
   DashboardCertificationsIndexRoute: typeof DashboardCertificationsIndexRoute
   DashboardContactsIndexRoute: typeof DashboardContactsIndexRoute
+  DashboardCoverLettersIndexRoute: typeof DashboardCoverLettersIndexRoute
   DashboardEducationIndexRoute: typeof DashboardEducationIndexRoute
   DashboardEventsIndexRoute: typeof DashboardEventsIndexRoute
   DashboardExperiencesIndexRoute: typeof DashboardExperiencesIndexRoute
@@ -1016,6 +1057,7 @@ interface DashboardLayoutRouteChildren {
   DashboardAdminDataIndexRoute: typeof DashboardAdminDataIndexRoute
   DashboardAdminTablesIndexRoute: typeof DashboardAdminTablesIndexRoute
   DashboardAdminUsersIndexRoute: typeof DashboardAdminUsersIndexRoute
+  DashboardCoverLettersCoverLetterIdIndexRoute: typeof DashboardCoverLettersCoverLetterIdIndexRoute
   DashboardResumesResumeIdIndexRoute: typeof DashboardResumesResumeIdIndexRoute
   DashboardAdminTablesTableIndexRoute: typeof DashboardAdminTablesTableIndexRoute
   DashboardResumesResumeIdEventsIndexRoute: typeof DashboardResumesResumeIdEventsIndexRoute
@@ -1027,6 +1069,7 @@ const DashboardLayoutRouteChildren: DashboardLayoutRouteChildren = {
   DashboardAdminIndexRoute: DashboardAdminIndexRoute,
   DashboardCertificationsIndexRoute: DashboardCertificationsIndexRoute,
   DashboardContactsIndexRoute: DashboardContactsIndexRoute,
+  DashboardCoverLettersIndexRoute: DashboardCoverLettersIndexRoute,
   DashboardEducationIndexRoute: DashboardEducationIndexRoute,
   DashboardEventsIndexRoute: DashboardEventsIndexRoute,
   DashboardExperiencesIndexRoute: DashboardExperiencesIndexRoute,
@@ -1048,6 +1091,8 @@ const DashboardLayoutRouteChildren: DashboardLayoutRouteChildren = {
   DashboardAdminDataIndexRoute: DashboardAdminDataIndexRoute,
   DashboardAdminTablesIndexRoute: DashboardAdminTablesIndexRoute,
   DashboardAdminUsersIndexRoute: DashboardAdminUsersIndexRoute,
+  DashboardCoverLettersCoverLetterIdIndexRoute:
+    DashboardCoverLettersCoverLetterIdIndexRoute,
   DashboardResumesResumeIdIndexRoute: DashboardResumesResumeIdIndexRoute,
   DashboardAdminTablesTableIndexRoute: DashboardAdminTablesTableIndexRoute,
   DashboardResumesResumeIdEventsIndexRoute:

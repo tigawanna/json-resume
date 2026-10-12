@@ -12,6 +12,7 @@ import type { AppDb } from "@/data-access-layer/event-sourced/collection";
 import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
 import { useDebouncedValue } from "@/hooks/use-debouncer";
 import { cn } from "@/lib/utils";
+import { listLocalCoverLetters } from "@/routes/_dashboard/-ai/-utils/local-cover-letter-tools";
 import { searchLocalLibrary } from "@/routes/_dashboard/-ai/-utils/local-library-tools";
 import { listLocalResumes } from "@/routes/_dashboard/-ai/-utils/local-resume-tools";
 import { keepPreviousData, useInfiniteQuery } from "@tanstack/react-query";
@@ -25,6 +26,7 @@ import {
   GraduationCap,
   List,
   Loader2,
+  Mail,
   Mic,
   Search,
   Sparkles,
@@ -45,6 +47,7 @@ const KIND_ICONS = {
   talks: Mic,
   skills: Sparkles,
   summary: AlignLeft,
+  cover_letter: Mail,
 } satisfies Record<AttachKind, LucideIcon>;
 
 interface AttachRow {
@@ -68,6 +71,19 @@ async function fetchAttachPage(
         id: resume.id,
         title: resume.name,
         detail: resume.headline || resume.jobLabel,
+        onResume: false,
+      })),
+      total: page.total,
+      nextOffset: page.nextOffset,
+    };
+  }
+  if (kind === "cover_letter") {
+    const page = await listLocalCoverLetters({ db }, { keyword, offset, limit: PAGE_SIZE });
+    return {
+      rows: page.coverLetters.map((letter): AttachRow => ({
+        id: letter.id,
+        title: letter.title,
+        detail: letter.preview,
         onResume: false,
       })),
       total: page.total,
@@ -143,7 +159,7 @@ export function ResumeAiAttachSheet({
           <SheetDescription>
             {current
               ? "Pick items to reference in your message. The assistant works with them directly."
-              : "Point the assistant at a résumé or at items from your library."}
+              : "Point the assistant at a résumé, a past cover letter, or items from your library."}
           </SheetDescription>
         </SheetHeader>
         {current ? (

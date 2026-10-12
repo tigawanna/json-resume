@@ -329,7 +329,7 @@ export function PromptArea({
           spellCheck={spellCheck}
           className={cn(
             "prompt-area-editor",
-            "w-full min-w-0 break-words whitespace-pre-wrap outline-none",
+            "w-full min-w-0 wrap-break-word whitespace-pre-wrap outline-none",
             disabled && "cursor-not-allowed opacity-50",
           )}
           style={editorStyle}
