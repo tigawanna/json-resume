@@ -57,7 +57,7 @@ export function DashboardAssistant() {
           aria-label="Dashboard assistant"
           className={cn(
             "fixed z-40 flex flex-col overflow-hidden rounded-2xl border border-border/70 bg-base-100 text-base-content shadow-2xl",
-            "inset-x-2 top-16 bottom-22 sm:inset-x-auto sm:top-auto sm:right-6 sm:bottom-24 sm:h-[min(42rem,calc(100dvh-8rem))] sm:w-[27rem]",
+            "inset-x-2 top-16 bottom-22 sm:inset-x-auto sm:top-auto sm:right-6 sm:bottom-24 sm:h-[min(42rem,calc(100dvh-8rem))] sm:w-108",
             "origin-bottom-right animate-in fade-in-0 zoom-in-95 slide-in-from-bottom-4 duration-200",
           )}
           data-test="dashboard-assistant-panel"
