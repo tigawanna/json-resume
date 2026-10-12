@@ -248,7 +248,8 @@ tests for any shared (isomorphic) logic. Tick items off as they land.
 - [x] **Active résumé.** `LocalToolContext.getActiveResumeId()` / `setActiveResumeId()`, backed
       by a ref in `use-event-sourced-resume-ai.ts` (state too, so the prompt gets
       `activeResumeId`). Resets to the page's résumé when the page changes. Every local tool
-      defaults to it. `set_active_resume` validates the id. The chip in the chat UI is still to do.
+      defaults to it. `set_active_resume` validates the id. The composer shows it as a chip (done in
+      `resume-editor.md` batch 2).
 - [x] **`list_resumes`.** One definition, client (`listLocalResumes`) + remote implementation,
       shared search/paging (rule 7), `jobId` + `jobLabel` per row. In the chat tool list.
 - [x] **`get_resume({ resumeId?, sections? })`.** Shared `resume-view.ts` with item and bullet

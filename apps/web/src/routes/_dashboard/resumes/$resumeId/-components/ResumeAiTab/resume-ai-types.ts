@@ -11,6 +11,7 @@ export interface ToolCallViewPart {
   arguments: string;
   state: string;
   output?: unknown;
+  error?: string;
 }
 
 export interface ToolResultViewPart {

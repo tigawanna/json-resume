@@ -12,6 +12,7 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
 import { asTemplateId } from "@/data-access-layer/event-sourced/assemble-resume-detail";
 import { createEventSourcedResumeWorkspace } from "@/data-access-layer/event-sourced/event-sourced-resume-workspace";
 import { resumeDetailToDocument } from "@/data-access-layer/resume/resume-converters";
@@ -124,7 +125,10 @@ function EventSourcedResumeWorkbench({ resumeId }: { resumeId: string }) {
 
   return (
     <ResumeWorkspaceProvider value={workspace}>
-      <div className="flex w-full flex-col gap-6 pb-24" data-test="resume-workbench">
+      <div
+        className={cn("flex w-full flex-col gap-6", tab !== "ai" && "pb-24")}
+        data-test="resume-workbench"
+      >
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
             <Button asChild variant="ghost" size="sm" className="-ml-2 mb-1">

@@ -8,6 +8,7 @@ next. Finished work and design notes stay in the source docs:
 - [`ai-tools-audit.md`](./ai-tools-audit.md) — AI tool rework (batches 1–7 done)
 - [`prompt-area-migration.md`](./prompt-area-migration.md) — composer swap (integrated)
 - [`open-router-optimizations.md`](./open-router-optimizations.md) — routing quality (pinning, `requireParameters`, output cap done)
+- [`resume-editor.md`](./resume-editor.md) — every editor item below, grouped into work batches
 
 ---
 
@@ -42,35 +43,37 @@ Order matters: the data script reads the link tables, so it runs between the two
 
 ### 4. AI composer polish
 
-- [ ] **Animated placeholder only on an empty chat.** The alternating placeholder is a call
+- [x] **Animated placeholder only on an empty chat.** The alternating placeholder is a call
       to action, so it should only run while the thread has no messages. Once the user has
       sent anything, show one static placeholder (e.g. "Ask for another change…") and stop
       the animation. (`ResumeAiPromptComposer.tsx` placeholder prop,
       `components/prompt-area/animated-placeholder.tsx`)
 - [ ] Visual QA on the dark theme: chip legibility, `/` and `@` dropdown popovers
 - [ ] Keyboard: Enter sends, Shift+Enter adds a newline, undo/redo work
-- [ ] Show the active résumé as a chip in the chat UI (left over from AI tools batch 1)
+- [x] Show the active résumé as a chip in the chat UI (left over from AI tools batch 1)
 
 ### 4b. Chat markdown rendering
+
+Done except the browser check and bundle trimming; see [`resume-editor.md`](./resume-editor.md) batch 1.
 
 Messages render through `ResumeAiMarkdown.tsx` (`@tanstack/markdown` 0.0.13 +
 `@tanstack/highlight`). Only tables have custom components, and the
 `resume-ai-markdown` class has no styles behind it. Tailwind's reset strips list
 bullets, heading sizes and spacing, so most markdown arrives flat.
 
-- [ ] Style every element the model sends: `h1`–`h4`, `p`, `ul` / `ol` (bullets,
+- [x] Style every element the model sends: `h1`–`h4`, `p`, `ul` / `ol` (bullets,
       numbers, nesting), `li`, `blockquote`, `hr`, `a` (opens in a new tab), inline
       `code`, `pre` code blocks (background, padding, horizontal scroll, copy button),
       `strong` / `em`, task lists. Either custom `components` or a scoped
       `.resume-ai-markdown` stylesheet; `@tailwindcss/typography` isn't installed
-- [ ] Theme colours only (DaisyUI / shadcn tokens) so it reads well on light and dark,
+- [x] Theme colours only (DaisyUI / shadcn tokens) so it reads well on light and dark,
       and inside the user bubble (`text-primary-foreground`)
-- [ ] Streaming: half-finished markdown mid-stream (open code fence, half a table, a
+- [x] Streaming: half-finished markdown mid-stream (open code fence, half a table, a
       dangling `**`) shouldn't flash broken layout; check how `@tanstack/markdown`
       handles partial input, and close open fences before rendering if it doesn't
 - [ ] Code block highlighting matches the app theme (the highlighter currently loads every
       language; trim to the likely ones if bundle size shows up)
-- [ ] Long words, URLs and JSON don't overflow the message bubble
+- [x] Long words, URLs and JSON don't overflow the message bubble
 - [ ] Test fixture with every element, checked in the browser on both themes
 
 ### 5. Attach menu: attach any library item, not just résumés
@@ -78,23 +81,23 @@ bullets, heading sizes and spacing, so most markdown arrives flat.
 Today `+` opens the "Reference resumes" sheet, which works well. The new flow lets `+`
 open a list of things you can attach:
 
-- [ ] `+` opens a **type picker**: Résumés, Experiences, Bullets, Education, Projects,
+- [x] `+` opens a **type picker**: Résumés, Experiences, Bullets, Education, Projects,
       Talks, Skills, Summaries
-- [ ] Tapping a type opens **that type's list** with a search box and a back button to the
+- [x] Tapping a type opens **that type's list** with a search box and a back button to the
       type picker
-- [ ] Lists show 20 rows at a time with a **Load more** button. Paging happens in the query
+- [x] Lists show 20 rows at a time with a **Load more** button. Paging happens in the query
       engine (`queryOnce` with `where` / `offset` / `limit` plus a `count()` query), never
       with array methods on a loaded list (rule 7 in the AI tools audit). Reuse the local
       `search_library` implementation, which already searches and pages one section at a
       time; résumés reuse `listLocalResumes`
-- [ ] Tapping a row attaches it as a chip; rows that are already attached are highlighted
-- [ ] On send, each type gets its own reference block, e.g.
+- [x] Tapping a row attaches it as a chip; rows that are already attached are highlighted
+- [x] On send, each type gets its own reference block, e.g.
       `Referenced education:\n- "BSc Computer Science" (id: …)`, next to the existing
       `Referenced resumes:` block
-- [ ] System prompt: referenced items are what the user wants the model to focus on. Use
+- [x] System prompt: referenced items are what the user wants the model to focus on. Use
       them directly (`attach_library_items`, `upsert_*` with the id) instead of scanning the
       whole source résumé
-- [ ] `data-test` ids on the type picker, each list, search box and load-more button
+- [x] `data-test` ids on the type picker, each list, search box and load-more button
 - [ ] Gap to decide: `search_library` doesn't cover certifications, volunteers or languages
       yet. Add them, or leave them out of the picker for now
 
@@ -112,23 +115,26 @@ open a list of things you can attach:
 When the assistant starts editing a résumé, the chat narrows and a live PDF preview
 opens next to it (like the canvas / artifact panels in other chat apps).
 
-- [ ] Open the panel automatically the first time a turn calls a **résumé write tool**
+Done — see Batch 4 in [`resume-editor.md`](./resume-editor.md) for how it's built.
+
+- [x] Open the panel automatically the first time a turn calls a **résumé write tool**
       (the setters, `upsert_*`, `set_skills`, `remove_from_resume`, `reorder_section`,
       `attach_library_items`, `replace_resume_document`, `clone_resume`,
       `tailor_resume_for_job`, …), but not for read tools
-- [ ] Split layout with the existing `components/ui/resizable.tsx`: chat on the left,
-      preview on the right using `ResumePdfPreviewCard`
-- [ ] Preview follows the chat's **active résumé** (`activeResumeId`), so after a clone or
+- [x] Split layout with the existing `components/ui/resizable.tsx`: chat on the left,
+      preview on the right (a new `ResumeAiLivePreview`, not `ResumePdfPreviewCard`,
+      which only renders once on mount)
+- [x] Preview follows the chat's **active résumé** (`activeResumeId`), so after a clone or
       tailor it shows the new copy
-- [ ] Live updates: tool writes land in TanStack DB and live queries re-render. Debounce
+- [x] Live updates: tool writes land in TanStack DB and live queries re-render. Debounce
       the PDF render so a burst of tool calls doesn't re-render ten times, and keep the
       last render on screen while the next one builds (no flicker)
-- [ ] Controls: **close**, **minimize** to a slim rail, **maximize**, and a "Preview"
+- [x] Controls: **close**, **minimize** to a slim rail, **maximize**, and a "Preview"
       button in the chat header to reopen it
-- [ ] Respect the user's choice: once closed, don't auto-reopen in the same conversation
-- [ ] Mobile: no side panel; the "Preview" button opens a bottom sheet instead
+- [x] Respect the user's choice: once closed, don't auto-reopen in the same conversation
+- [x] Mobile: no side panel; the "Preview" button opens a bottom sheet instead
 - [ ] Nice extra: briefly highlight the section that just changed
-- [ ] `data-test` ids on the panel and its controls
+- [x] `data-test` ids on the panel and its controls
 
 ### B. Event squash refinement
 
@@ -191,9 +197,9 @@ local-first, limits are enforced where data reaches the server: at the event lev
 
 - [ ] File and image uploads through prompt-area's `files` / `images` strips (needs chat
       API support)
-- [ ] `markdown` prop for live bold / italic / list rendering in the composer
-- [ ] `resolveOnSpace` so `/tailor ` becomes a chip without opening the dropdown
-- [ ] `#tags` for section targeting (`#summary`, `#experience`) via `hashtagTrigger()`
+- [x] `markdown` prop for live bold / italic / list rendering in the composer
+- [x] `resolveOnSpace` so `/tailor ` becomes a chip without opening the dropdown
+- [x] `#tags` for section targeting (`#summary`, `#experience`) via `hashtagTrigger()`
 
 ### E. OpenRouter observability
 

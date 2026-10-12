@@ -40,22 +40,22 @@ strips, undo/redo, and inline markdown.
   already-referenced resumes are highlighted in the sheet). Remaining question:
   wire prompt-area's `files`/`images` strips for real uploads (needs chat API support).
 
-### TODO — Markdown mode
+### Done — Markdown mode
 
 - Enable `markdown` prop for live bold/italic/list rendering in the composer
 
-### TODO — Animated placeholder
+### Done — Animated placeholder
 
 - Placeholder currently alternates between two strings — confirm animation is
   desired, or pass a single string
 
-### TODO — Command auto-resolve
+### Done — Command auto-resolve
 
 - Consider `resolveOnSpace` for command chips so `/tailor ` chips without a
   dropdown round-trip
 
-### TODO — `#tags` for resume sections
+### Done — `#tags` for resume sections
 
 - `hashtagTrigger()` could support `#summary`, `#experience` section targeting
 
-Add serach functionality for the attach resumes panle so the user can seeall the resumes 20 resumes at a time wtha load more button at the bottom that does paginated queries using where or offset not js array methods
+Done: the attach sheet searches and pages 20 rows at a time in the query engine, with Load more (`ResumeAiAttachSheet.tsx`). Status of each item lives in [`resume-editor.md`](./resume-editor.md).

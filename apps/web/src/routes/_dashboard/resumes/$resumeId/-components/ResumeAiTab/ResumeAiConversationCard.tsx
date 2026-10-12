@@ -5,7 +5,10 @@ import type { ResumeAiMessageAction } from "./resume-ai-types";
 import { DIRECTIVES } from "./resume-ai-directives";
 import type { ComponentProps, RefObject } from "react";
 
-interface ResumeAiConversationCardProps extends ComponentProps<typeof ResumeAiPromptComposer> {
+interface ResumeAiConversationCardProps extends Omit<
+  ComponentProps<typeof ResumeAiPromptComposer>,
+  "hasMessages"
+> {
   endOfMessagesRef: RefObject<HTMLDivElement | null>;
   historyPending: boolean;
   isReady: boolean;
@@ -15,6 +18,7 @@ interface ResumeAiConversationCardProps extends ComponentProps<typeof ResumeAiPr
   createdResumeTo?: "/resumes/$resumeId";
 }
 
+/** Fills a fixed-height parent: messages scroll, the composer stays pinned below them. */
 export function ResumeAiConversationCard({
   endOfMessagesRef,
   historyPending,
@@ -39,7 +43,7 @@ export function ResumeAiConversationCard({
   if (isEmpty && !historyPending) {
     return (
       <div
-        className="flex min-h-[calc(100dvh-16rem)] flex-col items-center justify-center gap-8 "
+        className="flex h-full flex-col items-center justify-center-safe gap-8 overflow-y-auto px-4 py-6"
         data-test="resume-ai-conversation"
       >
         <div
@@ -51,10 +55,10 @@ export function ResumeAiConversationCard({
           </h2>
           <p className="text-sm text-muted-foreground">
             Type a message — attach a directive below or type <code>/</code> to steer the response.
-            Reference another resume with <code>@</code>.
+            Focus a section with <code>#</code>, reference another resume with <code>@</code>.
           </p>
         </div>
-        <ResumeAiPromptComposer {...composerProps} isReady={isReady} />
+        <ResumeAiPromptComposer {...composerProps} isReady={isReady} hasMessages={false} />
         <div
           className="flex w-full max-w-3xl flex-wrap justify-center gap-2"
           data-test="resume-ai-suggestions"
@@ -77,11 +81,11 @@ export function ResumeAiConversationCard({
   }
 
   return (
-    <div
-      className="flex min-h-120 flex-col overflow-hidden rounded-xl"
-      data-test="resume-ai-conversation"
-    >
-      <div className="flex min-h-96 flex-col gap-5 px-1 py-2">
+    <div className="flex h-full flex-col" data-test="resume-ai-conversation">
+      <div
+        className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-1 py-2 pr-3"
+        data-test="resume-ai-messages"
+      >
         {isEmpty && historyPending ? (
           <ConversationSkeleton />
         ) : (
@@ -99,7 +103,9 @@ export function ResumeAiConversationCard({
         )}
         <div ref={endOfMessagesRef} />
       </div>
-      <ResumeAiPromptComposer {...composerProps} isReady={isReady} />
+      <div className="shrink-0 pt-2 pb-1">
+        <ResumeAiPromptComposer {...composerProps} isReady={isReady} hasMessages={!isEmpty} />
+      </div>
     </div>
   );
 }

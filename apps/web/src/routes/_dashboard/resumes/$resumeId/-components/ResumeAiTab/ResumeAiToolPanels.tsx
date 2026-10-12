@@ -16,12 +16,15 @@ export function ToolCallPanel({ part }: { part: ToolCallViewPart }) {
           <Wrench className="size-3.5 shrink-0 text-muted-foreground/70" />
           <span className="truncate text-foreground/80">{getToolLabel(part.name)}</span>
           <span className="shrink-0 rounded-full bg-[color-mix(in_oklch,var(--color-base-content)_8%,transparent)] px-2 py-0.5 text-[0.68rem] text-muted-foreground">
-            {part.state}
+            {part.error ? "error" : part.state}
           </span>
         </span>
         <ChevronDown className="size-3.5 shrink-0 transition-transform group-open:rotate-180" />
       </summary>
       <div className="mt-2 grid min-w-0 gap-2 pl-5">
+        {part.error ? (
+          <p className="rounded-md bg-destructive/10 p-2 text-destructive">{part.error}</p>
+        ) : null}
         {input ? <PayloadBlock label="Parameters" value={input} /> : null}
         {output ? <PayloadBlock label="Response" value={output} /> : null}
       </div>

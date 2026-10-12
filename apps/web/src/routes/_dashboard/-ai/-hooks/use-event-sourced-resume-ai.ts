@@ -52,8 +52,12 @@ export function useEventSourcedResumeAiChat(resumeId: string) {
     }),
   );
 
-  const [activeResume, setActiveResume] = useState({ pageResumeId: resumeId, id: resumeId });
-  const activeResumeId = activeResume.pageResumeId === resumeId ? activeResume.id : resumeId;
+  const [activeResumeState, setActiveResumeState] = useState({
+    pageResumeId: resumeId,
+    id: resumeId,
+  });
+  const activeResumeId =
+    activeResumeState.pageResumeId === resumeId ? activeResumeState.id : resumeId;
   const activeResumeIdRef = useRef(activeResumeId);
   activeResumeIdRef.current = activeResumeId;
   const pendingOpenRef = useRef<{ resumeId: string; tab: WorkbenchTab } | null>(null);
@@ -74,6 +78,24 @@ export function useEventSourcedResumeAiChat(resumeId: string) {
     [db, activeResumeId],
   );
   const activeJob = activeJobRows?.[0];
+  const { data: activeResumeRows } = useLiveQuery(
+    (q) =>
+      q
+        .from({ resume: db.collections.resume })
+        .where(({ resume }) => eq(resume.id, activeResumeId))
+        .select(({ resume }) => ({ id: resume.id, name: resume.name })),
+    [db, activeResumeId],
+  );
+  const activeResume = {
+    id: activeResumeId,
+    name: activeResumeRows?.[0]?.name ?? "Untitled résumé",
+    isPageResume: activeResumeId === resumeId,
+  };
+
+  function resetActiveResume() {
+    activeResumeIdRef.current = resumeId;
+    setActiveResumeState({ pageResumeId: resumeId, id: resumeId });
+  }
 
   const context: LocalToolContext = {
     db,
@@ -81,7 +103,7 @@ export function useEventSourcedResumeAiChat(resumeId: string) {
     getActiveResumeId: () => activeResumeIdRef.current,
     setActiveResumeId(nextResumeId) {
       activeResumeIdRef.current = nextResumeId;
-      setActiveResume({ pageResumeId: resumeId, id: nextResumeId });
+      setActiveResumeState({ pageResumeId: resumeId, id: nextResumeId });
     },
     openResume(nextResumeId, tab) {
       pendingOpenRef.current = { resumeId: nextResumeId, tab };
@@ -191,6 +213,7 @@ export function useEventSourcedResumeAiChat(resumeId: string) {
 
   return {
     activeModelLabel,
+    activeResume,
     activeRoutingLabel,
     approvals,
     approvalsResuming: chat.resuming,
@@ -207,6 +230,7 @@ export function useEventSourcedResumeAiChat(resumeId: string) {
     messages,
     reload: chat.reload,
     resendPastPrompt,
+    resetActiveResume,
     saveSettings,
     sendStarter,
     sendText,

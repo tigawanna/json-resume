@@ -1,8 +1,17 @@
 import { cn } from "@/lib/utils";
+import { unwrapUnknownError } from "@/utils/errors";
 import { createHighlighter } from "@tanstack/highlight/core";
 import * as languages from "@tanstack/highlight/languages";
 import { createTanStackMarkdownHighlighter } from "@tanstack/highlight/markdown";
-import { Markdown, type MarkdownComponents } from "@tanstack/markdown/react";
+import { streamingMarkdownExtension } from "@tanstack/markdown/extensions/streaming";
+import {
+  Markdown,
+  type MarkdownComponentProps,
+  type MarkdownComponents,
+} from "@tanstack/markdown/react";
+import { Check, Copy } from "lucide-react";
+import { useRef, useState } from "react";
+import { toast } from "sonner";
 import type { ResumeAiRole } from "./resume-ai-types";
 
 import { createThemeCss } from "@tanstack/highlight/theme";
@@ -19,6 +28,45 @@ const highlighter = createTanStackMarkdownHighlighter(
     languages: Object.values(languages),
   }),
 );
+const extensions = [streamingMarkdownExtension()];
+
+function CodeBlock({ className, ...props }: MarkdownComponentProps<"pre">) {
+  const preRef = useRef<HTMLPreElement>(null);
+  const [copied, setCopied] = useState(false);
+
+  async function handleCopy() {
+    try {
+      await navigator.clipboard.writeText(preRef.current?.textContent ?? "");
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1500);
+    } catch (err: unknown) {
+      toast.error("Could not copy code", { description: unwrapUnknownError(err).message });
+    }
+  }
+
+  return (
+    <div className="group/code relative my-3">
+      <pre
+        {...props}
+        ref={preRef}
+        className={cn(
+          "th-code overflow-x-auto rounded-lg text-xs leading-5 ring-1 ring-[color-mix(in_oklch,currentColor_12%,transparent)]",
+          className,
+        )}
+      />
+      <button
+        type="button"
+        onClick={() => void handleCopy()}
+        aria-label={copied ? "Copied" : "Copy code"}
+        title={copied ? "Copied" : "Copy code"}
+        className="absolute top-2 right-2 flex size-7 items-center justify-center rounded-md bg-(--th-background) text-(--th-token) opacity-0 ring-1 ring-[color-mix(in_oklch,currentColor_15%,transparent)] transition-opacity group-hover/code:opacity-100 focus-visible:opacity-100"
+        data-test="resume-ai-code-copy"
+      >
+        {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
+      </button>
+    </div>
+  );
+}
 
 const components = {
   h1: (props) => (
@@ -64,29 +112,25 @@ const components = {
   hr: (props) => (
     <hr {...props} className="my-4 border-[color-mix(in_oklch,currentColor_12%,transparent)]" />
   ),
-  a: (props) => (
-    <a
-      {...props}
-      className="font-medium text-primary underline decoration-current/40 underline-offset-2 hover:decoration-current"
-    />
-  ),
+  a: (props) => {
+    const external = /^https?:\/\//.test(props.href ?? "");
+    return (
+      <a
+        {...props}
+        {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+        className="font-medium wrap-anywhere text-primary underline decoration-current/40 underline-offset-2 hover:decoration-current"
+      />
+    );
+  },
   strong: (props) => <strong {...props} className="font-semibold" />,
-  pre: ({ className, ...props }) => (
-    <pre
-      {...props}
-      className={cn(
-        "th-code my-3 overflow-x-auto rounded-lg text-xs leading-5 ring-1 ring-[color-mix(in_oklch,currentColor_12%,transparent)]",
-        className,
-      )}
-    />
-  ),
+  pre: CodeBlock,
   code: ({ className, ...props }) => (
     <code
       {...props}
       className={cn(
         className?.startsWith("language-")
           ? "font-mono"
-          : "th-code-inline rounded bg-[color-mix(in_oklch,currentColor_8%,transparent)] px-1 py-0.5 font-mono text-[0.85em]",
+          : "th-code-inline rounded bg-[color-mix(in_oklch,currentColor_8%,transparent)] px-1 py-0.5 font-mono text-[0.85em] wrap-anywhere",
         className,
       )}
     />
@@ -123,7 +167,12 @@ export function ChatText({ content }: { content: string; role: ResumeAiRole }) {
       <style href="resume-ai-highlight-theme" precedence="default">
         {themeCss}
       </style>
-      <Markdown highlighter={highlighter} components={components} headingIds={false}>
+      <Markdown
+        highlighter={highlighter}
+        components={components}
+        extensions={extensions}
+        headingIds={false}
+      >
         {content}
       </Markdown>
     </div>

@@ -51,7 +51,7 @@ function matchingResumes(q: InitialQueryBuilder, db: AppDb, terms: ReadonlyArray
 }
 
 export async function listLocalResumes(
-  ctx: LocalToolContext,
+  ctx: Pick<LocalToolContext, "db">,
   input: ListResumesToolInput,
 ): Promise<ListResumesToolOutput> {
   const data = listResumesToolInputSchema.parse(input);

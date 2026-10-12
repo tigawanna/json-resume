@@ -3,17 +3,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
 import { resumeRegistry } from "@/features/resume/resume-catalog";
-import { ResumePdfDocument } from "@/features/resume/resume-pdf";
-import { resumePdfFileStem } from "@/features/resume/resume-pdf-filename";
 import type { ResumeDocumentV1, TemplateId } from "@/features/resume/resume-schema";
 import { resumeDocumentToSpec } from "@/features/resume/resume-to-spec";
+import { useResumePdf } from "@/features/resume/use-resume-pdf";
 import { useThemeContext } from "@/lib/tanstack/router/theme-provider";
 import type { Spec } from "@json-render/core";
 import { JSONUIProvider, Renderer } from "@json-render/react";
-import { pdf } from "@react-pdf/renderer";
 import { eq, useLiveSuspenseQuery } from "@tanstack/react-db";
 import { Download, FileText, Loader2, Moon, RefreshCw, Sun } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 type PreviewPane = "component" | "pdf";
@@ -62,64 +60,12 @@ export function ResumePreviewView({ resumeName, selectedTemplate, doc }: ResumeP
   const [previewPane, setPreviewPane] = useState<PreviewPane>("component");
   const [previewTheme, setPreviewTheme] = useState<PreviewTheme>(resolvedTheme);
   const [downloading, setDownloading] = useState(false);
-  const [blobUrl, setBlobUrl] = useState<string | null>(null);
-  const [generating, setGenerating] = useState(false);
-  const prevUrlRef = useRef<string | null>(null);
-  const generationSeqRef = useRef(0);
-
-  const fileStem = resumePdfFileStem(resumeName, doc);
-  const fileLabel = `${fileStem}.pdf`;
-
-  async function buildPdfPreview(
-    nextDoc = doc,
-    nextTemplate = selectedTemplate,
-    nextFileStem = fileStem,
-    nextFileLabel = fileLabel,
-  ) {
-    const generationSeq = generationSeqRef.current + 1;
-    generationSeqRef.current = generationSeq;
-    setGenerating(true);
-    try {
-      const blob = await pdf(
-        <ResumePdfDocument doc={nextDoc} templateId={nextTemplate} pdfTitle={nextFileStem} />,
-      ).toBlob();
-      const file = new File([blob], nextFileLabel, { type: "application/pdf" });
-      const url = URL.createObjectURL(file);
-      if (generationSeq !== generationSeqRef.current) {
-        URL.revokeObjectURL(url);
-        return;
-      }
-      if (prevUrlRef.current) URL.revokeObjectURL(prevUrlRef.current);
-      prevUrlRef.current = url;
-      setBlobUrl(url);
-    } catch (err: unknown) {
-      if (generationSeq === generationSeqRef.current) {
-        toast.error("Failed to generate PDF", {
-          description: err instanceof Error ? err.message : "Unknown error",
-        });
-      }
-    } finally {
-      if (generationSeq === generationSeqRef.current) {
-        setGenerating(false);
-      }
-    }
-  }
-
-  useEffect(() => {
-    void buildPdfPreview(doc, selectedTemplate, fileStem, fileLabel);
-    return () => {
-      generationSeqRef.current++;
-    };
-    // Refresh the preview only when the resume/template/file identity changes.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [doc, selectedTemplate, fileStem, fileLabel]);
-
-  useEffect(() => {
-    return () => {
-      generationSeqRef.current++;
-      if (prevUrlRef.current) URL.revokeObjectURL(prevUrlRef.current);
-    };
-  }, []);
+  const {
+    blobUrl,
+    generating,
+    fileLabel,
+    regenerate: buildPdfPreview,
+  } = useResumePdf({ doc, templateId: selectedTemplate, resumeName });
 
   async function handleDownload() {
     setDownloading(true);

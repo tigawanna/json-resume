@@ -182,7 +182,7 @@ function idsOnResume(db: AppDb, resumeId: string): Set<string> {
 }
 
 export async function searchLocalLibrary(
-  ctx: LocalToolContext,
+  ctx: Pick<LocalToolContext, "db" | "getActiveResumeId">,
   input: SearchLibraryToolInput,
 ): Promise<SearchLibraryToolOutput> {
   const data = searchLibraryToolInputSchema.parse(input);

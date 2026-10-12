@@ -1,5 +1,5 @@
 import { CreatedResumeCard } from "@/components/agentic-tools/CreatedResumeCard";
-import { getCreatedResumesFromParts } from "@/features/agentic-tools/created-resume-output";
+import { getCreatedResumeOutput } from "@/features/agentic-tools/created-resume-output";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { UIMessage } from "@tanstack/ai-react";
@@ -7,6 +7,7 @@ import type { ReactNode } from "react";
 import { MessageSquareText, PencilLine, RefreshCcw, Sparkles } from "lucide-react";
 import { ChatText } from "./ResumeAiMarkdown";
 import { ResumeAiThinkingBlock } from "./ResumeAiThinkingBlock";
+import { ToolCallPanel, ToolResultPanel } from "./ResumeAiToolPanels";
 import type { ResumeAiMessageAction, ResumeAiRole } from "./resume-ai-types";
 
 interface ResumeAiMessageProps {
@@ -45,7 +46,13 @@ export function ResumeAiMessage({
   createdResumeTo,
 }: ResumeAiMessageProps) {
   const role: ResumeAiRole = message.role === "assistant" ? "assistant" : "user";
-  const createdResumes = role === "assistant" ? getCreatedResumesFromParts(message.parts) : [];
+  const resultsByCallId = new Map<string, ToolResultPart>();
+  for (const part of message.parts) {
+    if (part.type === "tool-result") resultsByCallId.set(part.toolCallId, part);
+  }
+  const callIds = new Set(
+    message.parts.flatMap((part) => (part.type === "tool-call" ? [part.id] : [])),
+  );
 
   return (
     <div className={cn("flex w-full items-start gap-3", role === "user" && "flex-row-reverse")}>
@@ -54,7 +61,7 @@ export function ResumeAiMessage({
         className={cn(
           "min-w-0 max-w-[min(44rem,calc(100%-3rem))] overflow-hidden rounded-2xl px-4 py-3 shadow-sm ring-1 ",
           role === "user"
-            ? "rounded-tr-md bg-primary/10 text-5xl    ring-[color-mix(in_oklch,var(--color-primary)_34%,transparent)]"
+            ? "rounded-tr-md bg-primary/10 ring-[color-mix(in_oklch,var(--color-primary)_34%,transparent)]"
             : "rounded-tl-md bg-base-100 text-foreground ring-[color-mix(in_oklch,var(--color-base-content)_9%,transparent)]",
         )}
       >
@@ -84,18 +91,14 @@ export function ResumeAiMessage({
           ) : null}
         </div>
         <div className="flex min-w-0 flex-col gap-2">
-          {getMessageBlocks(message).map((block, index) => {
-            if (block.type === "text") {
-              return <ChatText key={index} content={block.content} role={role} />;
-            }
-            return <ResumeAiThinkingBlock key={index} parts={block.parts} />;
-          })}
-          {createdResumes.map((output) => (
-            <CreatedResumeCard
-              key={output.resumeId}
-              output={output}
-              to={createdResumeTo}
-              dataTest="resume-ai-created-resume-card"
+          {message.parts.map((part, index) => (
+            <MessagePartView
+              key={part.type === "tool-call" ? part.id : index}
+              part={part}
+              role={role}
+              result={part.type === "tool-call" ? resultsByCallId.get(part.id) : undefined}
+              hasCall={part.type === "tool-result" && callIds.has(part.toolCallId)}
+              createdResumeTo={createdResumeTo}
             />
           ))}
         </div>
@@ -105,31 +108,63 @@ export function ResumeAiMessage({
 }
 
 type MessagePart = UIMessage["parts"][number];
+type ToolResultPart = Extract<MessagePart, { type: "tool-result" }>;
 
-type MessageBlock = { type: "text"; content: string } | { type: "thinking"; parts: MessagePart[] };
+interface MessagePartViewProps {
+  part: MessagePart;
+  role: ResumeAiRole;
+  /** The tool-result for a tool-call part, merged into the call's row. */
+  result: ToolResultPart | undefined;
+  /** For a tool-result part: its call is in the same message and already shows it. */
+  hasCall: boolean;
+  createdResumeTo?: "/resumes/$resumeId";
+}
 
-// TODO this should be pushed upwards so we can show granular blocks for certain tool results, no need to pre collect the way itis being done here
-function getMessageBlocks(message: UIMessage): MessageBlock[] {
-  const blocks: MessageBlock[] = [];
-  let thinkingParts: MessagePart[] = [];
-
-  for (const part of message.parts) {
-    if (part.type === "text") {
-      if (thinkingParts.length > 0) {
-        blocks.push({ type: "thinking", parts: thinkingParts });
-        thinkingParts = [];
-      }
-      blocks.push({ type: "text", content: part.content });
-      continue;
+function MessagePartView({ part, role, result, hasCall, createdResumeTo }: MessagePartViewProps) {
+  switch (part.type) {
+    case "text":
+      return part.content.trim() ? <ChatText content={part.content} role={role} /> : null;
+    case "thinking":
+      return part.content.trim() ? <ResumeAiThinkingBlock content={part.content} /> : null;
+    case "tool-call": {
+      const createdResume = getCreatedResumeOutput(part);
+      return (
+        <>
+          <ToolCallPanel
+            part={{
+              id: part.id,
+              name: part.name,
+              arguments: part.arguments,
+              state: part.state,
+              output: part.output,
+              ...(result?.error ? { error: result.error } : {}),
+            }}
+          />
+          {createdResume ? (
+            <CreatedResumeCard
+              output={createdResume}
+              to={createdResumeTo}
+              dataTest="resume-ai-created-resume-card"
+            />
+          ) : null}
+        </>
+      );
     }
-
-    if (part.type === "thinking" || part.type === "tool-call" || part.type === "tool-result") {
-      thinkingParts.push(part);
-    }
+    case "tool-result":
+      if (hasCall) return null;
+      return (
+        <ToolResultPanel
+          part={{
+            toolCallId: part.toolCallId,
+            content: typeof part.content === "string" ? part.content : JSON.stringify(part.content),
+            state: part.state,
+            error: part.error,
+          }}
+        />
+      );
+    default:
+      return null;
   }
-
-  if (thinkingParts.length > 0) blocks.push({ type: "thinking", parts: thinkingParts });
-  return blocks;
 }
 
 interface PromptActionButtonProps {

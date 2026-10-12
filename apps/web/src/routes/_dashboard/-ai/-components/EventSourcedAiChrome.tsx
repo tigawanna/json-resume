@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import type { AiSettings } from "@/types/ai-settings";
-import { Settings, Trash2 } from "lucide-react";
+import { FileText, Settings, Trash2 } from "lucide-react";
 import { EventSourcedAiSettingsSheet } from "./EventSourcedAiSettingsSheet";
 
 interface EventSourcedAiChromeProps {
@@ -34,10 +34,14 @@ interface EventSourcedAiChromeProps {
   onSaveSettings: (settings: AiSettings) => void;
   onSaveSystemPrompt: (value: string) => void;
   onSettingsOpenChange: (open: boolean) => void;
+  previewOpen?: boolean;
+  onTogglePreview?: () => void;
 }
 
 export function EventSourcedAiChrome({
   apiKeyRejected,
+  previewOpen = false,
+  onTogglePreview,
   clearDialogOpen,
   hasMessages,
   isBusy,
@@ -57,6 +61,20 @@ export function EventSourcedAiChrome({
   return (
     <>
       <div className="flex items-center justify-end gap-1" data-test="event-sourced-ai-chrome">
+        {onTogglePreview ? (
+          <Button
+            type="button"
+            variant={previewOpen ? "secondary" : "ghost"}
+            size="sm"
+            className="gap-1.5 text-muted-foreground"
+            onClick={onTogglePreview}
+            aria-pressed={previewOpen}
+            data-test="resume-ai-preview-toggle"
+          >
+            <FileText className="size-4" />
+            Preview
+          </Button>
+        ) : null}
         <Button
           type="button"
           variant="ghost"
