@@ -1,3 +1,4 @@
+import { QueryActivityNprogress } from "@/components/navigation/nprogress/QueryActivityNprogress";
 import { SidebarLinks } from "@/components/sidebar/SidebarLinks";
 import { SidebarItem } from "@/components/sidebar/types";
 import { Separator } from "@/components/ui/separator";
@@ -13,12 +14,9 @@ import {
   SidebarRail,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { Helmet } from "@/components/wrappers/custom-helmet";
-import { AppConfig } from "@/utils/system";
+import { useViewer } from "@/data-access-layer/auth/viewer";
 import { TSRBreadCrumbs } from "@/lib/tanstack/router/TSRBreadCrumbs";
 import { Link, Outlet, useLocation } from "@tanstack/react-router";
-import { QueryActivityNprogress } from "@/components/navigation/nprogress/QueryActivityNprogress";
-import { useViewer } from "@/data-access-layer/auth/viewer";
 import { DashboardSidebarFooter } from "./DashboardSidebarFooter";
 import { DashboardSidebarHeader } from "./DashboardSidebarHeader";
 import { DashboardSyncStatusButton } from "./DashboardSyncStatusButton";
@@ -44,23 +42,19 @@ export function DashboardLayout({
   return (
     <SidebarProvider defaultOpen={false} className="h-svh overflow-hidden">
       <QueryActivityNprogress />
-      <Helmet
-        title={`${AppConfig.name} | Dashboard`}
-        description="Edit your JSON résumé, preview layout, and export PDF."
-      />
       <Sidebar collapsible="icon" {...sidebar_props}>
-        <SidebarHeader>
+        <SidebarHeader className="bg-primary/10">
           <DashboardSidebarHeader />
         </SidebarHeader>
-        <SidebarContent>
-          <SidebarGroup className="bg-base-300">
+        <SidebarContent className="bg-primary/10">
+          <SidebarGroup className="">
             <SidebarGroupLabel className="text-sm font-semibold tracking-wide">
               {sidebarLabel}
             </SidebarGroupLabel>
             <SidebarLinks links={sidebarRoutes} />
           </SidebarGroup>
           {accountRoutes.length > 0 ? (
-            <SidebarGroup className="bg-base-300">
+            <SidebarGroup className="">
               <SidebarGroupLabel className="text-sm font-semibold tracking-wide">
                 {accountLabel}
               </SidebarGroupLabel>
@@ -68,7 +62,7 @@ export function DashboardLayout({
             </SidebarGroup>
           ) : null}
           {adminRoutes.length > 0 ? (
-            <SidebarGroup className="bg-base-300">
+            <SidebarGroup className="">
               <SidebarGroupLabel className="text-sm font-semibold tracking-wide">
                 {adminLabel}
               </SidebarGroupLabel>
@@ -76,7 +70,7 @@ export function DashboardLayout({
             </SidebarGroup>
           ) : null}
         </SidebarContent>
-        <SidebarFooter className="gap-3 pb-3">
+        <SidebarFooter className="gap-3 pb-3 bg-primary/15">
           <DashboardSidebarFooter />
         </SidebarFooter>
         <SidebarRail />

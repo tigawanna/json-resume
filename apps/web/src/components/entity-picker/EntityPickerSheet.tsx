@@ -362,7 +362,7 @@ function PickerRow({
       ) : null}
       <span className="min-w-0 flex-1">
         <span className="flex items-start gap-2">
-          <span className="line-clamp-2 min-w-0 text-sm font-medium leading-tight break-words">
+          <span className="line-clamp-2 min-w-0 text-sm font-medium leading-tight wrap-break-word">
             <Highlight text={item.primary} query={query} />
           </span>
           {item.badge ? (
