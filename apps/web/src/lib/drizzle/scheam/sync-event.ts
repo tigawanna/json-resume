@@ -32,8 +32,31 @@ export const syncEvent = sqliteTable(
     uniqueIndex("sync_event_eventId_idx").on(table.eventId),
     index("sync_event_userId_globalSeq_idx").on(table.userId, table.globalSeq),
     index("sync_event_row_idx").on(table.collectionId, table.key, table.globalSeq),
+    index("sync_event_userRow_idx").on(
+      table.userId,
+      table.collectionId,
+      table.key,
+      table.globalSeq,
+    ),
     index("sync_event_projectedAt_idx").on(table.projectedAt),
   ],
+);
+
+/**
+ * How far the scheduled squash has walked each user's log. Every row touched at
+ * or below `squashedThroughSeq` has had its earlier events removed.
+ */
+export const syncSquashState = sqliteTable(
+  "sync_squash_state",
+  {
+    userId: text("user_id")
+      .primaryKey()
+      .references(() => user.id, { onDelete: "cascade" }),
+    squashedThroughSeq: integer("squashed_through_seq").default(0).notNull(),
+    squashedAt: integer("squashed_at", { mode: "timestamp_ms" }),
+    removedEvents: integer("removed_events").default(0).notNull(),
+  },
+  (table) => [index("sync_squash_state_squashedAt_idx").on(table.squashedAt)],
 );
 
 /** Singleton identity of this event store. `id` is always 1. */

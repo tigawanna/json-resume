@@ -5,6 +5,10 @@ import { syncEvent } from "@/lib/drizzle/scheam";
 import { logFields } from "@/lib/evlog/request-log";
 import { eq, inArray } from "drizzle-orm";
 import { catchUpProjection } from "../admin/rebuild-event-log.server";
+import {
+  squashUserLogsIncrementally,
+  type IncrementalSquashResult,
+} from "./squash-incremental.server";
 import { DEFAULT_RETENTION_MS, planSquash, type SquashReason } from "./squash-plan";
 import { SYNC_RESET_COLLECTION } from "./sync-reset";
 
@@ -98,5 +102,28 @@ export async function squashSyncEvents(
       squashSyncEvents: { ...result, retentionMs, durationMs: Date.now() - startedAt },
     });
   }
+  return result;
+}
+
+const SCHEDULED_BUDGET_MS = 20_000;
+const SCHEDULED_MAX_USERS = 200;
+
+/**
+ * The cron's squash: walks each user's log forward from where the last run
+ * stopped instead of rescanning it, within a time budget. Users it does not
+ * reach are first in line next run.
+ */
+export async function squashSyncEventsScheduled(): Promise<IncrementalSquashResult> {
+  const startedAt = Date.now();
+  await catchUpProjection();
+  const result = await squashUserLogsIncrementally(db, {
+    now: Date.now(),
+    retentionMs: DEFAULT_RETENTION_MS,
+    budgetMs: SCHEDULED_BUDGET_MS - (Date.now() - startedAt),
+    maxUsers: SCHEDULED_MAX_USERS,
+  });
+  logFields("Squashed sync events incrementally", {
+    squashSyncEventsScheduled: { ...result, durationMs: Date.now() - startedAt },
+  });
   return result;
 }

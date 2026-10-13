@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { serverEnv } from "@/lib/server-env";
-import { squashSyncEvents } from "@/modules/sync/squash.server";
+import { squashSyncEventsScheduled } from "@/modules/sync/squash.server";
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -24,10 +24,10 @@ async function squash(request: Request): Promise<Response> {
   if (!isAuthorizedCron(request)) {
     return json({ error: "Unauthorized" }, 401);
   }
-  return json(await squashSyncEvents());
+  return json(await squashSyncEventsScheduled());
 }
 
-/** Prunes superseded events older than a day across every user's log. */
+/** Prunes superseded events older than a day, resuming each user's log where the last run stopped. */
 export const Route = createFileRoute("/api/cron/squash-sync-events")({
   server: {
     handlers: {
