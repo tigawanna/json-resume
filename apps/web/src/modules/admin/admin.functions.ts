@@ -1,7 +1,7 @@
 import { viewerMiddleware } from "@/data-access-layer/auth/viewer";
 import { createMiddleware, createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { compactAllLibraries, compactUserLibrary } from "../sync/compact.server";
+import { requestLibraryCompaction } from "../sync/compaction.server";
 import { squashSyncEvents } from "../sync/squash.server";
 import { auditAdminAction } from "./admin-audit.server";
 import { adminEventFilterSchema, adminEventListSchema } from "./admin-event-filters";
@@ -181,10 +181,8 @@ export const compactLibraryFn = createServerFn({ method: "POST" })
   .middleware([adminMiddleware])
   .validator(z.object({ userId: z.string().min(1).optional() }))
   .handler(async ({ data, context }) =>
-    auditAdminAction("compact-library", context.viewer.user, data, async () =>
-      data.userId
-        ? { users: 1, ...(await compactUserLibrary(data.userId)) }
-        : compactAllLibraries(),
+    auditAdminAction("compact-library", context.viewer.user, data, () =>
+      requestLibraryCompaction({ userId: data.userId, prune: false }),
     ),
   );
 
@@ -194,9 +192,7 @@ export const pruneLibraryFn = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) =>
     auditAdminAction("prune-library", context.viewer.user, data, async () => {
       const { backup } = await backupEventLog();
-      const result = data.userId
-        ? { users: 1, ...(await compactUserLibrary(data.userId, { prune: true })) }
-        : await compactAllLibraries({ prune: true });
+      const result = await requestLibraryCompaction({ userId: data.userId, prune: true });
       return { backup, ...result };
     }),
   );

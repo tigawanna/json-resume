@@ -11,7 +11,7 @@ type Row = Record<string, unknown>;
 
 export type CompactionOp = {
   collectionId: string;
-  type: "insert" | "update" | "delete";
+  type: "update" | "delete";
   id: string;
   row: Row;
 };
@@ -31,6 +31,11 @@ const CHILD_COLLECTIONS = new Set(
   Object.values(ownedChildren).flatMap((children) => children.map((child) => child.collectionId)),
 );
 
+/** Every collection a plan reads; a missing one is treated as empty and never pruned. */
+export const COMPACTION_INPUT_COLLECTIONS: readonly string[] = [
+  ...new Set(["resume", ...PRUNABLE, ...CHILD_COLLECTIONS]),
+];
+
 function ms(value: unknown): number {
   if (value instanceof Date) return value.getTime();
   return typeof value === "number" ? value : 0;
@@ -43,7 +48,7 @@ class WorkingSet {
 
   constructor(
     input: Record<string, ReadonlyArray<Row>>,
-    readonly now: Date,
+    readonly now: number,
   ) {
     for (const [collectionId, rows] of Object.entries(input)) {
       const table = new Map<string, Row>();
@@ -79,7 +84,9 @@ class WorkingSet {
     const table = this.table(collectionId);
     const current = table.get(id);
     if (!current) return;
-    table.set(id, { ...current, ...patch, updatedAt: this.now });
+    // Devices drop a replayed row older than their copy, so a rewrite must outrank the row it read.
+    const updatedAt = Math.max(this.now, ms(current.updatedAt) + 1);
+    table.set(id, { ...current, ...patch, updatedAt });
     let dirty = this.dirty.get(collectionId);
     if (!dirty) this.dirty.set(collectionId, (dirty = new Set()));
     dirty.add(id);
@@ -155,8 +162,13 @@ class Layouts {
   }
 }
 
+/** Newest row wins; ties go to the smaller id so every device picks the same one. */
 function pickSurvivor(rows: Row[]): Row {
-  return rows.reduce((best, row) => (ms(row.updatedAt) > ms(best.updatedAt) ? row : best));
+  return rows.reduce((best, row) => {
+    const diff = ms(row.updatedAt) - ms(best.updatedAt);
+    if (diff !== 0) return diff > 0 ? row : best;
+    return String(row.id) < String(best.id) ? row : best;
+  });
 }
 
 /** Points owned children and every layout that referenced `from` at `to`, then drops `from`. */
@@ -232,9 +244,9 @@ function pruneUnreferenced(state: WorkingSet, layouts: Layouts, loaded: Set<stri
  */
 export function planCompaction(
   input: Record<string, ReadonlyArray<Row>>,
-  options: { now?: Date; prune?: boolean } = {},
+  options: { now?: number; prune?: boolean } = {},
 ): CompactionPlan {
-  const state = new WorkingSet(input, options.now ?? new Date());
+  const state = new WorkingSet(input, options.now ?? Date.now());
   const layouts = new Layouts(state.rows("resume"));
   const merged: Record<string, number> = {};
 

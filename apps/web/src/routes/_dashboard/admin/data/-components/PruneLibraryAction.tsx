@@ -17,14 +17,6 @@ import { toast } from "sonner";
 import { AdminActionCard } from "../../-components/AdminActionCard";
 import { ALL_USERS, AdminUserSelect } from "../../-components/AdminUserSelect";
 
-function describeCounts(counts: Record<string, number>): string {
-  return Object.entries(counts)
-    .filter(([, n]) => n > 0)
-    .sort(([, a], [, b]) => b - a)
-    .map(([collectionId, n]) => `${n.toLocaleString()} ${collectionId}`)
-    .join(" · ");
-}
-
 export function PruneLibraryAction() {
   const [userId, setUserId] = useState(ALL_USERS);
   const isAll = userId === ALL_USERS;
@@ -32,16 +24,8 @@ export function PruneLibraryAction() {
   const mutation = useMutation({
     mutationFn: async () => pruneLibraryFn({ data: { userId: isAll ? undefined : userId } }),
     onSuccess(result) {
-      const pruned = describeCounts(result.pruned);
-      const merged = describeCounts(result.merged);
-      toast.success(pruned ? "Unused library rows deleted" : "Nothing unused to delete", {
-        description: [
-          pruned && `Deleted ${pruned}.`,
-          merged && `Merged ${merged}.`,
-          `${result.events.toLocaleString()} events written. Backup: ${result.backup}.`,
-        ]
-          .filter(Boolean)
-          .join(" "),
+      toast.success(`Cleanup requested for ${result.users.toLocaleString()} users`, {
+        description: `The next device each user syncs deletes what no résumé uses. Backup: ${result.backup}.`,
         duration: 15_000,
       });
     },
@@ -54,7 +38,7 @@ export function PruneLibraryAction() {
   return (
     <AdminActionCard
       title="Delete unused library rows"
-      description="Merges duplicates, then deletes every experience, bullet, skill group, skill, summary, project… that no résumé uses, with the links that point at them. The event log is backed up first; deletes go out as normal events."
+      description="Asks each user's devices to merge duplicates, then delete every experience, bullet, skill group, skill, summary, project… that no résumé uses. The event log is backed up first; the first device to sync plans the deletes and every other device replays them."
       danger
       data-test="admin-prune-action"
     >

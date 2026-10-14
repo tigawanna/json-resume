@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { emptyResumeLayout, type ResumeLayout } from "@/features/resume/resume-layout";
 import { planCompaction, type CompactionOp } from "./compact-plan";
 
-const now = new Date(10_000);
-const at = (ms: number) => ({ createdAt: new Date(ms), updatedAt: new Date(ms) });
+const now = 10_000;
+const at = (ms: number) => ({ createdAt: ms, updatedAt: ms });
 
 function layout(patch: Partial<ResumeLayout>): ResumeLayout {
   return { ...emptyResumeLayout(), ...patch };
@@ -125,6 +125,29 @@ describe("planCompaction", () => {
       Object.entries(state).map(([id, rows]) => [id, [...rows.values()]]),
     );
     expect(planCompaction(settled, { now }).ops).toEqual([]);
+  });
+
+  it("stamps every rewrite newer than the row it read, even when that row is ahead of `now`", () => {
+    const future = { ...input, resume: input.resume.map((row) => ({ ...row, ...at(50_000) })) };
+    const updates = planCompaction(future, { now }).ops.filter(
+      (op) => op.collectionId === "resume",
+    );
+    expect(updates.length).toBeGreaterThan(0);
+    for (const op of updates) expect(op.row.updatedAt).toBe(50_001);
+  });
+
+  it("picks the same survivor whatever order the rows arrive in", () => {
+    const tied = {
+      resumeSkill: [
+        { id: "s-b", userId: "u", name: "Go", ...at(1) },
+        { id: "s-a", userId: "u", name: "go", ...at(1) },
+      ],
+    };
+    const reversed = { resumeSkill: [...tied.resumeSkill].reverse() };
+    const deleted = (plan: ReturnType<typeof planCompaction>) =>
+      plan.ops.filter((op) => op.type === "delete").map((op) => op.id);
+    expect(deleted(planCompaction(tied, { now }))).toEqual(["s-b"]);
+    expect(deleted(planCompaction(reversed, { now }))).toEqual(["s-b"]);
   });
 });
 

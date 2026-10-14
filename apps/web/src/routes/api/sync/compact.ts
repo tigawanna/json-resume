@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { auth } from "@/lib/auth";
-import { compactUserLibrary } from "@/modules/sync/compact.server";
+import { compactionProposalSchema } from "@/modules/sync/compaction-protocol";
+import { acceptCompaction } from "@/modules/sync/compaction.server";
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -9,15 +10,18 @@ function json(body: unknown, status = 200) {
   });
 }
 
-/** Called by the client after a push drains: merge duplicates the push introduced. */
+/** A device's planned library compaction: appended if the log has not moved past it, else stale. */
 export const Route = createFileRoute("/api/sync/compact")({
   server: {
     handlers: {
       POST: async ({ request }: { request: Request }) => {
         const session = await auth.api.getSession({ headers: request.headers });
         if (!session?.user?.id) return json({ error: "Unauthorized" }, 401);
-        const result = await compactUserLibrary(session.user.id);
-        return json(result);
+        const parsed = compactionProposalSchema.safeParse(await request.json());
+        if (!parsed.success) {
+          return json({ error: "Invalid compaction proposal", issues: parsed.error.issues }, 400);
+        }
+        return json(await acceptCompaction(session.user.id, parsed.data));
       },
     },
   },

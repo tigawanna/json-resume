@@ -6,6 +6,7 @@ import type {
   PushResponse,
   SyncTransport,
 } from "event-sourced-collection";
+import type { CompactionOutcome, CompactionProposal } from "@/modules/sync/compaction-protocol";
 import {
   beginDownloadPage,
   noteDownloadPage,
@@ -15,19 +16,29 @@ import {
 
 const SYNC_URL = "/api/sync/events";
 const COMPACT_URL = "/api/sync/compact";
-/** Pushes arrive in bursts; compact once after the burst settles. */
-const COMPACT_DEBOUNCE_MS = 4_000;
 
-let compactTimer: ReturnType<typeof setTimeout> | null = null;
+function parseCompactionOutcome(value: unknown): CompactionOutcome {
+  if (value != null && typeof value === "object" && "status" in value) {
+    if (value.status === "stale") return { status: "stale" };
+    if (value.status === "accepted" && "events" in value && typeof value.events === "number") {
+      return { status: "accepted", events: value.events };
+    }
+  }
+  throw new Error("Sync compaction failed: invalid response");
+}
 
-function scheduleCompaction() {
-  if (compactTimer) clearTimeout(compactTimer);
-  compactTimer = setTimeout(() => {
-    compactTimer = null;
-    fetch(COMPACT_URL, { method: "POST", credentials: "include" }).catch((err: unknown) => {
-      console.warn("[sync compact] request failed", err);
-    });
-  }, COMPACT_DEBOUNCE_MS);
+/** Sends a planned library compaction; the server appends it unless the log moved on. */
+export async function proposeCompaction(proposal: CompactionProposal): Promise<CompactionOutcome> {
+  const response = await fetch(COMPACT_URL, {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(proposal),
+  });
+  if (!response.ok) {
+    throw new Error(`Sync compaction failed (${response.status}): ${await response.text()}`);
+  }
+  return parseCompactionOutcome(await readJson(response));
 }
 
 export type PushOutcome = { events: number; bytes: number; status: "ok" | "too-large" };
@@ -120,7 +131,6 @@ export function createCookieSyncTransport(): SyncTransport {
       const result = parsePushResponse(await readJson(response));
       pushObserver?.({ events: events.length, bytes, status: "ok" });
       noteUploaded(result.confirmed.length + (result.failed?.length ?? 0));
-      if (result.confirmed.length > 0) scheduleCompaction();
       return result;
     },
     async pull(since) {

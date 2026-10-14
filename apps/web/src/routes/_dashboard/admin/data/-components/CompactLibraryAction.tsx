@@ -13,18 +13,9 @@ export function CompactLibraryAction() {
     mutationFn: async () =>
       compactLibraryFn({ data: { userId: userId === ALL_USERS ? undefined : userId } }),
     onSuccess(result) {
-      const merged = Object.entries(result.merged).filter(([, n]) => n > 0);
-      toast.success(
-        merged.length === 0
-          ? "No duplicates found"
-          : `Merged duplicates for ${result.users.toLocaleString()} users`,
-        {
-          description:
-            merged.length > 0
-              ? `${merged.map(([collectionId, n]) => `${n} ${collectionId}`).join(" · ")} · ${result.events.toLocaleString()} events written`
-              : undefined,
-        },
-      );
+      toast.success(`Merge requested for ${result.users.toLocaleString()} users`, {
+        description: "The next device each user syncs plans the merge and uploads it.",
+      });
     },
     onError(err: unknown) {
       toast.error("Merge failed", { description: unwrapUnknownError(err).message });
@@ -35,7 +26,7 @@ export function CompactLibraryAction() {
   return (
     <AdminActionCard
       title="Merge duplicate library rows"
-      description="Keeps one experience, project, skill, bullet… per natural key and repoints every résumé link at it. Changes go out as normal events, so devices pick them up on their next sync."
+      description="Asks each user's devices to keep one experience, project, skill, bullet… per natural key and repoint every résumé link at it. The first device to sync plans it; every other device replays the result."
       data-test="admin-compact-action"
     >
       <AdminUserSelect

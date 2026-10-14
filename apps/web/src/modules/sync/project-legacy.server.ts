@@ -34,8 +34,13 @@ import { requestLog } from "@/lib/evlog/request-log";
 import { log as standaloneLog } from "evlog";
 import { isForeignKeyError, uniqueConstraintColumns } from "./projection-constraint";
 import type { SQLiteColumn, SQLiteTable } from "drizzle-orm/sqlite-core";
+import { COMPACTION_COLLECTION, COMPACTION_REQUEST_COLLECTION } from "./compaction-protocol";
 
-const SKIP_COLLECTIONS = new Set(["settings"]);
+const SKIP_COLLECTIONS = new Set([
+  "settings",
+  COMPACTION_COLLECTION,
+  COMPACTION_REQUEST_COLLECTION,
+]);
 const PROJECTION_FAILURE_SAMPLE = 20;
 
 type ProjectionFailure = {

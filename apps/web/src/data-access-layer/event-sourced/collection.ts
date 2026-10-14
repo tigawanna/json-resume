@@ -7,8 +7,9 @@ import type {
 } from "@tanstack/browser-db-sqlite-persistence";
 import { withOpfsBusyRetry } from "./opfs-recovery";
 import { installStaleReplayGuard } from "./stale-replay-guard";
+import { createSyncCompaction } from "./sync-compaction";
 import { installSyncPushTuning } from "./sync-push-tuning";
-import { createCookieSyncTransport } from "./sync-transport";
+import { createCookieSyncTransport, proposeCompaction } from "./sync-transport";
 
 import type {
   AppSettings,
@@ -76,6 +77,9 @@ export type AppCollectionDefs = {
 
 export type AppDb = EventSourcedDB<AppCollectionDefs>;
 
+/** Plans library compaction on this device after each sync; see `sync-compaction.ts`. */
+export const syncCompaction = createSyncCompaction({ propose: proposeCompaction });
+
 const byId = <T extends { id: string }>(name = "by-id") => ({
   select: (row: T) => row.id,
   indexType: BasicIndex,
@@ -123,7 +127,7 @@ const {
   eventSchemaVersion: 1,
   syncEnabled: true,
   recordLocalEchoes: false,
-  sync: createCookieSyncTransport(),
+  sync: syncCompaction.wrapTransport(createCookieSyncTransport()),
   syncPreset: "vercel",
   // A rebuilt server log has no delete events for rows it dropped, so a device
   // must start from an empty database rather than requeue its old outbox.
@@ -360,6 +364,7 @@ async function ensureDb() {
   const database = await ensureDbInner();
   ensureMetaQueueIndexes(database);
   installStaleReplayGuard(database);
+  syncCompaction.install(database);
   installSyncPushTuning(database);
   return database;
 }

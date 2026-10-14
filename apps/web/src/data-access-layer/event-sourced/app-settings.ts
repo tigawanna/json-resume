@@ -1,6 +1,6 @@
 import { DEFAULT_RETENTION_MS } from "@/modules/sync/squash-plan";
 import { BackendMismatchError } from "event-sourced-collection";
-import type { AppDb } from "./collection";
+import { syncCompaction, type AppDb } from "./collection";
 import { mergeEventHistory, squashLocalEvents } from "./event-history";
 import { wipeLocalDatabase } from "./local-reset";
 import type { AppSettings } from "./schemas";
@@ -44,9 +44,10 @@ const LOCAL_EVENT_HORIZON_MS = 7 * 24 * 60 * 60 * 1000;
 
 /**
  * One library sync: it pushes the outbox batch by batch until drained, then
- * pulls every page. Afterwards synced events replaced by a later event for the
- * same row are squashed once they leave the retention window, and anything past
- * the horizon is pruned. Restore can reach back as far as what is left.
+ * pulls every page. Afterwards this device may plan and propose a library
+ * compaction, synced events replaced by a later event for the same row are
+ * squashed once they leave the retention window, and anything past the horizon
+ * is pruned. Restore can reach back as far as what is left.
  */
 export async function runManagedSync(db: AppDb, mode: "background" | "manual") {
   beginSyncProgress(db.getSyncStatus().pendingCount);
@@ -57,6 +58,11 @@ export async function runManagedSync(db: AppDb, mode: "background" | "manual") {
       await wipeLocalDatabase({ resumeSync: true });
     }
     if (!result.deferred && result.errors.length === 0) {
+      try {
+        await syncCompaction.afterSync(db, result);
+      } catch (err: unknown) {
+        console.warn("[sync compact] compaction failed", err);
+      }
       const history = mergeEventHistory(
         db.collections.outbox.toArray,
         db.collections.inbox.toArray,
