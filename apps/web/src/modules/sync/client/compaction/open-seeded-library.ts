@@ -1,13 +1,13 @@
 import { openTestAppDb } from "@/data-access-layer/event-sourced/testing/app-test-db";
 import {
-  seedLibrary,
-  type SeedLibraryOptions,
-} from "@/data-access-layer/event-sourced/testing/seed-library";
+  seedHistory,
+  type SeedHistoryOptions,
+} from "@/data-access-layer/event-sourced/testing/seed-history/seed-history";
 
-/** Opens an in-memory app database and seeds the library for compaction tests. */
-export async function openSeededLibrary(options: SeedLibraryOptions = {}) {
+/** Opens an in-memory app database and writes a résumé history into the outbox. */
+export async function openSeededLibrary(options: SeedHistoryOptions = { resumes: 1 }) {
   const handle = openTestAppDb();
   const db = await handle.ensureDb();
-  seedLibrary(db, options);
-  return { db, close: () => handle.close() };
+  const seeded = await seedHistory(db, options);
+  return { db, seeded, close: () => handle.close() };
 }
