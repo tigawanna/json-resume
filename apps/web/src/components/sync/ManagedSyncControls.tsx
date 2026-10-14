@@ -10,7 +10,7 @@ import {
   setManagedSyncEnabled,
 } from "@/data-access-layer/event-sourced/app-settings";
 import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
-import { useEventSourcedSyncStatus } from "@/data-access-layer/event-sourced/sync/use-sync-status";
+import { useEventSourcedSyncStatus } from "@/modules/sync/client/use-sync-status";
 import { unwrapUnknownError } from "@/utils/errors";
 import { Link } from "@tanstack/react-router";
 import { RefreshCw } from "lucide-react";

@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { auth } from "@/lib/auth";
-import { compactionProposalSchema } from "@/modules/sync/plan/compaction-protocol";
-import { acceptCompaction } from "@/modules/sync/server/compaction.server";
+import { compactionProposalSchema } from "@/modules/sync/shared/compaction-protocol";
+import { acceptCompaction } from "@/modules/sync/server/compaction/compaction.server";
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {

@@ -1,11 +1,11 @@
 /* The singleton settings row plus the managed-sync on/off gate. */
-import { DEFAULT_RETENTION_MS } from "@/modules/sync/plan/squash-plan";
+import { DEFAULT_RETENTION_MS } from "@/modules/sync/shared/squash-plan";
 import { BackendMismatchError } from "event-sourced-collection";
 import { syncCompaction, type AppDb } from "./collection";
 import { mergeEventHistory, squashLocalEvents } from "./resume/event-history";
 import { wipeLocalDatabase } from "./recovery/local-reset";
 import type { AppSettings } from "./schemas";
-import { beginSyncProgress, finishSyncProgress } from "./sync/sync-progress";
+import { beginSyncProgress, finishSyncProgress } from "@/modules/sync/client/sync-progress";
 
 export const APP_SETTINGS_ID = "app";
 

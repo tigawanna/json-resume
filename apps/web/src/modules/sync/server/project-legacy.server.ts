@@ -32,12 +32,12 @@ import {
 import { and, eq, getTableColumns, isNull, type SQL } from "drizzle-orm";
 import { requestLog } from "@/lib/evlog/request-log";
 import { log as standaloneLog } from "evlog";
-import { isForeignKeyError, uniqueConstraintColumns } from "../plan/projection-constraint.ts";
+import { isForeignKeyError, uniqueConstraintColumns } from "../shared/projection-constraint.ts";
 import type { SQLiteColumn, SQLiteTable } from "drizzle-orm/sqlite-core";
 import {
   COMPACTION_COLLECTION,
   COMPACTION_REQUEST_COLLECTION,
-} from "../plan/compaction-protocol.ts";
+} from "../shared/compaction-protocol.ts";
 
 const SKIP_COLLECTIONS = new Set([
   "settings",

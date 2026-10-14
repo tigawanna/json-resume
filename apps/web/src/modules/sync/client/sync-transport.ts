@@ -10,7 +10,7 @@ import type {
 import type {
   CompactionOutcome,
   CompactionProposal,
-} from "@/modules/sync/plan/compaction-protocol";
+} from "@/modules/sync/shared/compaction-protocol";
 import {
   beginDownloadPage,
   noteDownloadPage,

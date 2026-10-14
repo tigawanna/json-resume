@@ -18,7 +18,7 @@ import {
 } from "drizzle-orm";
 import { alias } from "drizzle-orm/sqlite-core";
 import type { LibSQLDatabase } from "drizzle-orm/libsql";
-import { SYNC_RESET_COLLECTION } from "../plan/sync-reset.ts";
+import { SYNC_RESET_COLLECTION } from "../shared/sync-reset.ts";
 
 type SquashDb = Pick<LibSQLDatabase, "select" | "insert" | "update" | "delete">;
 

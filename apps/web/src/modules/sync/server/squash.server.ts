@@ -9,8 +9,8 @@ import {
   squashUserLogsIncrementally,
   type IncrementalSquashResult,
 } from "./squash-incremental.server.ts";
-import { DEFAULT_RETENTION_MS, planSquash, type SquashReason } from "../plan/squash-plan.ts";
-import { SYNC_RESET_COLLECTION } from "../plan/sync-reset.ts";
+import { DEFAULT_RETENTION_MS, planSquash, type SquashReason } from "../shared/squash-plan.ts";
+import { SYNC_RESET_COLLECTION } from "../shared/sync-reset.ts";
 
 /**
  * Push dedupes on `event_id`, so a retry of an event that was squashed away

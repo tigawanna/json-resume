@@ -7,10 +7,10 @@ import type {
   OpenBrowserWASQLiteOPFSDatabaseOptions,
 } from "@tanstack/browser-db-sqlite-persistence";
 import { withOpfsBusyRetry } from "./recovery/opfs-recovery";
-import { installStaleReplayGuard } from "./sync/stale-replay-guard";
-import { createSyncCompaction } from "./sync/sync-compaction";
-import { installSyncPushTuning } from "./sync/sync-push-tuning";
-import { createCookieSyncTransport, proposeCompaction } from "./sync/sync-transport";
+import { installStaleReplayGuard } from "@/modules/sync/client/stale-replay-guard";
+import { createSyncCompaction } from "@/modules/sync/client/compaction/sync-compaction";
+import { installSyncPushTuning } from "@/modules/sync/client/sync-push-tuning";
+import { createCookieSyncTransport, proposeCompaction } from "@/modules/sync/client/sync-transport";
 
 import type {
   AppSettings,

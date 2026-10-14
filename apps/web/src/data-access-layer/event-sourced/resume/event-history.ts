@@ -5,7 +5,7 @@ import {
   planSquash,
   type RestorableEvent,
   type RestorePlan,
-} from "@/modules/sync/plan/squash-plan";
+} from "@/modules/sync/shared/squash-plan";
 import type { InboxEntry, OutboxEntry } from "event-sourced-collection";
 import type { z } from "zod";
 import type { AppCollectionDefs, AppDb } from "../collection";

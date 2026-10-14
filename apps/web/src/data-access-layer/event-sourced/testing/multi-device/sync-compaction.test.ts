@@ -10,7 +10,7 @@ import {
   COMPACTION_COLLECTION,
   COMPACTION_REQUEST_COLLECTION,
   compactionRequestEvent,
-} from "@/modules/sync/plan/compaction-protocol";
+} from "@/modules/sync/shared/compaction-protocol";
 import type { Resume, ResumeExperience, ResumeExperienceBullet, ResumeSkill } from "../../schemas";
 import { createSyncDevices } from "./sync-test-devices";
 

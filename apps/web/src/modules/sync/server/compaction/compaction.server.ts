@@ -12,9 +12,9 @@ import {
   type CompactionEvent,
   type CompactionOutcome,
   type CompactionProposal,
-} from "../plan/compaction-protocol.ts";
-import { projectUnappliedSyncEvents } from "./project-legacy.server.ts";
-import { ensureSyncBackend } from "./sync-events.server.ts";
+} from "../../shared/compaction-protocol.ts";
+import { projectUnappliedSyncEvents } from "../project-legacy.server";
+import { ensureSyncBackend } from "../sync-events.server";
 
 const INSERT_CHUNK = 50;
 const ADMIN_CLIENT_ID = "admin";

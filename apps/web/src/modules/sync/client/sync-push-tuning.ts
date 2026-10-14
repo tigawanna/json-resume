@@ -2,7 +2,7 @@
 import type { SyncPushLimits } from "event-sourced-collection";
 import { useSyncExternalStore } from "react";
 import { z } from "zod";
-import type { AppDb } from "../collection";
+import type { AppDb } from "@/data-access-layer/event-sourced/collection";
 import { setPushObserver, type PushOutcome } from "./sync-transport";
 
 /** Rungs the batch size drops through after an HTTP 413. */

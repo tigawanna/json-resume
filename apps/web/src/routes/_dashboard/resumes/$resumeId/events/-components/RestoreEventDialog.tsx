@@ -13,7 +13,7 @@ import {
   restoreToEvent,
   type HistoryEvent,
 } from "@/data-access-layer/event-sourced/resume/event-history";
-import { planRestore } from "@/modules/sync/plan/squash-plan";
+import { planRestore } from "@/modules/sync/shared/squash-plan";
 import { formatLocaleDateTime } from "@/utils/date-helpers";
 import { unwrapUnknownError } from "@/utils/errors";
 import { toast } from "sonner";

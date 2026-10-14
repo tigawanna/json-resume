@@ -1,4 +1,4 @@
-import { useSyncTransferProgress } from "@/data-access-layer/event-sourced/sync/sync-progress";
+import { useSyncTransferProgress } from "@/modules/sync/client/sync-progress";
 import { cn } from "@/lib/utils";
 
 function formatBytes(bytes: number): string {

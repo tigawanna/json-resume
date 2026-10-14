@@ -11,9 +11,12 @@ import {
   COMPACTION_CLIENT_ID,
   compactionEvents,
   type CompactionProposal,
-} from "@/modules/sync/plan/compaction-protocol";
-import { installStaleReplayGuard } from "../../sync/stale-replay-guard";
-import { createSyncCompaction, type ProposeCompaction } from "../../sync/sync-compaction";
+} from "@/modules/sync/shared/compaction-protocol";
+import { installStaleReplayGuard } from "@/modules/sync/client/stale-replay-guard";
+import {
+  createSyncCompaction,
+  type ProposeCompaction,
+} from "@/modules/sync/client/compaction/sync-compaction";
 
 type SyncCollectionDefs = Record<string, { getKey: (row: never) => string | number }>;
 

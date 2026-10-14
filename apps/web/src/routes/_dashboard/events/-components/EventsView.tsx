@@ -1,6 +1,6 @@
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
-import { useEventSourcedSyncStatus } from "@/data-access-layer/event-sourced/sync/use-sync-status";
+import { useEventSourcedSyncStatus } from "@/modules/sync/client/use-sync-status";
 import { createSortableColumns } from "@/lib/tanstack/db/sortable-columns";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";

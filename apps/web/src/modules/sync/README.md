@@ -1,51 +1,57 @@
-# Sync Module
+# Sync
 
-## Objective
-
-The server-side and shared logic behind the app's local-first sync:
-
-- an append-only event log per user (`syncEvent` table) that devices push to and pull from
-- log hygiene: squashing superseded old events and compacting unreferenced library rows so the log and every device stay small
-- projection of applied events back into the Drizzle tables (legacy read-model support)
-- admin-triggered log rebuilds, which swap a user's backend so devices resync from zero
-
-Device-side counterparts live in
-`@/data-access-layer/event-sourced/sync/` (transport, per-device compaction runner,
-push tuning, stale-replay guard).
-
-## Layout
+One module, three sides. Shared planners have no I/O. `server/` talks to the event log. `client/` runs in the browser against the local event-sourced database.
 
 ```
 sync/
-├── plan/            # pure, isomorphic planners and protocol (no server imports)
-├── server/          # server-only handlers (push/pull endpoint, squash, compaction, projection)
-└── device-compaction/ # device-side compaction entry point (see its own README)
+├── shared/                 # planners both sides call
+├── server/                 # the user's event log on the server
+│   └── compaction/         # append a device's compaction proposal
+└── client/                 # this device's sync against that log
+    └── compaction/         # plan a proposal after this device syncs
 ```
 
-## `plan/` — pure, isomorphic logic
+## `shared/` — planners (no server, no browser)
 
-| File                            | Purpose                                                                                                                                     |
-| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| `squash-plan.ts`                | Which log events are superseded by a newer event for the same row (within a retention window).                                              |
-| `squash-plan.test.ts`           | Tests for the squash planner.                                                                                                               |
-| `compact-plan.ts`               | Which unreferenced / duplicate library rows (experiences, bullets, skills, …) can be merged away into compaction ops.                       |
-| `compact-plan.test.ts`          | Tests for the compaction planner.                                                                                                           |
-| `compaction-protocol.ts`        | Zod schemas for proposals/outcomes and the accept-or-stale rule (device plans, server appends only if the log hasn't moved past `baseSeq`). |
-| `projection-constraint.ts`      | Parses SQLite `UNIQUE constraint failed: …` / FK errors out of projection writes.                                                           |
-| `projection-constraint.test.ts` | Tests for those parsers.                                                                                                                    |
-| `sync-reset.ts`                 | `__sync_reset__` marker event + `userBackendId` so devices resync from zero after a log rebuild.                                            |
+| File                       | Entrypoint                | Purpose                                                                                                        |
+| -------------------------- | ------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `squash-plan.ts`           | `planSquash`              | Which log events a newer event for the same row supersedes. `planRestore` inverts one.                         |
+| `compact-plan.ts`          | `planCompaction`          | Which unreferenced or duplicate library rows become compaction ops.                                            |
+| `compaction-protocol.ts`   | `compactionEvents`        | Proposal schema and the accept-or-stale rule: the server appends only if the log has not moved past `baseSeq`. |
+| `projection-constraint.ts` | `uniqueConstraintColumns` | Parses SQLite unique and foreign-key errors from projection writes.                                            |
+| `sync-reset.ts`            | `userBackendId`           | Marker that makes devices resync from zero after a log rebuild.                                                |
 
-## `server/` — server-only handlers
+## `server/` — event log
 
-| File                           | Purpose                                                                                                     |
-| ------------------------------ | ----------------------------------------------------------------------------------------------------------- |
-| `sync-events.server.ts`        | The push/pull sync endpoint logic: stores outbox events, returns paged pulls.                               |
-| `squash.server.ts`             | Server fn entry point that runs squash + catches up the projection, with a minimum server retention.        |
-| `squash-incremental.server.ts` | Incrementally squashes per-user logs in bounded steps, backed by `syncSquashState`.                         |
-| `squash-incremental.test.ts`   | Tests for incremental squashing against a real libSQL database.                                             |
-| `compaction.server.ts`         | Server fn applying a compaction proposal against the log (first proposal wins, later ones come back stale). |
-| `project-legacy.server.ts`     | Projects applied sync events into the legacy Drizzle tables.                                                |
+| File                           | Entrypoint                         | Called from                                                     |
+| ------------------------------ | ---------------------------------- | --------------------------------------------------------------- |
+| `sync-events.server.ts`        | `pushSyncEvents`, `pullSyncEvents` | `routes/api/sync/events.ts`                                     |
+| `squash.server.ts`             | `squashSyncEvents`                 | admin actions, `routes/api/cron/squash-sync-events.ts`          |
+| `squash-incremental.server.ts` | `squashUserLogsIncrementally`      | `squash.server.ts`                                              |
+| `project-legacy.server.ts`     | `projectUnappliedSyncEvents`       | `routes/api/cron/project-sync-events.ts`, after push and squash |
 
-## `device-compaction/`
+### `server/compaction/`
 
-Device-side compaction entry point — see its own README.
+| File                   | Entrypoint         | Called from                                                    |
+| ---------------------- | ------------------ | -------------------------------------------------------------- |
+| `compaction.server.ts` | `acceptCompaction` | `routes/api/sync/compact.ts`, admin `requestLibraryCompaction` |
+
+The device proposes. The server appends the ops when the log still ends at `baseSeq`. A later proposal comes back stale.
+
+## `client/` — this device
+
+Lives next to the server code so the pair is visible. The browser database in `data-access-layer/event-sourced/collection.ts` wires these in.
+
+| File                    | Entrypoint                  | Purpose                                                           |
+| ----------------------- | --------------------------- | ----------------------------------------------------------------- |
+| `sync-transport.ts`     | `createCookieSyncTransport` | Push and pull over `/api/sync/events`.                            |
+| `sync-progress.ts`      | `useSyncTransferProgress`   | Upload and download counters for the sync UI.                     |
+| `sync-push-tuning.ts`   | `installSyncPushTuning`     | Shrinks the push batch after HTTP 413. Stored on the device only. |
+| `stale-replay-guard.ts` | `installStaleReplayGuard`   | Drops a replayed event when the local row is newer.               |
+| `use-sync-status.ts`    | `useEventSourcedSyncStatus` | Live sync status for the open database.                           |
+
+### `client/compaction/`
+
+| File                 | Entrypoint             | Purpose                                                                                                                             |
+| -------------------- | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `sync-compaction.ts` | `createSyncCompaction` | After a sync, plans library compaction with `shared/compact-plan` and uploads it. The server answer is applied like any other pull. |

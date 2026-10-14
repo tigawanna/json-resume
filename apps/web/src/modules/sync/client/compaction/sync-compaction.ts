@@ -6,7 +6,7 @@ import {
   COMPACTION_INPUT_COLLECTIONS,
   planCompaction,
   type CompactionOp,
-} from "@/modules/sync/plan/compact-plan";
+} from "@/modules/sync/shared/compact-plan";
 import {
   COMPACTION_CLIENT_ID,
   COMPACTION_COLLECTION,
@@ -17,7 +17,7 @@ import {
   MAX_PROPOSAL_OPS,
   type CompactionOutcome,
   type CompactionProposal,
-} from "@/modules/sync/plan/compaction-protocol";
+} from "@/modules/sync/shared/compaction-protocol";
 
 type Row = Record<string, unknown>;
 
