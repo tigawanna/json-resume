@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { auth } from "@/lib/auth";
 import { compactionProposalSchema } from "@/modules/sync/shared/compaction-protocol";
-import { acceptCompaction } from "@/modules/sync/server/compaction/compaction.server";
+import { compactOnServer } from "@/modules/sync/server/compaction/compaction.server";
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -21,7 +21,8 @@ export const Route = createFileRoute("/api/sync/compact")({
         if (!parsed.success) {
           return json({ error: "Invalid compaction proposal", issues: parsed.error.issues }, 400);
         }
-        return json(await acceptCompaction(session.user.id, parsed.data));
+        await compactOnServer({ userId: session.user.id, proposal: parsed.data });
+        return json({ ok: true });
       },
     },
   },

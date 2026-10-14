@@ -1,7 +1,8 @@
 /* The singleton settings row plus the managed-sync on/off gate. */
 import { DEFAULT_RETENTION_MS } from "@/modules/sync/shared/squash-plan";
 import { BackendMismatchError } from "event-sourced-collection";
-import { syncCompaction, type AppDb } from "./collection";
+import { compactOnClient } from "@/modules/sync/client/compaction/sync-compaction";
+import type { AppDb } from "./collection";
 import { mergeEventHistory, squashLocalEvents } from "./resume/event-history";
 import { wipeLocalDatabase } from "./recovery/local-reset";
 import type { AppSettings } from "./schemas";
@@ -60,7 +61,7 @@ export async function runManagedSync(db: AppDb, mode: "background" | "manual") {
     }
     if (!result.deferred && result.errors.length === 0) {
       try {
-        await syncCompaction.afterSync(db, result);
+        await compactOnClient(db);
       } catch (err: unknown) {
         console.warn("[sync compact] compaction failed", err);
       }

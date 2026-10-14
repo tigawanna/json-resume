@@ -32,9 +32,9 @@ sync/
 
 ### `server/compaction/`
 
-| File                   | Entrypoint         | Called from                                                    |
-| ---------------------- | ------------------ | -------------------------------------------------------------- |
-| `compaction.server.ts` | `acceptCompaction` | `routes/api/sync/compact.ts`, admin `requestLibraryCompaction` |
+| File                   | Entrypoint        | Called from                                                   |
+| ---------------------- | ----------------- | ------------------------------------------------------------- |
+| `compaction.server.ts` | `compactOnServer` | `routes/api/sync/compact.ts`, admin compact and prune actions |
 
 The device proposes. The server appends the ops when the log still ends at `baseSeq`. A later proposal comes back stale.
 
@@ -52,6 +52,6 @@ Lives next to the server code so the pair is visible. The browser database in `d
 
 ### `client/compaction/`
 
-| File                 | Entrypoint             | Purpose                                                                                                                             |
-| -------------------- | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| `sync-compaction.ts` | `createSyncCompaction` | After a sync, plans library compaction with `shared/compact-plan` and uploads it. The server answer is applied like any other pull. |
+| File                 | Entrypoint        | Purpose                                      |
+| -------------------- | ----------------- | -------------------------------------------- |
+| `sync-compaction.ts` | `compactOnClient` | Called after a successful sync. Blank shell. |
