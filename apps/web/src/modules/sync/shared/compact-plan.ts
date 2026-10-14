@@ -4,7 +4,7 @@ import {
   resumeLayoutSchema,
   type ResumeLayout,
 } from "@/features/resume/resume-layout";
-import { bulletKey, libraryKeys, norm } from "@/modules/library/library-keys";
+import { libraryKeys } from "@/modules/library/library-keys";
 import { ownedChildren, rowsToDeleteWith } from "@/modules/library/library-references";
 
 type Row = Record<string, unknown>;
@@ -24,7 +24,7 @@ export type CompactionPlan = {
 };
 
 /** Library collections a résumé layout points at; `prune` only touches these. */
-const PRUNABLE = [...Object.keys(libraryKeys), "resumeSkillGroup", "resumeExperienceBullet"];
+const PRUNABLE = Object.keys(libraryKeys);
 
 /** Owned children are deleted before their parent so each delete projects cleanly. */
 const CHILD_COLLECTIONS = new Set(
@@ -253,17 +253,6 @@ export function planCompaction(
   for (const [collectionId, keyOf] of Object.entries(libraryKeys)) {
     merged[collectionId] = mergeBy(state, layouts, collectionId, keyOf);
   }
-  merged.resumeExperienceBullet = mergeBy(state, layouts, "resumeExperienceBullet", (row) =>
-    typeof row.experienceId === "string" && typeof row.text === "string"
-      ? bulletKey({ experienceId: row.experienceId, text: row.text })
-      : null,
-  );
-  merged.resumeSkillGroup = mergeBy(
-    state,
-    layouts,
-    "resumeSkillGroup",
-    (row) => norm(row.name) || null,
-  );
 
   const pruned: Record<string, number> = {};
   if (options.prune) {

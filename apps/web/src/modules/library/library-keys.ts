@@ -31,6 +31,11 @@ export const libraryKeys = {
   resumeCertification: (row: Row) => key(row.name, row.issuer),
   resumeVolunteer: (row: Row) => key(row.organization, row.role, row.startDate),
   resumeSkill: (row: Row) => key(row.name),
+  resumeSkillGroup: (row: Row) => norm(row.name) || null,
+  resumeExperienceBullet: (row: Row) =>
+    typeof row.experienceId === "string" && typeof row.text === "string"
+      ? bulletKey({ experienceId: row.experienceId, text: row.text })
+      : null,
 } satisfies Record<string, (row: Row) => string | null>;
 
 export type LibraryCollectionId = keyof typeof libraryKeys;
