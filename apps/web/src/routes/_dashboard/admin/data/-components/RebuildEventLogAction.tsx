@@ -12,7 +12,7 @@ import {
 import { adminUsersQueryOptions } from "@/data-access-layer/admin/admin-query-options";
 import { useViewer } from "@/data-access-layer/auth/viewer";
 import { runManagedSync } from "@/data-access-layer/event-sourced/app-settings";
-import { wipeLocalDatabase } from "@/data-access-layer/event-sourced/local-reset";
+import { wipeLocalDatabase } from "@/data-access-layer/event-sourced/recovery/local-reset";
 import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
 import { rebuildAllEventLogsFn, rebuildEventLog } from "@/modules/admin/admin.functions";
 import { unwrapUnknownError } from "@/utils/errors";

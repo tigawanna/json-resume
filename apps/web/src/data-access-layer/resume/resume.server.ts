@@ -3,7 +3,7 @@ import "@tanstack/react-start/server-only";
 import {
   assembleResumeDetail,
   resumeLayoutOf,
-} from "@/data-access-layer/event-sourced/assemble-resume-detail";
+} from "@/data-access-layer/event-sourced/resume/assemble-resume-detail";
 import * as clientRows from "@/data-access-layer/event-sourced/schemas";
 import { db } from "@/lib/drizzle/client";
 import {

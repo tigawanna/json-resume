@@ -4,7 +4,7 @@ import {
   JOB_STATUS_LABELS,
   jobDescriptionPreview,
   jobListLabel,
-} from "@/data-access-layer/event-sourced/job-rows";
+} from "@/data-access-layer/event-sourced/rows/job-rows";
 import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
 
 interface JobPickerSheetProps<T extends JobSummary> {

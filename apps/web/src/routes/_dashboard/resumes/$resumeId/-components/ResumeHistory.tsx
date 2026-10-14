@@ -3,7 +3,7 @@ import type { AppDb } from "@/data-access-layer/event-sourced/collection";
 import {
   mergeEventHistory,
   resumeEventHistory,
-} from "@/data-access-layer/event-sourced/event-history";
+} from "@/data-access-layer/event-sourced/resume/event-history";
 import { formatLocaleDateTime } from "@/utils/date-helpers";
 import { useLiveQuery } from "@tanstack/react-db";
 import { Link } from "@tanstack/react-router";

@@ -6,9 +6,9 @@ import {
   resumeEventHistory,
   squashLocalEvents,
   type HistoryEvent,
-} from "@/data-access-layer/event-sourced/event-history";
+} from "@/data-access-layer/event-sourced/resume/event-history";
 import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
-import { planSquash } from "@/modules/sync/squash-plan";
+import { planSquash } from "@/modules/sync/plan/squash-plan";
 import { unwrapUnknownError } from "@/utils/errors";
 import { useMutation } from "@tanstack/react-query";
 import { eq, useLiveQuery } from "@tanstack/react-db";

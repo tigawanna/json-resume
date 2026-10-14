@@ -1,15 +1,16 @@
+/* React context providing the opened event-sourced DB, with OPFS recovery and resync handling. */
 import { createContext, useContext, useEffect, type ReactNode } from "react";
 import { useEnsureDb } from "event-sourced-collection/react";
 import { useViewer } from "@/data-access-layer/auth/viewer";
 import { applyManagedSyncGate, kickManagedSync, setManagedSyncEnabled } from "./app-settings";
-import { consumeResyncAfterReset } from "./local-reset";
+import { consumeResyncAfterReset } from "./recovery/local-reset";
 import { db as dbProxy, ensureDb, type AppDb } from "./collection";
 import {
   canAutoReloadForOpfsRecovery,
   isOpfsTempDirBusyError,
   reloadForOpfsRecovery,
   toOpfsBusyUserError,
-} from "./opfs-recovery";
+} from "./recovery/opfs-recovery";
 
 declare global {
   interface Window {

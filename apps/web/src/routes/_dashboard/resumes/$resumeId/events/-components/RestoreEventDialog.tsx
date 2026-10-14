@@ -9,8 +9,11 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import type { AppDb } from "@/data-access-layer/event-sourced/collection";
-import { restoreToEvent, type HistoryEvent } from "@/data-access-layer/event-sourced/event-history";
-import { planRestore } from "@/modules/sync/squash-plan";
+import {
+  restoreToEvent,
+  type HistoryEvent,
+} from "@/data-access-layer/event-sourced/resume/event-history";
+import { planRestore } from "@/modules/sync/plan/squash-plan";
 import { formatLocaleDateTime } from "@/utils/date-helpers";
 import { unwrapUnknownError } from "@/utils/errors";
 import { toast } from "sonner";

@@ -11,7 +11,7 @@ import { listSkillGroups } from "@/data-access-layer/resume/skill-groups/skill-g
 import { listSummaries } from "@/data-access-layer/resume/summaries/summary.functions";
 import { listTalks } from "@/data-access-layer/resume/talks/talk.functions";
 import { listVolunteers } from "@/data-access-layer/resume/volunteers/volunteer.functions";
-import { resolveSkillIds } from "@/data-access-layer/event-sourced/library-resolve";
+import { resolveSkillIds } from "@/data-access-layer/event-sourced/rows/library-resolve";
 import { findExistingByExactTitle, normalizeTitle } from "../find-existing";
 import { attachResumeDetail, insertImportedResume, purgeLocalResumes } from "./resume-import";
 import { joinSearchable } from "../row-helpers";

@@ -2,8 +2,8 @@ import type { AppDb } from "@/data-access-layer/event-sourced/collection";
 import {
   libraryBulletIds,
   resolveSkillIds,
-} from "@/data-access-layer/event-sourced/library-resolve";
-import { attachJobDescription } from "@/data-access-layer/event-sourced/job-rows";
+} from "@/data-access-layer/event-sourced/rows/library-resolve";
+import { attachJobDescription } from "@/data-access-layer/event-sourced/rows/job-rows";
 import type { ResumeDetailDTO } from "@/data-access-layer/resume/resume.types";
 import { emptyResumeLayout, FLAT_LAYOUT_KEYS, setEntities } from "@/features/resume/resume-layout";
 import { normalizeTitle } from "../find-existing";

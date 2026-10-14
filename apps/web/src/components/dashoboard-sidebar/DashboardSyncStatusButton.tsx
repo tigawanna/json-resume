@@ -11,13 +11,13 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { useViewer } from "@/data-access-layer/auth/viewer";
 import { APP_SETTINGS_ID, readAppSettings } from "@/data-access-layer/event-sourced/app-settings";
 import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
-import { useEventSourcedSyncStatus } from "@/data-access-layer/event-sourced/use-sync-status";
+import { useEventSourcedSyncStatus } from "@/data-access-layer/event-sourced/sync/use-sync-status";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { useOnlineStatus } from "@/hooks/use-online-status";
 import { cn } from "@/lib/utils";
 import { ManagedSyncControls } from "@/components/sync/ManagedSyncControls";
 import { SyncActivityPanel } from "@/components/sync/SyncActivityPanel";
-import { useSyncTransferProgress } from "@/data-access-layer/event-sourced/sync-progress";
+import { useSyncTransferProgress } from "@/data-access-layer/event-sourced/sync/sync-progress";
 import { eq, useLiveQuery } from "@tanstack/react-db";
 import { useLocation } from "@tanstack/react-router";
 import {

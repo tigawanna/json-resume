@@ -1,5 +1,5 @@
 import { ADMIN_LIST_PER_PAGE } from "@/components/pagination/constants";
-import { deleteWithReferences } from "@/data-access-layer/event-sourced/library-resolve";
+import { deleteWithReferences } from "@/data-access-layer/event-sourced/rows/library-resolve";
 import { usePageSearchQuery } from "@/components/search/use-page-search-query";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,7 +21,7 @@ import { FileText, FileUp, Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { createSortableColumns } from "@/lib/tanstack/db/sortable-columns";
-import { cloneResume } from "@/data-access-layer/event-sourced/clone-resume";
+import { cloneResume } from "@/data-access-layer/event-sourced/resume/clone-resume";
 import { EventSourcedListScaffold } from "../../-components/EventSourcedListScaffold";
 import { EventSourcedSortToolbar } from "../../-components/EventSourcedSortToolbar";
 import { ImportFromLegacyButton } from "../../-components/ImportFromLegacyButton";

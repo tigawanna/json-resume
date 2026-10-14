@@ -8,7 +8,7 @@ import {
   resetSyncPushTuning,
   setSyncPushBatchSize,
   useSyncPushTuning,
-} from "@/data-access-layer/event-sourced/sync-push-tuning";
+} from "@/data-access-layer/event-sourced/sync/sync-push-tuning";
 import { useId, useState } from "react";
 
 function formatBytes(bytes: number) {

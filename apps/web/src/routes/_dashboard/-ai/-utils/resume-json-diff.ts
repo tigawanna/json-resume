@@ -2,8 +2,8 @@ import type { AppDb } from "@/data-access-layer/event-sourced/collection";
 import {
   assembleResumeDetail,
   asTemplateId,
-} from "@/data-access-layer/event-sourced/assemble-resume-detail";
-import { snapshotEventSourcedResume } from "@/data-access-layer/event-sourced/snapshot-resume";
+} from "@/data-access-layer/event-sourced/resume/assemble-resume-detail";
+import { snapshotEventSourcedResume } from "@/data-access-layer/event-sourced/resume/snapshot-resume";
 import { resumeDetailToDocument } from "@/data-access-layer/resume/resume-converters";
 import { structuredPatch } from "diff";
 

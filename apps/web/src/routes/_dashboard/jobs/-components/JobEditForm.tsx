@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { JOB_STATUS_OPTIONS, updateJob } from "@/data-access-layer/event-sourced/job-rows";
+import { JOB_STATUS_OPTIONS, updateJob } from "@/data-access-layer/event-sourced/rows/job-rows";
 import type { Job, JobStatus } from "@/data-access-layer/event-sourced/schemas";
 import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
 import { useAppForm } from "@/lib/tanstack/form";

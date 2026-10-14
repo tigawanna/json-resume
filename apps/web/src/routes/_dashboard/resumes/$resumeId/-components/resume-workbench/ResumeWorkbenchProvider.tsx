@@ -3,9 +3,9 @@ import {
   ResumeWorkspaceProvider,
   useResumeWorkspace,
 } from "@/components/resume/resume-workspace/ResumeWorkspaceContext";
-import type { EventSourcedResumeSnapshots } from "@/data-access-layer/event-sourced/assemble-resume-detail";
+import type { EventSourcedResumeSnapshots } from "@/data-access-layer/event-sourced/resume/assemble-resume-detail";
 import type { AppDb } from "@/data-access-layer/event-sourced/collection";
-import { createEventSourcedResumeWorkspace } from "@/data-access-layer/event-sourced/event-sourced-resume-workspace";
+import { createEventSourcedResumeWorkspace } from "@/data-access-layer/event-sourced/resume/event-sourced-resume-workspace";
 import { resumeDetailToDocument } from "@/data-access-layer/resume/resume-converters";
 import type { ResumeDetailDTO } from "@/data-access-layer/resume/resume.types";
 import type { WorkbenchTab } from "@/features/agentic-tools/resume-tool-schemas";

@@ -7,7 +7,7 @@ import {
   answerWordCount,
   deleteApplicationAnswer,
   updateApplicationAnswer,
-} from "@/data-access-layer/event-sourced/application-answer-rows";
+} from "@/data-access-layer/event-sourced/rows/application-answer-rows";
 import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
 import type { ApplicationAnswer } from "@/data-access-layer/event-sourced/schemas";
 import { unwrapUnknownError } from "@/utils/errors";

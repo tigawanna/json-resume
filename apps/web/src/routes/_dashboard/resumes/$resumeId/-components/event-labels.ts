@@ -1,4 +1,4 @@
-import type { HistoryEvent } from "@/data-access-layer/event-sourced/event-history";
+import type { HistoryEvent } from "@/data-access-layer/event-sourced/resume/event-history";
 import type { MutationType } from "event-sourced-collection";
 
 const LABEL_FIELDS = [

@@ -2,7 +2,7 @@
 import {
   applicationAnswersText,
   parseQuestions,
-} from "@/data-access-layer/event-sourced/application-answer-rows";
+} from "@/data-access-layer/event-sourced/rows/application-answer-rows";
 import { describe, expect, it } from "vitest";
 import {
   saveLocalApplicationAnswers,

@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-import { deleteWithReferences } from "@/data-access-layer/event-sourced/library-resolve";
+import { deleteWithReferences } from "@/data-access-layer/event-sourced/rows/library-resolve";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import type { RepositoryResponse } from "@/data-access-layer/github/repos.octo";
 import { useViewer } from "@/data-access-layer/auth/viewer";

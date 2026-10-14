@@ -1,5 +1,5 @@
 import { afterEach, beforeEach } from "vitest";
-import { openTestAppDb } from "@/data-access-layer/event-sourced/app-test-db";
+import { openTestAppDb } from "@/data-access-layer/event-sourced/testing/app-test-db";
 import type { AppDb } from "@/data-access-layer/event-sourced/collection";
 import type { JobStatus } from "@/data-access-layer/event-sourced/schemas";
 import type { LocalToolContext } from "@/features/agentic-tools/definitions/tool-context";

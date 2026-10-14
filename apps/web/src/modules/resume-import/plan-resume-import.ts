@@ -2,8 +2,8 @@ import type { AppDb } from "@/data-access-layer/event-sourced/collection";
 import {
   addEducationBullets,
   resolveBulletIds,
-} from "@/data-access-layer/event-sourced/library-resolve";
-import { currentLayout } from "@/data-access-layer/event-sourced/resume-layout-rows";
+} from "@/data-access-layer/event-sourced/rows/library-resolve";
+import { currentLayout } from "@/data-access-layer/event-sourced/rows/resume-layout-rows";
 import {
   defaultSectionTitle,
   layoutReferencedIds,

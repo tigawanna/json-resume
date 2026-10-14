@@ -4,8 +4,8 @@ import {
   applicationAnswersText,
   compareApplicationAnswers,
   insertApplicationAnswer,
-} from "@/data-access-layer/event-sourced/application-answer-rows";
-import { jobListLabel } from "@/data-access-layer/event-sourced/job-rows";
+} from "@/data-access-layer/event-sourced/rows/application-answer-rows";
+import { jobListLabel } from "@/data-access-layer/event-sourced/rows/job-rows";
 import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
 import { ApplicationAnswerEditor } from "@/features/application-answers/ApplicationAnswerEditor";
 import { CopyTextButton } from "@/features/application-answers/CopyTextButton";

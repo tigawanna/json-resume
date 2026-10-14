@@ -15,7 +15,7 @@ import {
   importJobsFromResumeGroups,
   listJobImportGroups,
   type JobImportGroup,
-} from "@/data-access-layer/event-sourced/job-rows";
+} from "@/data-access-layer/event-sourced/rows/job-rows";
 import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
 import { unwrapUnknownError } from "@/utils/errors";
 import { useLiveQuery } from "@tanstack/react-db";

@@ -1,5 +1,5 @@
 import type { AppDb } from "@/data-access-layer/event-sourced/collection";
-import { revertOwnEvents } from "@/data-access-layer/event-sourced/event-history";
+import { revertOwnEvents } from "@/data-access-layer/event-sourced/resume/event-history";
 import type { AiChange, LocalToolContext } from "@/features/agentic-tools/definitions/tool-context";
 import {
   undoLastAiChangeToolInputSchema,

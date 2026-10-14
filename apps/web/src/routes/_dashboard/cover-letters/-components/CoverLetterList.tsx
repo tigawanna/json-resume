@@ -6,7 +6,7 @@ import {
   coverLetterWordCount,
   deleteCoverLetter,
   insertCoverLetter,
-} from "@/data-access-layer/event-sourced/cover-letter-rows";
+} from "@/data-access-layer/event-sourced/rows/cover-letter-rows";
 import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
 import { createSortableColumns } from "@/lib/tanstack/db/sortable-columns";
 import { RouterPendingComponent } from "@/lib/tanstack/router/RouterPendingComponent";

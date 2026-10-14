@@ -13,7 +13,7 @@ import type { ResumeSkill, ResumeSkillGroup } from "@/data-access-layer/event-so
 import { RouterPendingComponent } from "@/lib/tanstack/router/RouterPendingComponent";
 import { unwrapUnknownError } from "@/utils/errors";
 import { count, inArray, useLiveQuery } from "@tanstack/react-db";
-import { deleteWithReferences } from "@/data-access-layer/event-sourced/library-resolve";
+import { deleteWithReferences } from "@/data-access-layer/event-sourced/rows/library-resolve";
 import { skillsUsedUnderGroup } from "../-utils/group-skills";
 import { Plus, Wrench } from "lucide-react";
 import { useState } from "react";

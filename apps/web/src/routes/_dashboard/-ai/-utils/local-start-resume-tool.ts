@@ -1,5 +1,5 @@
-import { cloneResume } from "@/data-access-layer/event-sourced/clone-resume";
-import { attachJobToResume, jobListLabel } from "@/data-access-layer/event-sourced/job-rows";
+import { cloneResume } from "@/data-access-layer/event-sourced/resume/clone-resume";
+import { attachJobToResume, jobListLabel } from "@/data-access-layer/event-sourced/rows/job-rows";
 import {
   startResumeForJobToolInputSchema,
   type StartResumeForJobToolInput,

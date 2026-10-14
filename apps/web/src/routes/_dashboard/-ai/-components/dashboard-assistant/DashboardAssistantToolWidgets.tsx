@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
-import { jobListLabel } from "@/data-access-layer/event-sourced/job-rows";
+import { jobListLabel } from "@/data-access-layer/event-sourced/rows/job-rows";
 import { ChatText } from "@/routes/_dashboard/resumes/$resumeId/-components/ResumeAiTab/ResumeAiMarkdown";
 import { ResumeAiThinkingBlock } from "@/routes/_dashboard/resumes/$resumeId/-components/ResumeAiTab/ResumeAiThinkingBlock";
 import {

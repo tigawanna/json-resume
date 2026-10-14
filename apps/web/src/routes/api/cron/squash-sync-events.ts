@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { serverEnv } from "@/lib/server-env";
-import { squashSyncEventsScheduled } from "@/modules/sync/squash.server";
+import { squashSyncEventsScheduled } from "@/modules/sync/server/squash.server";
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {

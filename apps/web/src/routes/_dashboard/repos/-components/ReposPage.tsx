@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-import { deleteWithReferences } from "@/data-access-layer/event-sourced/library-resolve";
+import { deleteWithReferences } from "@/data-access-layer/event-sourced/rows/library-resolve";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
 import { searchGithubRepos, type GithubRepo } from "@/data-access-layer/github/repos.functions";

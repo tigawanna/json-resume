@@ -1,7 +1,7 @@
 import {
   assembleResumeDetail,
   type EventSourcedResumeSnapshots,
-} from "@/data-access-layer/event-sourced/assemble-resume-detail";
+} from "@/data-access-layer/event-sourced/resume/assemble-resume-detail";
 import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
 import { eq, useLiveQuery } from "@tanstack/react-db";
 

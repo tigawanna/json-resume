@@ -1,5 +1,5 @@
 import { useViewer } from "@/data-access-layer/auth/viewer";
-import { jobListLabel } from "@/data-access-layer/event-sourced/job-rows";
+import { jobListLabel } from "@/data-access-layer/event-sourced/rows/job-rows";
 import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
 import type { PromptAreaHandle } from "@/components/prompt-area/types";
 import { fetchServerSentEvents, useChat, type UIMessage } from "@tanstack/ai-react";

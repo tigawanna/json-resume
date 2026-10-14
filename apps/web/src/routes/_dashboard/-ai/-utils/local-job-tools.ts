@@ -4,7 +4,7 @@ import {
   findJobByDescription,
   insertJob,
   updateJob,
-} from "@/data-access-layer/event-sourced/job-rows";
+} from "@/data-access-layer/event-sourced/rows/job-rows";
 import type { Job } from "@/data-access-layer/event-sourced/schemas";
 import type { LocalToolContext } from "@/features/agentic-tools/definitions/tool-context";
 import {

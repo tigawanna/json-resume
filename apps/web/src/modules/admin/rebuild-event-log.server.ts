@@ -27,9 +27,9 @@ import {
   projectUnappliedSyncEvents,
   tablesByCollection,
   type ProjectableCollectionId,
-} from "../sync/project-legacy.server";
-import { LOCAL_ONLY_COLLECTIONS } from "../sync/sync-events.server";
-import { SYNC_RESET_COLLECTION } from "../sync/sync-reset";
+} from "../sync/server/project-legacy.server";
+import { LOCAL_ONLY_COLLECTIONS } from "../sync/server/sync-events.server";
+import { SYNC_RESET_COLLECTION } from "../sync/plan/sync-reset";
 
 const REBUILD_CLIENT_ID = "server-rebuild";
 const INSERT_CHUNK = 50;

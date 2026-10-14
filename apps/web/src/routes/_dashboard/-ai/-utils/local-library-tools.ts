@@ -1,5 +1,8 @@
 import type { AppDb } from "@/data-access-layer/event-sourced/collection";
-import { currentLayout, editLayout } from "@/data-access-layer/event-sourced/resume-layout-rows";
+import {
+  currentLayout,
+  editLayout,
+} from "@/data-access-layer/event-sourced/rows/resume-layout-rows";
 import type { LocalToolContext } from "@/features/agentic-tools/definitions/tool-context";
 import {
   attachLibraryItemsToolInputSchema,

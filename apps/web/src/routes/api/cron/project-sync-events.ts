@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { serverEnv } from "@/lib/server-env";
-import { projectUnappliedSyncEvents } from "@/modules/sync/project-legacy.server";
+import { projectUnappliedSyncEvents } from "@/modules/sync/server/project-legacy.server";
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {

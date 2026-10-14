@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { applicationAnswersText } from "@/data-access-layer/event-sourced/application-answer-rows";
+import { applicationAnswersText } from "@/data-access-layer/event-sourced/rows/application-answer-rows";
 import { CopyTextButton } from "@/features/application-answers/CopyTextButton";
 import type { ToolProps } from "@tanstack/ai-react/ui";
 import { Link } from "@tanstack/react-router";

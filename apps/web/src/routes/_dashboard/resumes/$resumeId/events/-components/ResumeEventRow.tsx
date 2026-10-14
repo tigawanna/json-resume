@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-import type { HistoryEvent } from "@/data-access-layer/event-sourced/event-history";
+import type { HistoryEvent } from "@/data-access-layer/event-sourced/resume/event-history";
 import { formatLocaleDateTime } from "@/utils/date-helpers";
 import { History } from "lucide-react";
 import { useState } from "react";

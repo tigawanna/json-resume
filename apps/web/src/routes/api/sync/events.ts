@@ -5,7 +5,7 @@ import {
   outboundEventBatchSchema,
   pullSyncEvents,
   pushSyncEvents,
-} from "@/modules/sync/sync-events.server";
+} from "@/modules/sync/server/sync-events.server";
 import type { OutboundEvent } from "event-sourced-collection";
 
 function json(body: unknown, status = 200) {

@@ -1,5 +1,5 @@
 import { ADMIN_LIST_PER_PAGE } from "@/components/pagination/constants";
-import { deleteWithReferences } from "@/data-access-layer/event-sourced/library-resolve";
+import { deleteWithReferences } from "@/data-access-layer/event-sourced/rows/library-resolve";
 import { useResumeFilter } from "../../-hooks/use-resume-filter";
 import { Button } from "@/components/ui/button";
 import {

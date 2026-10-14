@@ -1,4 +1,4 @@
-import { jobDescriptionPreview } from "@/data-access-layer/event-sourced/job-rows";
+import { jobDescriptionPreview } from "@/data-access-layer/event-sourced/rows/job-rows";
 import { jobStatusToolSchema, type JobDetail, type JobRow } from "../resume-tool-schemas";
 
 /** The job columns both the local collection and the Drizzle table have. */

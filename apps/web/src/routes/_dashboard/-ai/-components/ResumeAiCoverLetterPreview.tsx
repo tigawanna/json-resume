@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { latestCoverLetterForResume } from "@/data-access-layer/event-sourced/cover-letter-rows";
+import { latestCoverLetterForResume } from "@/data-access-layer/event-sourced/rows/cover-letter-rows";
 import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
 import { CoverLetterActions } from "@/features/cover-letter/CoverLetterActions";
 import { CoverLetterPaper } from "@/features/cover-letter/CoverLetterPaper";

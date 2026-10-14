@@ -1,4 +1,4 @@
-import { jobListLabel } from "@/data-access-layer/event-sourced/job-rows";
+import { jobListLabel } from "@/data-access-layer/event-sourced/rows/job-rows";
 import type { Job, JobStatus } from "@/data-access-layer/event-sourced/schemas";
 import {
   getApplicationStatsToolInputSchema,

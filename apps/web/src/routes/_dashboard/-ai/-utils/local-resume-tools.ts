@@ -1,7 +1,7 @@
-import { assembleResumeDetail } from "@/data-access-layer/event-sourced/assemble-resume-detail";
+import { assembleResumeDetail } from "@/data-access-layer/event-sourced/resume/assemble-resume-detail";
 import type { AppDb } from "@/data-access-layer/event-sourced/collection";
-import { jobListLabel } from "@/data-access-layer/event-sourced/job-rows";
-import { snapshotEventSourcedResume } from "@/data-access-layer/event-sourced/snapshot-resume";
+import { jobListLabel } from "@/data-access-layer/event-sourced/rows/job-rows";
+import { snapshotEventSourcedResume } from "@/data-access-layer/event-sourced/resume/snapshot-resume";
 import type { LocalToolContext } from "@/features/agentic-tools/definitions/tool-context";
 import {
   getResumeToolInputSchema,

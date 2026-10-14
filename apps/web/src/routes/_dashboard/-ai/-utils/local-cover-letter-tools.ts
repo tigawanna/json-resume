@@ -5,7 +5,7 @@ import {
   insertCoverLetter,
   latestCoverLetterForResume,
   updateCoverLetter,
-} from "@/data-access-layer/event-sourced/cover-letter-rows";
+} from "@/data-access-layer/event-sourced/rows/cover-letter-rows";
 import type { CoverLetter } from "@/data-access-layer/event-sourced/schemas";
 import {
   getCoverLetterToolInputSchema,

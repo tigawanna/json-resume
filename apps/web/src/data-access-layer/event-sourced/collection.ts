@@ -1,3 +1,4 @@
+/* Creates the browser event-sourced DB: collections, OPFS SQLite persistence, sync transport and guards. */
 import { BasicIndex, type Collection } from "@tanstack/db";
 import { createBrowserEventSourcedDB } from "event-sourced-collection/browser";
 import type { CollectionDef, EventSourcedDB } from "event-sourced-collection";
@@ -5,11 +6,11 @@ import type {
   BrowserWASQLitePersistenceOptions,
   OpenBrowserWASQLiteOPFSDatabaseOptions,
 } from "@tanstack/browser-db-sqlite-persistence";
-import { withOpfsBusyRetry } from "./opfs-recovery";
-import { installStaleReplayGuard } from "./stale-replay-guard";
-import { createSyncCompaction } from "./sync-compaction";
-import { installSyncPushTuning } from "./sync-push-tuning";
-import { createCookieSyncTransport, proposeCompaction } from "./sync-transport";
+import { withOpfsBusyRetry } from "./recovery/opfs-recovery";
+import { installStaleReplayGuard } from "./sync/stale-replay-guard";
+import { createSyncCompaction } from "./sync/sync-compaction";
+import { installSyncPushTuning } from "./sync/sync-push-tuning";
+import { createCookieSyncTransport, proposeCompaction } from "./sync/sync-transport";
 
 import type {
   AppSettings,

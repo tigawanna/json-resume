@@ -1,12 +1,12 @@
-import { asTemplateId } from "@/data-access-layer/event-sourced/assemble-resume-detail";
-import { cloneResume } from "@/data-access-layer/event-sourced/clone-resume";
+import { asTemplateId } from "@/data-access-layer/event-sourced/resume/assemble-resume-detail";
+import { cloneResume } from "@/data-access-layer/event-sourced/resume/clone-resume";
 import type { AppDb } from "@/data-access-layer/event-sourced/collection";
-import { createEventSourcedResumeWorkspace } from "@/data-access-layer/event-sourced/event-sourced-resume-workspace";
+import { createEventSourcedResumeWorkspace } from "@/data-access-layer/event-sourced/resume/event-sourced-resume-workspace";
 import {
   attachJobDescription,
   attachJobToResume,
   jobListLabel,
-} from "@/data-access-layer/event-sourced/job-rows";
+} from "@/data-access-layer/event-sourced/rows/job-rows";
 import type { LocalToolContext } from "@/features/agentic-tools/definitions/tool-context";
 import {
   cloneResumeToolInputSchema,

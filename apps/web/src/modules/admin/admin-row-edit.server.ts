@@ -9,8 +9,8 @@ import {
   isProjectableCollectionId,
   tablesByCollection,
   type ProjectableCollectionId,
-} from "../sync/project-legacy.server";
-import { LOCAL_ONLY_COLLECTIONS } from "../sync/sync-events.server";
+} from "../sync/server/project-legacy.server";
+import { LOCAL_ONLY_COLLECTIONS } from "../sync/server/sync-events.server";
 import {
   isSecret,
   quoteIdent,

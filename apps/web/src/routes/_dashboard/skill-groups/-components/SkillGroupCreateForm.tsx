@@ -16,7 +16,7 @@ import { unwrapUnknownError } from "@/utils/errors";
 import { formOptions } from "@tanstack/react-form";
 import { useState } from "react";
 import { toast } from "sonner";
-import { resolveSkillGroup } from "@/data-access-layer/event-sourced/library-resolve";
+import { resolveSkillGroup } from "@/data-access-layer/event-sourced/rows/library-resolve";
 
 const createOpts = formOptions({
   defaultValues: { name: "" },

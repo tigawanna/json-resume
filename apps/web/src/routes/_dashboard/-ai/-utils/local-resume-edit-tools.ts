@@ -1,5 +1,8 @@
-import { createEventSourcedResumeWorkspace } from "@/data-access-layer/event-sourced/event-sourced-resume-workspace";
-import { currentLayout, editLayout } from "@/data-access-layer/event-sourced/resume-layout-rows";
+import { createEventSourcedResumeWorkspace } from "@/data-access-layer/event-sourced/resume/event-sourced-resume-workspace";
+import {
+  currentLayout,
+  editLayout,
+} from "@/data-access-layer/event-sourced/rows/resume-layout-rows";
 import type { ResumeDetailDTO } from "@/data-access-layer/resume/resume.types";
 import type { LocalToolContext } from "@/features/agentic-tools/definitions/tool-context";
 import {

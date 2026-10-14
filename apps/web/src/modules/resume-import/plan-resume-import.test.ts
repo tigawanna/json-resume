@@ -1,9 +1,9 @@
 // @vitest-environment node
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { openTestAppDb } from "@/data-access-layer/event-sourced/app-test-db";
-import { assembleResumeDetail } from "@/data-access-layer/event-sourced/assemble-resume-detail";
+import { openTestAppDb } from "@/data-access-layer/event-sourced/testing/app-test-db";
+import { assembleResumeDetail } from "@/data-access-layer/event-sourced/resume/assemble-resume-detail";
 import type { AppDb } from "@/data-access-layer/event-sourced/collection";
-import { snapshotEventSourcedResume } from "@/data-access-layer/event-sourced/snapshot-resume";
+import { snapshotEventSourcedResume } from "@/data-access-layer/event-sourced/resume/snapshot-resume";
 import { resumeDetailToDocument } from "@/data-access-layer/resume/resume-converters";
 import { emptyResumeLayout, type ResumeLayout } from "@/features/resume/resume-layout";
 import { SECTION_KEYS, type ResumeDocumentV1 } from "@/features/resume/resume-schema";

@@ -4,7 +4,7 @@ import { DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { attachJobToResume, searchJobs } from "@/data-access-layer/event-sourced/job-rows";
+import { attachJobToResume, searchJobs } from "@/data-access-layer/event-sourced/rows/job-rows";
 import type { Resume } from "@/data-access-layer/event-sourced/schemas";
 import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
 import { useAppForm } from "@/lib/tanstack/form";

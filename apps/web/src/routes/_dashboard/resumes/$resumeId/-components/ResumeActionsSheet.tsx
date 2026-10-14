@@ -19,14 +19,14 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { useResumeWorkspace } from "@/components/resume/resume-workspace/ResumeWorkspaceContext";
-import { deleteWithReferences } from "@/data-access-layer/event-sourced/library-resolve";
+import { deleteWithReferences } from "@/data-access-layer/event-sourced/rows/library-resolve";
 import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
 import { useViewer } from "@/data-access-layer/auth/viewer";
 import { unwrapUnknownError } from "@/utils/errors";
 import { useNavigate } from "@tanstack/react-router";
 import { FileUp, GitFork, PanelRight, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { cloneResume } from "@/data-access-layer/event-sourced/clone-resume";
+import { cloneResume } from "@/data-access-layer/event-sourced/resume/clone-resume";
 import { PublishResumeButton } from "./PublishResumeButton";
 import { ResumeHistory } from "./ResumeHistory";
 import {

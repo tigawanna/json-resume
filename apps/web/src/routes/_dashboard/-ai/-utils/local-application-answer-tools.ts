@@ -4,9 +4,9 @@ import {
   insertApplicationAnswer,
   nextAnswerSortOrder,
   updateApplicationAnswer,
-} from "@/data-access-layer/event-sourced/application-answer-rows";
+} from "@/data-access-layer/event-sourced/rows/application-answer-rows";
 import type { AppDb } from "@/data-access-layer/event-sourced/collection";
-import { jobListLabel } from "@/data-access-layer/event-sourced/job-rows";
+import { jobListLabel } from "@/data-access-layer/event-sourced/rows/job-rows";
 import type { ApplicationAnswer } from "@/data-access-layer/event-sourced/schemas";
 import {
   saveApplicationAnswersToolInputSchema,

@@ -18,8 +18,8 @@ import {
   coverLetterWordCount,
   deleteCoverLetter,
   updateCoverLetter,
-} from "@/data-access-layer/event-sourced/cover-letter-rows";
-import { jobListLabel } from "@/data-access-layer/event-sourced/job-rows";
+} from "@/data-access-layer/event-sourced/rows/cover-letter-rows";
+import { jobListLabel } from "@/data-access-layer/event-sourced/rows/job-rows";
 import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
 import type { CoverLetter } from "@/data-access-layer/event-sourced/schemas";
 import { CoverLetterActions } from "@/features/cover-letter/CoverLetterActions";

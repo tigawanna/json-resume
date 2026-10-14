@@ -9,7 +9,7 @@ import {
   buildLocalBackup,
   parseLocalBackupJson,
   restoreLocalBackup,
-} from "@/data-access-layer/event-sourced/local-backup";
+} from "@/data-access-layer/event-sourced/recovery/local-backup";
 import { unwrapUnknownError } from "@/utils/errors";
 import { Download, Upload } from "lucide-react";
 import { useRef, useState } from "react";

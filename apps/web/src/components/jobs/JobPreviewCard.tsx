@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { JOB_STATUS_LABELS, jobListLabel } from "@/data-access-layer/event-sourced/job-rows";
+import { JOB_STATUS_LABELS, jobListLabel } from "@/data-access-layer/event-sourced/rows/job-rows";
 import type { JobStatus } from "@/data-access-layer/event-sourced/schemas";
 import { cn } from "@/lib/utils";
 import { Briefcase, ExternalLink, MapPin } from "lucide-react";

@@ -17,7 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { insertJob, JOB_STATUS_OPTIONS } from "@/data-access-layer/event-sourced/job-rows";
+import { insertJob, JOB_STATUS_OPTIONS } from "@/data-access-layer/event-sourced/rows/job-rows";
 import type { JobStatus } from "@/data-access-layer/event-sourced/schemas";
 import { useViewer } from "@/data-access-layer/auth/viewer";
 import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";

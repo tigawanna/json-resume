@@ -3,7 +3,7 @@ import "@tanstack/react-start/server-only";
 import { getResumeDetail } from "@/data-access-layer/resume/resume.server";
 import { db } from "@/lib/drizzle/client";
 import { job, resume } from "@/lib/drizzle/scheam";
-import { jobListLabel } from "@/data-access-layer/event-sourced/job-rows";
+import { jobListLabel } from "@/data-access-layer/event-sourced/rows/job-rows";
 import { and, count, desc, eq, like, or, sql } from "drizzle-orm";
 import { resumeView } from "./shared/resume-view";
 import { nextOffset, searchTerms } from "./shared/search-page";
