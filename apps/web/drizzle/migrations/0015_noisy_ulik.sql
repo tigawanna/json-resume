@@ -1,0 +1,1 @@
+ALTER TABLE `job` ADD `pay_rate` text DEFAULT '' NOT NULL;

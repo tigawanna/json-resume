@@ -37,6 +37,7 @@ import {
   totalPagesFromCount,
 } from "../../-utils/list-query";
 import { usePersistedListTablePrefs } from "../../-utils/use-persisted-list-table-prefs";
+import { formatHourlyUsd } from "@/data-access-layer/event-sourced/rows/pay-quote";
 import { JobCreateForm, JobCreateFormDialog } from "./JobCreateForm";
 import { JobEditForm } from "./JobEditForm";
 import { JobImportFromResumesDialog } from "./JobImportFromResumesDialog";
@@ -65,6 +66,7 @@ export function JobList() {
         { value: "company", label: "Company" },
         { value: "title", label: "Title" },
         { value: "status", label: "Status" },
+        { value: "hourlyMinCents", label: "Hourly pay" },
         { value: "location", label: "Location" },
         { value: "updatedAt", label: "Updated" },
       ])}
@@ -82,6 +84,7 @@ export function JobList() {
               row.company,
               row.title,
               row.location,
+              row.payRate,
               row.status,
               row.description,
               row.searchableText,
@@ -106,6 +109,7 @@ export function JobList() {
               row.company,
               row.title,
               row.location,
+              row.payRate,
               row.status,
               row.description,
               row.searchableText,
@@ -232,6 +236,17 @@ export function JobList() {
               <Badge variant={row.status === "applied" ? "default" : "secondary"}>
                 {JOB_STATUS_LABELS[row.status]}
               </Badge>
+            ),
+          },
+          {
+            id: "payRate",
+            header: "Pay",
+            hideOnMobile: true,
+            className: "max-w-0",
+            cell: (row) => (
+              <TruncatedWithTooltip
+                text={formatHourlyUsd(row.hourlyMinCents, row.hourlyMaxCents) || row.payRate}
+              />
             ),
           },
           {

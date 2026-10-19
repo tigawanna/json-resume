@@ -39,6 +39,7 @@ export async function listJobsTool(
         like(job.company, pattern),
         like(job.title, pattern),
         like(job.location, pattern),
+        like(job.payRate, pattern),
         like(job.url, pattern),
         like(job.notes, pattern),
         like(job.description, pattern),

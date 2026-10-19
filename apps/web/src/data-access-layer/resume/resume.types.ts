@@ -167,6 +167,7 @@ export interface ResumeJobDTO {
   description: string;
   url: string;
   location: string;
+  payRate: string;
   status: JobStatus;
 }
 

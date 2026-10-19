@@ -7,6 +7,10 @@ export interface JobViewSource {
   company: string;
   title: string;
   location: string;
+  payRate: string;
+  hourlyMinCents: number | null;
+  hourlyMaxCents: number | null;
+  payBasis: string | null;
   status: string;
   url: string;
   notes: string;
@@ -37,6 +41,10 @@ function jobFields(job: JobViewSource, linkedResumeIds: string[]) {
     company: job.company,
     title: job.title,
     location: job.location,
+    payRate: job.payRate,
+    hourlyMinCents: job.hourlyMinCents,
+    hourlyMaxCents: job.hourlyMaxCents,
+    payBasis: job.payBasis,
     status: jobStatus(job.status),
     url: job.url,
     notes: job.notes,

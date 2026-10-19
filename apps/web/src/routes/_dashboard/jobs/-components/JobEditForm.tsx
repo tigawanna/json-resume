@@ -11,6 +11,11 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { JOB_STATUS_OPTIONS, updateJob } from "@/data-access-layer/event-sourced/rows/job-rows";
+import {
+  centsToDollarInput,
+  dollarsToCents,
+  quotePayRate,
+} from "@/data-access-layer/event-sourced/rows/pay-quote";
 import type { Job, JobStatus } from "@/data-access-layer/event-sourced/schemas";
 import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
 import { useAppForm } from "@/lib/tanstack/form";
@@ -25,6 +30,9 @@ const editOpts = formOptions({
     title: "",
     description: "",
     location: "",
+    payRate: "",
+    hourlyMinUsd: "",
+    hourlyMaxUsd: "",
     url: "",
     status: "saved" as JobStatus,
     notes: "",
@@ -47,6 +55,9 @@ export function JobEditForm({ item, onSuccess }: JobEditFormProps) {
       title: item.title,
       description: item.description,
       location: item.location,
+      payRate: item.payRate,
+      hourlyMinUsd: centsToDollarInput(item.hourlyMinCents),
+      hourlyMaxUsd: centsToDollarInput(item.hourlyMaxCents),
       url: item.url,
       status: item.status,
       notes: item.notes,
@@ -59,6 +70,9 @@ export function JobEditForm({ item, onSuccess }: JobEditFormProps) {
           title: value.title,
           description: value.description,
           location: value.location,
+          payRate: value.payRate,
+          hourlyMinCents: dollarsToCents(value.hourlyMinUsd),
+          hourlyMaxCents: dollarsToCents(value.hourlyMaxUsd),
           url: value.url,
           status: value.status,
           notes: value.notes,
@@ -141,6 +155,60 @@ export function JobEditForm({ item, onSuccess }: JobEditFormProps) {
             </div>
           )}
         </form.AppField>
+        <form.AppField name="payRate">
+          {(field) => (
+            <div>
+              <Label className="text-xs">Pay rate</Label>
+              <Input
+                value={field.state.value}
+                onChange={(e) => {
+                  const next = e.target.value;
+                  field.handleChange(next);
+                  const quote = quotePayRate(`${next}\n${form.getFieldValue("description")}`);
+                  form.setFieldValue("hourlyMinUsd", centsToDollarInput(quote.hourlyMinCents));
+                  form.setFieldValue("hourlyMaxUsd", centsToDollarInput(quote.hourlyMaxCents));
+                }}
+                className="mt-1"
+                data-test="job-pay-rate"
+              />
+            </div>
+          )}
+        </form.AppField>
+        <form.AppField name="hourlyMinUsd">
+          {(field) => (
+            <div>
+              <Label className="text-xs">Hourly min (USD)</Label>
+              <Input
+                value={field.state.value}
+                onChange={(e) => field.handleChange(e.target.value)}
+                className="mt-1"
+                inputMode="decimal"
+                data-test="job-hourly-min"
+              />
+            </div>
+          )}
+        </form.AppField>
+        <form.AppField name="hourlyMaxUsd">
+          {(field) => (
+            <div>
+              <Label className="text-xs">Hourly max (USD)</Label>
+              <Input
+                value={field.state.value}
+                onChange={(e) => field.handleChange(e.target.value)}
+                className="mt-1"
+                inputMode="decimal"
+                data-test="job-hourly-max"
+              />
+            </div>
+          )}
+        </form.AppField>
+        <form.Subscribe selector={(state) => state.values.payRate}>
+          {(payRate) => (
+            <p className="text-muted-foreground sm:col-span-2 text-xs">
+              {item.payBasis || (payRate.trim() ? quotePayRate(payRate).basis : "")}
+            </p>
+          )}
+        </form.Subscribe>
         <form.AppField name="url">
           {(field) => (
             <div>

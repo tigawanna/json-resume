@@ -4,6 +4,7 @@ import type { AppDb } from "../collection";
 import type { Job, JobStatus, Resume } from "../schemas";
 import { jobStatusSchema } from "../schemas";
 import { joinSearchable, libraryRowBase, nowMs } from "@/routes/_dashboard/-utils/row-helpers";
+import { quotePayRate } from "./pay-quote";
 
 export const JOB_STATUS_LABELS: Record<JobStatus, string> = {
   saved: "Saved",
@@ -26,6 +27,10 @@ export type JobDraft = {
   title?: string;
   url?: string;
   location?: string;
+  payRate?: string;
+  /** Set only when the user overrides the quote. Omitted values are derived from `payRate`. */
+  hourlyMinCents?: number | null;
+  hourlyMaxCents?: number | null;
   status?: JobStatus;
   notes?: string;
   appliedAt?: number | null;
@@ -36,6 +41,7 @@ function jobSearchableText(draft: {
   title: string;
   description: string;
   location: string;
+  payRate: string;
   url: string;
   notes: string;
 }) {
@@ -43,18 +49,80 @@ function jobSearchableText(draft: {
     draft.company,
     draft.title,
     draft.location,
+    draft.payRate,
     draft.url,
     draft.notes,
     draft.description,
   );
 }
 
-function normalizeDraft(draft: JobDraft) {
+function payFields(
+  draft: Pick<JobDraft, "payRate" | "hourlyMinCents" | "hourlyMaxCents">,
+  description: string,
+  existing: {
+    payRate: string;
+    hourlyMinCents: number | null;
+    hourlyMaxCents: number | null;
+    payBasis: string | null;
+  },
+) {
+  const payRate =
+    draft.payRate !== undefined
+      ? draft.payRate.trim()
+      : existing.payRate || quotePayRate(description).source;
+  const quote = quotePayRate(payRate ? `${payRate}\n${description}` : description);
+  const overridden = draft.hourlyMinCents !== undefined || draft.hourlyMaxCents !== undefined;
+  if (
+    overridden &&
+    (draft.hourlyMinCents ?? null) === quote.hourlyMinCents &&
+    (draft.hourlyMaxCents ?? null) === quote.hourlyMaxCents
+  ) {
+    return {
+      payRate: payRate || quote.source,
+      hourlyMinCents: quote.hourlyMinCents,
+      hourlyMaxCents: quote.hourlyMaxCents,
+      payBasis: quote.basis || null,
+    };
+  }
+  if (overridden) {
+    return {
+      payRate,
+      hourlyMinCents: draft.hourlyMinCents ?? null,
+      hourlyMaxCents: draft.hourlyMaxCents ?? null,
+      payBasis: payRate ? `Hourly USD adjusted manually. Source text: "${payRate}".` : null,
+    };
+  }
+  if (draft.payRate === undefined && existing.payRate) {
+    return {
+      payRate: existing.payRate,
+      hourlyMinCents: existing.hourlyMinCents,
+      hourlyMaxCents: existing.hourlyMaxCents,
+      payBasis: existing.payBasis,
+    };
+  }
+  return {
+    payRate: payRate || quote.source,
+    hourlyMinCents: quote.hourlyMinCents,
+    hourlyMaxCents: quote.hourlyMaxCents,
+    payBasis: quote.basis || null,
+  };
+}
+
+function normalizeDraft(
+  draft: JobDraft,
+  existing: {
+    payRate: string;
+    hourlyMinCents: number | null;
+    hourlyMaxCents: number | null;
+    payBasis: string | null;
+  } = { payRate: "", hourlyMinCents: null, hourlyMaxCents: null, payBasis: null },
+) {
   const company = draft.company?.trim() ?? "";
   const description = draft.description.trim();
   const title = draft.title?.trim() ?? "";
   const url = draft.url?.trim() ?? "";
   const location = draft.location?.trim() ?? "";
+  const pay = payFields(draft, description, existing);
   const notes = draft.notes?.trim() ?? "";
   const status = draft.status ?? "saved";
   const appliedAt =
@@ -63,7 +131,7 @@ function normalizeDraft(draft: JobDraft) {
         ? nowMs()
         : null
       : draft.appliedAt;
-  return { company, description, title, url, location, notes, status, appliedAt };
+  return { company, description, title, url, location, ...pay, notes, status, appliedAt };
 }
 
 export function insertJob(db: AppDb, userId: string | null | undefined, draft: JobDraft): Job {
@@ -80,6 +148,10 @@ export function insertJob(db: AppDb, userId: string | null | undefined, draft: J
     description: value.description,
     url: value.url,
     location: value.location,
+    payRate: value.payRate,
+    hourlyMinCents: value.hourlyMinCents,
+    hourlyMaxCents: value.hourlyMaxCents,
+    payBasis: value.payBasis,
     status: value.status,
     notes: value.notes,
     appliedAt: value.appliedAt,
@@ -99,16 +171,22 @@ export function updateJob(db: AppDb, jobId: string, draft: Partial<JobDraft>): J
   if (!existing) {
     throw new Error(`Job ${jobId} was not found.`);
   }
-  const value = normalizeDraft({
-    company: draft.company ?? existing.company,
-    description: draft.description ?? existing.description,
-    title: draft.title ?? existing.title,
-    url: draft.url ?? existing.url,
-    location: draft.location ?? existing.location,
-    status: draft.status ?? existing.status,
-    notes: draft.notes ?? existing.notes,
-    appliedAt: draft.appliedAt === undefined ? existing.appliedAt : draft.appliedAt,
-  });
+  const value = normalizeDraft(
+    {
+      company: draft.company ?? existing.company,
+      description: draft.description ?? existing.description,
+      title: draft.title ?? existing.title,
+      url: draft.url ?? existing.url,
+      location: draft.location ?? existing.location,
+      payRate: draft.payRate,
+      hourlyMinCents: draft.hourlyMinCents,
+      hourlyMaxCents: draft.hourlyMaxCents,
+      status: draft.status ?? existing.status,
+      notes: draft.notes ?? existing.notes,
+      appliedAt: draft.appliedAt === undefined ? existing.appliedAt : draft.appliedAt,
+    },
+    existing,
+  );
   if (!value.description) {
     throw new Error("Job description is required.");
   }
@@ -118,6 +196,10 @@ export function updateJob(db: AppDb, jobId: string, draft: Partial<JobDraft>): J
     row.description = value.description;
     row.url = value.url;
     row.location = value.location;
+    row.payRate = value.payRate;
+    row.hourlyMinCents = value.hourlyMinCents;
+    row.hourlyMaxCents = value.hourlyMaxCents;
+    row.payBasis = value.payBasis;
     row.status = value.status;
     row.notes = value.notes;
     row.appliedAt = value.appliedAt;

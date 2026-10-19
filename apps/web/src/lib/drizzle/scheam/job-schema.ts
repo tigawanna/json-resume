@@ -16,6 +16,13 @@ export const job = sqliteTable(
     description: text("description").notNull(),
     url: text("url").default("").notNull(),
     location: text("location").default("").notNull(),
+    /** Stated rate from the posting, e.g. "50-100 USD / Month". "" when the page has none. */
+    payRate: text("pay_rate").default("").notNull(),
+    /** USD cents per hour. Null when the page states no convertible rate. */
+    hourlyMinCents: integer("hourly_min_cents"),
+    hourlyMaxCents: integer("hourly_max_cents"),
+    /** How the hourly figures were derived. Null when the page states no rate. */
+    payBasis: text("pay_basis"),
     status: text("status").default("saved").notNull(),
     notes: text("notes").default("").notNull(),
     appliedAt: integer("applied_at", { mode: "timestamp_ms" }),

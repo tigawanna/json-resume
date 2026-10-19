@@ -75,6 +75,7 @@ export function resumeView(
           title: job.title,
           status: job.status,
           location: job.location,
+          payRate: job.payRate,
           url: job.url,
           ...(include("job") ? { description: job.description } : {}),
         }

@@ -18,6 +18,11 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { insertJob, JOB_STATUS_OPTIONS } from "@/data-access-layer/event-sourced/rows/job-rows";
+import {
+  centsToDollarInput,
+  dollarsToCents,
+  quotePayRate,
+} from "@/data-access-layer/event-sourced/rows/pay-quote";
 import type { JobStatus } from "@/data-access-layer/event-sourced/schemas";
 import { useViewer } from "@/data-access-layer/auth/viewer";
 import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
@@ -33,6 +38,9 @@ const createOpts = formOptions({
     title: "",
     description: "",
     location: "",
+    payRate: "",
+    hourlyMinUsd: "",
+    hourlyMaxUsd: "",
     url: "",
     status: "saved" as JobStatus,
     notes: "",
@@ -58,6 +66,9 @@ export function JobCreateForm({ onSuccess }: JobCreateFormProps) {
           title: value.title,
           description: value.description,
           location: value.location,
+          payRate: value.payRate,
+          hourlyMinCents: dollarsToCents(value.hourlyMinUsd),
+          hourlyMaxCents: dollarsToCents(value.hourlyMaxUsd),
           url: value.url,
           status: value.status,
           notes: value.notes,
@@ -124,6 +135,15 @@ export function JobCreateForm({ onSuccess }: JobCreateFormProps) {
             <Textarea
               value={field.state.value}
               onChange={(e) => field.handleChange(e.target.value)}
+              onBlur={() => {
+                field.handleBlur();
+                if (form.getFieldValue("payRate").trim()) return;
+                const quote = quotePayRate(field.state.value);
+                if (!quote.source) return;
+                form.setFieldValue("payRate", quote.source);
+                form.setFieldValue("hourlyMinUsd", centsToDollarInput(quote.hourlyMinCents));
+                form.setFieldValue("hourlyMaxUsd", centsToDollarInput(quote.hourlyMaxCents));
+              }}
               className="mt-1 min-h-32"
               placeholder="Paste the posting. Only this field is required."
               data-test="job-description"
@@ -144,6 +164,63 @@ export function JobCreateForm({ onSuccess }: JobCreateFormProps) {
             </div>
           )}
         </form.AppField>
+        <form.AppField name="payRate">
+          {(field) => (
+            <div>
+              <Label className="text-xs">Pay rate</Label>
+              <Input
+                value={field.state.value}
+                onChange={(e) => {
+                  const next = e.target.value;
+                  field.handleChange(next);
+                  const quote = quotePayRate(next);
+                  form.setFieldValue("hourlyMinUsd", centsToDollarInput(quote.hourlyMinCents));
+                  form.setFieldValue("hourlyMaxUsd", centsToDollarInput(quote.hourlyMaxCents));
+                }}
+                className="mt-1"
+                placeholder="Exact text from the posting"
+                data-test="job-pay-rate"
+              />
+            </div>
+          )}
+        </form.AppField>
+        <form.AppField name="hourlyMinUsd">
+          {(field) => (
+            <div>
+              <Label className="text-xs">Hourly min (USD)</Label>
+              <Input
+                value={field.state.value}
+                onChange={(e) => field.handleChange(e.target.value)}
+                className="mt-1"
+                inputMode="decimal"
+                data-test="job-hourly-min"
+              />
+            </div>
+          )}
+        </form.AppField>
+        <form.AppField name="hourlyMaxUsd">
+          {(field) => (
+            <div>
+              <Label className="text-xs">Hourly max (USD)</Label>
+              <Input
+                value={field.state.value}
+                onChange={(e) => field.handleChange(e.target.value)}
+                className="mt-1"
+                inputMode="decimal"
+                data-test="job-hourly-max"
+              />
+            </div>
+          )}
+        </form.AppField>
+        <form.Subscribe selector={(state) => state.values.payRate}>
+          {(payRate) =>
+            payRate.trim() ? (
+              <p className="text-muted-foreground sm:col-span-2 text-xs">
+                {quotePayRate(payRate).basis}
+              </p>
+            ) : null
+          }
+        </form.Subscribe>
         <form.AppField name="url">
           {(field) => (
             <div>

@@ -98,6 +98,7 @@ export function assembleResumeDetail(
           description: job.description,
           url: job.url,
           location: job.location,
+          payRate: job.payRate,
           status: job.status,
         }
       : null,

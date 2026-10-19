@@ -9,7 +9,7 @@ describe("get_playbook", () => {
     const playbook = getPlaybook({ name: "pasted_job" });
 
     expect(playbook.name).toBe("pasted_job");
-    expect(playbook.steps[0]).toMatch(/^save_job/);
+    expect(playbook.steps[0]).toMatch(/^quote_pay_rate/);
   });
 
   it("only names tools the assistant has, or other playbooks", () => {

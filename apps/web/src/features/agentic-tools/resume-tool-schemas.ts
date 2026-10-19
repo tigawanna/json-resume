@@ -149,6 +149,7 @@ export const resumeViewSchema = z.object({
       title: z.string(),
       status: jobStatusToolSchema,
       location: z.string(),
+      payRate: z.string(),
       url: z.string(),
       description: z.string().optional(),
     })
@@ -362,6 +363,14 @@ const jobFieldsShape = {
   title: z.string().trim().max(200).optional(),
   url: z.string().trim().max(2_000).optional(),
   location: z.string().trim().max(200).optional(),
+  payRate: z
+    .string()
+    .trim()
+    .max(200)
+    .optional()
+    .describe(
+      "Exact pay text from quote_pay_rate source, copied unchanged. Omit when that source is empty. Do not pass an hourly figure you calculated.",
+    ),
   status: jobStatusToolSchema.optional(),
   notes: z.string().trim().max(4_000).optional(),
 };
@@ -373,6 +382,10 @@ export const jobRowSchema = z.object({
   company: z.string(),
   title: z.string(),
   location: z.string(),
+  payRate: z.string(),
+  hourlyMinCents: z.number().nullable(),
+  hourlyMaxCents: z.number().nullable(),
+  payBasis: z.string().nullable(),
   status: jobStatusToolSchema,
   url: z.string(),
   notes: z.string(),
@@ -384,6 +397,28 @@ export const jobRowSchema = z.object({
 export const jobDetailSchema = jobRowSchema
   .omit({ descriptionPreview: true })
   .extend({ description: z.string() });
+
+export const quotePayRateToolInputSchema = z.object({
+  text: z
+    .string()
+    .trim()
+    .min(1)
+    .max(40_000)
+    .describe("The posting, or the pay line copied from it."),
+});
+
+export const quotePayRateToolOutputSchema = z.object({
+  source: z
+    .string()
+    .describe(
+      "Exact pay text used. Empty when none was found. Pass this unchanged as save_job payRate.",
+    ),
+  basis: z
+    .string()
+    .describe("Hours and exchange rate used. Show this if the user asks how the rate was read."),
+  hourlyMinCents: z.number().int().nullable(),
+  hourlyMaxCents: z.number().int().nullable(),
+});
 
 export const saveJobToolInputSchema = z.object({
   description: jobDescriptionSchema.describe("The full posting text."),

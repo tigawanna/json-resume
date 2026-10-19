@@ -21,7 +21,7 @@ const PLAYBOOKS: Record<PlaybookName, Playbook> = {
   pasted_job: {
     when: "The user's message contains a job posting.",
     steps: [
-      "save_job with the full posting text, extracting company, title, location and url. Do not pass attachToResumeId yet.",
+      "quote_pay_rate on the posting, then save_job with the full posting text, extracting company, title, location and url, and payRate set to the quote source unchanged. Do not calculate hourly pay. Do not pass attachToResumeId yet.",
       "If the active résumé has no job, or already targets this one: attach_job, then follow edit_resume on the active résumé.",
       "Otherwise, or when the user asks for a separate version: tailor_resume_for_job({ jobId }) (it picks the best base when baseResumeId is omitted), then follow edit_resume on the copy, which is now active.",
       "Use rank_library_for_job to pull in matching library items before writing new content.",

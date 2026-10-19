@@ -16,6 +16,7 @@ import {
   attachJobToolDefinition,
   getJobToolDefinition,
   listJobsToolDefinition,
+  quotePayRateToolDefinition,
   saveJobToolDefinition,
   updateJobToolDefinition,
 } from "@/features/agentic-tools/definitions/job-definitions";
@@ -51,6 +52,8 @@ import {
   upsertTalkToolDefinition,
 } from "@/features/agentic-tools/definitions/resume-edit-definitions";
 import type { LocalToolContext } from "@/features/agentic-tools/definitions/tool-context";
+import { quotePayRateToolInputSchema } from "@/features/agentic-tools/resume-tool-schemas";
+import { quotePayRate } from "@/data-access-layer/event-sourced/rows/pay-quote";
 import {
   removeLocalFromResume,
   reorderLocalSection,
@@ -211,6 +214,10 @@ export const openResumeClientTool = openResumeToolDefinition.client((input, ctx:
   openLocalResume(ctx.context, input),
 );
 
+export const quotePayRateClientTool = quotePayRateToolDefinition.client((input) =>
+  quotePayRate(quotePayRateToolInputSchema.parse(input).text),
+);
+
 export const listJobsClientTool = listJobsToolDefinition.client((input, ctx: ClientToolCtx) =>
   listLocalJobs(ctx.context, input),
 );
@@ -289,6 +296,7 @@ export const eventSourcedResumeAiClientTools = [
   rankResumesForJobClientTool,
   tailorResumeForJobClientTool,
   openResumeClientTool,
+  quotePayRateClientTool,
   listJobsClientTool,
   getJobClientTool,
   saveJobClientTool,

@@ -93,6 +93,7 @@ export async function saveLocalJob(
     title: data.title,
     url: data.url,
     location: data.location,
+    payRate: data.payRate,
     status: data.status,
     notes: data.notes,
   };
@@ -145,7 +146,16 @@ function matchingJobs(
   if (status) query = query.where(({ job }) => eq(job.status, status));
   for (const term of terms) {
     query = query.where(({ job }) =>
-      orIlike(term, job.company, job.title, job.location, job.url, job.notes, job.description),
+      orIlike(
+        term,
+        job.company,
+        job.title,
+        job.location,
+        job.payRate,
+        job.url,
+        job.notes,
+        job.description,
+      ),
     );
   }
   return query;

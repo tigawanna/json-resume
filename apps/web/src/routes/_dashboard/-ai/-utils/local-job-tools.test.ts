@@ -63,6 +63,19 @@ describe("save_job", () => {
     expect(fixture.db().collections.job.size).toBe(2);
   });
 
+  it("stores a pay rate written on the page", async () => {
+    const saved = await saveLocalJob(context("cv"), {
+      description: "Contractor\nRemote\n50-100 USD / Month\n~15 hours/week",
+      company: "YO AI Labs",
+      title: "Sr. Full-Stack Software Engineer - Remote",
+    });
+
+    expect(saved.job.payRate).toBe("50-100 USD / Month");
+    expect(saved.job.hourlyMinCents).toBe(77);
+    expect(saved.job.hourlyMaxCents).toBe(154);
+    expect(saved.job.payBasis).toContain("50-100 USD / Month");
+  });
+
   it("rejects an unknown résumé before writing anything", async () => {
     seed();
 

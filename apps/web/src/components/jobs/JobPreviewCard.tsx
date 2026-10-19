@@ -13,6 +13,7 @@ export interface JobSummary {
   description: string;
   url: string;
   location: string;
+  payRate?: string;
   status: JobStatus;
 }
 
@@ -38,11 +39,12 @@ export function JobPreviewCard({ job, actions, expanded = false, className }: Jo
       <div className="flex items-start gap-3">
         <Briefcase className="text-muted-foreground mt-0.5 size-4 shrink-0" />
         <div className="min-w-0 flex-1">
-          <p className="text-sm leading-tight font-medium break-words">{heading}</p>
+          <p className="text-sm leading-tight font-medium wrap-break-word">{heading}</p>
           <div className="text-muted-foreground mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
             <Badge variant="outline" className="text-[10px]">
               {JOB_STATUS_LABELS[job.status]}
             </Badge>
+            {job.payRate ? <span>{job.payRate}</span> : null}
             {job.location ? (
               <span className="flex items-center gap-1">
                 <MapPin className="size-3" /> {job.location}

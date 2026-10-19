@@ -226,6 +226,7 @@ export function createEventSourcedResumeWorkspace(
           description: job.description,
           url: job.url,
           location: job.location,
+          payRate: job.payRate,
           status: job.status,
           updatedAt: job.updatedAt,
         })),

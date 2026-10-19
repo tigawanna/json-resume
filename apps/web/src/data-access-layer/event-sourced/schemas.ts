@@ -330,6 +330,11 @@ export const jobSchema = z.object({
   description: z.string(),
   url: z.string(),
   location: z.string(),
+  /** "" when the posting does not state a rate. */
+  payRate: z.string().default(""),
+  hourlyMinCents: z.number().nullable().default(null),
+  hourlyMaxCents: z.number().nullable().default(null),
+  payBasis: z.string().nullable().default(null),
   status: jobStatusSchema,
   notes: z.string(),
   appliedAt: z.number().nullable().optional(),

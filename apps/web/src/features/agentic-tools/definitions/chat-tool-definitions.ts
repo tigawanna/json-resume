@@ -16,6 +16,7 @@ import {
   attachJobToolDefinition,
   getJobToolDefinition,
   listJobsToolDefinition,
+  quotePayRateToolDefinition,
   saveJobToolDefinition,
   updateJobToolDefinition,
 } from "./job-definitions";
@@ -82,6 +83,7 @@ export const chatToolDefinitions = [
   rankResumesForJobToolDefinition,
   tailorResumeForJobToolDefinition,
   openResumeToolDefinition,
+  quotePayRateToolDefinition,
   listJobsToolDefinition,
   getJobToolDefinition,
   saveJobToolDefinition,

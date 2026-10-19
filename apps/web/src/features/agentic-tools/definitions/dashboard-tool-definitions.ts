@@ -11,6 +11,7 @@ import {
 import {
   getJobToolDefinition,
   listJobsToolDefinition,
+  quotePayRateToolDefinition,
   saveJobToolDefinition,
 } from "./job-definitions";
 import { searchLibraryToolDefinition } from "./library-definitions";
@@ -29,6 +30,7 @@ export const dashboardChatToolDefinitions = [
   listResumesToolDefinition,
   getResumeToolDefinition,
   rankResumesForJobToolDefinition,
+  quotePayRateToolDefinition,
   saveJobToolDefinition,
   listJobsToolDefinition,
   getJobToolDefinition,
