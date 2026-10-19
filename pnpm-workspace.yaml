@@ -10,6 +10,7 @@ catalog:
   vitest: 5.0.1
 
 onlyBuiltDependencies:
+  - better-sqlite3
   - core-js
   - es5-ext
   - esbuild
@@ -22,9 +23,19 @@ onlyBuiltDependencies:
 minimumReleaseAgeExclude:
   - event-sourced-collection
 
+dedupePeerDependents: true
+
 overrides:
   vite: "catalog:"
   vitest: "catalog:"
+
+# better-auth's optional peers stop at vitest 4 and better-sqlite3 12.
+# Widen them so the catalog vitest and the app's sqlite 13 satisfy the same copy.
+packageExtensions:
+  better-auth:
+    peerDependencies:
+      better-sqlite3: "^12.0.0 || ^13.0.0"
+      vitest: "^2.0.0 || ^3.0.0 || ^4.0.0 || ^5.0.0"
 
 peerDependencyRules:
   allowAny:
@@ -33,3 +44,9 @@ peerDependencyRules:
   allowedVersions:
     vite: "*"
     vitest: "*"
+    # Published ranges lag the versions this repo actually runs.
+    better-sqlite3: "13"
+    typescript: "6"
+    ofetch: ">=2.0.0-0"
+    "@vitest/ui": "5"
+    "@tanstack/ai": "0.67"
