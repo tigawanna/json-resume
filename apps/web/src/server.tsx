@@ -1,3 +1,6 @@
+import "./instrument.server";
+
+import { wrapFetchWithSentry } from "@sentry/tanstackstart-react";
 import handler, { createServerEntry } from "@tanstack/react-start/server-entry";
 
 type MyRequestContext = {
@@ -12,8 +15,10 @@ declare module "@tanstack/react-start" {
   }
 }
 
-export default createServerEntry({
-  async fetch(request) {
-    return handler.fetch(request, { context: { isServer: true } });
-  },
-});
+export default createServerEntry(
+  wrapFetchWithSentry({
+    async fetch(request) {
+      return handler.fetch(request, { context: { isServer: true } });
+    },
+  }),
+);

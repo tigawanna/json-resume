@@ -37,6 +37,7 @@
     "@pierre/diffs": "^1.1.15",
     "@react-pdf/renderer": "^4.4.1",
     "@repo/isomorphic": "workspace:*",
+    "@sentry/tanstackstart-react": "^11.8.0",
     "@tailwindcss/vite": "^4.3.0",
     "@tanem/react-nprogress": "^5.0.56",
     "@tanstack/ai": "^0.67.0",

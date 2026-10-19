@@ -5,14 +5,20 @@ import type { AiSettings } from "@/types/ai-settings";
 export function aiModelLabels(settings: AiSettings | null | undefined) {
   const model = settings?.model;
   const routing = settings?.routing;
-  const routingLabel =
-    !routing || isLocalMode
-      ? null
-      : routing.mode === "auto"
-        ? routing.sort
-          ? `Auto · ${routing.sort}`
-          : "Auto routing"
-        : `${routing.mode === "official" ? "Official" : "Pinned"}: ${routing.providers.join(", ")}`;
+  let routingLabel: string | null = null;
+  if (routing && !isLocalMode) {
+    if (routing.mode === "auto") {
+      if (routing.sort) {
+        routingLabel = `Auto · ${routing.sort}`;
+      } else {
+        routingLabel = "Auto routing";
+      }
+    } else if (routing.mode === "official") {
+      routingLabel = `Official: ${routing.providers.join(", ")}`;
+    } else {
+      routingLabel = `Pinned: ${routing.providers.join(", ")}`;
+    }
+  }
 
   return {
     modelLabel: model ? (model.split("/").pop() ?? model) : null,
