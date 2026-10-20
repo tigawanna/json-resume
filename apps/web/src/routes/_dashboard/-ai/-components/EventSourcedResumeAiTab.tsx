@@ -4,7 +4,7 @@ import { useMediaQuery } from "@/hooks/use-media-query";
 import { cn } from "@/lib/utils";
 import { ResumeAiConversationCard } from "@/routes/_dashboard/resumes/$resumeId/-components/ResumeAiTab/ResumeAiConversationCard";
 import { useResumeWorkbenchActions } from "@/routes/_dashboard/resumes/$resumeId/-components/resume-workbench/ResumeWorkbenchProvider";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { usePanelRef } from "react-resizable-panels";
 import { useEventSourcedResumeAiChat } from "../-hooks/use-event-sourced-resume-ai";
 import { useResumeAiPreviewPanel } from "../-hooks/use-resume-ai-preview-panel";
@@ -30,14 +30,6 @@ export function EventSourcedResumeAiTab(props?: {
   const previewPanelRef = usePanelRef();
   const [chatCollapsed, setChatCollapsed] = useState(false);
   const [previewCollapsed, setPreviewCollapsed] = useState(false);
-  const endOfMessagesRef = chat.endOfMessagesRef;
-  const tabRef = useRef<HTMLDivElement>(null);
-  const messageCount = chat.messages.length;
-
-  useEffect(() => {
-    endOfMessagesRef.current?.scrollIntoView({ block: "end" });
-    tabRef.current?.scrollIntoView({ block: "end" });
-  }, [split, messageCount, endOfMessagesRef]);
 
   function closePreview() {
     setChatCollapsed(false);
@@ -50,14 +42,13 @@ export function EventSourcedResumeAiTab(props?: {
     else workbench.showPreview();
   }
 
+  const labError =
+    props?.lab && isApiKeyErrorMessage(chat.chatErrorMessage) ? null : chat.chatErrorMessage;
+
   return (
-    <div
-      ref={tabRef}
-      className={cn("mx-auto flex w-full flex-col gap-3", split ? "max-w-none" : "max-w-6xl")}
-      data-test="event-sourced-resume-ai-tab"
-    >
+    <div className="flex h-full min-h-0 w-full flex-col" data-test="event-sourced-resume-ai-tab">
       <EventSourcedAiChrome
-        apiKeyRejected={isApiKeyErrorMessage(chat.chatErrorMessage)}
+        apiKeyRejected={props?.lab ? false : isApiKeyErrorMessage(chat.chatErrorMessage)}
         hasMessages={chat.messages.length > 0}
         isBusy={chat.isLoading}
         onClearChat={chat.clearLocalConversation}
@@ -66,8 +57,7 @@ export function EventSourcedResumeAiTab(props?: {
 
       <ResizablePanelGroup
         orientation="horizontal"
-        className={cn("min-h-112", split && "rounded-xl border border-border/60")}
-        style={{ height: "calc(100dvh - 8.75rem)" }}
+        className={cn("min-h-0 flex-1", split && "border-t border-border/60")}
         data-test="resume-ai-split"
       >
         <ResizablePanel
@@ -91,7 +81,7 @@ export function EventSourcedResumeAiTab(props?: {
               status={chat.status}
               promptAreaRef={chat.composerRef}
               endOfMessagesRef={chat.endOfMessagesRef}
-              errorMessage={chat.chatErrorMessage}
+              errorMessage={labError}
               historyPending={false}
               isBusy={chat.isLoading}
               isReady={chat.isReady}

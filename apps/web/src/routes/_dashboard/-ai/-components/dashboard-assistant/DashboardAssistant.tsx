@@ -27,6 +27,10 @@ function isResumeEditorPath(pathname: string) {
   return /^\/resumes\/[^/]+/.test(pathname);
 }
 
+function isDevRoute(pathname: string) {
+  return pathname === "/dev" || pathname.startsWith("/dev/");
+}
+
 /**
  * Floating assistant for every dashboard page except the résumé editor. Stays
  * mounted across navigation, so a reply keeps streaming while the user moves around.
@@ -36,7 +40,7 @@ export function DashboardAssistant() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const pathname = useLocation({ select: (location) => location.pathname });
   const assistant = useDashboardAssistantChat({ onHandedOff: () => setOpen(false) });
-  const hidden = isResumeEditorPath(pathname);
+  const hidden = isResumeEditorPath(pathname) || isDevRoute(pathname);
   const isWorking = assistant.isLoading || assistant.sessionGenerating;
   const { composerRef } = assistant;
 

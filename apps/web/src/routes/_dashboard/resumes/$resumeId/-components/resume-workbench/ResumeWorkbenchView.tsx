@@ -12,6 +12,7 @@ import { unwrapUnknownError } from "@/utils/errors";
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft, Save } from "lucide-react";
 import { toast } from "sonner";
+import type { ReactNode } from "react";
 import { EventSourcedResumeAiTab } from "../../../../-ai/-components/EventSourcedResumeAiTab";
 import { ImportResumeJsonDialog } from "../ImportResumeJsonDialog";
 import { ResumeActionsSheet } from "../ResumeActionsSheet";
@@ -24,13 +25,24 @@ import {
   useWorkbenchTemplate,
 } from "./ResumeWorkbenchProvider";
 
+const WORKBENCH_TABS: Array<{ value: WorkbenchTab; label: string }> = [
+  { value: "edit", label: "Edit" },
+  { value: "preview", label: "Preview" },
+  { value: "json", label: "JSON" },
+  { value: "prompt", label: "Prompt" },
+  { value: "ai", label: "AI" },
+];
+
 export function ResumeWorkbenchView({
   tab,
   lab,
+  navExtra,
 }: {
   tab: WorkbenchTab;
   /** Dev chat lab only. Production leaves this unset. */
   lab?: { connection: string; preset: string };
+  /** Extra controls on the AI tab row, used by the chat lab. */
+  navExtra?: ReactNode;
 }) {
   const workspace = useResumeWorkspace();
   const { resume } = workspace;
@@ -55,11 +67,42 @@ export function ResumeWorkbenchView({
     }
   }
 
+  if (tab === "ai") {
+    return (
+      <div
+        className="flex h-full min-h-0 flex-1 flex-col overflow-hidden"
+        data-test="resume-workbench"
+      >
+        <nav
+          className="flex h-10 shrink-0 items-center gap-1 border-b border-border/60 px-3"
+          data-test="resume-workbench-ai-nav"
+        >
+          {WORKBENCH_TABS.map((item) => (
+            <button
+              key={item.value}
+              type="button"
+              onClick={() => void goToTab(item.value)}
+              className={cn(
+                "rounded-md px-2.5 py-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground",
+                item.value === "ai" && "bg-base-200 text-foreground",
+              )}
+              data-test={item.value === "prompt" ? "resume-prompt-tab-trigger" : undefined}
+            >
+              {item.label}
+            </button>
+          ))}
+          {navExtra ? <div className="ml-auto">{navExtra}</div> : null}
+        </nav>
+        <div className="min-h-0 flex-1">
+          <EventSourcedResumeAiTab lab={lab} />
+        </div>
+        <ImportResumeJsonDialog />
+      </div>
+    );
+  }
+
   return (
-    <div
-      className={cn("flex w-full flex-col gap-6", tab !== "ai" && "pb-24")}
-      data-test="resume-workbench"
-    >
+    <div className="flex w-full flex-col gap-6 pb-24" data-test="resume-workbench">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <Button asChild variant="ghost" size="sm" className="-ml-2 mb-1">

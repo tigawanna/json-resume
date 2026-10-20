@@ -38,7 +38,10 @@ export function EventSourcedAiChrome({
 
   return (
     <>
-      <div className="flex items-center justify-end gap-1" data-test="event-sourced-ai-chrome">
+      <div
+        className="flex h-9 shrink-0 items-center justify-end gap-1 border-b border-border/60 px-2"
+        data-test="event-sourced-ai-chrome"
+      >
         <Button
           type="button"
           variant={previewOpen ? "secondary" : "ghost"}

@@ -2,7 +2,8 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { MessageProps } from "@tanstack/ai-react/ui";
 import type { ReactNode } from "react";
-import { PencilLine, RefreshCcw } from "lucide-react";
+import { PencilLine, RefreshCcw, Copy } from "lucide-react";
+import { toast } from "sonner";
 import { isHandoffMessage } from "@/routes/_dashboard/-ai/-utils/resume-handoff";
 import { ResumeAiHandoffDivider } from "./ResumeAiHandoffDivider";
 import { useResumeAiChatActions } from "./resume-ai-chat-actions";
@@ -17,6 +18,24 @@ export function ResumeAiMessage({ message, Parts }: MessageProps<ResumeAiChatOpt
 
   if (isHandoffMessage(message)) {
     return <ResumeAiHandoffDivider context={getMessageText(message)} />;
+  }
+
+  const text = getMessageText(message);
+  const hasTool = message.parts.some(
+    (part) => part.type === "tool-call" || part.type === "tool-result",
+  );
+  if (!isUser && !text && !hasTool) return null;
+
+  async function copyMessage() {
+    if (!text) return;
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.success("Copied");
+    } catch (err: unknown) {
+      toast.error("Could not copy", {
+        description: err instanceof Error ? err.message : "Clipboard is unavailable",
+      });
+    }
   }
 
   return (
@@ -52,6 +71,14 @@ export function ResumeAiMessage({ message, Parts }: MessageProps<ResumeAiChatOpt
       {isUser ? (
         <div className="flex items-center gap-1">
           <PromptActionButton
+            label="Copy prompt"
+            disabled={!text}
+            onClick={() => void copyMessage()}
+            dataTest="resume-ai-copy-message"
+          >
+            <Copy className="size-3.5" />
+          </PromptActionButton>
+          <PromptActionButton
             label="Edit prompt"
             disabled={!isReady}
             onClick={() => onEdit(message)}
@@ -68,7 +95,16 @@ export function ResumeAiMessage({ message, Parts }: MessageProps<ResumeAiChatOpt
             <RefreshCcw className="size-3.5" />
           </PromptActionButton>
         </div>
-      ) : null}
+      ) : (
+        <PromptActionButton
+          label="Copy reply"
+          disabled={!text}
+          onClick={() => void copyMessage()}
+          dataTest="resume-ai-copy-message"
+        >
+          <Copy className="size-3.5" />
+        </PromptActionButton>
+      )}
     </div>
   );
 }

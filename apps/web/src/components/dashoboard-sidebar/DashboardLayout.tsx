@@ -16,7 +16,9 @@ import {
 } from "@/components/ui/sidebar";
 import { useViewer } from "@/data-access-layer/auth/viewer";
 import { TSRBreadCrumbs } from "@/lib/tanstack/router/TSRBreadCrumbs";
+import { cn } from "@/lib/utils";
 import { Link, Outlet, useLocation } from "@tanstack/react-router";
+import type { ReactNode } from "react";
 import { DashboardSidebarFooter } from "./DashboardSidebarFooter";
 import { DashboardSidebarHeader } from "./DashboardSidebarHeader";
 import { DashboardSyncStatusButton } from "./DashboardSyncStatusButton";
@@ -86,12 +88,37 @@ export function DashboardLayout({
             <DashboardSyncStatusButton className="shrink-0" />
           </div>
         </header>
-        <div className="@container/main flex min-h-0 min-w-0 w-full flex-1 flex-col overflow-auto p-6">
+        <DashboardContent>
           <LocalOnlyBanner />
           <Outlet />
-        </div>
+        </DashboardContent>
       </SidebarInset>
     </SidebarProvider>
+  );
+}
+
+function DashboardContent({ children }: { children: ReactNode }) {
+  const pathname = useLocation({ select: (location) => location.pathname });
+  const tab = useLocation({
+    select: (location) => {
+      const search: unknown = location.search;
+      if (typeof search !== "object" || search === null || !("tab" in search)) return null;
+      const value = search.tab;
+      return typeof value === "string" ? value : null;
+    },
+  });
+  const fullBleed =
+    pathname === "/dev/chat-lab" || (/^\/resumes\/[^/]+\/?$/.test(pathname) && tab === "ai");
+
+  return (
+    <div
+      className={cn(
+        "@container/main flex min-h-0 min-w-0 w-full flex-1 flex-col",
+        fullBleed ? "overflow-hidden" : "overflow-auto p-6",
+      )}
+    >
+      {children}
+    </div>
   );
 }
 

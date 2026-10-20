@@ -53,16 +53,13 @@ export function ResumeAiConversationCard({
 
   if (isEmpty && !historyPending) {
     return (
-      <div
-        className="flex h-full flex-col overflow-y-auto px-4 py-6"
-        data-test="resume-ai-conversation"
-      >
-        {handoff ? (
-          <div className="shrink-0">
-            <ResumeAiHandoffDivider context={getMessageText(handoff)} />
-          </div>
-        ) : null}
-        <div className="flex flex-1 flex-col items-center justify-center-safe gap-8">
+      <div className="flex h-full min-h-0 flex-col" data-test="resume-ai-conversation">
+        <div className="flex min-h-0 flex-1 flex-col items-center justify-center-safe gap-8 overflow-y-auto px-4 py-6">
+          {handoff ? (
+            <div className="w-full shrink-0">
+              <ResumeAiHandoffDivider context={getMessageText(handoff)} />
+            </div>
+          ) : null}
           <div
             className="flex w-full max-w-3xl flex-col items-center gap-2 text-center"
             data-test="resume-ai-intro"
@@ -75,7 +72,6 @@ export function ResumeAiConversationCard({
               Focus a section with <code>#</code>, reference another resume with <code>@</code>.
             </p>
           </div>
-          <ResumeAiPromptComposer {...composerProps} isReady={isReady} hasMessages={false} />
           <div
             className="flex w-full max-w-3xl flex-wrap justify-center gap-2"
             data-test="resume-ai-suggestions"
@@ -93,6 +89,9 @@ export function ResumeAiConversationCard({
               </button>
             ))}
           </div>
+        </div>
+        <div className="shrink-0 border-t border-border/60 px-2 py-2">
+          <ResumeAiPromptComposer {...composerProps} isReady={isReady} hasMessages={false} />
         </div>
       </div>
     );
@@ -129,7 +128,7 @@ export function ResumeAiConversationCard({
         ) : null}
         <div ref={endOfMessagesRef} />
       </div>
-      <div className="shrink-0 pt-2 pb-1">
+      <div className="shrink-0 border-t border-border/60 px-2 py-2">
         <ResumeAiPromptComposer {...composerProps} isReady={isReady} hasMessages={!isEmpty} />
       </div>
     </div>
