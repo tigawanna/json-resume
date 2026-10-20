@@ -6,6 +6,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { DashboardLayout } from "@/components/dashoboard-sidebar/DashboardLayout";
 import { EventSourcedDbProvider } from "@/data-access-layer/event-sourced/provider";
 import { useViewer } from "@/data-access-layer/auth/viewer";
+import { FpsCounter } from "@/components/fps-counter/FpsCounter";
 import { DashboardAssistant } from "./-ai/-components/dashboard-assistant/DashboardAssistant";
 import {
   dashboard_account_routes,
@@ -43,6 +44,7 @@ function DashboardShell() {
         adminLabel="Administration"
       />
       <DashboardAssistant />
+      <FpsCounter label="dashboard" />
     </EventSourcedDbProvider>
   );
 }

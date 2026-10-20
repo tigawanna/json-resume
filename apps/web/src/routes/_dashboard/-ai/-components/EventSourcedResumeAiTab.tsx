@@ -12,8 +12,13 @@ import { isApiKeyErrorMessage } from "../-utils/is-api-key-error";
 import { EventSourcedAiChrome } from "./EventSourcedAiChrome";
 import { ResumeAiLivePreview } from "./ResumeAiLivePreview";
 
-export function EventSourcedResumeAiTab() {
-  const chat = useEventSourcedResumeAiChat();
+export function EventSourcedResumeAiTab(props?: {
+  /** Dev chat lab: scripted endpoint and the preset the next send should play. */
+  lab?: { connection: string; preset: string };
+}) {
+  const chat = useEventSourcedResumeAiChat(
+    props?.lab ? { connection: props.lab.connection, labPreset: props.lab.preset } : undefined,
+  );
   const previewOpen = useResumeAiPreviewPanel({
     messages: chat.messages,
     isLoading: chat.isLoading,

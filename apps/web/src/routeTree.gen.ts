@@ -45,6 +45,7 @@ import { Route as DashboardTalksIndexRouteImport } from './routes/_dashboard/tal
 import { Route as DashboardVolunteersIndexRouteImport } from './routes/_dashboard/volunteers/index'
 import { Route as ApiAgenticSplatRouteImport } from './routes/api/agentic/$'
 import { Route as ApiAgenticOpenapiRouteImport } from './routes/api/agentic/openapi'
+import { Route as ApiAiChatLabRouteImport } from './routes/api/ai/chat-lab'
 import { Route as ApiAiDashboardAssistantRouteImport } from './routes/api/ai/dashboard-assistant'
 import { Route as ApiAiEventSourcedResumeTailorRouteImport } from './routes/api/ai/event-sourced-resume-tailor'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
@@ -57,6 +58,7 @@ import { Route as DashboardAdminDataIndexRouteImport } from './routes/_dashboard
 import { Route as DashboardAdminTablesIndexRouteImport } from './routes/_dashboard/admin/tables/index'
 import { Route as DashboardAdminUsersIndexRouteImport } from './routes/_dashboard/admin/users/index'
 import { Route as DashboardCoverLettersCoverLetterIdIndexRouteImport } from './routes/_dashboard/cover-letters/$coverLetterId/index'
+import { Route as DashboardDevChatLabIndexRouteImport } from './routes/_dashboard/dev/chat-lab/index'
 import { Route as DashboardDevChatStressIndexRouteImport } from './routes/_dashboard/dev/chat-stress/index'
 import { Route as DashboardResumesResumeIdIndexRouteImport } from './routes/_dashboard/resumes/$resumeId/index'
 import { Route as ApiAgenticOpenapiJsonRouteImport } from './routes/api/agentic/openapi.json'
@@ -252,6 +254,11 @@ const ApiAgenticOpenapiRoute = ApiAgenticOpenapiRouteImport.update({
   path: '/api/agentic/openapi',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAiChatLabRoute = ApiAiChatLabRouteImport.update({
+  id: '/api/ai/chat-lab',
+  path: '/api/ai/chat-lab',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAiDashboardAssistantRoute = ApiAiDashboardAssistantRouteImport.update({
   id: '/api/ai/dashboard-assistant',
   path: '/api/ai/dashboard-assistant',
@@ -317,6 +324,12 @@ const DashboardCoverLettersCoverLetterIdIndexRoute =
     path: '/cover-letters/$coverLetterId/',
     getParentRoute: () => DashboardLayoutRoute,
   } as any)
+const DashboardDevChatLabIndexRoute =
+  DashboardDevChatLabIndexRouteImport.update({
+    id: '/dev/chat-lab/',
+    path: '/dev/chat-lab/',
+    getParentRoute: () => DashboardLayoutRoute,
+  } as any)
 const DashboardDevChatStressIndexRoute =
   DashboardDevChatStressIndexRouteImport.update({
     id: '/dev/chat-stress/',
@@ -365,6 +378,7 @@ export interface FileRoutesByFullPath {
   '/admin/route': typeof DashboardAdminRouteRoute
   '/api/agentic/$': typeof ApiAgenticSplatRoute
   '/api/agentic/openapi': typeof ApiAgenticOpenapiRouteWithChildren
+  '/api/ai/chat-lab': typeof ApiAiChatLabRoute
   '/api/ai/dashboard-assistant': typeof ApiAiDashboardAssistantRoute
   '/api/ai/event-sourced-resume-tailor': typeof ApiAiEventSourcedResumeTailorRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -402,6 +416,7 @@ export interface FileRoutesByFullPath {
   '/admin/tables/': typeof DashboardAdminTablesIndexRoute
   '/admin/users/': typeof DashboardAdminUsersIndexRoute
   '/cover-letters/$coverLetterId/': typeof DashboardCoverLettersCoverLetterIdIndexRoute
+  '/dev/chat-lab/': typeof DashboardDevChatLabIndexRoute
   '/dev/chat-stress/': typeof DashboardDevChatStressIndexRoute
   '/resumes/$resumeId/': typeof DashboardResumesResumeIdIndexRoute
   '/admin/tables/$table/': typeof DashboardAdminTablesTableIndexRoute
@@ -419,6 +434,7 @@ export interface FileRoutesByTo {
   '/admin/route': typeof DashboardAdminRouteRoute
   '/api/agentic/$': typeof ApiAgenticSplatRoute
   '/api/agentic/openapi': typeof ApiAgenticOpenapiRouteWithChildren
+  '/api/ai/chat-lab': typeof ApiAiChatLabRoute
   '/api/ai/dashboard-assistant': typeof ApiAiDashboardAssistantRoute
   '/api/ai/event-sourced-resume-tailor': typeof ApiAiEventSourcedResumeTailorRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -456,6 +472,7 @@ export interface FileRoutesByTo {
   '/admin/tables': typeof DashboardAdminTablesIndexRoute
   '/admin/users': typeof DashboardAdminUsersIndexRoute
   '/cover-letters/$coverLetterId': typeof DashboardCoverLettersCoverLetterIdIndexRoute
+  '/dev/chat-lab': typeof DashboardDevChatLabIndexRoute
   '/dev/chat-stress': typeof DashboardDevChatStressIndexRoute
   '/resumes/$resumeId': typeof DashboardResumesResumeIdIndexRoute
   '/admin/tables/$table': typeof DashboardAdminTablesTableIndexRoute
@@ -476,6 +493,7 @@ export interface FileRoutesById {
   '/_dashboard/admin/route': typeof DashboardAdminRouteRoute
   '/api/agentic/$': typeof ApiAgenticSplatRoute
   '/api/agentic/openapi': typeof ApiAgenticOpenapiRouteWithChildren
+  '/api/ai/chat-lab': typeof ApiAiChatLabRoute
   '/api/ai/dashboard-assistant': typeof ApiAiDashboardAssistantRoute
   '/api/ai/event-sourced-resume-tailor': typeof ApiAiEventSourcedResumeTailorRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -513,6 +531,7 @@ export interface FileRoutesById {
   '/_dashboard/admin/tables/': typeof DashboardAdminTablesIndexRoute
   '/_dashboard/admin/users/': typeof DashboardAdminUsersIndexRoute
   '/_dashboard/cover-letters/$coverLetterId/': typeof DashboardCoverLettersCoverLetterIdIndexRoute
+  '/_dashboard/dev/chat-lab/': typeof DashboardDevChatLabIndexRoute
   '/_dashboard/dev/chat-stress/': typeof DashboardDevChatStressIndexRoute
   '/_dashboard/resumes/$resumeId/': typeof DashboardResumesResumeIdIndexRoute
   '/_dashboard/admin/tables/$table/': typeof DashboardAdminTablesTableIndexRoute
@@ -533,6 +552,7 @@ export interface FileRouteTypes {
     | '/admin/route'
     | '/api/agentic/$'
     | '/api/agentic/openapi'
+    | '/api/ai/chat-lab'
     | '/api/ai/dashboard-assistant'
     | '/api/ai/event-sourced-resume-tailor'
     | '/api/auth/$'
@@ -570,6 +590,7 @@ export interface FileRouteTypes {
     | '/admin/tables/'
     | '/admin/users/'
     | '/cover-letters/$coverLetterId/'
+    | '/dev/chat-lab/'
     | '/dev/chat-stress/'
     | '/resumes/$resumeId/'
     | '/admin/tables/$table/'
@@ -587,6 +608,7 @@ export interface FileRouteTypes {
     | '/admin/route'
     | '/api/agentic/$'
     | '/api/agentic/openapi'
+    | '/api/ai/chat-lab'
     | '/api/ai/dashboard-assistant'
     | '/api/ai/event-sourced-resume-tailor'
     | '/api/auth/$'
@@ -624,6 +646,7 @@ export interface FileRouteTypes {
     | '/admin/tables'
     | '/admin/users'
     | '/cover-letters/$coverLetterId'
+    | '/dev/chat-lab'
     | '/dev/chat-stress'
     | '/resumes/$resumeId'
     | '/admin/tables/$table'
@@ -643,6 +666,7 @@ export interface FileRouteTypes {
     | '/_dashboard/admin/route'
     | '/api/agentic/$'
     | '/api/agentic/openapi'
+    | '/api/ai/chat-lab'
     | '/api/ai/dashboard-assistant'
     | '/api/ai/event-sourced-resume-tailor'
     | '/api/auth/$'
@@ -680,6 +704,7 @@ export interface FileRouteTypes {
     | '/_dashboard/admin/tables/'
     | '/_dashboard/admin/users/'
     | '/_dashboard/cover-letters/$coverLetterId/'
+    | '/_dashboard/dev/chat-lab/'
     | '/_dashboard/dev/chat-stress/'
     | '/_dashboard/resumes/$resumeId/'
     | '/_dashboard/admin/tables/$table/'
@@ -695,6 +720,7 @@ export interface RootRouteChildren {
   TestIndexRoute: typeof TestIndexRoute
   ApiAgenticSplatRoute: typeof ApiAgenticSplatRoute
   ApiAgenticOpenapiRoute: typeof ApiAgenticOpenapiRouteWithChildren
+  ApiAiChatLabRoute: typeof ApiAiChatLabRoute
   ApiAiDashboardAssistantRoute: typeof ApiAiDashboardAssistantRoute
   ApiAiEventSourcedResumeTailorRoute: typeof ApiAiEventSourcedResumeTailorRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
@@ -960,6 +986,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAgenticOpenapiRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/ai/chat-lab': {
+      id: '/api/ai/chat-lab'
+      path: '/api/ai/chat-lab'
+      fullPath: '/api/ai/chat-lab'
+      preLoaderRoute: typeof ApiAiChatLabRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/ai/dashboard-assistant': {
       id: '/api/ai/dashboard-assistant'
       path: '/api/ai/dashboard-assistant'
@@ -1044,6 +1077,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardCoverLettersCoverLetterIdIndexRouteImport
       parentRoute: typeof DashboardLayoutRoute
     }
+    '/_dashboard/dev/chat-lab/': {
+      id: '/_dashboard/dev/chat-lab/'
+      path: '/dev/chat-lab'
+      fullPath: '/dev/chat-lab/'
+      preLoaderRoute: typeof DashboardDevChatLabIndexRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
     '/_dashboard/dev/chat-stress/': {
       id: '/_dashboard/dev/chat-stress/'
       path: '/dev/chat-stress'
@@ -1119,6 +1159,7 @@ interface DashboardLayoutRouteChildren {
   DashboardAdminTablesIndexRoute: typeof DashboardAdminTablesIndexRoute
   DashboardAdminUsersIndexRoute: typeof DashboardAdminUsersIndexRoute
   DashboardCoverLettersCoverLetterIdIndexRoute: typeof DashboardCoverLettersCoverLetterIdIndexRoute
+  DashboardDevChatLabIndexRoute: typeof DashboardDevChatLabIndexRoute
   DashboardDevChatStressIndexRoute: typeof DashboardDevChatStressIndexRoute
   DashboardResumesResumeIdIndexRoute: typeof DashboardResumesResumeIdIndexRoute
   DashboardAdminTablesTableIndexRoute: typeof DashboardAdminTablesTableIndexRoute
@@ -1156,6 +1197,7 @@ const DashboardLayoutRouteChildren: DashboardLayoutRouteChildren = {
   DashboardAdminUsersIndexRoute: DashboardAdminUsersIndexRoute,
   DashboardCoverLettersCoverLetterIdIndexRoute:
     DashboardCoverLettersCoverLetterIdIndexRoute,
+  DashboardDevChatLabIndexRoute: DashboardDevChatLabIndexRoute,
   DashboardDevChatStressIndexRoute: DashboardDevChatStressIndexRoute,
   DashboardResumesResumeIdIndexRoute: DashboardResumesResumeIdIndexRoute,
   DashboardAdminTablesTableIndexRoute: DashboardAdminTablesTableIndexRoute,
@@ -1203,6 +1245,7 @@ const rootRouteChildren: RootRouteChildren = {
   TestIndexRoute: TestIndexRoute,
   ApiAgenticSplatRoute: ApiAgenticSplatRoute,
   ApiAgenticOpenapiRoute: ApiAgenticOpenapiRouteWithChildren,
+  ApiAiChatLabRoute: ApiAiChatLabRoute,
   ApiAiDashboardAssistantRoute: ApiAiDashboardAssistantRoute,
   ApiAiEventSourcedResumeTailorRoute: ApiAiEventSourcedResumeTailorRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,

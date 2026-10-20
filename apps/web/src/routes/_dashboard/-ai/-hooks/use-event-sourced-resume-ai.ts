@@ -29,7 +29,11 @@ import {
   useResumeWorkbenchActions,
 } from "@/routes/_dashboard/resumes/$resumeId/-components/resume-workbench/ResumeWorkbenchProvider";
 
-export function useEventSourcedResumeAiChat() {
+export function useEventSourcedResumeAiChat(options?: {
+  /** Dev chat lab: same client, a scripted endpoint instead of the model. */
+  connection?: string;
+  labPreset?: string;
+}) {
   const { settings, systemPrompt, slopGuard } = useEventSourcedAiSettings();
   const resumeId = useResumeWorkbench((state) => state.resumeId);
   const activeResumeId = useResumeWorkbench((state) => state.ai.activeResumeId);
@@ -39,7 +43,7 @@ export function useEventSourcedResumeAiChat() {
   const router = useRouter();
   const endOfMessagesRef = useRef<HTMLDivElement>(null);
   const composerRef = useRef<PromptAreaHandle>(null);
-  const isReady = isLocalMode || !!settings;
+  const isReady = options?.connection ? true : isLocalMode || !!settings;
   const userId = viewer.user?.id ?? "";
   const dbRef = useRef(db);
   const userIdRef = useRef(userId);
@@ -49,7 +53,7 @@ export function useEventSourcedResumeAiChat() {
     createEventSourcedChatPersistence<typeof eventSourcedResumeAiClientTools>({
       getDb: () => dbRef.current,
       getUserId: () => userIdRef.current,
-      resumeId,
+      resumeId: options?.connection ? `chat-lab:${resumeId}` : resumeId,
     }),
   );
 
@@ -106,8 +110,8 @@ export function useEventSourcedResumeAiChat() {
   };
 
   const chat = useChat({
-    threadId: `event-sourced-resume-ai:${resumeId}`,
-    connection: fetchServerSentEvents("/api/ai/event-sourced-resume-tailor"),
+    threadId: options?.connection ? `chat-lab:${resumeId}` : `event-sourced-resume-ai:${resumeId}`,
+    connection: fetchServerSentEvents(options?.connection ?? "/api/ai/event-sourced-resume-tailor"),
     persistence: persistenceRef.current,
     tools: eventSourcedResumeAiClientTools,
     context,
@@ -126,6 +130,7 @@ export function useEventSourcedResumeAiChat() {
       apiKey: settings?.apiKey,
       model: settings?.model,
       routing: settings?.routing,
+      ...(options?.labPreset ? { labPreset: options.labPreset } : {}),
     },
   });
 

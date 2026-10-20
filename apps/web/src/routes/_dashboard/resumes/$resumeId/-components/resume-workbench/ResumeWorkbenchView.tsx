@@ -1,5 +1,4 @@
 import { useResumeWorkspace } from "@/components/resume/resume-workspace/ResumeWorkspaceContext";
-import { FpsCounter } from "@/components/fps-counter/FpsCounter";
 import { ResumeEditPanel } from "@/components/resume/ResumeEditPanel";
 import { TemplatePicker } from "@/components/resume/TemplatePicker";
 import { Button } from "@/components/ui/button";
@@ -25,7 +24,14 @@ import {
   useWorkbenchTemplate,
 } from "./ResumeWorkbenchProvider";
 
-export function ResumeWorkbenchView({ tab }: { tab: WorkbenchTab }) {
+export function ResumeWorkbenchView({
+  tab,
+  lab,
+}: {
+  tab: WorkbenchTab;
+  /** Dev chat lab only. Production leaves this unset. */
+  lab?: { connection: string; preset: string };
+}) {
   const workspace = useResumeWorkspace();
   const { resume } = workspace;
   const { templateId, hasUnsavedChange: hasTemplateChange } = useWorkbenchTemplate();
@@ -68,7 +74,6 @@ export function ResumeWorkbenchView({ tab }: { tab: WorkbenchTab }) {
           ) : null}
         </div>
         <div className="flex shrink-0 items-center gap-2">
-          <FpsCounter label="workbench" />
           <ResumeActionsSheet />
           <Button
             type="button"
@@ -122,7 +127,7 @@ export function ResumeWorkbenchView({ tab }: { tab: WorkbenchTab }) {
         </TabsContent>
 
         <TabsContent value="ai" className="mt-4">
-          <EventSourcedResumeAiTab />
+          <EventSourcedResumeAiTab lab={lab} />
         </TabsContent>
       </Tabs>
 

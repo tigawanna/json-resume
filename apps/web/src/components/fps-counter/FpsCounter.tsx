@@ -7,7 +7,7 @@ import {
   logScriptSources,
 } from "@/utils/long-animation-frames";
 import { Circle } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type PointerEvent } from "react";
 
 const LOG_PREFIX = "[fps]";
 const SLOW_FPS = 30;
@@ -53,8 +53,50 @@ function logRecording(recording: Recording) {
 
 interface FpsCounterProps {
   /** Names the recording in console logs. */
-  label: string;
+  label?: string;
   className?: string;
+}
+
+const POSITION_KEY = "fps-counter-position";
+const DRAG_THRESHOLD_PX = 4;
+
+interface BadgePosition {
+  x: number;
+  y: number;
+}
+
+function readPosition(): BadgePosition {
+  try {
+    const raw = localStorage.getItem(POSITION_KEY);
+    if (!raw) return defaultPosition();
+    const parsed: unknown = JSON.parse(raw);
+    if (
+      typeof parsed === "object" &&
+      parsed !== null &&
+      "x" in parsed &&
+      "y" in parsed &&
+      typeof parsed.x === "number" &&
+      typeof parsed.y === "number"
+    ) {
+      return clampPosition(parsed.x, parsed.y);
+    }
+  } catch {
+    // A bad stored value falls back to the default corner.
+  }
+  return defaultPosition();
+}
+
+function defaultPosition(): BadgePosition {
+  if (typeof window === "undefined") return { x: 16, y: 16 };
+  return { x: Math.max(16, window.innerWidth - 140), y: Math.max(16, window.innerHeight - 72) };
+}
+
+function clampPosition(x: number, y: number): BadgePosition {
+  if (typeof window === "undefined") return { x, y };
+  return {
+    x: Math.min(window.innerWidth - 48, Math.max(8, x)),
+    y: Math.min(window.innerHeight - 36, Math.max(8, y)),
+  };
 }
 
 /** Dev-only frame-rate badge; click to record per-second samples to the console. */
@@ -63,9 +105,18 @@ export function FpsCounter(props: FpsCounterProps) {
   return <FpsCounterBadge {...props} />;
 }
 
-function FpsCounterBadge({ label, className }: FpsCounterProps) {
+function FpsCounterBadge({ label = "app", className }: FpsCounterProps) {
   const [recording, setRecording] = useState(false);
+  const [position, setPosition] = useState(readPosition);
+  const positionRef = useRef(position);
+  positionRef.current = position;
   const recordingRef = useRef<Recording | null>(null);
+  const dragRef = useRef<{
+    pointerId: number;
+    offsetX: number;
+    offsetY: number;
+    moved: boolean;
+  } | null>(null);
 
   function handleSample(stats: FrameStats) {
     const current = recordingRef.current;
@@ -93,6 +144,55 @@ function FpsCounterBadge({ label, className }: FpsCounterProps) {
     },
     [],
   );
+
+  useEffect(() => {
+    function onResize() {
+      setPosition((current) => clampPosition(current.x, current.y));
+    }
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  function onPointerDown(event: PointerEvent<HTMLButtonElement>) {
+    const rect = event.currentTarget.getBoundingClientRect();
+    dragRef.current = {
+      pointerId: event.pointerId,
+      offsetX: event.clientX - rect.left,
+      offsetY: event.clientY - rect.top,
+      moved: false,
+    };
+    event.currentTarget.setPointerCapture(event.pointerId);
+  }
+
+  function onPointerMove(event: PointerEvent<HTMLButtonElement>) {
+    const drag = dragRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    const next = clampPosition(event.clientX - drag.offsetX, event.clientY - drag.offsetY);
+    if (
+      Math.abs(next.x - positionRef.current.x) > DRAG_THRESHOLD_PX ||
+      Math.abs(next.y - positionRef.current.y) > DRAG_THRESHOLD_PX
+    ) {
+      drag.moved = true;
+    }
+    if (drag.moved) {
+      positionRef.current = next;
+      setPosition(next);
+    }
+  }
+
+  function onPointerUp(event: PointerEvent<HTMLButtonElement>) {
+    const drag = dragRef.current;
+    dragRef.current = null;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+    if (drag.moved) {
+      localStorage.setItem(POSITION_KEY, JSON.stringify(positionRef.current));
+      return;
+    }
+    toggleRecording();
+  }
 
   function toggleRecording() {
     if (recordingRef.current) {
@@ -127,10 +227,17 @@ function FpsCounterBadge({ label, className }: FpsCounterProps) {
       type="button"
       variant="ghost"
       size="sm"
-      onClick={toggleRecording}
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
       title={title}
       aria-pressed={recording}
-      className={cn("h-7 gap-1.5 px-2 font-mono text-xs", fpsToneClass(fps), className)}
+      style={{ left: position.x, top: position.y }}
+      className={cn(
+        "fixed z-50 h-7 cursor-grab touch-none gap-1.5 px-2 font-mono text-xs shadow-md active:cursor-grabbing",
+        fpsToneClass(fps),
+        className,
+      )}
       data-test="fps-counter"
     >
       {recording ? (
