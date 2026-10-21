@@ -1,6 +1,6 @@
 import type { ProviderPreferences } from "@tanstack/ai-openrouter";
 import { z } from "zod";
-import type { OpenRouterModelData, OpenRouterModelEndpoint } from "@/types/openrouter";
+import type { OpenRouterModelData, OpenRouterModelEndpoint } from "@/lib/openrouter/types";
 
 /**
  * Output ceiling for one agent turn. Reasoning tokens count against it, and a

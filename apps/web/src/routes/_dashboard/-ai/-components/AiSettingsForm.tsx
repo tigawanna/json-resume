@@ -3,15 +3,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { openRouterModelEndpointsQueryOptions } from "@/data-access-layer/openrouter/model-endpoints";
-import { ModelPicker } from "@/features/agentic-tools/ModelPicker";
-import { ProviderRoutingPicker } from "@/features/agentic-tools/ProviderRoutingPicker";
-import {
-  DEFAULT_AI_ROUTING,
-  resolveRouting,
-  type AiRouting,
-} from "@/features/agentic-tools/openrouter-routing";
-import { useOpenRouterModels } from "@/hooks/use-openrouter-models";
+import { openRouterModelEndpointsQueryOptions } from "@/lib/openrouter/endpoints";
+import { ModelPicker } from "@/lib/openrouter/ModelPicker";
+import { ProviderRoutingPicker } from "@/lib/openrouter/ProviderRoutingPicker";
+import { DEFAULT_AI_ROUTING, resolveRouting, type AiRouting } from "@/lib/openrouter/routing";
+import { useOpenRouterModels } from "@/lib/openrouter/models";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, Eye, EyeOff, KeyRound } from "lucide-react";

@@ -1,5 +1,5 @@
 import { queryOptions, useQuery } from "@tanstack/react-query";
-import { fetchOpenRouterModels } from "@/services/openrouter/openrouter.api";
+import { fetchOpenRouterModels } from "@/lib/openrouter/api";
 
 export const openRouterModelsQueryOptions = queryOptions({
   queryKey: ["openrouter-models"],

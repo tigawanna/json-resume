@@ -5,7 +5,7 @@ import {
   DEFAULT_AI_ROUTING,
   modelAuthor,
   type AiRouting,
-} from "@/features/agentic-tools/openrouter-routing";
+} from "@/lib/openrouter/routing";
 import { serverEnv } from "@/lib/env/server-env";
 import {
   chat,

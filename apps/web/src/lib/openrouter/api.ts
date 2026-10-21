@@ -5,7 +5,7 @@ import type {
   OpenRouterModelEndpoint,
   OpenRouterModelEndpointsResponse,
   OpenRouterModelsResponse,
-} from "@/types/openrouter";
+} from "@/lib/openrouter/types";
 
 const BASE_URL = "https://openrouter.ai/api/v1";
 

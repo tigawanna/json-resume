@@ -1,4 +1,4 @@
-import { useOpenRouterCredits } from "@/hooks/use-openrouter-credits";
+import { useOpenRouterCredits } from "@/lib/openrouter/credits";
 import { Coins, Hash, TriangleAlert } from "lucide-react";
 
 export function CreditsDisplay({

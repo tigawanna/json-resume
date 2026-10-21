@@ -1,5 +1,5 @@
 import { queryOptions, useQuery } from "@tanstack/react-query";
-import { fetchOpenRouterCredits } from "@/services/openrouter/openrouter.api";
+import { fetchOpenRouterCredits } from "@/lib/openrouter/api";
 
 function fingerprintSecret(value: string): string {
   let hash = 2166136261;

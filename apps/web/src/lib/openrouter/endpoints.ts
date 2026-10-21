@@ -1,6 +1,6 @@
 import { queryOptions } from "@tanstack/react-query";
 import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
-import { fetchOpenRouterModelEndpoints } from "@/services/openrouter/openrouter.api";
+import { fetchOpenRouterModelEndpoints } from "@/lib/openrouter/api";
 
 export const openRouterModelEndpointsQueryOptions = (modelId: string) =>
   queryOptions({

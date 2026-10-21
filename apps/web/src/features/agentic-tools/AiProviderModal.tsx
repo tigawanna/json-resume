@@ -12,7 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import { ModelPicker } from "./ModelPicker";
+import { ModelPicker } from "@/lib/openrouter/ModelPicker";
 import type { AiSettings, AiStorageType } from "@/types/ai-settings";
 
 const DEFAULT_MODEL = "deepseek/deepseek-chat-v3-0324";

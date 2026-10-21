@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { OpenRouterModelEndpoint } from "@/types/openrouter";
+import type { OpenRouterModelEndpoint } from "@/lib/openrouter/types";
 import {
   AGENT_MAX_OUTPUT_TOKENS,
   aiRoutingSchema,
@@ -8,7 +8,7 @@ import {
   DEFAULT_AI_ROUTING,
   officialProviderSlugs,
   resolveRouting,
-} from "./openrouter-routing";
+} from "./routing";
 
 function endpoint(
   tag: string,

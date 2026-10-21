@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { aiRoutingSchema } from "@/features/agentic-tools/openrouter-routing";
+import { aiRoutingSchema } from "@/lib/openrouter/routing";
 import { resumeLayoutSchema } from "@/features/resume/resume-layout";
 
 /**

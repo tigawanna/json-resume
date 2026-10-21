@@ -2,7 +2,7 @@ import { chatParamsFromRequestBody, toServerSentEventsResponse } from "@tanstack
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { streamDashboardAgentChat } from "@/routes/_dashboard/-ai/-utils/stream-dashboard-chat.server";
-import { aiRoutingSchema } from "@/features/agentic-tools/openrouter-routing";
+import { aiRoutingSchema } from "@/lib/openrouter/routing";
 import { auth } from "@/lib/auth";
 import { isAllowedOrigin, jsonError, preflightResponse, withCors } from "./-utils/same-origin-cors";
 

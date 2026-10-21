@@ -1,14 +1,14 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { BadgeCheck, Loader2, TriangleAlert } from "lucide-react";
-import { openRouterModelEndpointsQueryOptions } from "@/data-access-layer/openrouter/model-endpoints";
-import { formatModelPrice, formatTokenCount } from "@/services/openrouter/openrouter.api";
+import { formatModelPrice, formatTokenCount } from "@/lib/openrouter/api";
+import { openRouterModelEndpointsQueryOptions } from "@/lib/openrouter/endpoints";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { cn } from "@/lib/utils";
-import type { OpenRouterModelEndpoint } from "@/types/openrouter";
+import type { OpenRouterModelEndpoint } from "@/lib/openrouter/types";
 import {
   availableOfficialSlugs,
   isOfficialEndpoint,
@@ -20,7 +20,7 @@ import {
   type AiRouting,
   type ProviderRoutingMode,
   type ProviderSort,
-} from "./openrouter-routing";
+} from "./routing";
 
 interface ProviderRoutingPickerProps {
   modelId: string;

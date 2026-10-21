@@ -10,8 +10,8 @@ import {
   TriangleAlert,
   Wrench,
 } from "lucide-react";
-import { useOpenRouterModels } from "@/hooks/use-openrouter-models";
-import { formatModelPrice, formatTokenCount } from "@/services/openrouter/openrouter.api";
+import { formatModelPrice, formatTokenCount } from "@/lib/openrouter/api";
+import { useOpenRouterModels } from "@/lib/openrouter/models";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -27,8 +27,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Toggle } from "@/components/ui/toggle";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { cn } from "@/lib/utils";
-import type { OpenRouterModelData } from "@/types/openrouter";
-import { LOW_OUTPUT_CAP_TOKENS, modelAuthor, supportsTools } from "./openrouter-routing";
+import type { OpenRouterModelData } from "@/lib/openrouter/types";
+import { LOW_OUTPUT_CAP_TOKENS, modelAuthor, supportsTools } from "./routing";
 
 interface ModelPickerProps {
   value: string;

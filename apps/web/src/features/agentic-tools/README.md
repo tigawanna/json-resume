@@ -125,7 +125,7 @@ curl -X POST "$APP_URL/api/agentic/library/search" \
 ## TanStack AI Layer
 
 - `src/routes/_dashboard/-ai/-utils/stream-resume-chat.server.ts` — TanStack AI orchestration; builds the adapter and streams the chat with `maxIterations(16)` and `lazyToolsConfig: { includeDescription: "first-sentence" }`. Tools are declared without server implementations.
-- `ModelPicker.tsx` — searchable model list fetched live from the OpenRouter API (`hooks/use-openrouter-models.ts`, `services/openrouter/`).
+- `lib/openrouter/ModelPicker.tsx` — searchable model list fetched live from the OpenRouter API.
 - `AiSettingsPanel.tsx` — collapsible settings card rendered inside the AI tab. Houses the API key input, model picker, and storage type toggle.
 - `src/routes/api/ai/event-sourced-resume-tailor.ts` — session-protected SSE route; extracts `apiKey` and `model` from the request body and forwards them to `streamEventSourcedResumeAgentChat`.
 - `src/routes/_dashboard/-ai/-components/EventSourcedResumeAiTab.tsx` — reads credentials from the browser and passes them in the `useChat` body on every request.

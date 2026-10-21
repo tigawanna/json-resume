@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { streamEventSourcedResumeAgentChat } from "@/routes/_dashboard/-ai/-utils/stream-resume-chat.server";
 import { EVENT_SOURCED_SYSTEM_PROMPT_MAX_CHARS } from "@/routes/_dashboard/-ai/-utils/system-prompt";
-import { aiRoutingSchema } from "@/features/agentic-tools/openrouter-routing";
+import { aiRoutingSchema } from "@/lib/openrouter/routing";
 import { auth } from "@/lib/auth";
 import { isAllowedOrigin, jsonError, preflightResponse, withCors } from "./-utils/same-origin-cors";
 
