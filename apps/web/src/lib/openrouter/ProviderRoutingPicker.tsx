@@ -98,7 +98,6 @@ export function ProviderRoutingPicker({ modelId, value, onChange }: ProviderRout
   const officialSlugs = endpoints ? availableOfficialSlugs(modelId, endpoints) : [];
   const officialUnavailable = !!endpoints && officialSlugs.length === 0;
   const pinnedSlugs = value.mode === "official" ? officialSlugs : value.providers;
-  const canPick = value.mode === "custom";
 
   function setMode(mode: ProviderRoutingMode) {
     onChange({
@@ -109,7 +108,14 @@ export function ProviderRoutingPicker({ modelId, value, onChange }: ProviderRout
     });
   }
 
-  function toggleProvider(slug: string) {
+  function chooseProvider(slug: string) {
+    const alreadyOfficial =
+      value.mode === "official" && officialSlugs.length === 1 && officialSlugs[0] === slug;
+    if (alreadyOfficial) return;
+    if (value.mode !== "custom") {
+      onChange({ ...value, mode: "custom", providers: [slug], sort: undefined });
+      return;
+    }
     const providers = value.providers.includes(slug)
       ? value.providers.filter((existing) => existing !== slug)
       : [...value.providers, slug];
@@ -149,8 +155,8 @@ export function ProviderRoutingPicker({ modelId, value, onChange }: ProviderRout
           endpoint={endpoint}
           official={isOfficialEndpoint(modelId, endpoint)}
           position={position === -1 ? null : position + 1}
-          selectable={canPick}
-          onToggle={() => toggleProvider(slug)}
+          selectable
+          onToggle={() => chooseProvider(slug)}
         />
       );
     });

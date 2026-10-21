@@ -3,6 +3,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { openRouterModelEndpointsQueryOptions } from "@/lib/openrouter/endpoints";
 import { ModelPicker } from "@/lib/openrouter/ModelPicker";
 import { ProviderRoutingPicker } from "@/lib/openrouter/ProviderRoutingPicker";
@@ -161,41 +167,57 @@ export function AiSettingsForm({
 
         {isFull ? (
           <>
-            <SettingsSection
-              title="Résumé assistant instructions"
-              aside={isCustomSystemPrompt || promptDirty ? "Custom" : "Default"}
-            >
-              <Textarea
-                id="event-sourced-system-prompt"
-                value={promptDraft}
-                onChange={(event) =>
-                  setPromptDraft(event.target.value.slice(0, EVENT_SOURCED_SYSTEM_PROMPT_MAX_CHARS))
-                }
-                rows={10}
-                aria-label="System prompt"
-                className="min-h-40 font-mono text-xs leading-5"
-                data-test="event-sourced-system-prompt-input"
-              />
-              <div className="flex items-center justify-between gap-2">
-                <p className="text-muted-foreground text-xs">
-                  {promptDraft.length.toLocaleString()} /{" "}
-                  {EVENT_SOURCED_SYSTEM_PROMPT_MAX_CHARS.toLocaleString()}
-                </p>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  disabled={!isCustomSystemPrompt && !promptDirty}
-                  onClick={() => {
-                    aiSettings.resetSystemPrompt();
-                    setPromptDraft(DEFAULT_EVENT_SOURCED_SYSTEM_PROMPT);
-                  }}
-                  data-test="event-sourced-system-prompt-reset"
-                >
-                  Reset default
-                </Button>
-              </div>
-            </SettingsSection>
+            <Accordion type="single" collapsible data-test="event-sourced-system-prompt-accordion">
+              <AccordionItem value="instructions" className="border-0">
+                <AccordionTrigger className="group py-1 hover:no-underline">
+                  <span className="flex min-w-0 flex-1 flex-col gap-1 pr-2 text-left">
+                    <span className="flex items-center justify-between gap-3">
+                      <span>Résumé assistant instructions</span>
+                      <span className="text-muted-foreground text-xs font-normal">
+                        {isCustomSystemPrompt || promptDirty ? "Custom" : "Default"}
+                      </span>
+                    </span>
+                    <span className="text-muted-foreground line-clamp-3 text-xs font-normal whitespace-pre-wrap group-data-[state=open]:hidden">
+                      {promptDraft}
+                    </span>
+                  </span>
+                </AccordionTrigger>
+                <AccordionContent className="flex flex-col gap-2">
+                  <Textarea
+                    id="event-sourced-system-prompt"
+                    value={promptDraft}
+                    onChange={(event) =>
+                      setPromptDraft(
+                        event.target.value.slice(0, EVENT_SOURCED_SYSTEM_PROMPT_MAX_CHARS),
+                      )
+                    }
+                    rows={16}
+                    aria-label="System prompt"
+                    className="field-sizing-fixed max-h-[50vh] min-h-80 resize-y font-mono text-xs leading-5"
+                    data-test="event-sourced-system-prompt-input"
+                  />
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-muted-foreground text-xs">
+                      {promptDraft.length.toLocaleString()} /{" "}
+                      {EVENT_SOURCED_SYSTEM_PROMPT_MAX_CHARS.toLocaleString()}
+                    </p>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      disabled={!isCustomSystemPrompt && !promptDirty}
+                      onClick={() => {
+                        aiSettings.resetSystemPrompt();
+                        setPromptDraft(DEFAULT_EVENT_SOURCED_SYSTEM_PROMPT);
+                      }}
+                      data-test="event-sourced-system-prompt-reset"
+                    >
+                      Reset default
+                    </Button>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
 
             <div className="flex items-start justify-between gap-4">
               <div className="grid gap-1">

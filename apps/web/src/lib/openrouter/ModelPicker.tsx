@@ -96,7 +96,12 @@ export function ModelPicker({ value, onChange }: ModelPickerProps) {
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<ModelSort>("popular");
   const [oldestFirst, setOldestFirst] = useState(false);
-  const [lab, setLab] = useState("");
+  const [lab, setLab] = useState(() => modelAuthor(value));
+  const [labForModel, setLabForModel] = useState(value);
+  if (value !== labForModel) {
+    setLabForModel(value);
+    setLab(modelAuthor(value));
+  }
   const [freeOnly, setFreeOnly] = useState(false);
   const [toolsOnly, setToolsOnly] = useState(true);
   const { data: models, isLoading, isError } = useOpenRouterModels();
