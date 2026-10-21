@@ -15,8 +15,10 @@ import { ResumeWorkbenchView } from "@/routes/_dashboard/resumes/$resumeId/-comp
 import { useEventSourcedResumeDetail } from "@/routes/_dashboard/resumes/$resumeId/-hooks/use-event-sourced-resume-detail";
 import { useLiveQuery } from "@tanstack/react-db";
 import * as Sentry from "@sentry/tanstackstart-react";
-import { FlaskConical } from "lucide-react";
+import { FlaskConical, Trash2 } from "lucide-react";
 import { useState, type ReactNode } from "react";
+import { toast } from "sonner";
+import { deleteChatLabDrafts, isChatLabDraft } from "../-utils/chat-lab-cleanup";
 import { CHAT_LAB_PRESETS, isChatLabPreset, type ChatLabPresetId } from "../-utils/chat-lab-script";
 
 const LAB_CONNECTION = "/api/ai/chat-lab";
@@ -44,6 +46,19 @@ export function ChatLabPage() {
   if (resumeId === null && newestId !== null) setResumeId(newestId);
   const selectedId = resumeId ?? newestId;
   const selectedPreset = CHAT_LAB_PRESETS.find((item) => item.id === preset) ?? CHAT_LAB_PRESETS[0];
+  const draftCount = (resumes ?? []).filter((resume) => isChatLabDraft(resume)).length;
+
+  function removeLabDrafts() {
+    const list = resumes ?? [];
+    const { removed, nextId } = deleteChatLabDrafts({ db, resumes: list });
+    if (removed === 0) {
+      toast.message("No lab copies to remove");
+      return;
+    }
+    const openWasDraft = list.some((resume) => resume.id === selectedId && isChatLabDraft(resume));
+    if (openWasDraft) setResumeId(nextId);
+    toast.success(removed === 1 ? "Removed 1 lab copy" : `Removed ${removed} lab copies`);
+  }
 
   const drawer = (
     <Sheet>
@@ -100,6 +115,7 @@ export function ChatLabPage() {
             </Select>
             <p className="text-xs text-muted-foreground">{selectedPreset.detail}</p>
           </div>
+          <ChatLabCleanupButton count={draftCount} onClick={removeLabDrafts} />
           <ChatLabProbeButton />
         </div>
       </SheetContent>
@@ -123,6 +139,23 @@ export function ChatLabPage() {
     <div className="flex h-full min-h-0 w-full flex-col" data-test="chat-lab-page">
       <ChatLabWorkbench key={selectedId} resumeId={selectedId} preset={preset} navExtra={drawer} />
     </div>
+  );
+}
+
+function ChatLabCleanupButton({ count, onClick }: { count: number; onClick: () => void }) {
+  return (
+    <Button
+      type="button"
+      variant="outline"
+      size="sm"
+      className="justify-start gap-2"
+      disabled={count === 0}
+      data-test="chat-lab-cleanup"
+      onClick={onClick}
+    >
+      <Trash2 className="size-3.5" />
+      {count === 0 ? "No lab copies" : `Remove ${count} lab ${count === 1 ? "copy" : "copies"}`}
+    </Button>
   );
 }
 

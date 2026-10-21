@@ -44,7 +44,7 @@ export function useDashboardAssistantChat(options: { onHandedOff: () => void }) 
   const isReady = isLocalMode || !!settings;
   const userIdRef = useRef(userId);
   userIdRef.current = userId;
-  const persistenceRef = useRef(
+  const [persistence] = useState(() =>
     createLocalChatPersistence<typeof dashboardAssistantClientTools>(
       () => `dashboard-assistant:${userIdRef.current || "local"}`,
     ),
@@ -69,7 +69,7 @@ export function useDashboardAssistantChat(options: { onHandedOff: () => void }) 
   const chat = useChat({
     threadId: `dashboard-assistant:${userId || "local"}`,
     connection: fetchServerSentEvents("/api/ai/dashboard-assistant"),
-    persistence: persistenceRef.current,
+    persistence,
     tools: dashboardAssistantClientTools,
     context,
     queue: "drop",
@@ -87,6 +87,18 @@ export function useDashboardAssistantChat(options: { onHandedOff: () => void }) 
   });
 
   const { messages, isLoading, status } = chat;
+
+  useEffect(() => {
+    if (!isLoading) persistence.flush();
+  }, [isLoading, persistence]);
+
+  useEffect(() => {
+    window.addEventListener("pagehide", persistence.flush);
+    return () => {
+      window.removeEventListener("pagehide", persistence.flush);
+      persistence.flush();
+    };
+  }, [persistence]);
   const { onHandedOff } = options;
 
   useEffect(() => {

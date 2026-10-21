@@ -121,7 +121,7 @@ function VirtualMessageRows({ messages, scrollRef }: VirtualMessageRowsProps) {
         return (
           <div
             key={item.key}
-            ref={row.measure ? virtualizer.measureElement : undefined}
+            ref={virtualizer.measureElement}
             data-index={item.index}
             className="absolute top-0 left-0 w-full"
             style={{ transform: `translateY(${item.start}px)` }}

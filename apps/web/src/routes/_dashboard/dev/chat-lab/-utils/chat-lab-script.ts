@@ -1,5 +1,8 @@
 import { EventType, type StreamChunk } from "@tanstack/ai";
 
+/** Copies the lab inserts. The Dev drawer deletes rows with these names. */
+export const CHAT_LAB_DRAFT_NAMES = ["JD draft (chat lab)", "Chat lab stress draft"] as const;
+
 export const CHAT_LAB_PRESETS = [
   {
     id: "jd-draft",
@@ -308,7 +311,7 @@ async function* jdDraftRun(
     `${runId}-clone`,
     "clone_resume",
     JSON.stringify({
-      name: "JD draft (chat lab)",
+      name: CHAT_LAB_DRAFT_NAMES[0],
       description: "Scripted copy from the chat lab. Safe to delete.",
       makeActive: false,
     }),
@@ -398,7 +401,7 @@ function calltekSteps(
       name: "clone_resume",
       args: {
         sourceResumeId: resumeId,
-        name: "Chat lab stress draft",
+        name: CHAT_LAB_DRAFT_NAMES[1],
         description: "Inactive copy from the CallTek stress preset. Safe to delete.",
         makeActive: false,
       },

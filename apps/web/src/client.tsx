@@ -1,3 +1,4 @@
+import "./lib/react-devtools-mcp/register.client";
 import "./instrument.client";
 
 import { StartClient } from "@tanstack/react-start/client";
