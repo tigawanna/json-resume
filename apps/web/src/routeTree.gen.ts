@@ -52,7 +52,6 @@ import { Route as ApiAiEventSourcedResumeTailorRouteImport } from './routes/api/
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ApiCronProjectSyncEventsRouteImport } from './routes/api/cron/project-sync-events'
 import { Route as ApiCronSquashSyncEventsRouteImport } from './routes/api/cron/squash-sync-events'
-import { Route as ApiDevAiDevtoolsLogRouteImport } from './routes/api/dev/ai-devtools-log'
 import { Route as ApiSyncCompactRouteImport } from './routes/api/sync/compact'
 import { Route as ApiSyncEventsRouteImport } from './routes/api/sync/events'
 import { Route as RPublicIdIndexRouteImport } from './routes/r/$publicId/index'
@@ -294,11 +293,6 @@ const ApiCronSquashSyncEventsRoute = ApiCronSquashSyncEventsRouteImport.update({
   path: '/api/cron/squash-sync-events',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiDevAiDevtoolsLogRoute = ApiDevAiDevtoolsLogRouteImport.update({
-  id: '/api/dev/ai-devtools-log',
-  path: '/api/dev/ai-devtools-log',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiSyncCompactRoute = ApiSyncCompactRouteImport.update({
   id: '/api/sync/compact',
   path: '/api/sync/compact',
@@ -403,7 +397,6 @@ export interface FileRoutesByFullPath {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/cron/project-sync-events': typeof ApiCronProjectSyncEventsRoute
   '/api/cron/squash-sync-events': typeof ApiCronSquashSyncEventsRoute
-  '/api/dev/ai-devtools-log': typeof ApiDevAiDevtoolsLogRoute
   '/api/sync/compact': typeof ApiSyncCompactRoute
   '/api/sync/events': typeof ApiSyncEventsRoute
   '/admin/': typeof DashboardAdminIndexRoute
@@ -462,7 +455,6 @@ export interface FileRoutesByTo {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/cron/project-sync-events': typeof ApiCronProjectSyncEventsRoute
   '/api/cron/squash-sync-events': typeof ApiCronSquashSyncEventsRoute
-  '/api/dev/ai-devtools-log': typeof ApiDevAiDevtoolsLogRoute
   '/api/sync/compact': typeof ApiSyncCompactRoute
   '/api/sync/events': typeof ApiSyncEventsRoute
   '/admin': typeof DashboardAdminIndexRoute
@@ -524,7 +516,6 @@ export interface FileRoutesById {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/cron/project-sync-events': typeof ApiCronProjectSyncEventsRoute
   '/api/cron/squash-sync-events': typeof ApiCronSquashSyncEventsRoute
-  '/api/dev/ai-devtools-log': typeof ApiDevAiDevtoolsLogRoute
   '/api/sync/compact': typeof ApiSyncCompactRoute
   '/api/sync/events': typeof ApiSyncEventsRoute
   '/_dashboard/admin/': typeof DashboardAdminIndexRoute
@@ -586,7 +577,6 @@ export interface FileRouteTypes {
     | '/api/auth/$'
     | '/api/cron/project-sync-events'
     | '/api/cron/squash-sync-events'
-    | '/api/dev/ai-devtools-log'
     | '/api/sync/compact'
     | '/api/sync/events'
     | '/admin/'
@@ -645,7 +635,6 @@ export interface FileRouteTypes {
     | '/api/auth/$'
     | '/api/cron/project-sync-events'
     | '/api/cron/squash-sync-events'
-    | '/api/dev/ai-devtools-log'
     | '/api/sync/compact'
     | '/api/sync/events'
     | '/admin'
@@ -706,7 +695,6 @@ export interface FileRouteTypes {
     | '/api/auth/$'
     | '/api/cron/project-sync-events'
     | '/api/cron/squash-sync-events'
-    | '/api/dev/ai-devtools-log'
     | '/api/sync/compact'
     | '/api/sync/events'
     | '/_dashboard/admin/'
@@ -763,7 +751,6 @@ export interface RootRouteChildren {
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiCronProjectSyncEventsRoute: typeof ApiCronProjectSyncEventsRoute
   ApiCronSquashSyncEventsRoute: typeof ApiCronSquashSyncEventsRoute
-  ApiDevAiDevtoolsLogRoute: typeof ApiDevAiDevtoolsLogRoute
   ApiSyncCompactRoute: typeof ApiSyncCompactRoute
   ApiSyncEventsRoute: typeof ApiSyncEventsRoute
   RPublicIdIndexRoute: typeof RPublicIdIndexRoute
@@ -1073,13 +1060,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiCronSquashSyncEventsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/dev/ai-devtools-log': {
-      id: '/api/dev/ai-devtools-log'
-      path: '/api/dev/ai-devtools-log'
-      fullPath: '/api/dev/ai-devtools-log'
-      preLoaderRoute: typeof ApiDevAiDevtoolsLogRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/sync/compact': {
       id: '/api/sync/compact'
       path: '/api/sync/compact'
@@ -1314,7 +1294,6 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiCronProjectSyncEventsRoute: ApiCronProjectSyncEventsRoute,
   ApiCronSquashSyncEventsRoute: ApiCronSquashSyncEventsRoute,
-  ApiDevAiDevtoolsLogRoute: ApiDevAiDevtoolsLogRoute,
   ApiSyncCompactRoute: ApiSyncCompactRoute,
   ApiSyncEventsRoute: ApiSyncEventsRoute,
   RPublicIdIndexRoute: RPublicIdIndexRoute,

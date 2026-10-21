@@ -68,7 +68,7 @@ export function ResumeAiMessage({ message, Parts }: MessageProps<ResumeAiChatOpt
           </>
         ) : null}
       </div>
-      {isUser ? (
+      {isUser || text ? (
         <div className="flex items-center gap-1">
           <PromptActionButton
             label="Copy prompt"

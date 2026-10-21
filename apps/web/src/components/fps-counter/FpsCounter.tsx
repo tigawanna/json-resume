@@ -1,10 +1,5 @@
 import { Button } from "@/components/ui/button";
 import { useFrameStats, type FrameStats } from "@/hooks/use-frame-stats";
-import {
-  enqueueClientLog,
-  latestAiActivity,
-  startAiDevtoolsClientLog,
-} from "@/lib/tanstack/devtools/ai-devtools-client-log";
 import { cn } from "@/lib/utils";
 import {
   addScriptTimes,
@@ -16,8 +11,6 @@ import { useEffect, useRef, useState, type PointerEvent } from "react";
 
 const LOG_PREFIX = "[fps]";
 const SLOW_FPS = 30;
-/** A second this close to an AI event stays in the log even when the frame rate is fine. */
-const ACTIVITY_WINDOW_MS = 5_000;
 
 interface RecordedSample {
   second: number;
@@ -112,19 +105,8 @@ export function FpsCounter(props: FpsCounterProps) {
   return <FpsCounterBadge {...props} />;
 }
 
-function scriptBreakdown(scriptMs: Map<string, number>) {
-  return [...scriptMs.entries()]
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 5)
-    .map(([source, ms]) => ({ source, ms: Math.round(ms) }));
-}
-
 function FpsCounterBadge({ label = "app", className }: FpsCounterProps) {
   const [recording, setRecording] = useState(false);
-
-  useEffect(() => {
-    startAiDevtoolsClientLog();
-  }, []);
   const [position, setPosition] = useState(readPosition);
   const positionRef = useRef(position);
   positionRef.current = position;
@@ -137,30 +119,6 @@ function FpsCounterBadge({ label = "app", className }: FpsCounterProps) {
   } | null>(null);
 
   function handleSample(stats: FrameStats) {
-    const at = Date.now();
-    const activity = latestAiActivity();
-    const activityAgeMs = activity ? at - activity.at : null;
-    const nearActivity = activityAgeMs !== null && activityAgeMs <= ACTIVITY_WINDOW_MS;
-    if (stats.fps < 50 || nearActivity) {
-      enqueueClientLog({
-        source: "fps",
-        type: "fps",
-        at,
-        event: {
-          label,
-          fps: stats.fps,
-          longTaskMs: stats.longTaskMs,
-          extensionMs: stats.extensionMs,
-          domNodes: stats.domNodes,
-          windowMs: Math.round(stats.windowMs),
-          scripts: scriptBreakdown(stats.scriptMs),
-          activity: activity?.type ?? null,
-          activityAt: activity?.at ?? null,
-          activityAgeMs,
-        },
-      });
-    }
-
     const current = recordingRef.current;
     if (!current) return;
     const sample: RecordedSample = {

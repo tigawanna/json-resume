@@ -1,4 +1,3 @@
-import "@/lib/tanstack/devtools/ai-devtools-log.server";
 import "@tanstack/react-start/server-only";
 
 import {

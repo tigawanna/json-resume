@@ -83,36 +83,46 @@ const MARKDOWN = [
 ].join("");
 
 type LoosePart = { type?: string };
-type LooseMessage = { role?: string; parts?: LoosePart[] };
-
-/** True once the client has posted a tool result back for this turn. */
-export function continuingAfterTool(messages: unknown): boolean {
-  if (!Array.isArray(messages)) return false;
-  let lastUser = -1;
-  messages.forEach((message, index) => {
-    if (isMessage(message) && message.role === "user") lastUser = index;
-  });
-  return messages.slice(lastUser + 1).some((message) => {
-    if (!isMessage(message) || !Array.isArray(message.parts)) return false;
-    return message.parts.some((part) => part.type === "tool-result" || part.type === "tool-call");
-  });
-}
+/** Covers both UI messages (`parts`) and the wire shape the client posts (`toolCalls`, `role: "tool"`). */
+type LooseMessage = { role?: string; parts?: LoosePart[]; toolCalls?: unknown[] };
 
 function isMessage(value: unknown): value is LooseMessage {
   return typeof value === "object" && value !== null;
 }
 
-/** Tool calls the client already ran for the prompt that is still in flight. */
-function toolCallCount(messages: unknown): number {
-  if (!Array.isArray(messages)) return 0;
+function messagesSinceLastUser(messages: unknown): LooseMessage[] {
+  if (!Array.isArray(messages)) return [];
   let lastUser = -1;
   messages.forEach((message, index) => {
     if (isMessage(message) && message.role === "user") lastUser = index;
   });
-  return messages.slice(lastUser + 1).reduce((count, message) => {
-    if (!isMessage(message) || !Array.isArray(message.parts)) return count;
-    return count + message.parts.filter((part) => part.type === "tool-call").length;
-  }, 0);
+  return messages.slice(lastUser + 1).filter(isMessage);
+}
+
+function toolCallsIn(message: LooseMessage): number {
+  const fromParts = Array.isArray(message.parts)
+    ? message.parts.filter((part) => part.type === "tool-call").length
+    : 0;
+  const fromWire = Array.isArray(message.toolCalls) ? message.toolCalls.length : 0;
+  return Math.max(fromParts, fromWire);
+}
+
+/** True once the client has posted a tool round back for this turn. */
+export function continuingAfterTool(messages: unknown): boolean {
+  return messagesSinceLastUser(messages).some(
+    (message) =>
+      message.role === "tool" ||
+      toolCallsIn(message) > 0 ||
+      (Array.isArray(message.parts) && message.parts.some((part) => part.type === "tool-result")),
+  );
+}
+
+/** Tool calls the client already ran for the prompt that is still in flight. */
+function toolCallCount(messages: unknown): number {
+  return messagesSinceLastUser(messages).reduce(
+    (count, message) => count + toolCallsIn(message),
+    0,
+  );
 }
 
 function sleep(ms: number, signal: AbortSignal | undefined) {

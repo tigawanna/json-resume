@@ -39,7 +39,10 @@ export function ChatLabPage() {
   );
   const [resumeId, setResumeId] = useState<string | null>(null);
   const [preset, setPreset] = useState<ChatLabPresetId>("jd-draft");
-  const selectedId = resumeId ?? resumes?.[0]?.id ?? null;
+  // Pinned on first load: a clone becomes the newest résumé and would otherwise remount the lab mid-run.
+  const newestId = resumes?.[0]?.id ?? null;
+  if (resumeId === null && newestId !== null) setResumeId(newestId);
+  const selectedId = resumeId ?? newestId;
   const selectedPreset = CHAT_LAB_PRESETS.find((item) => item.id === preset) ?? CHAT_LAB_PRESETS[0];
 
   const drawer = (

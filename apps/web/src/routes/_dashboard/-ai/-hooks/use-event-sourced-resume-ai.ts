@@ -5,7 +5,7 @@ import type { PromptAreaHandle } from "@/components/prompt-area/types";
 import { fetchServerSentEvents, useChat, type UIMessage } from "@tanstack/ai-react";
 import { eq, useLiveQuery } from "@tanstack/react-db";
 import { useRouter } from "@tanstack/react-router";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { aiModelLabels } from "../-utils/ai-model-labels";
 import { CONTINUE_AFTER_ERROR_PROMPT, failedRunHasReply } from "../-utils/chat-error";
 import { eventSourcedResumeAiClientTools } from "../-utils/client-tools";
@@ -49,7 +49,7 @@ export function useEventSourcedResumeAiChat(options?: {
   const userIdRef = useRef(userId);
   dbRef.current = db;
   userIdRef.current = userId;
-  const persistenceRef = useRef(
+  const [persistence] = useState(() =>
     createEventSourcedChatPersistence<typeof eventSourcedResumeAiClientTools>({
       getDb: () => dbRef.current,
       getUserId: () => userIdRef.current,
@@ -112,7 +112,7 @@ export function useEventSourcedResumeAiChat(options?: {
   const chat = useChat({
     threadId: options?.connection ? `chat-lab:${resumeId}` : `event-sourced-resume-ai:${resumeId}`,
     connection: fetchServerSentEvents(options?.connection ?? "/api/ai/event-sourced-resume-tailor"),
-    persistence: persistenceRef.current,
+    persistence,
     tools: eventSourcedResumeAiClientTools,
     context,
     // ai-client 0.39 loses messages queued during client-tool rounds; see todos/chat-prompt-queue.md.
@@ -135,6 +135,18 @@ export function useEventSourcedResumeAiChat(options?: {
   });
 
   const { messages, isLoading, status, sessionGenerating } = chat;
+
+  useEffect(() => {
+    if (!isLoading) persistence.flush();
+  }, [isLoading, persistence]);
+
+  useEffect(() => {
+    window.addEventListener("pagehide", persistence.flush);
+    return () => {
+      window.removeEventListener("pagehide", persistence.flush);
+      persistence.flush();
+    };
+  }, [persistence]);
 
   // The diff start is taken when a prompt's run begins, so sends from any entry point get one.
   const latestUserMessageId = messages.filter((message) => message.role === "user").at(-1)?.id;

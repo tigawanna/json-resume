@@ -7,8 +7,9 @@ import {
   hasText,
   serializeSegments,
 } from "@/routes/_dashboard/resumes/$resumeId/-components/ResumeAiTab/resume-ai-prompt";
+import { chatMessagesEqual } from "../../-utils/chat-message-equal";
 import { ArrowUp, Square } from "lucide-react";
-import { useState, type RefObject } from "react";
+import { memo, useState, type RefObject } from "react";
 import type { ContextCompaction } from "../../-utils/context-compaction";
 import { ChatErrorNotice } from "../ChatErrorNotice";
 import { AssistantFace } from "./AssistantFace";
@@ -35,6 +36,15 @@ const SUGGESTIONS: Suggestion[] = [
     send: true,
   },
 ];
+
+type DashboardMessage = Parameters<typeof DashboardAssistantChatUI.Message>[0]["message"];
+
+const StableDashboardMessage = memo(
+  function StableDashboardMessage({ message }: { message: DashboardMessage }) {
+    return <DashboardAssistantChatUI.Message message={message} />;
+  },
+  (prev, next) => chatMessagesEqual(prev.message, next.message),
+);
 
 interface DashboardAssistantConversationProps {
   activeModelLabel: string | null;
@@ -137,7 +147,7 @@ export function DashboardAssistantConversation({
             <DashboardAssistantChatUI.Messages>
               {(messages) =>
                 messages.map((message) => (
-                  <DashboardAssistantChatUI.Message key={message.id} message={message} />
+                  <StableDashboardMessage key={message.id} message={message} />
                 ))
               }
             </DashboardAssistantChatUI.Messages>
