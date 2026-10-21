@@ -100,6 +100,59 @@ function ResumeFilterBody({ filter, onDone }: { filter: ResumeFilterState; onDon
     </li>
   );
 
+  function filterRows() {
+    if (isLoading) return <RouterPendingComponent />;
+    if (rows.length === 0) {
+      return (
+        <p className="text-muted-foreground py-10 text-center text-sm">
+          {keyword ? "No résumés match. Try fewer or different words." : "No résumés yet."}
+        </p>
+      );
+    }
+    return (
+      <div className="flex flex-col gap-3 p-2">
+        {pickedCount > 0 ? (
+          <section aria-label="Picked résumés" data-test="resume-filter-picked">
+            <ResumeFilterHeading>
+              Picked · {pickedCount}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="ml-auto h-6 px-2 text-xs"
+                onClick={() => filter.setResumeIds([])}
+                data-test="resume-filter-clear"
+              >
+                Clear all
+              </Button>
+            </ResumeFilterHeading>
+            <ul className="flex flex-col gap-1">
+              {picked.map(renderRow)}
+              {deletedIds.map((id) => (
+                <li key={id}>
+                  <button
+                    type="button"
+                    className="hover:bg-base-content/5 text-muted-foreground flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm"
+                    onClick={() => filter.toggle(id)}
+                    data-test={`resume-filter-deleted-${id}`}
+                  >
+                    <X className="size-4 shrink-0" />
+                    Deleted résumé — remove from filter
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
+        {others.length > 0 ? (
+          <section aria-label="Other résumés" data-test="resume-filter-others">
+            {pickedCount > 0 ? <ResumeFilterHeading>Other résumés</ResumeFilterHeading> : null}
+            <ul className="flex flex-col gap-1">{others.map(renderRow)}</ul>
+          </section>
+        ) : null}
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="border-b p-4">
@@ -125,56 +178,7 @@ function ResumeFilterBody({ filter, onDone }: { filter: ResumeFilterState; onDon
         </InputGroup>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto">
-        {isLoading ? (
-          <RouterPendingComponent />
-        ) : rows.length === 0 ? (
-          <p className="text-muted-foreground py-10 text-center text-sm">
-            {keyword ? "No résumés match. Try fewer or different words." : "No résumés yet."}
-          </p>
-        ) : (
-          <div className="flex flex-col gap-3 p-2">
-            {pickedCount > 0 ? (
-              <section aria-label="Picked résumés" data-test="resume-filter-picked">
-                <ResumeFilterHeading>
-                  Picked · {pickedCount}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="ml-auto h-6 px-2 text-xs"
-                    onClick={() => filter.setResumeIds([])}
-                    data-test="resume-filter-clear"
-                  >
-                    Clear all
-                  </Button>
-                </ResumeFilterHeading>
-                <ul className="flex flex-col gap-1">
-                  {picked.map(renderRow)}
-                  {deletedIds.map((id) => (
-                    <li key={id}>
-                      <button
-                        type="button"
-                        className="hover:bg-base-content/5 text-muted-foreground flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm"
-                        onClick={() => filter.toggle(id)}
-                        data-test={`resume-filter-deleted-${id}`}
-                      >
-                        <X className="size-4 shrink-0" />
-                        Deleted résumé — remove from filter
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            ) : null}
-            {others.length > 0 ? (
-              <section aria-label="Other résumés" data-test="resume-filter-others">
-                {pickedCount > 0 ? <ResumeFilterHeading>Other résumés</ResumeFilterHeading> : null}
-                <ul className="flex flex-col gap-1">{others.map(renderRow)}</ul>
-              </section>
-            ) : null}
-          </div>
-        )}
-      </div>
+      <div className="min-h-0 flex-1 overflow-y-auto">{filterRows()}</div>
 
       <SheetFooter className="flex-row items-center justify-between border-t">
         <span className="text-muted-foreground text-xs" aria-live="polite">

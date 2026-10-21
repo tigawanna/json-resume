@@ -37,8 +37,9 @@ export function SyncActivityPanel({ preferredTab, active, onOpenEvents }: SyncAc
   const outboxCount = useOutboxCount();
   const inboxCount = useInboxCount();
   const deadLetterCount = useDeadLetterCount();
-  const activeCount =
-    tab === "outbox" ? outboxCount : tab === "inbox" ? inboxCount : deadLetterCount;
+  let activeCount = deadLetterCount;
+  if (tab === "outbox") activeCount = outboxCount;
+  else if (tab === "inbox") activeCount = inboxCount;
 
   return (
     <section

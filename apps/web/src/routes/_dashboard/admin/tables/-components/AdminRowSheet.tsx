@@ -239,13 +239,7 @@ function AdminRowEditor({ row, onDone }: { row: LoadedRow; onDone: () => void })
                   {field.primaryKey ? <KeyRound className="size-3" /> : <Lock className="size-3" />}
                   {field.name}
                 </dt>
-                <dd className="break-all font-mono text-xs">
-                  {field.kind === "secret"
-                    ? "••••••"
-                    : field.value == null
-                      ? "NULL"
-                      : String(field.value)}
-                </dd>
+                <dd className="break-all font-mono text-xs">{lockedFieldText(field)}</dd>
               </div>
             ))}
           </dl>
@@ -286,4 +280,10 @@ function AdminRowEditor({ row, onDone }: { row: LoadedRow; onDone: () => void })
       ) : null}
     </div>
   );
+}
+
+function lockedFieldText(field: { kind: string; value: string | number | boolean | null }) {
+  if (field.kind === "secret") return "••••••";
+  if (field.value == null) return "NULL";
+  return String(field.value);
 }

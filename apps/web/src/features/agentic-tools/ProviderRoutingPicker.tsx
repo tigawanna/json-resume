@@ -116,6 +116,46 @@ export function ProviderRoutingPicker({ modelId, value, onChange }: ProviderRout
     onChange({ ...value, providers });
   }
 
+  function providerList() {
+    if (isLoading) {
+      return (
+        <div className="flex h-20 items-center justify-center gap-2 text-sm text-muted-foreground">
+          <Loader2 className="size-4 animate-spin" />
+          Loading providers…
+        </div>
+      );
+    }
+    if (isError) {
+      return (
+        <div className="flex h-20 items-center justify-center gap-2 text-sm text-destructive">
+          <TriangleAlert className="size-4" />
+          Failed to load providers
+        </div>
+      );
+    }
+    if (!endpoints || endpoints.length === 0) {
+      return (
+        <p className="py-6 text-center text-sm text-muted-foreground">
+          No provider details for this model.
+        </p>
+      );
+    }
+    return sortEndpoints(modelId, endpoints, endpointSort).map((endpoint) => {
+      const slug = providerSlugFromTag(endpoint.tag);
+      const position = pinnedSlugs.indexOf(slug);
+      return (
+        <EndpointRow
+          key={endpoint.tag}
+          endpoint={endpoint}
+          official={isOfficialEndpoint(modelId, endpoint)}
+          position={position === -1 ? null : position + 1}
+          selectable={canPick}
+          onToggle={() => toggleProvider(slug)}
+        />
+      );
+    });
+  }
+
   return (
     <div className="flex flex-col gap-3" data-test="provider-routing-picker">
       <ToggleGroup
@@ -212,36 +252,7 @@ export function ProviderRoutingPicker({ modelId, value, onChange }: ProviderRout
       </div>
 
       <div className="max-h-[36vh] overflow-y-auto rounded-2xl bg-base-100/55 p-1 ring-1 ring-[color-mix(in_oklch,var(--color-base-content)_10%,transparent)]">
-        {isLoading ? (
-          <div className="flex h-20 items-center justify-center gap-2 text-sm text-muted-foreground">
-            <Loader2 className="size-4 animate-spin" />
-            Loading providers…
-          </div>
-        ) : isError ? (
-          <div className="flex h-20 items-center justify-center gap-2 text-sm text-destructive">
-            <TriangleAlert className="size-4" />
-            Failed to load providers
-          </div>
-        ) : !endpoints || endpoints.length === 0 ? (
-          <p className="py-6 text-center text-sm text-muted-foreground">
-            No provider details for this model.
-          </p>
-        ) : (
-          sortEndpoints(modelId, endpoints, endpointSort).map((endpoint) => {
-            const slug = providerSlugFromTag(endpoint.tag);
-            const position = pinnedSlugs.indexOf(slug);
-            return (
-              <EndpointRow
-                key={endpoint.tag}
-                endpoint={endpoint}
-                official={isOfficialEndpoint(modelId, endpoint)}
-                position={position === -1 ? null : position + 1}
-                selectable={canPick}
-                onToggle={() => toggleProvider(slug)}
-              />
-            );
-          })
-        )}
+        {providerList()}
       </div>
     </div>
   );

@@ -76,19 +76,9 @@ export function TriggerPopover({
       : { top: `${triggerRect.bottom + 4}px` }),
   };
 
-  return (
-    <div
-      ref={popoverRef}
-      className={cn(
-        "min-w-[200px] overflow-y-auto",
-        "bg-popover rounded-xl border p-2 shadow-md",
-        "animate-in fade-in-0 zoom-in-95",
-      )}
-      style={style}
-      role="listbox"
-      aria-label={`${triggerChar} suggestions`}
-    >
-      {loading ? (
+  function suggestionOptions() {
+    if (loading) {
+      return (
         <div
           role="option"
           aria-selected={false}
@@ -96,11 +86,17 @@ export function TriggerPopover({
         >
           Loading suggestions...
         </div>
-      ) : error ? (
+      );
+    }
+    if (error) {
+      return (
         <div role="option" aria-selected={false} className="text-destructive px-3 py-2 text-sm">
           {error}
         </div>
-      ) : suggestions.length === 0 && emptyMessage ? (
+      );
+    }
+    if (suggestions.length === 0 && emptyMessage) {
+      return (
         <div
           role="option"
           aria-selected={false}
@@ -108,36 +104,49 @@ export function TriggerPopover({
         >
           {emptyMessage}
         </div>
-      ) : (
-        suggestions.map((suggestion, index) => (
-          <button
-            key={suggestion.value}
-            ref={index === selectedIndex ? selectedRef : undefined}
-            type="button"
-            role="option"
-            aria-selected={index === selectedIndex}
-            className={cn(
-              "text-foreground flex w-full items-start gap-2 rounded-lg px-3 py-2 text-left text-sm",
-              "hover:bg-accent cursor-pointer transition-colors",
-              index === selectedIndex && "bg-accent",
-            )}
-            onMouseDown={(e) => {
-              e.preventDefault(); // Prevent blur on the editor
-              onSelect(suggestion);
-            }}
-          >
-            {suggestion.icon && <span className="mt-0.5 shrink-0">{suggestion.icon}</span>}
-            <div className="min-w-0 flex-1">
-              <div className="truncate font-medium">{suggestion.label}</div>
-              {suggestion.description && (
-                <div className="text-muted-foreground truncate text-xs">
-                  {suggestion.description}
-                </div>
-              )}
-            </div>
-          </button>
-        ))
+      );
+    }
+    return suggestions.map((suggestion, index) => (
+      <button
+        key={suggestion.value}
+        ref={index === selectedIndex ? selectedRef : undefined}
+        type="button"
+        role="option"
+        aria-selected={index === selectedIndex}
+        className={cn(
+          "text-foreground flex w-full items-start gap-2 rounded-lg px-3 py-2 text-left text-sm",
+          "hover:bg-accent cursor-pointer transition-colors",
+          index === selectedIndex && "bg-accent",
+        )}
+        onMouseDown={(event) => {
+          event.preventDefault();
+          onSelect(suggestion);
+        }}
+      >
+        {suggestion.icon ? <span className="mt-0.5 shrink-0">{suggestion.icon}</span> : null}
+        <div className="min-w-0 flex-1">
+          <div className="truncate font-medium">{suggestion.label}</div>
+          {suggestion.description ? (
+            <div className="text-muted-foreground truncate text-xs">{suggestion.description}</div>
+          ) : null}
+        </div>
+      </button>
+    ));
+  }
+
+  return (
+    <div
+      ref={popoverRef}
+      className={cn(
+        "min-w-50 overflow-y-auto",
+        "bg-popover rounded-xl border p-2 shadow-md",
+        "animate-in fade-in-0 zoom-in-95",
       )}
+      style={style}
+      role="listbox"
+      aria-label={`${triggerChar} suggestions`}
+    >
+      {suggestionOptions()}
     </div>
   );
 }

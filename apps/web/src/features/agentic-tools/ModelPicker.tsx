@@ -38,6 +38,12 @@ interface ModelPickerProps {
 const modelSorts = ["popular", "cheapest", "newest", "context"] as const;
 type ModelSort = (typeof modelSorts)[number];
 
+function newestSortIcon(option: ModelSort, sort: ModelSort, oldestFirst: boolean) {
+  if (option !== "newest" || sort !== "newest") return null;
+  if (oldestFirst) return <ArrowUp className="size-3" aria-label="oldest first" />;
+  return <ArrowDown className="size-3" aria-label="newest first" />;
+}
+
 const sortLabels: Record<ModelSort, string> = {
   popular: "Popular",
   cheapest: "Cheapest",
@@ -172,13 +178,7 @@ export function ModelPicker({ value, onChange }: ModelPickerProps) {
               data-test={`model-picker-sort-${option}`}
             >
               {sortLabels[option]}
-              {option === "newest" && sort === "newest" ? (
-                oldestFirst ? (
-                  <ArrowUp className="size-3" aria-label="oldest first" />
-                ) : (
-                  <ArrowDown className="size-3" aria-label="newest first" />
-                )
-              ) : null}
+              {newestSortIcon(option, sort, oldestFirst)}
             </ToggleGroupItem>
           ))}
         </ToggleGroup>

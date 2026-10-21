@@ -34,6 +34,13 @@ export function SyncBatchSizeControl({ disabled = false }: { disabled?: boolean 
   const tuned =
     tuning.pushBatchSize !== undefined || tuning.maxPushBytes !== undefined || stats !== undefined;
 
+  let capCopy = `Requests stop at ${formatBytes(limits.maxPushBytes ?? 0)}. Your events average ${formatBytes(stats?.avgEventBytes ?? 0)}, so about ${fit} fit; each request sends up to ${effective}.`;
+  if (limits.maxPushBytes === null) {
+    capCopy = "No size cap; every request sends up to this many events.";
+  } else if (fit === null) {
+    capCopy = `Requests also stop at ${formatBytes(limits.maxPushBytes)}, so large rows go out in smaller batches.`;
+  }
+
   return (
     <div className="flex flex-col gap-3" data-test="sync-batch-size">
       <div className="flex items-center justify-between gap-4">
@@ -58,13 +65,7 @@ export function SyncBatchSizeControl({ disabled = false }: { disabled?: boolean 
         }}
         data-test="sync-batch-size-slider"
       />
-      <p className="text-muted-foreground text-xs leading-relaxed">
-        {limits.maxPushBytes === null
-          ? "No size cap; every request sends up to this many events."
-          : fit === null
-            ? `Requests also stop at ${formatBytes(limits.maxPushBytes)}, so large rows go out in smaller batches.`
-            : `Requests stop at ${formatBytes(limits.maxPushBytes)}. Your events average ${formatBytes(stats?.avgEventBytes ?? 0)}, so about ${fit} fit; each request sends up to ${effective}.`}
-      </p>
+      <p className="text-muted-foreground text-xs leading-relaxed">{capCopy}</p>
       {stats && stats.largestOkEvents > 0 ? (
         <p className="text-muted-foreground text-xs" data-test="sync-batch-size-history">
           Largest accepted request: {stats.largestOkEvents} events,{" "}

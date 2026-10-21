@@ -114,6 +114,12 @@ export function ResumeAiPromptComposer({
     return result;
   }
 
+  let placeholder: string | string[] = emptyChatPlaceholders;
+  if (!isReady) placeholder = "Configure your OpenRouter API key in settings to start chatting...";
+  else if (awaitingApproval)
+    placeholder = "Approve the change above, or reply here to decline it...";
+  else if (hasMessages) placeholder = "Ask for another change...";
+
   return (
     <div className="mx-auto w-full max-w-3xl" data-test="resume-ai-composer">
       {errorMessage && !isBusy ? (
@@ -142,15 +148,7 @@ export function ResumeAiPromptComposer({
             value={segments}
             onChange={setSegments}
             onSubmit={handleSend}
-            placeholder={
-              !isReady
-                ? "Configure your OpenRouter API key in settings to start chatting..."
-                : awaitingApproval
-                  ? "Approve the change above, or reply here to decline it..."
-                  : hasMessages
-                    ? "Ask for another change..."
-                    : emptyChatPlaceholders
-            }
+            placeholder={placeholder}
             disabled={!isReady || isBusy}
             markdown
             normalizeBullets={false}

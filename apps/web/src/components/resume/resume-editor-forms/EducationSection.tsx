@@ -13,6 +13,12 @@ import { formOptions } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
 import { ArrowDown, ArrowUp, Library, Pencil, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
+
+function educationDates(startDate: string | null | undefined, endDate: string | null | undefined) {
+  if (startDate && endDate) return ` · ${startDate} – ${endDate}`;
+  if (endDate) return ` · ${endDate}`;
+  return "";
+}
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -200,11 +206,7 @@ function EducationCard({
         <CardContent>
           <p className="text-muted-foreground text-xs">
             {education.school}
-            {education.startDate && education.endDate
-              ? ` · ${education.startDate} – ${education.endDate}`
-              : education.endDate
-                ? ` · ${education.endDate}`
-                : ""}
+            {educationDates(education.startDate, education.endDate)}
           </p>
           {education.description && <p className="mt-1 text-sm">{education.description}</p>}
         </CardContent>

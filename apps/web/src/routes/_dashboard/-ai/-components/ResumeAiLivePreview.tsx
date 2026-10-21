@@ -92,6 +92,40 @@ export function ResumeAiLivePreview({
       ? diffResumeJson(baselineJson, currentJson)
       : null;
 
+  function previewBody() {
+    if (view === "cover-letter") {
+      return (
+        <TabsContent value="cover-letter" className="mt-0 min-h-0 flex-1">
+          <ResumeAiCoverLetterPreview coverLetterId={coverLetterId} resumeId={resumeId} />
+        </TabsContent>
+      );
+    }
+    if (view === "answers") {
+      return (
+        <TabsContent value="answers" className="mt-0 min-h-0 flex-1">
+          <ResumeAiAnswersPreview jobId={answersJobId} resumeId={resumeId} />
+        </TabsContent>
+      );
+    }
+    if (detail && templateId) {
+      return (
+        <>
+          <TabsContent value="preview" className="mt-0 min-h-0 flex-1">
+            <LivePreviewPaper detail={{ ...detail, templateId }} />
+          </TabsContent>
+          <TabsContent value="changes" className="mt-0 min-h-0 flex-1">
+            <LivePreviewChanges diff={diff} />
+          </TabsContent>
+        </>
+      );
+    }
+    return (
+      <div className="text-base-content/60 flex flex-1 items-center justify-center p-6 text-sm">
+        {isLoading ? <Loader2 className="size-6 animate-spin" /> : "This résumé isn't available."}
+      </div>
+    );
+  }
+
   return (
     <Tabs
       value={view}
@@ -198,28 +232,7 @@ export function ResumeAiLivePreview({
           </Button>
         </div>
       </header>
-      {view === "cover-letter" ? (
-        <TabsContent value="cover-letter" className="mt-0 min-h-0 flex-1">
-          <ResumeAiCoverLetterPreview coverLetterId={coverLetterId} resumeId={resumeId} />
-        </TabsContent>
-      ) : view === "answers" ? (
-        <TabsContent value="answers" className="mt-0 min-h-0 flex-1">
-          <ResumeAiAnswersPreview jobId={answersJobId} resumeId={resumeId} />
-        </TabsContent>
-      ) : detail && templateId ? (
-        <>
-          <TabsContent value="preview" className="mt-0 min-h-0 flex-1">
-            <LivePreviewPaper detail={{ ...detail, templateId }} />
-          </TabsContent>
-          <TabsContent value="changes" className="mt-0 min-h-0 flex-1">
-            <LivePreviewChanges diff={diff} />
-          </TabsContent>
-        </>
-      ) : (
-        <div className="text-base-content/60 flex flex-1 items-center justify-center p-6 text-sm">
-          {isLoading ? <Loader2 className="size-6 animate-spin" /> : "This résumé isn't available."}
-        </div>
-      )}
+      {previewBody()}
     </Tabs>
   );
 }
@@ -262,6 +275,12 @@ function LivePreviewPaper({ detail }: { detail: ResumeDetail }) {
   );
 }
 
+function diffMarker(kind: "add" | "remove" | "context") {
+  if (kind === "add") return "+";
+  if (kind === "remove") return "−";
+  return " ";
+}
+
 function LivePreviewChanges({ diff }: { diff: ReturnType<typeof diffResumeJson> | null }) {
   if (!diff || diff.hunks.length === 0) {
     return (
@@ -298,9 +317,7 @@ function LivePreviewChanges({ diff }: { diff: ReturnType<typeof diffResumeJson> 
                 )}
                 data-test={`resume-ai-changes-${line.kind}`}
               >
-                <span className="w-4 shrink-0 select-none opacity-60">
-                  {line.kind === "add" ? "+" : line.kind === "remove" ? "−" : " "}
-                </span>
+                <span className="w-4 shrink-0 select-none opacity-60">{diffMarker(line.kind)}</span>
                 <span className="min-w-0">{line.text}</span>
               </div>
             ))}

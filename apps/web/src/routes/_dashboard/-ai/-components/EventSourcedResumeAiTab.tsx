@@ -45,6 +45,10 @@ export function EventSourcedResumeAiTab(props?: {
   const labError =
     props?.lab && isApiKeyErrorMessage(chat.chatErrorMessage) ? null : chat.chatErrorMessage;
 
+  let previewLayout: "rail" | "maximized" | "panel" = "panel";
+  if (previewCollapsed) previewLayout = "rail";
+  else if (chatCollapsed) previewLayout = "maximized";
+
   return (
     <div className="flex h-full min-h-0 w-full flex-col" data-test="event-sourced-resume-ai-tab">
       <EventSourcedAiChrome
@@ -106,7 +110,7 @@ export function EventSourcedResumeAiTab(props?: {
               onResize={() => setPreviewCollapsed(previewPanelRef.current?.isCollapsed() ?? false)}
             >
               <ResumeAiLivePreview
-                layout={previewCollapsed ? "rail" : chatCollapsed ? "maximized" : "panel"}
+                layout={previewLayout}
                 onMinimize={() => previewPanelRef.current?.collapse()}
                 onRestore={() => {
                   if (previewCollapsed) previewPanelRef.current?.expand();

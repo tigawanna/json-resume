@@ -55,14 +55,10 @@ export function LandingSyncDemo() {
   }
 
   const copy = PHASE_COPY[phase];
-  const Icon =
-    phase === "local"
-      ? RefreshCwOff
-      : phase === "syncing"
-        ? RefreshCw
-        : phase === "error"
-          ? CloudAlert
-          : CloudCheck;
+  let Icon = CloudCheck;
+  if (phase === "local") Icon = RefreshCwOff;
+  else if (phase === "syncing") Icon = RefreshCw;
+  else if (phase === "error") Icon = CloudAlert;
 
   return (
     <div

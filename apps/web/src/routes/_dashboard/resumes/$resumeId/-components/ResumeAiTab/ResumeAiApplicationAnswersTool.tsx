@@ -17,6 +17,9 @@ export function ResumeAiSaveApplicationAnswersTool({
   const first = saved?.answers[0];
   const jobId = first?.jobId ?? null;
   const gaps = saved?.answers.reduce((total, row) => total + row.placeholders, 0) ?? 0;
+  let answersSearch: { resumeIds: string[] } | { jobId: string } | Record<string, never> = {};
+  if (first?.resumeId) answersSearch = { resumeIds: [first.resumeId] };
+  else if (jobId) answersSearch = { jobId };
 
   return (
     <>
@@ -63,7 +66,7 @@ export function ResumeAiSaveApplicationAnswersTool({
             <Button asChild size="sm" className="gap-1.5">
               <Link
                 to="/application-answers"
-                search={first.resumeId ? { resumeIds: [first.resumeId] } : jobId ? { jobId } : {}}
+                search={answersSearch}
                 data-test="resume-ai-answers-card-edit"
               >
                 Edit

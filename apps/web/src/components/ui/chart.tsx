@@ -260,13 +260,10 @@ function ChartLegendContent({
       {payload
         .filter((item) => item.type !== "none")
         .map((item) => {
-          const key = String(
-            nameKey != null && nameKey !== ""
-              ? nameKey
-              : item.dataKey != null
-                ? item.dataKey
-                : "value",
-          );
+          let legendKey: unknown = "value";
+          if (nameKey != null && nameKey !== "") legendKey = nameKey;
+          else if (item.dataKey != null) legendKey = item.dataKey;
+          const key = String(legendKey);
           const itemConfig = getPayloadConfigFromPayload(config, item, key);
 
           return (
@@ -280,7 +277,7 @@ function ChartLegendContent({
                 <itemConfig.icon />
               ) : (
                 <div
-                  className="h-2 w-2 shrink-0 rounded-[2px]"
+                  className="h-2 w-2 shrink-0 rounded-xs"
                   style={{
                     backgroundColor: item.color,
                   }}

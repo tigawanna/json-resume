@@ -12,6 +12,24 @@ import { eq, useLiveQuery } from "@tanstack/react-db";
 import { queryOptions, useMutation, useQuery } from "@tanstack/react-query";
 import { getRouteApi } from "@tanstack/react-router";
 import { AlertCircle, Bookmark, BookmarkCheck, Code2, Github, Loader, Star } from "lucide-react";
+
+function repoSaveLabel(isToggling: boolean, isSaved: boolean) {
+  if (isToggling) return <Loader className="size-4 animate-spin" />;
+  if (isSaved) {
+    return (
+      <>
+        <BookmarkCheck className="size-4" />
+        Unsave
+      </>
+    );
+  }
+  return (
+    <>
+      <Bookmark className="size-4" />
+      Save
+    </>
+  );
+}
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { adoptSavedProjects } from "../../-utils/adopt-saved-projects";
@@ -94,27 +112,33 @@ export function ReposPage() {
         ) : null}
       </div>
 
-      <div className="grid gap-4">
-        {reposQuery.isLoading ? (
-          <Card>
-            <CardContent className="flex items-center justify-center gap-3 py-12 text-muted-foreground">
-              <Loader className="size-5 animate-spin" />
-              Loading repositories
-            </CardContent>
-          </Card>
-        ) : repos.length === 0 ? (
-          <Card className="col-span-full">
-            <CardContent className="flex flex-col items-center justify-center py-12">
-              <AlertCircle className="mb-4 size-12 text-muted-foreground" />
-              <p className="text-muted-foreground">No repositories match this search.</p>
-            </CardContent>
-          </Card>
-        ) : (
-          repos.map((repo: GithubRepo) => <RepoCard key={repo.id} repo={repo} />)
-        )}
-      </div>
+      <div className="grid gap-4">{repoResults({ isLoading: reposQuery.isLoading, repos })}</div>
     </div>
   );
+}
+
+function repoResults({ isLoading, repos }: { isLoading: boolean; repos: GithubRepo[] }) {
+  if (isLoading) {
+    return (
+      <Card>
+        <CardContent className="flex items-center justify-center gap-3 py-12 text-muted-foreground">
+          <Loader className="size-5 animate-spin" />
+          Loading repositories
+        </CardContent>
+      </Card>
+    );
+  }
+  if (repos.length === 0) {
+    return (
+      <Card className="col-span-full">
+        <CardContent className="flex flex-col items-center justify-center py-12">
+          <AlertCircle className="mb-4 size-12 text-muted-foreground" />
+          <p className="text-muted-foreground">No repositories match this search.</p>
+        </CardContent>
+      </Card>
+    );
+  }
+  return repos.map((repo) => <RepoCard key={repo.id} repo={repo} />);
 }
 
 function RepoCard({ repo }: { repo: GithubRepo }) {
@@ -216,19 +240,7 @@ function RepoCard({ repo }: { repo: GithubRepo }) {
             className="shrink-0"
             data-test="repo-save-toggle"
           >
-            {isToggling ? (
-              <Loader className="size-4 animate-spin" />
-            ) : isSaved ? (
-              <>
-                <BookmarkCheck className="size-4" />
-                Unsave
-              </>
-            ) : (
-              <>
-                <Bookmark className="size-4" />
-                Save
-              </>
-            )}
+            {repoSaveLabel(isToggling, isSaved)}
           </Button>
         </div>
       </CardHeader>

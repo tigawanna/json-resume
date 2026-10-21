@@ -137,22 +137,22 @@ export function DashboardSyncStatusButton({ className }: { className?: string })
   const pathname = useLocation({ select: (location) => location.pathname });
   const meta = STATUS[state];
   const Icon = meta.icon;
-  const tooltip =
-    state === "syncing" && transfer.uploadTotal > 0
-      ? `Pushing outbox: ${transfer.uploadDone} of ${transfer.uploadTotal}`
-      : state === "syncing" && transfer.downloadReceived > 0
-        ? `Pulling into inbox: ${transfer.downloadReceived} events`
-        : !isOnline && state === "disabled"
-          ? "Sync off"
-          : state === "error" && lastError
-            ? `Sync error: ${lastError}`
-            : meta.tooltip;
-  const description =
-    !isOnline && state !== "logged-out"
-      ? "No internet connection. Sync stays off until you're back online."
-      : state === "error" && lastError
-        ? lastError
-        : meta.description;
+  let tooltip = meta.tooltip;
+  if (state === "syncing" && transfer.uploadTotal > 0) {
+    tooltip = `Pushing outbox: ${transfer.uploadDone} of ${transfer.uploadTotal}`;
+  } else if (state === "syncing" && transfer.downloadReceived > 0) {
+    tooltip = `Pulling into inbox: ${transfer.downloadReceived} events`;
+  } else if (!isOnline && state === "disabled") {
+    tooltip = "Sync off";
+  } else if (state === "error" && lastError) {
+    tooltip = `Sync error: ${lastError}`;
+  }
+  let description = meta.description;
+  if (!isOnline && state !== "logged-out") {
+    description = "No internet connection. Sync stays off until you're back online.";
+  } else if (state === "error" && lastError) {
+    description = lastError;
+  }
 
   useEffect(() => {
     const host = document.createElement("div");

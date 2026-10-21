@@ -45,8 +45,20 @@ export function EventsView() {
     </div>
   );
 
-  const filters =
-    tab === "outbox" ? (
+  let filters = (
+    <EventSourcedSortToolbar
+      collection={db.collections.deadletter}
+      sortableColumns={createSortableColumns(db.collections.deadletter, [
+        { value: "collectionId", label: "Collection" },
+        { value: "type", label: "Type" },
+        { value: "reason", label: "Reason" },
+        { value: "failedAt", label: "Failed" },
+      ])}
+      defaultSortBy="failedAt"
+    />
+  );
+  if (tab === "outbox") {
+    filters = (
       <EventSourcedSortToolbar
         collection={db.collections.outbox}
         sortableColumns={createSortableColumns(db.collections.outbox, [
@@ -58,7 +70,9 @@ export function EventsView() {
         ])}
         defaultSortBy="localSeq"
       />
-    ) : tab === "inbox" ? (
+    );
+  } else if (tab === "inbox") {
+    filters = (
       <EventSourcedSortToolbar
         collection={db.collections.inbox}
         sortableColumns={createSortableColumns(db.collections.inbox, [
@@ -70,18 +84,8 @@ export function EventsView() {
         ])}
         defaultSortBy="globalSeq"
       />
-    ) : (
-      <EventSourcedSortToolbar
-        collection={db.collections.deadletter}
-        sortableColumns={createSortableColumns(db.collections.deadletter, [
-          { value: "collectionId", label: "Collection" },
-          { value: "type", label: "Type" },
-          { value: "reason", label: "Reason" },
-          { value: "failedAt", label: "Failed" },
-        ])}
-        defaultSortBy="failedAt"
-      />
     );
+  }
 
   function setTab(next: string) {
     const nextTab = next as EventQueueTab;

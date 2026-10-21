@@ -8,6 +8,40 @@ import { Download, Loader2, RefreshCw } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
+function pdfPreviewBody({
+  generating,
+  blobUrl,
+  fileLabel,
+}: {
+  generating: boolean;
+  blobUrl: string | null;
+  fileLabel: string;
+  minHeightClass: string;
+}) {
+  if (generating && !blobUrl) {
+    return (
+      <div className="flex min-h-150 items-center justify-center">
+        <Loader2 className="text-base-content/40 size-8 animate-spin" />
+      </div>
+    );
+  }
+  if (blobUrl) {
+    return (
+      <iframe
+        src={blobUrl}
+        title={fileLabel}
+        className="h-[80vh] min-h-150 w-full rounded-lg border"
+        data-test="pdf-preview-iframe"
+      />
+    );
+  }
+  return (
+    <p className="text-base-content/60 py-12 text-center text-sm">
+      Click Regenerate to build the PDF preview.
+    </p>
+  );
+}
+
 export function ResumePdfPreviewCard({
   doc,
   templateId,
@@ -100,22 +134,7 @@ export function ResumePdfPreviewCard({
         </div>
       </CardHeader>
       <CardContent>
-        {generating && !blobUrl ? (
-          <div className="flex min-h-150 items-center justify-center">
-            <Loader2 className="text-base-content/40 size-8 animate-spin" />
-          </div>
-        ) : blobUrl ? (
-          <iframe
-            src={blobUrl}
-            title={fileLabel}
-            className="h-[80vh] min-h-150 w-full rounded-lg border"
-            data-test="pdf-preview-iframe"
-          />
-        ) : (
-          <p className="text-base-content/60 py-12 text-center text-sm">
-            Click Regenerate to build the PDF preview.
-          </p>
-        )}
+        {pdfPreviewBody({ generating, blobUrl, fileLabel, minHeightClass: "min-h-150 h-[80vh]" })}
       </CardContent>
     </Card>
   );

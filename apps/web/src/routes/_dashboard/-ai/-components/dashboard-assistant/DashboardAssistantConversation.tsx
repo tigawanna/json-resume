@@ -110,6 +110,10 @@ export function DashboardAssistantConversation({
     composerRef.current?.focus();
   }
 
+  let placeholder = "Ask a follow-up...";
+  if (awaitingApproval) placeholder = "Pick an option above, or reply here to decline it...";
+  else if (isEmpty) placeholder = "Paste a job description or ask a question...";
+
   return (
     <div className="flex min-h-0 flex-1 flex-col" data-test="dashboard-assistant-conversation">
       <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 py-4">
@@ -186,13 +190,7 @@ export function DashboardAssistantConversation({
             onChange={setSegments}
             onSubmit={handleSend}
             onEscape={onEscape}
-            placeholder={
-              awaitingApproval
-                ? "Pick an option above, or reply here to decline it..."
-                : isEmpty
-                  ? "Paste a job description or ask a question..."
-                  : "Ask a follow-up..."
-            }
+            placeholder={placeholder}
             disabled={isBusy}
             markdown
             normalizeBullets={false}

@@ -194,6 +194,46 @@ export function ResumeJsonTab() {
     };
   });
 
+  function jsonEditorBody() {
+    if (viewMode === "raw") {
+      return (
+        <div className="bg-base-300 flex h-full min-h-[50vh] flex-col">
+          {rawError ? (
+            <div className="border-border shrink-0 border-b bg-red-100 px-3 py-1.5 text-xs text-red-700 dark:bg-red-950 dark:text-red-400">
+              {rawError}
+            </div>
+          ) : null}
+          <textarea
+            value={rawText}
+            onChange={(event) => handleRawChange(event.target.value)}
+            spellCheck={false}
+            className="text-foreground w-full flex-1 resize-none border-none bg-transparent p-4 font-mono text-sm leading-relaxed outline-none"
+          />
+        </div>
+      );
+    }
+    if (viewMode === "diff") {
+      return <DiffView originalJson={openedJson} currentJson={jsonValue} />;
+    }
+    return (
+      <div className="flex h-full p-5" style={VJ_THEME_VARS}>
+        <JsonEditor
+          value={jsonValue}
+          onChange={(value) => {
+            setJsonValue(value);
+            setRawText(JSON.stringify(value, null, 2));
+          }}
+          treeShowValues={treeShowValues}
+          treeShowCounts={treeShowCounts}
+          editorShowDescriptions={editorShowDescriptions}
+          editorShowCounts={editorShowCounts}
+          sidebarOpen={sidebarOpen}
+          style={VJ_THEME_VARS}
+        />
+      </div>
+    );
+  }
+
   return (
     <div
       ref={dropRef}
@@ -236,41 +276,7 @@ export function ResumeJsonTab() {
       />
 
       {/* Editor area */}
-      <div className="min-h-140 flex-1 overflow-hidden rounded-lg border">
-        {viewMode === "raw" ? (
-          <div className="bg-base-300 flex h-full flex-col min-h-[50vh]">
-            {rawError && (
-              <div className="border-border shrink-0 border-b bg-red-100 px-3 py-1.5 text-xs text-red-700 dark:bg-red-950 dark:text-red-400">
-                {rawError}
-              </div>
-            )}
-            <textarea
-              value={rawText}
-              onChange={(e) => handleRawChange(e.target.value)}
-              spellCheck={false}
-              className="text-foreground w-full flex-1 resize-none border-none bg-transparent p-4 font-mono text-sm leading-relaxed outline-none"
-            />
-          </div>
-        ) : viewMode === "diff" ? (
-          <DiffView originalJson={openedJson} currentJson={jsonValue} />
-        ) : (
-          <div className="flex h-full p-5" style={VJ_THEME_VARS}>
-            <JsonEditor
-              value={jsonValue}
-              onChange={(v) => {
-                setJsonValue(v);
-                setRawText(JSON.stringify(v, null, 2));
-              }}
-              treeShowValues={treeShowValues}
-              treeShowCounts={treeShowCounts}
-              editorShowDescriptions={editorShowDescriptions}
-              editorShowCounts={editorShowCounts}
-              sidebarOpen={sidebarOpen}
-              style={VJ_THEME_VARS}
-            />
-          </div>
-        )}
-      </div>
+      <div className="min-h-140 flex-1 overflow-hidden rounded-lg border">{jsonEditorBody()}</div>
 
       {/* Dialogs */}
       <SettingsDialog

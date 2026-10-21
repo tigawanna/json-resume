@@ -152,12 +152,10 @@ export function resolveRouting(
   const caps = routedEndpoints(resolved, endpoints ?? [])
     .map((endpoint) => endpoint.max_completion_tokens)
     .filter((cap): cap is number => typeof cap === "number" && cap > 0);
-  const endpointCap =
-    caps.length === 0
-      ? model?.top_provider.max_completion_tokens
-      : resolved.mode === "auto"
-        ? Math.max(...caps)
-        : Math.min(...caps);
+  let endpointCap = model?.top_provider.max_completion_tokens;
+  if (caps.length > 0) {
+    endpointCap = resolved.mode === "auto" ? Math.max(...caps) : Math.min(...caps);
+  }
 
   return {
     ...resolved,

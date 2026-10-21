@@ -208,7 +208,8 @@ function EntityPickerBody<T>({
           <div className="flex items-center justify-center py-10">
             <Loader2 className="text-muted-foreground size-5 animate-spin" />
           </div>
-        ) : result.isError ? (
+        ) : null}
+        {!result.isPending && result.isError ? (
           <div className="flex flex-col items-center justify-center gap-2 py-10">
             <AlertCircle className="text-destructive size-5" />
             <p className="text-muted-foreground text-center text-sm">Failed to load items.</p>
@@ -216,11 +217,13 @@ function EntityPickerBody<T>({
               Retry
             </Button>
           </div>
-        ) : entries.length === 0 ? (
+        ) : null}
+        {!result.isPending && !result.isError && entries.length === 0 ? (
           <p className="text-muted-foreground py-10 text-center text-sm">
             {query ? "No matches. Try fewer or different words." : "Nothing to pick yet."}
           </p>
-        ) : (
+        ) : null}
+        {!result.isPending && !result.isError && entries.length > 0 ? (
           <ul className="flex flex-col gap-1 p-2" data-test="pick-results">
             {entries.map((entry) => (
               <li key={entry.item.id}>
@@ -237,7 +240,7 @@ function EntityPickerBody<T>({
               </li>
             ))}
           </ul>
-        )}
+        ) : null}
       </div>
 
       <div className="flex items-center justify-between gap-2 border-t px-4 py-2">

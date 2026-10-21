@@ -21,6 +21,34 @@ type LibraryEmptyProps = {
   dataTest?: string;
 };
 
+function libraryEmptyAction({
+  hasSearch,
+  onClearSearch,
+  actionLabel,
+  onAction,
+}: Pick<LibraryEmptyProps, "hasSearch" | "onClearSearch" | "actionLabel" | "onAction">) {
+  if (hasSearch && onClearSearch) {
+    return (
+      <EmptyContent className="flex-row justify-center gap-2">
+        <Button variant="outline" size="sm" onClick={onClearSearch} data-test="clear-search-btn">
+          Clear search
+        </Button>
+      </EmptyContent>
+    );
+  }
+  if (actionLabel && onAction) {
+    return (
+      <EmptyContent className="flex-row justify-center gap-2">
+        <Button size="sm" onClick={onAction} data-test="empty-create-btn">
+          <Plus className="mr-1 size-4" />
+          {actionLabel}
+        </Button>
+      </EmptyContent>
+    );
+  }
+  return null;
+}
+
 export function LibraryEmpty({
   icon: Icon,
   title,
@@ -44,20 +72,7 @@ export function LibraryEmpty({
             : description}
         </EmptyDescription>
       </EmptyHeader>
-      {hasSearch && onClearSearch ? (
-        <EmptyContent className="flex-row justify-center gap-2">
-          <Button variant="outline" size="sm" onClick={onClearSearch} data-test="clear-search-btn">
-            Clear search
-          </Button>
-        </EmptyContent>
-      ) : actionLabel && onAction ? (
-        <EmptyContent className="flex-row justify-center gap-2">
-          <Button size="sm" onClick={onAction} data-test="empty-create-btn">
-            <Plus className="mr-1 size-4" />
-            {actionLabel}
-          </Button>
-        </EmptyContent>
-      ) : null}
+      {libraryEmptyAction({ hasSearch, onClearSearch, actionLabel, onAction })}
     </Empty>
   );
 }

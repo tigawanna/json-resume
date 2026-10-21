@@ -66,7 +66,9 @@ function TruncateBody({ table, onDone }: { table: string; onDone: () => void }) 
     enabled: Boolean(cutoff),
     placeholderData: keepPreviousData,
   });
-  const preview = scope === "all" ? base.data : cutoff ? scoped.data : undefined;
+  let preview = scoped.data;
+  if (scope === "all") preview = base.data;
+  else if (!cutoff) preview = undefined;
   const previewError = scope === "all" ? base.error : scoped.error;
   const isEventLog = base.data?.mode === "eventLog";
 
@@ -189,13 +191,14 @@ function TruncateBody({ table, onDone }: { table: string; onDone: () => void }) 
             className="flex flex-col gap-1 rounded-lg border border-base-300 bg-base-200 p-3 text-sm"
             data-test="admin-truncate-preview"
           >
-            {previewError ? (
-              <p className="text-error">{previewError.message}</p>
-            ) : scope === "older" && !cutoff ? (
+            {previewError ? <p className="text-error">{previewError.message}</p> : null}
+            {!previewError && scope === "older" && !cutoff ? (
               <p className="text-base-content/60">Pick a column and a date to see what matches.</p>
-            ) : !preview ? (
+            ) : null}
+            {!previewError && !(scope === "older" && !cutoff) && !preview ? (
               <p className="text-base-content/60">Counting rows…</p>
-            ) : preview.mode === "eventLog" ? (
+            ) : null}
+            {!previewError && preview && preview.mode === "eventLog" ? (
               <>
                 <p>
                   <span className="font-semibold">{preview.rows.toLocaleString()}</span> events will
@@ -225,7 +228,8 @@ function TruncateBody({ table, onDone }: { table: string; onDone: () => void }) 
                   </span>
                 </Label>
               </>
-            ) : (
+            ) : null}
+            {!previewError && preview && preview.mode !== "eventLog" ? (
               <>
                 <p>
                   <span className="font-semibold">{preview.rows.toLocaleString()}</span> row
@@ -257,7 +261,7 @@ function TruncateBody({ table, onDone }: { table: string; onDone: () => void }) 
                   </p>
                 ))}
               </>
-            )}
+            ) : null}
           </div>
 
           <div className="flex flex-col gap-1">
@@ -287,9 +291,15 @@ function TruncateBody({ table, onDone }: { table: string; onDone: () => void }) 
           onClick={() => mutation.mutate()}
           data-test="admin-truncate-submit"
         >
-          {mutation.isPending ? "Deleting…" : isEventLog ? "Back up & empty" : "Delete rows"}
+          {truncateSubmitLabel(mutation.isPending, isEventLog)}
         </button>
       </DialogFooter>
     </>
   );
+}
+
+function truncateSubmitLabel(pending: boolean, isEventLog: boolean) {
+  if (pending) return "Deleting…";
+  if (isEventLog) return "Back up & empty";
+  return "Delete rows";
 }

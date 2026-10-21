@@ -52,16 +52,15 @@ export function SyncTransferProgress() {
 
   // Pull starts after push; `downloadHasMore` stays true until the last page lands.
   const downloadDone = progress.downloadActive && !progress.downloadHasMore;
-  const downloadValue = !progress.downloadActive ? 0 : downloadDone ? 100 : null;
-  const downloadDetail = !progress.downloadActive
-    ? "After push"
-    : downloadDone
-      ? progress.downloadReceived === 0
-        ? "Up to date"
-        : `${progress.downloadReceived} new events`
-      : progress.downloadReceived === 0
-        ? "Checking server"
-        : `${progress.downloadReceived} events, more coming`;
+  let downloadValue: number | null = null;
+  if (!progress.downloadActive) downloadValue = 0;
+  else if (downloadDone) downloadValue = 100;
+
+  let downloadDetail = `${progress.downloadReceived} events, more coming`;
+  if (!progress.downloadActive) downloadDetail = "After push";
+  else if (downloadDone && progress.downloadReceived === 0) downloadDetail = "Up to date";
+  else if (downloadDone) downloadDetail = `${progress.downloadReceived} new events`;
+  else if (progress.downloadReceived === 0) downloadDetail = "Checking server";
 
   return (
     <div className="flex w-full flex-col gap-4" data-test="sync-transfer-progress">

@@ -45,12 +45,9 @@ export const Route = createFileRoute("/api/ai/dashboard-assistant")({
 
           return withCors(toServerSentEventsResponse(stream));
         } catch (error: unknown) {
-          const message =
-            error instanceof z.ZodError
-              ? "Invalid AI request payload"
-              : error instanceof Error
-                ? error.message
-                : "Unable to process AI request";
+          let message = "Unable to process AI request";
+          if (error instanceof z.ZodError) message = "Invalid AI request payload";
+          else if (error instanceof Error) message = error.message;
           return jsonError(message, 400);
         }
       },

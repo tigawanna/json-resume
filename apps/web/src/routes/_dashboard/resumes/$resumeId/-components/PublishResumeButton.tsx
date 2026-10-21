@@ -27,6 +27,12 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { twMerge } from "tailwind-merge";
 
+function publishStatusIcon(busy: boolean, published: boolean) {
+  if (busy) return <Loader2 className="size-4 animate-spin" />;
+  if (published) return <Globe className="size-4" />;
+  return <GlobeLock className="size-4" />;
+}
+
 function publicResumeUrl(id: string): string {
   if (typeof window === "undefined") return `/r/${id}`;
   return `${window.location.origin}/r/${id}`;
@@ -145,13 +151,7 @@ export function PublishResumeButton({
         }}
         data-test="publish-resume-btn"
       >
-        {busy || statusQuery.isLoading ? (
-          <Loader2 className="size-4 animate-spin" />
-        ) : published ? (
-          <Globe className="size-4" />
-        ) : (
-          <GlobeLock className="size-4" />
-        )}
+        {publishStatusIcon(busy || statusQuery.isLoading, Boolean(published))}
         {published ? "Public link" : "Make public"}
       </Button>
 

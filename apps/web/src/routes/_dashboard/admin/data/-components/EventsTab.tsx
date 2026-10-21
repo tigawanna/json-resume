@@ -201,16 +201,21 @@ const TEXT_SORT_COLUMNS: ReadonlySet<AdminEventSortColumn> = new Set([
 function SortHeader({ label, column, sort, onSort }: SortHeaderProps) {
   const active = sort.startsWith(`${column}-`);
   const descending = sort.endsWith("-desc");
-  const Icon = !active ? ArrowUpDown : descending ? ArrowDown : ArrowUp;
+  let Icon = ArrowUpDown;
+  if (active && descending) Icon = ArrowDown;
+  else if (active) Icon = ArrowUp;
   const firstSort: AdminDataSearch["sort"] = TEXT_SORT_COLUMNS.has(column)
     ? `${column}-asc`
     : `${column}-desc`;
+  let nextSort: AdminDataSearch["sort"] = `${column}-desc`;
+  if (!active) nextSort = firstSort;
+  else if (descending) nextSort = `${column}-asc`;
 
   return (
     <button
       type="button"
       className={`inline-flex items-center gap-1 ${active ? "text-base-content" : ""}`}
-      onClick={() => onSort(!active ? firstSort : descending ? `${column}-asc` : `${column}-desc`)}
+      onClick={() => onSort(nextSort)}
       data-test={`admin-events-sort-${column}`}
     >
       {label}

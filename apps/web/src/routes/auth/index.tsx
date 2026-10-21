@@ -10,6 +10,31 @@ import { AppConfig } from "@/utils/system";
 import { SessionPicker } from "./-components/SessionPicker";
 import { SigninComponent } from "./-components/SigninComponent";
 
+function signinBody({
+  isLoading,
+  hasDeviceSessions,
+  showSigninForm,
+  onBackToSessions,
+  onUseAnotherAccount,
+}: {
+  isLoading: boolean;
+  hasDeviceSessions: boolean;
+  showSigninForm: boolean;
+  onBackToSessions: () => void;
+  onUseAnotherAccount: () => void;
+}) {
+  if (isLoading) {
+    return (
+      <div className="flex h-full flex-1 items-center justify-center">
+        <Spinner className="size-6" />
+      </div>
+    );
+  }
+  if (!hasDeviceSessions) return <SigninComponent />;
+  if (showSigninForm) return <SigninComponent onBackToSessions={onBackToSessions} />;
+  return <SessionPicker onUseAnotherAccount={onUseAnotherAccount} />;
+}
+
 const searchparams = z.object({
   returnTo: z.string().default("/"),
   callbackURL: z.string().optional(),
@@ -45,17 +70,13 @@ function SigninPage() {
     <div className="flex min-h-screen flex-col items-center justify-center">
       <ResponsiveGenericToolbar>
         <div className="flex min-h-screen flex-col">
-          {isLoading ? (
-            <div className="flex h-full flex-1 items-center justify-center">
-              <Spinner className="size-6" />
-            </div>
-          ) : !hasDeviceSessions ? (
-            <SigninComponent />
-          ) : showSigninForm ? (
-            <SigninComponent onBackToSessions={() => setShowSigninForm(false)} />
-          ) : (
-            <SessionPicker onUseAnotherAccount={() => setShowSigninForm(true)} />
-          )}
+          {signinBody({
+            isLoading,
+            hasDeviceSessions,
+            showSigninForm,
+            onBackToSessions: () => setShowSigninForm(false),
+            onUseAnotherAccount: () => setShowSigninForm(true),
+          })}
         </div>
         <Footer />
       </ResponsiveGenericToolbar>

@@ -283,18 +283,21 @@ function AttachList({ kind, label, activeResumeId, attachedIds, onAttach }: Atta
           <div className="flex items-center justify-center py-10">
             <Loader2 className="size-5 animate-spin text-muted-foreground" />
           </div>
-        ) : query.isError ? (
+        ) : null}
+        {!query.isPending && query.isError ? (
           <div className="flex flex-col items-center justify-center gap-2 py-10">
             <p className="text-center text-sm text-muted-foreground">Failed to load items.</p>
             <Button variant="outline" size="sm" onClick={() => void query.refetch()}>
               Retry
             </Button>
           </div>
-        ) : rows.length === 0 ? (
+        ) : null}
+        {!query.isPending && !query.isError && rows.length === 0 ? (
           <p className="py-10 text-center text-sm text-muted-foreground">
             {keyword ? "No matches. Try fewer or different words." : "Nothing here yet."}
           </p>
-        ) : (
+        ) : null}
+        {!query.isPending && !query.isError && rows.length > 0 ? (
           <ul className="flex flex-col gap-1 p-2">
             {rows.map((row) => {
               const isAttached = attached.has(row.id);
@@ -326,13 +329,14 @@ function AttachList({ kind, label, activeResumeId, attachedIds, onAttach }: Atta
                         <span className="line-clamp-2 min-w-0 text-sm leading-tight font-medium">
                           {row.title || "Untitled"}
                         </span>
+                        {row.onResume && !isActiveResume ? (
+                          <Badge variant="secondary" className="ml-auto shrink-0 text-[10px]">
+                            On résumé
+                          </Badge>
+                        ) : null}
                         {isActiveResume ? (
                           <Badge variant="outline" className="ml-auto shrink-0 text-[10px]">
                             Active
-                          </Badge>
-                        ) : row.onResume ? (
-                          <Badge variant="secondary" className="ml-auto shrink-0 text-[10px]">
-                            On résumé
                           </Badge>
                         ) : null}
                       </span>
@@ -347,7 +351,7 @@ function AttachList({ kind, label, activeResumeId, attachedIds, onAttach }: Atta
               );
             })}
           </ul>
-        )}
+        ) : null}
       </div>
 
       {query.hasNextPage ? (

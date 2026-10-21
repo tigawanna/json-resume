@@ -14,6 +14,39 @@ import { toast } from "sonner";
 type PreviewPane = "component" | "pdf";
 type PreviewTheme = "light" | "dark";
 
+function pdfPreviewBody({
+  generating,
+  blobUrl,
+  fileLabel,
+  empty = "Regenerate to build the PDF preview.",
+}: {
+  generating: boolean;
+  blobUrl: string | null;
+  fileLabel: string;
+  minHeightClass?: string;
+  empty?: string;
+  frameClass?: string;
+}) {
+  if (generating && !blobUrl) {
+    return (
+      <div className="flex h-[72vh] min-h-150 items-center justify-center">
+        <Loader2 className="text-base-content/40 size-8 animate-spin" />
+      </div>
+    );
+  }
+  if (blobUrl) {
+    return (
+      <iframe
+        src={blobUrl}
+        title={fileLabel}
+        className="h-[72vh] min-h-150 w-full rounded-md border bg-white"
+        data-test="pdf-preview-iframe"
+      />
+    );
+  }
+  return <p className="text-base-content/60 py-12 text-center text-sm">{empty}</p>;
+}
+
 function isPreviewPane(value: string): value is PreviewPane {
   return value === "component" || value === "pdf";
 }
@@ -165,22 +198,14 @@ export function ResumePreviewView({ resumeName, selectedTemplate, doc }: ResumeP
               ) : null}
             </div>
             <div className="bg-base-100 p-3">
-              {generating && !blobUrl ? (
-                <div className="flex h-[72vh] min-h-150 items-center justify-center">
-                  <Loader2 className="text-base-content/40 size-8 animate-spin" />
-                </div>
-              ) : blobUrl ? (
-                <iframe
-                  src={blobUrl}
-                  title={fileLabel}
-                  className="h-[72vh] min-h-150 w-full rounded-md border bg-white"
-                  data-test="pdf-preview-iframe"
-                />
-              ) : (
-                <p className="text-base-content/60 py-12 text-center text-sm">
-                  Regenerate to build the PDF preview.
-                </p>
-              )}
+              {pdfPreviewBody({
+                generating,
+                blobUrl,
+                fileLabel,
+                minHeightClass: "h-[72vh] min-h-150",
+                empty: "Regenerate to build the PDF preview.",
+                frameClass: "rounded-md border bg-white",
+              })}
             </div>
           </section>
         </TabsContent>

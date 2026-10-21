@@ -112,11 +112,9 @@ export function parseResumeMonth(value: string): number | null {
     text.match(/\b(19|20)\d{2}[-/.](\d{1,2})\b/)?.[2] ??
     text.match(/\b(\d{1,2})[-/.](19|20)\d{2}\b/)?.[1];
   const namedMonth = MONTH_NAMES.findIndex((name) => text.includes(name));
-  const month = numericMonth
-    ? Math.min(Math.max(Number(numericMonth), 1), 12) - 1
-    : namedMonth >= 0
-      ? namedMonth
-      : 0;
+  let month = 0;
+  if (numericMonth) month = Math.min(Math.max(Number(numericMonth), 1), 12) - 1;
+  else if (namedMonth >= 0) month = namedMonth;
   return Number(year[0]) * 12 + month;
 }
 

@@ -125,12 +125,11 @@ function normalizeDraft(
   const pay = payFields(draft, description, existing);
   const notes = draft.notes?.trim() ?? "";
   const status = draft.status ?? "saved";
-  const appliedAt =
-    draft.appliedAt === undefined
-      ? status === "applied" || status === "interviewing" || status === "offer"
-        ? nowMs()
-        : null
-      : draft.appliedAt;
+  let appliedAt = draft.appliedAt ?? null;
+  if (draft.appliedAt === undefined) {
+    const marksApplied = status === "applied" || status === "interviewing" || status === "offer";
+    appliedAt = marksApplied ? nowMs() : null;
+  }
   return { company, description, title, url, location, ...pay, notes, status, appliedAt };
 }
 

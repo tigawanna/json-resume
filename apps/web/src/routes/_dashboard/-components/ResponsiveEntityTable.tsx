@@ -20,6 +20,23 @@ import { useNavigate, useSearch } from "@tanstack/react-router";
 import { ArrowDown, ArrowUp, ChevronsUpDown, Columns3 } from "lucide-react";
 import type { ReactNode } from "react";
 
+function columnAriaSort(
+  sortable: boolean,
+  isActive: boolean,
+  direction: "asc" | "desc",
+): "ascending" | "descending" | "none" | undefined {
+  if (!sortable) return undefined;
+  if (!isActive) return "none";
+  if (direction === "asc") return "ascending";
+  return "descending";
+}
+
+function columnSortIcon(isActive: boolean, direction: "asc" | "desc") {
+  if (!isActive) return <ChevronsUpDown className="text-muted-foreground size-3.5" />;
+  if (direction === "asc") return <ArrowUp className="size-3.5" />;
+  return <ArrowDown className="size-3.5" />;
+}
+
 export type ResponsiveColumn<T> = {
   id: string;
   header: string;
@@ -181,13 +198,8 @@ export function ResponsiveEntityTable<T extends { id: string }>({
                 const sortable = col.sortable !== false;
                 const key = columnSortKey(col);
                 const isActive = sortable && activeSortBy === key;
-                const ariaSort = !sortable
-                  ? undefined
-                  : isActive
-                    ? activeSortDirection === "asc"
-                      ? "ascending"
-                      : "descending"
-                    : "none";
+                const ariaSort = columnAriaSort(sortable, isActive, activeSortDirection);
+                const sortIcon = columnSortIcon(isActive, activeSortDirection);
 
                 return (
                   <TableHead key={col.id} className={col.headClassName} aria-sort={ariaSort}>
@@ -199,15 +211,7 @@ export function ResponsiveEntityTable<T extends { id: string }>({
                         data-test={`sort-${key}`}
                       >
                         {col.header}
-                        {isActive ? (
-                          activeSortDirection === "asc" ? (
-                            <ArrowUp className="size-3.5" />
-                          ) : (
-                            <ArrowDown className="size-3.5" />
-                          )
-                        ) : (
-                          <ChevronsUpDown className="text-muted-foreground size-3.5" />
-                        )}
+                        {sortIcon}
                       </button>
                     ) : (
                       col.header

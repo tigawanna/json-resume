@@ -8,6 +8,22 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { ALL_USERS, AdminUserSelect } from "./AdminUserSelect";
 
+function squashPreviewText(
+  preview: {
+    error: unknown;
+    data: { scanned: number; reasons: { superseded: number; deleted: number } } | undefined;
+  },
+  removable: number,
+) {
+  if (preview.error) return unwrapUnknownError(preview.error).message;
+  if (!preview.data) return "Counting…";
+  const scanned = preview.data.scanned.toLocaleString();
+  if (removable === 0) return `Nothing to squash in ${scanned} events.`;
+  const superseded = preview.data.reasons.superseded.toLocaleString();
+  const deleted = preview.data.reasons.deleted.toLocaleString();
+  return `${removable.toLocaleString()} of ${scanned} events can go: ${superseded} replaced by a later edit, ${deleted} history of deleted rows.`;
+}
+
 const HOUR = 60 * 60 * 1000;
 const RETENTION = { day: 24 * HOUR, hour: HOUR } as const;
 type Retention = keyof typeof RETENTION;
@@ -60,13 +76,7 @@ export function SquashEventLogForm({ onDone }: { onDone?: () => void }) {
         </Label>
       </RadioGroup>
       <p className="text-sm" data-test="admin-squash-preview">
-        {preview.error
-          ? unwrapUnknownError(preview.error).message
-          : !preview.data
-            ? "Counting…"
-            : removable === 0
-              ? `Nothing to squash in ${preview.data.scanned.toLocaleString()} events.`
-              : `${removable.toLocaleString()} of ${preview.data.scanned.toLocaleString()} events can go: ${preview.data.reasons.superseded.toLocaleString()} replaced by a later edit, ${preview.data.reasons.deleted.toLocaleString()} history of deleted rows.`}
+        {squashPreviewText(preview, removable)}
       </p>
       <button
         type="button"
