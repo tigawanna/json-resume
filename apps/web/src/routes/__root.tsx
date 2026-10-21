@@ -9,6 +9,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { clientEnv } from "@/lib/env/client-env";
 import { TanstackDevtools } from "@/lib/tanstack/devtools/devtools";
+import { SentryErrorBoundary, SentryRouterErrorComponent } from "@/lib/sentry/error-boundary";
 import { ThemeProvider } from "@/lib/tanstack/router/theme-provider";
 import { AppConfig } from "@/utils/system";
 import type { QueryClient } from "@tanstack/react-query";
@@ -91,6 +92,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
     ],
   }),
   validateSearch: (search) => searchparams.parse(search),
+  errorComponent: SentryRouterErrorComponent,
   shellComponent: RootDocument,
 });
 
@@ -103,7 +105,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <body>
         <ThemeProvider defaultTheme="system" storageKey={AppConfig.themeStorageKey}>
           <TooltipProvider>
-            {children}
+            <SentryErrorBoundary>{children}</SentryErrorBoundary>
             {import.meta.env.DEV && import.meta.env.VITE_E2E !== "true" ? (
               <TanstackDevtools />
             ) : null}

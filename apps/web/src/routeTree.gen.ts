@@ -62,6 +62,7 @@ import { Route as DashboardAdminUsersIndexRouteImport } from './routes/_dashboar
 import { Route as DashboardCoverLettersCoverLetterIdIndexRouteImport } from './routes/_dashboard/cover-letters/$coverLetterId/index'
 import { Route as DashboardDevChatLabIndexRouteImport } from './routes/_dashboard/dev/chat-lab/index'
 import { Route as DashboardDevChatStressIndexRouteImport } from './routes/_dashboard/dev/chat-stress/index'
+import { Route as DashboardDevPlaceholdersIndexRouteImport } from './routes/_dashboard/dev/placeholders/index'
 import { Route as DashboardResumesResumeIdIndexRouteImport } from './routes/_dashboard/resumes/$resumeId/index'
 import { Route as ApiAgenticOpenapiJsonRouteImport } from './routes/api/agentic/openapi.json'
 import { Route as ApiAgenticRpcSplatRouteImport } from './routes/api/agentic/rpc/$'
@@ -348,6 +349,12 @@ const DashboardDevChatStressIndexRoute =
     path: '/dev/chat-stress/',
     getParentRoute: () => DashboardLayoutRoute,
   } as any)
+const DashboardDevPlaceholdersIndexRoute =
+  DashboardDevPlaceholdersIndexRouteImport.update({
+    id: '/dev/placeholders/',
+    path: '/dev/placeholders/',
+    getParentRoute: () => DashboardLayoutRoute,
+  } as any)
 const DashboardResumesResumeIdIndexRoute =
   DashboardResumesResumeIdIndexRouteImport.update({
     id: '/resumes/$resumeId/',
@@ -432,6 +439,7 @@ export interface FileRoutesByFullPath {
   '/cover-letters/$coverLetterId/': typeof DashboardCoverLettersCoverLetterIdIndexRoute
   '/dev/chat-lab/': typeof DashboardDevChatLabIndexRoute
   '/dev/chat-stress/': typeof DashboardDevChatStressIndexRoute
+  '/dev/placeholders/': typeof DashboardDevPlaceholdersIndexRoute
   '/resumes/$resumeId/': typeof DashboardResumesResumeIdIndexRoute
   '/admin/tables/$table/': typeof DashboardAdminTablesTableIndexRoute
   '/resumes/$resumeId/events/': typeof DashboardResumesResumeIdEventsIndexRoute
@@ -490,6 +498,7 @@ export interface FileRoutesByTo {
   '/cover-letters/$coverLetterId': typeof DashboardCoverLettersCoverLetterIdIndexRoute
   '/dev/chat-lab': typeof DashboardDevChatLabIndexRoute
   '/dev/chat-stress': typeof DashboardDevChatStressIndexRoute
+  '/dev/placeholders': typeof DashboardDevPlaceholdersIndexRoute
   '/resumes/$resumeId': typeof DashboardResumesResumeIdIndexRoute
   '/admin/tables/$table': typeof DashboardAdminTablesTableIndexRoute
   '/resumes/$resumeId/events': typeof DashboardResumesResumeIdEventsIndexRoute
@@ -551,6 +560,7 @@ export interface FileRoutesById {
   '/_dashboard/cover-letters/$coverLetterId/': typeof DashboardCoverLettersCoverLetterIdIndexRoute
   '/_dashboard/dev/chat-lab/': typeof DashboardDevChatLabIndexRoute
   '/_dashboard/dev/chat-stress/': typeof DashboardDevChatStressIndexRoute
+  '/_dashboard/dev/placeholders/': typeof DashboardDevPlaceholdersIndexRoute
   '/_dashboard/resumes/$resumeId/': typeof DashboardResumesResumeIdIndexRoute
   '/_dashboard/admin/tables/$table/': typeof DashboardAdminTablesTableIndexRoute
   '/_dashboard/resumes/$resumeId/events/': typeof DashboardResumesResumeIdEventsIndexRoute
@@ -612,6 +622,7 @@ export interface FileRouteTypes {
     | '/cover-letters/$coverLetterId/'
     | '/dev/chat-lab/'
     | '/dev/chat-stress/'
+    | '/dev/placeholders/'
     | '/resumes/$resumeId/'
     | '/admin/tables/$table/'
     | '/resumes/$resumeId/events/'
@@ -670,6 +681,7 @@ export interface FileRouteTypes {
     | '/cover-letters/$coverLetterId'
     | '/dev/chat-lab'
     | '/dev/chat-stress'
+    | '/dev/placeholders'
     | '/resumes/$resumeId'
     | '/admin/tables/$table'
     | '/resumes/$resumeId/events'
@@ -730,6 +742,7 @@ export interface FileRouteTypes {
     | '/_dashboard/cover-letters/$coverLetterId/'
     | '/_dashboard/dev/chat-lab/'
     | '/_dashboard/dev/chat-stress/'
+    | '/_dashboard/dev/placeholders/'
     | '/_dashboard/resumes/$resumeId/'
     | '/_dashboard/admin/tables/$table/'
     | '/_dashboard/resumes/$resumeId/events/'
@@ -1130,6 +1143,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardDevChatStressIndexRouteImport
       parentRoute: typeof DashboardLayoutRoute
     }
+    '/_dashboard/dev/placeholders/': {
+      id: '/_dashboard/dev/placeholders/'
+      path: '/dev/placeholders'
+      fullPath: '/dev/placeholders/'
+      preLoaderRoute: typeof DashboardDevPlaceholdersIndexRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
     '/_dashboard/resumes/$resumeId/': {
       id: '/_dashboard/resumes/$resumeId/'
       path: '/resumes/$resumeId'
@@ -1201,6 +1221,7 @@ interface DashboardLayoutRouteChildren {
   DashboardCoverLettersCoverLetterIdIndexRoute: typeof DashboardCoverLettersCoverLetterIdIndexRoute
   DashboardDevChatLabIndexRoute: typeof DashboardDevChatLabIndexRoute
   DashboardDevChatStressIndexRoute: typeof DashboardDevChatStressIndexRoute
+  DashboardDevPlaceholdersIndexRoute: typeof DashboardDevPlaceholdersIndexRoute
   DashboardResumesResumeIdIndexRoute: typeof DashboardResumesResumeIdIndexRoute
   DashboardAdminTablesTableIndexRoute: typeof DashboardAdminTablesTableIndexRoute
   DashboardResumesResumeIdEventsIndexRoute: typeof DashboardResumesResumeIdEventsIndexRoute
@@ -1240,6 +1261,7 @@ const DashboardLayoutRouteChildren: DashboardLayoutRouteChildren = {
     DashboardCoverLettersCoverLetterIdIndexRoute,
   DashboardDevChatLabIndexRoute: DashboardDevChatLabIndexRoute,
   DashboardDevChatStressIndexRoute: DashboardDevChatStressIndexRoute,
+  DashboardDevPlaceholdersIndexRoute: DashboardDevPlaceholdersIndexRoute,
   DashboardResumesResumeIdIndexRoute: DashboardResumesResumeIdIndexRoute,
   DashboardAdminTablesTableIndexRoute: DashboardAdminTablesTableIndexRoute,
   DashboardResumesResumeIdEventsIndexRoute:

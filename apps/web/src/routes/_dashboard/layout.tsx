@@ -1,6 +1,6 @@
 import { RouterNotFoundComponent } from "@/lib/tanstack/router/RouterNotFoundComponent";
 import { RouterPendingComponent } from "@/lib/tanstack/router/RouterPendingComponent";
-import { RouterErrorComponent } from "@/lib/tanstack/router/routerErrorComponent";
+import { SentryRouterErrorComponent } from "@/lib/sentry/error-boundary";
 import { AppConfig } from "@/utils/system";
 import { createFileRoute } from "@tanstack/react-router";
 import { DashboardLayout } from "@/components/dashoboard-sidebar/DashboardLayout";
@@ -18,7 +18,7 @@ export const Route = createFileRoute("/_dashboard")({
   ssr: false,
   pendingComponent: () => <RouterPendingComponent />,
   notFoundComponent: () => <RouterNotFoundComponent />,
-  errorComponent: ({ error }) => <RouterErrorComponent error={error} />,
+  errorComponent: SentryRouterErrorComponent,
   component: DashboardShell,
   head: () => ({
     meta: [

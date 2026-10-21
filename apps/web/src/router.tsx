@@ -6,7 +6,7 @@ import { setupRouterSsrQueryIntegration } from "@tanstack/react-router-ssr-query
 import { getTanstackQueryContext } from "./lib/tanstack/query/query-provider";
 import { RouterNotFoundComponent } from "./lib/tanstack/router/RouterNotFoundComponent";
 import { RouterPendingComponent } from "./lib/tanstack/router/RouterPendingComponent";
-import { RouterErrorComponent } from "./lib/tanstack/router/routerErrorComponent";
+import { SentryRouterErrorComponent } from "./lib/sentry/error-boundary";
 import { routeTree } from "./routeTree.gen";
 
 // Create a new router instance
@@ -16,7 +16,7 @@ export const getRouter = async () => {
     routeTree,
     defaultPendingComponent: () => <RouterPendingComponent />,
     defaultNotFoundComponent: () => <RouterNotFoundComponent />,
-    defaultErrorComponent: ({ error }) => <RouterErrorComponent error={error} />,
+    defaultErrorComponent: SentryRouterErrorComponent,
     context: {
       ...tanstackQueryContext,
     },

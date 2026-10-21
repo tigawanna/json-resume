@@ -6,6 +6,7 @@ import { useState } from "react";
 
 interface RouterErrorComponentProps {
   error: unknown;
+  resetError?: () => void;
 }
 
 function toRouterError(error: unknown): Error {
@@ -14,7 +15,7 @@ function toRouterError(error: unknown): Error {
   return new Error("Unknown error");
 }
 
-export function RouterErrorComponent({ error }: RouterErrorComponentProps) {
+export function RouterErrorComponent({ error, resetError }: RouterErrorComponentProps) {
   const resolved = toRouterError(error);
   return (
     <div
@@ -31,7 +32,7 @@ export function RouterErrorComponent({ error }: RouterErrorComponentProps) {
         />
 
         <div className="relative z-10 flex flex-1 flex-col items-center justify-center px-6 py-16">
-          <RouterErrorProductionContent />
+          <RouterErrorProductionContent resetError={resetError} />
         </div>
 
         {import.meta.env.DEV ? <RouterErrorDevelopmentPanel error={resolved} /> : null}
@@ -40,7 +41,7 @@ export function RouterErrorComponent({ error }: RouterErrorComponentProps) {
   );
 }
 
-function RouterErrorProductionContent() {
+function RouterErrorProductionContent({ resetError }: { resetError?: () => void }) {
   return (
     <div className="flex max-w-md flex-col items-center text-center">
       <SiteIcon size={96} aria-hidden />
@@ -79,7 +80,13 @@ function RouterErrorProductionContent() {
         <button
           type="button"
           data-test="router-error-retry"
-          onClick={() => window.location.reload()}
+          onClick={() => {
+            if (resetError) {
+              resetError();
+              return;
+            }
+            window.location.reload();
+          }}
           className="btn btn-ghost btn-sm rounded-full px-6"
         >
           <RotateCw className="size-3.5" />

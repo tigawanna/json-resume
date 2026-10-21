@@ -11,6 +11,11 @@ const DEV_PAGES = [
     title: "Chat stress",
     detail: "Stream a scripted reply through the résumé chat UI and log FPS.",
   },
+  {
+    to: "/dev/placeholders",
+    title: "Placeholders",
+    detail: "Test placeholder components.",
+  },
 ] as const;
 
 export function DevIndexPage() {

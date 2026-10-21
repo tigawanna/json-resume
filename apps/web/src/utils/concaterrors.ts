@@ -24,3 +24,13 @@ export const concatErrors = (err_res: any) => {
 
   return err_res;
 };
+
+export const getErrorMessage = (error: unknown) => {
+  if (error instanceof Error) {
+    return error.message;
+  }
+  if (typeof error === "string") {
+    return error;
+  }
+  return "Something went wrong";
+};

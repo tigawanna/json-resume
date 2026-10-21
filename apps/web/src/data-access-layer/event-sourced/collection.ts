@@ -119,7 +119,8 @@ const {
   close,
 } = createBrowserEventSourcedDB<AppCollectionDefs>({
   databaseName: "agentic-json-resume.sqlite",
-  debug: import.meta.env.DEV,
+  // debug: import.meta.env.DEV,
+  debug: false,
   schemaVersion: 1,
   eventSchemaVersion: 1,
   syncEnabled: true,
