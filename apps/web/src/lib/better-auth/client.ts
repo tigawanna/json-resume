@@ -2,7 +2,7 @@ import { apiKeyClient } from "@better-auth/api-key/client";
 import { organizationRoles } from "@repo/isomorphic/auth-roles";
 import { adminClient, multiSessionClient } from "better-auth/client/plugins";
 import { createAuthClient } from "better-auth/react";
-import { clientEnv } from "../client-env";
+import { clientEnv } from "../env/client-env";
 
 export const authClient = createAuthClient({
   baseURL: clientEnv.VITE_API_URL,

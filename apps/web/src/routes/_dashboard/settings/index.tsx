@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ListPageHeader } from "@/components/wrappers/ListPageHeader";
 import { useViewer } from "@/data-access-layer/auth/viewer";
-import { deleteAccount } from "@/lib/auth.functions";
+import { deleteAccount } from "@/lib/better-auth/auth.functions";
 import { unwrapUnknownError } from "@/utils/errors";
 import { useMutation } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";

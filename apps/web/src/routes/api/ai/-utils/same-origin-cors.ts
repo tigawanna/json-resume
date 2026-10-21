@@ -1,4 +1,4 @@
-import { serverEnv } from "@/lib/server-env";
+import { serverEnv } from "@/lib/env/server-env";
 
 export const corsHeaders = {
   "Access-Control-Allow-Origin": serverEnv.FRONTEND_URL,

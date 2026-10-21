@@ -1,5 +1,5 @@
 import { Octokit } from "octokit";
-import { serverEnv } from "./server-env";
+import { serverEnv } from "../env/server-env";
 
 export function getOctokit(accessToken: string) {
   return new Octokit({

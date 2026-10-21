@@ -1,4 +1,4 @@
-import { getOctokit } from "@/lib/octokit";
+import { getOctokit } from "@/lib/octokit/client";
 
 export type GithubRepoForkFilter = "source" | "all" | "fork";
 export type GithubRepoSort = "updated" | "stars" | "forks" | "help-wanted-issues" | "best-match";

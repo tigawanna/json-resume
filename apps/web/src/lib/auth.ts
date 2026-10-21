@@ -9,7 +9,7 @@ import { organization } from "better-auth/plugins/organization";
 import { tanstackStartCookies } from "better-auth/tanstack-start";
 import { db } from "./drizzle/client";
 import * as authSchema from "./drizzle/scheam/auth-schema";
-import { serverEnv } from "./server-env";
+import { serverEnv } from "./env/server-env";
 
 export const auth = betterAuth({
   baseURL: serverEnv.FRONTEND_URL,

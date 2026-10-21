@@ -1,5 +1,5 @@
 import { drizzle } from "drizzle-orm/libsql/node";
-import { serverEnv } from "../server-env";
+import { serverEnv } from "../env/server-env";
 import * as tablesSchema from "./scheam/index";
 
 export const db = drizzle({

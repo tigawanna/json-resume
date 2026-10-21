@@ -1,5 +1,5 @@
 import { auth } from "@/lib/auth";
-import { getSessionSafely } from "@/lib/auth-session";
+import { getSessionSafely } from "@/lib/better-auth/auth-session";
 import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeaders } from "@tanstack/react-start/server";
 

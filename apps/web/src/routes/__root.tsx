@@ -7,12 +7,12 @@ import appCss from "../styles.css?url";
 
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { clientEnv } from "@/lib/env/client-env";
 import { TanstackDevtools } from "@/lib/tanstack/devtools/devtools";
 import { ThemeProvider } from "@/lib/tanstack/router/theme-provider";
 import { AppConfig } from "@/utils/system";
 import type { QueryClient } from "@tanstack/react-query";
 import { z } from "zod";
-import { clientEnv } from "@/lib/client-env";
 interface MyRouterContext {
   queryClient: QueryClient;
   viewer?: TViewer;

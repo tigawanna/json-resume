@@ -14,11 +14,18 @@ import { ResumeWorkbenchProvider } from "@/routes/_dashboard/resumes/$resumeId/-
 import { ResumeWorkbenchView } from "@/routes/_dashboard/resumes/$resumeId/-components/resume-workbench/ResumeWorkbenchView";
 import { useEventSourcedResumeDetail } from "@/routes/_dashboard/resumes/$resumeId/-hooks/use-event-sourced-resume-detail";
 import { useLiveQuery } from "@tanstack/react-db";
+import * as Sentry from "@sentry/tanstackstart-react";
 import { FlaskConical } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { CHAT_LAB_PRESETS, isChatLabPreset, type ChatLabPresetId } from "../-utils/chat-lab-script";
 
 const LAB_CONNECTION = "/api/ai/chat-lab";
+
+function throwChatLabProbe() {
+  const error = new Error("Chat lab probe");
+  Sentry.captureException(error);
+  throw error;
+}
 
 export function ChatLabPage() {
   const db = useEventSourcedDb();
@@ -90,6 +97,7 @@ export function ChatLabPage() {
             </Select>
             <p className="text-xs text-muted-foreground">{selectedPreset.detail}</p>
           </div>
+          <ChatLabProbeButton />
         </div>
       </SheetContent>
     </Sheet>
@@ -98,7 +106,12 @@ export function ChatLabPage() {
   if (!selectedId) {
     return (
       <div className="flex h-full items-center justify-center p-6" data-test="chat-lab-page">
-        <p className="text-sm text-muted-foreground">No local résumé to attach the workbench to.</p>
+        <div className="flex flex-col items-center gap-3">
+          <p className="text-sm text-muted-foreground">
+            No local résumé to attach the workbench to.
+          </p>
+          <ChatLabProbeButton />
+        </div>
       </div>
     );
   }
@@ -107,6 +120,20 @@ export function ChatLabPage() {
     <div className="flex h-full min-h-0 w-full flex-col" data-test="chat-lab-page">
       <ChatLabWorkbench key={selectedId} resumeId={selectedId} preset={preset} navExtra={drawer} />
     </div>
+  );
+}
+
+function ChatLabProbeButton() {
+  return (
+    <Button
+      type="button"
+      variant="outline"
+      size="sm"
+      data-test="chat-lab-throw"
+      onClick={throwChatLabProbe}
+    >
+      Throw error
+    </Button>
   );
 }
 

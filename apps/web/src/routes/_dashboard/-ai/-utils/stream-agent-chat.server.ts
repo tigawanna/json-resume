@@ -1,6 +1,13 @@
-import "@tanstack/react-start/server-only";
 import "@/lib/tanstack/devtools/ai-devtools-log.server";
+import "@tanstack/react-start/server-only";
 
+import {
+  buildProviderPreferences,
+  DEFAULT_AI_ROUTING,
+  modelAuthor,
+  type AiRouting,
+} from "@/features/agentic-tools/openrouter-routing";
+import { serverEnv } from "@/lib/env/server-env";
 import {
   chat,
   maxIterations,
@@ -19,13 +26,6 @@ import {
   type OpenRouterTextModelOptions,
 } from "@tanstack/ai-openrouter";
 import { log } from "evlog";
-import { serverEnv } from "@/lib/server-env";
-import {
-  buildProviderPreferences,
-  DEFAULT_AI_ROUTING,
-  modelAuthor,
-  type AiRouting,
-} from "@/features/agentic-tools/openrouter-routing";
 
 /** Labs whose OpenRouter routes need an explicit `cache_control` breakpoint; the rest cache implicitly. */
 const EXPLICIT_CACHE_AUTHORS = new Set(["anthropic", "google"]);
