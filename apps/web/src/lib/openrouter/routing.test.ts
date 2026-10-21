@@ -61,7 +61,12 @@ describe("resolveRouting", () => {
   });
 
   it("caps auto mode at the agent ceiling and ignores endpoints without tool use", () => {
-    const resolved = resolveRouting("deepseek/x", DEFAULT_AI_ROUTING, deepseekEndpoints, undefined);
+    const resolved = resolveRouting(
+      "deepseek/x",
+      { mode: "auto", providers: [], allowFallbacks: true },
+      deepseekEndpoints,
+      undefined,
+    );
     expect(resolved.providers).toEqual([]);
     expect(resolved.maxOutputTokens).toBe(AGENT_MAX_OUTPUT_TOKENS);
   });
@@ -90,7 +95,14 @@ describe("resolveRouting", () => {
 
 describe("buildProviderPreferences", () => {
   it("always requires parameters and only pins providers outside auto mode", () => {
-    expect(buildProviderPreferences({ ...DEFAULT_AI_ROUTING, sort: "throughput" })).toEqual({
+    expect(
+      buildProviderPreferences({
+        mode: "auto",
+        providers: [],
+        allowFallbacks: true,
+        sort: "throughput",
+      }),
+    ).toEqual({
       requireParameters: true,
       sort: "throughput",
     });

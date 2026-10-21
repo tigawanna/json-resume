@@ -38,11 +38,8 @@ export type AiRouting = z.infer<typeof aiRoutingSchema>;
 export type ProviderRoutingMode = AiRouting["mode"];
 export type ProviderSort = NonNullable<AiRouting["sort"]>;
 
-export const DEFAULT_AI_ROUTING: AiRouting = {
-  mode: "auto",
-  providers: [],
-  allowFallbacks: true,
-};
+/** Latest DeepSeek Flash snapshot on OpenRouter (17 Oct 2026). The September id stays on the old weights. */
+export const DEFAULT_MODEL = "deepseek/deepseek-v4.1-flash-1017";
 
 /** Model author (the id prefix) → OpenRouter slugs of that lab's first-party API. */
 const OFFICIAL_PROVIDER_SLUGS: Record<string, readonly string[]> = {
@@ -79,6 +76,13 @@ export function officialProviderSlugs(modelId: string): readonly string[] {
   const author = modelAuthor(modelId);
   return OFFICIAL_PROVIDER_SLUGS[author] ?? [author];
 }
+
+/** Official first-party route for the default model. The settings panel shows this until the user changes it. */
+export const DEFAULT_AI_ROUTING: AiRouting = {
+  mode: "official",
+  providers: [...officialProviderSlugs(DEFAULT_MODEL)],
+  allowFallbacks: true,
+};
 
 export function isOfficialEndpoint(modelId: string, endpoint: OpenRouterModelEndpoint): boolean {
   return officialProviderSlugs(modelId).includes(providerSlugFromTag(endpoint.tag));

@@ -4,7 +4,7 @@ import {
   updateAppSettings,
 } from "@/data-access-layer/event-sourced/app-settings";
 import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
-import { DEFAULT_AI_ROUTING } from "@/lib/openrouter/routing";
+import { DEFAULT_AI_ROUTING, DEFAULT_MODEL } from "@/lib/openrouter/routing";
 import type { AiSettings } from "@/types/ai-settings";
 import { eq, useLiveQuery } from "@tanstack/react-db";
 import { useEffect, useRef } from "react";
@@ -16,7 +16,6 @@ import {
 const LEGACY_STORAGE_TYPE_KEY = "ai_storage_type";
 const LEGACY_CREDENTIALS_KEY = "ai_credentials";
 const LEGACY_SYSTEM_PROMPT_KEY = "event-sourced-resume-ai-system-prompt";
-const DEFAULT_MODEL = "deepseek/deepseek-chat-v3-0324";
 
 function readLegacyAiSettings(): { apiKey: string; model: string } | null {
   try {

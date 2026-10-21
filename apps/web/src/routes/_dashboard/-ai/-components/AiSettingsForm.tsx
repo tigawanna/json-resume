@@ -6,7 +6,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { openRouterModelEndpointsQueryOptions } from "@/lib/openrouter/endpoints";
 import { ModelPicker } from "@/lib/openrouter/ModelPicker";
 import { ProviderRoutingPicker } from "@/lib/openrouter/ProviderRoutingPicker";
-import { DEFAULT_AI_ROUTING, resolveRouting, type AiRouting } from "@/lib/openrouter/routing";
+import {
+  DEFAULT_AI_ROUTING,
+  DEFAULT_MODEL,
+  resolveRouting,
+  type AiRouting,
+} from "@/lib/openrouter/routing";
 import { useOpenRouterModels } from "@/lib/openrouter/models";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
@@ -17,8 +22,6 @@ import {
   DEFAULT_EVENT_SOURCED_SYSTEM_PROMPT,
   EVENT_SOURCED_SYSTEM_PROMPT_MAX_CHARS,
 } from "../-utils/system-prompt";
-
-const DEFAULT_MODEL = "deepseek/deepseek-chat-v3-0324";
 
 interface AiSettingsFormProps {
   apiKeyRejected?: boolean;
