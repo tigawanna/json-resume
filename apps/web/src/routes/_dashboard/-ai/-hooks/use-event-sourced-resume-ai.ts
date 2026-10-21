@@ -19,7 +19,6 @@ import { takeHandoffPrompt } from "../-utils/resume-handoff";
 import { snapshotResumeJson } from "../-utils/resume-json-diff";
 import { useEventSourcedAiSettings } from "./use-event-sourced-ai-settings";
 import { useSendPastApprovals } from "./use-send-past-approvals";
-import { isLocalMode } from "@/routes/_dashboard/resumes/$resumeId/-components/ResumeAiTab/resume-ai-types";
 import {
   getMessageText,
   getSessionChars,
@@ -43,7 +42,7 @@ export function useEventSourcedResumeAiChat(options?: {
   const router = useRouter();
   const endOfMessagesRef = useRef<HTMLDivElement>(null);
   const composerRef = useRef<PromptAreaHandle>(null);
-  const isReady = options?.connection ? true : isLocalMode || !!settings;
+  const isReady = options?.connection ? true : !!settings;
   const userId = viewer.user?.id ?? "";
   const dbRef = useRef(db);
   const userIdRef = useRef(userId);

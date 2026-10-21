@@ -109,7 +109,7 @@ export function ResumeAiLivePreview({
         <span className="min-w-0 flex-1 truncate text-sm font-medium">
           {detail?.name ?? "Résumé preview"}
         </span>
-        <TabsList className="order-last h-8 w-full @3xl:order-none @3xl:w-fit">
+        <TabsList className="order-last h-8 w-full @3xl:order-0 @3xl:w-fit">
           <TabsTrigger
             value="preview"
             className="gap-1.5 text-xs"

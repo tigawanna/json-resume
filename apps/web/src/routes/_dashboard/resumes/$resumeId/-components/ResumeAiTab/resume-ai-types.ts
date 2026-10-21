@@ -25,5 +25,3 @@ export type ResumeAiRole = "assistant" | "user";
 
 export type ResumeAiPromptAction = (message: string) => void | Promise<void>;
 export type ResumeAiMessageAction = (message: UIMessage) => void | Promise<void>;
-
-export const isLocalMode = import.meta.env.VITE_AI_LOCAL_MODE === "true";

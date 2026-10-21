@@ -59,6 +59,7 @@ export const ResumeAiChatUI = createChatUI(resumeAiChatOptions, {
     open_resume: ResumeAiToolCall,
     list_jobs: ResumeAiToolCall,
     get_job: ResumeAiToolCall,
+    quote_pay_rate: ResumeAiToolCall,
     save_job: ResumeAiToolCall,
     update_job: ResumeAiToolCall,
     attach_job: ResumeAiToolCall,

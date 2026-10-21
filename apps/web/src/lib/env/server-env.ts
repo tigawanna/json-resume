@@ -20,9 +20,6 @@ const envSchema = z.object({
   GITHUB_CLIENT_SECRET: z.string(),
   GITHUB_API_BASE_URL: z.url().optional(),
   FRONTEND_URL: z.url(),
-  LMSTUDIO_BASE_URL: z.url().optional(),
-  LMSTUDIO_MODEL: z.string().optional(),
-  VITE_AI_LOCAL_MODE: z.string().optional(),
   CRON_SECRET: z.string().optional(),
 });
 

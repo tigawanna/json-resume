@@ -52,6 +52,7 @@ export const DashboardAssistantChatUI = createChatUI(dashboardAssistantChatOptio
     list_resumes: DashboardToolCall,
     get_resume: DashboardToolCall,
     rank_resumes_for_job: DashboardToolCall,
+    quote_pay_rate: DashboardToolCall,
     save_job: DashboardToolCall,
     list_jobs: DashboardToolCall,
     get_job: DashboardToolCall,

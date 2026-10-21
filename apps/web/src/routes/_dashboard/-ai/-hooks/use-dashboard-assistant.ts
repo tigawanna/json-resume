@@ -6,7 +6,6 @@ import type {
   ResumeHandoff,
 } from "@/features/agentic-tools/definitions/tool-context";
 import { getSessionChars } from "@/routes/_dashboard/resumes/$resumeId/-components/ResumeAiTab/resume-ai-message-utils";
-import { isLocalMode } from "@/routes/_dashboard/resumes/$resumeId/-components/ResumeAiTab/resume-ai-types";
 import { fetchServerSentEvents, useChat } from "@tanstack/ai-react";
 import { useRouter } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
@@ -41,7 +40,7 @@ export function useDashboardAssistantChat(options: { onHandedOff: () => void }) 
   const composerRef = useRef<PromptAreaHandle>(null);
   const endOfMessagesRef = useRef<HTMLDivElement>(null);
   const userId = viewer.user?.id ?? "";
-  const isReady = isLocalMode || !!settings;
+  const isReady = !!settings;
   const userIdRef = useRef(userId);
   userIdRef.current = userId;
   const [persistence] = useState(() =>

@@ -13,7 +13,6 @@ import {
 } from "@/features/agentic-tools/openrouter-routing";
 import { useOpenRouterModels } from "@/hooks/use-openrouter-models";
 import { cn } from "@/lib/utils";
-import { isLocalMode } from "@/routes/_dashboard/resumes/$resumeId/-components/ResumeAiTab/resume-ai-types";
 import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, Eye, EyeOff, KeyRound } from "lucide-react";
 import { useState, type ReactNode } from "react";
@@ -59,7 +58,7 @@ export function AiSettingsForm({
   const { data: models } = useOpenRouterModels();
   const { data: endpoints } = useQuery({
     ...openRouterModelEndpointsQueryOptions(model),
-    enabled: !isLocalMode && model.length > 0,
+    enabled: model.length > 0,
   });
 
   function handleModelChange(next: string) {
@@ -69,20 +68,18 @@ export function AiSettingsForm({
   }
 
   function handleSave() {
-    if (!isLocalMode) {
-      if (!apiKey.trim() || !model) return;
-      aiSettings.saveSettings({
-        apiKey: apiKey.trim(),
+    if (!apiKey.trim() || !model) return;
+    aiSettings.saveSettings({
+      apiKey: apiKey.trim(),
+      model,
+      storageType: "local",
+      routing: resolveRouting(
         model,
-        storageType: "local",
-        routing: resolveRouting(
-          model,
-          isFull ? routing : (settings?.routing ?? DEFAULT_AI_ROUTING),
-          endpoints,
-          models?.find((candidate) => candidate.id === model),
-        ),
-      });
-    }
+        isFull ? routing : (settings?.routing ?? DEFAULT_AI_ROUTING),
+        endpoints,
+        models?.find((candidate) => candidate.id === model),
+      ),
+    });
     if (isFull && promptDirty) aiSettings.saveSystemPrompt(promptDraft);
     if (isFull && slopGuardDraft !== slopGuard) aiSettings.saveSlopGuard(slopGuardDraft);
     onSaved?.();
@@ -96,78 +93,72 @@ export function AiSettingsForm({
   return (
     <>
       <div className={cn("flex flex-col gap-6", bodyClassName)} data-test="ai-settings-form">
-        {isLocalMode ? (
-          <p className="text-muted-foreground text-sm">Using LM Studio. No API key required.</p>
-        ) : (
-          <>
-            <SettingsSection
-              title="OpenRouter API key"
-              aside={
-                <a
-                  href="https://openrouter.ai/keys"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="underline-offset-2 hover:text-foreground hover:underline"
-                >
-                  Get a key
-                </a>
-              }
+        <SettingsSection
+          title="OpenRouter API key"
+          aside={
+            <a
+              href="https://openrouter.ai/keys"
+              target="_blank"
+              rel="noreferrer"
+              className="underline-offset-2 hover:text-foreground hover:underline"
             >
-              {apiKeyRejected ? (
-                <div
-                  role="alert"
-                  className="flex items-start gap-2 rounded-lg bg-destructive/10 px-3 py-2.5 text-sm text-destructive"
-                  data-test="event-sourced-api-key-invalid"
-                >
-                  <AlertTriangle className="mt-0.5 size-4 shrink-0" />
-                  <p>
-                    Invalid API key. OpenRouter rejected the saved key. Check it for typos or create
-                    a new one at openrouter.ai/keys.
-                  </p>
-                </div>
-              ) : null}
-              <div className="relative">
-                <Input
-                  id="event-sourced-api-key"
-                  type={showKey ? "text" : "password"}
-                  value={apiKey}
-                  onChange={(event) => setApiKey(event.target.value)}
-                  placeholder="sk-or-v1-..."
-                  autoComplete="off"
-                  aria-label="OpenRouter API key"
-                  aria-invalid={apiKeyRejected || undefined}
-                  className={cn(
-                    "pr-11",
-                    apiKeyRejected &&
-                      "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/40",
-                  )}
-                  data-test="event-sourced-api-key-input"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowKey((value) => !value)}
-                  className="text-muted-foreground hover:text-foreground absolute top-1/2 right-2 flex size-8 -translate-y-1/2 items-center justify-center rounded-md"
-                  aria-label={showKey ? "Hide key" : "Show key"}
-                >
-                  {showKey ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-                </button>
-              </div>
-            </SettingsSection>
-
-            <SettingsSection
-              title="Model"
-              aside={<span className="truncate font-mono text-xs">{model}</span>}
+              Get a key
+            </a>
+          }
+        >
+          {apiKeyRejected ? (
+            <div
+              role="alert"
+              className="flex items-start gap-2 rounded-lg bg-destructive/10 px-3 py-2.5 text-sm text-destructive"
+              data-test="event-sourced-api-key-invalid"
             >
-              <ModelPicker value={model} onChange={handleModelChange} />
-            </SettingsSection>
+              <AlertTriangle className="mt-0.5 size-4 shrink-0" />
+              <p>
+                Invalid API key. OpenRouter rejected the saved key. Check it for typos or create a
+                new one at openrouter.ai/keys.
+              </p>
+            </div>
+          ) : null}
+          <div className="relative">
+            <Input
+              id="event-sourced-api-key"
+              type={showKey ? "text" : "password"}
+              value={apiKey}
+              onChange={(event) => setApiKey(event.target.value)}
+              placeholder="sk-or-v1-..."
+              autoComplete="off"
+              aria-label="OpenRouter API key"
+              aria-invalid={apiKeyRejected || undefined}
+              className={cn(
+                "pr-11",
+                apiKeyRejected &&
+                  "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/40",
+              )}
+              data-test="event-sourced-api-key-input"
+            />
+            <button
+              type="button"
+              onClick={() => setShowKey((value) => !value)}
+              className="text-muted-foreground hover:text-foreground absolute top-1/2 right-2 flex size-8 -translate-y-1/2 items-center justify-center rounded-md"
+              aria-label={showKey ? "Hide key" : "Show key"}
+            >
+              {showKey ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+            </button>
+          </div>
+        </SettingsSection>
 
-            {isFull ? (
-              <SettingsSection title="Provider routing">
-                <ProviderRoutingPicker modelId={model} value={routing} onChange={setRouting} />
-              </SettingsSection>
-            ) : null}
-          </>
-        )}
+        <SettingsSection
+          title="Model"
+          aside={<span className="truncate font-mono text-xs">{model}</span>}
+        >
+          <ModelPicker value={model} onChange={handleModelChange} />
+        </SettingsSection>
+
+        {isFull ? (
+          <SettingsSection title="Provider routing">
+            <ProviderRoutingPicker modelId={model} value={routing} onChange={setRouting} />
+          </SettingsSection>
+        ) : null}
 
         {isFull ? (
           <>
@@ -227,7 +218,7 @@ export function AiSettingsForm({
       </div>
 
       <div className={cn("flex flex-row items-center justify-end gap-2", footerClassName)}>
-        {settings && !isLocalMode ? (
+        {settings ? (
           <Button type="button" variant="ghost" size="sm" className="mr-auto" onClick={handleClear}>
             Clear key
           </Button>
@@ -236,7 +227,7 @@ export function AiSettingsForm({
           type="button"
           size="sm"
           className="gap-2"
-          disabled={!isLocalMode && (!apiKey.trim() || !model)}
+          disabled={!apiKey.trim() || !model}
           onClick={handleSave}
           data-test="event-sourced-ai-settings-save"
         >

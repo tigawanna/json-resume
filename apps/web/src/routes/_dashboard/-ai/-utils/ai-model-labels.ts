@@ -1,4 +1,3 @@
-import { isLocalMode } from "@/routes/_dashboard/resumes/$resumeId/-components/ResumeAiTab/resume-ai-types";
 import type { AiSettings } from "@/types/ai-settings";
 
 /** Short model and provider-routing labels for a composer's model switcher. */
@@ -6,7 +5,7 @@ export function aiModelLabels(settings: AiSettings | null | undefined) {
   const model = settings?.model;
   const routing = settings?.routing;
   let routingLabel: string | null = null;
-  if (routing && !isLocalMode) {
+  if (routing) {
     if (routing.mode === "auto") {
       if (routing.sort) {
         routingLabel = `Auto · ${routing.sort}`;

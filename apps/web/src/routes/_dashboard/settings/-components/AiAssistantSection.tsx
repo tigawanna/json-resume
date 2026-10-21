@@ -2,7 +2,6 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { EventSourcedAiSettingsSheet } from "@/routes/_dashboard/-ai/-components/EventSourcedAiSettingsSheet";
 import { useEventSourcedAiSettings } from "@/routes/_dashboard/-ai/-hooks/use-event-sourced-ai-settings";
-import { isLocalMode } from "@/routes/_dashboard/resumes/$resumeId/-components/ResumeAiTab/resume-ai-types";
 import { useLocation, useNavigate } from "@tanstack/react-router";
 import { ChevronRight } from "lucide-react";
 
@@ -13,10 +12,8 @@ export function AiAssistantSection() {
   const hash = useLocation({ select: (location) => location.hash });
   const navigate = useNavigate();
   const open = hash === AI_SETTINGS_HASH;
-  const connected = isLocalMode || Boolean(settings);
-  const summary = isLocalMode
-    ? "Using LM Studio"
-    : (settings?.model ?? "Add an OpenRouter key and pick a model");
+  const connected = Boolean(settings);
+  const summary = settings?.model ?? "Add an OpenRouter key and pick a model";
 
   function setOpen(next: boolean) {
     void navigate({

@@ -2,7 +2,7 @@ import z from "zod";
 
 const envSchema = z.object({
   VITE_API_URL: z.url().optional(),
-  VITE_SENTRY_DSN: z.url(),
+  VITE_SENTRY_DSN: z.url().optional(),
 });
 
 // Each key must be a direct `import.meta.env.VITE_*` read. Vite only inlines

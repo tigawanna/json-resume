@@ -33,6 +33,23 @@ Before editing files for a substantial task:
 
 Prefer one object parameter over positional arguments for functions and React components, including single-field objects. Name the fields. Keep positional parameters only when matching a required third-party signature.
 
+## Branching
+
+A single ternary is fine for a yes/no choice. For more than three outcomes, or any nested ternary, use `if` / `else if` or `switch`.
+
+```ts
+let providers: string[];
+if (routing.mode === "official" && endpoints) {
+  providers = availableOfficialSlugs(modelId, endpoints);
+} else if (routing.mode === "official") {
+  providers = [...officialProviderSlugs(modelId)];
+} else if (routing.mode === "custom") {
+  providers = routing.providers;
+} else {
+  providers = [];
+}
+```
+
 ## Source layout
 
 `apps/web/src/` is a TanStack Start app. Routes live in `routes/<route>/index.tsx`. Route-only UI, helpers, and hooks use a `-` prefix so the router ignores them. Shared UI is `components/` (`ui/` is shadcn codegen only). Data loading is `data-access-layer/`. Package wrappers are `lib/`. App rules and server functions are `modules/`. External HTTP clients are `services/`. Load the `tanstack-src-layout` skill before adding or moving files under `apps/web/src/`.

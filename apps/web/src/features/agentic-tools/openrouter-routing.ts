@@ -131,14 +131,16 @@ export function resolveRouting(
   endpoints: readonly OpenRouterModelEndpoint[] | undefined,
   model: OpenRouterModelData | undefined,
 ): AiRouting {
-  const providers =
-    routing.mode === "official"
-      ? endpoints
-        ? availableOfficialSlugs(modelId, endpoints)
-        : [...officialProviderSlugs(modelId)]
-      : routing.mode === "custom"
-        ? routing.providers
-        : [];
+  let providers: string[];
+  if (routing.mode === "official" && endpoints) {
+    providers = availableOfficialSlugs(modelId, endpoints);
+  } else if (routing.mode === "official") {
+    providers = [...officialProviderSlugs(modelId)];
+  } else if (routing.mode === "custom") {
+    providers = routing.providers;
+  } else {
+    providers = [];
+  }
 
   const resolved: AiRouting = {
     mode: providers.length === 0 && routing.mode !== "auto" ? "auto" : routing.mode,

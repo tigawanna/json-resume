@@ -184,27 +184,6 @@ Relevant files:
 
 The model picker lists the models OpenRouter currently serves (live API), with free-only and cheapest-first filters. The chosen id is passed verbatim to OpenRouter, so new models need no code change.
 
-### Local Development with LM Studio
-
-LM Studio exposes an OpenAI-compatible REST API. The server adapter can point to it instead of OpenRouter when two env vars are present:
-
-```bash
-LMSTUDIO_BASE_URL=http://localhost:1234/v1
-LMSTUDIO_MODEL=gemma-3-12b-it
-```
-
-Steps:
-
-1. Download [LM Studio](https://lmstudio.ai) and load a model (e.g. `google/gemma-3-12b-it`).
-2. Start the local server in LM Studio (default port `1234`).
-3. Copy the model identifier shown in LM Studio — it must match `LMSTUDIO_MODEL` exactly.
-4. Set the two env vars and restart the dev server.
-5. When `LMSTUDIO_BASE_URL` is set, the server ignores the `apiKey` and `model` sent by the client entirely and routes all requests to LM Studio using a dummy key.
-
-`LMSTUDIO_MODEL` defaults to `"gemma-3-12b-it"` if omitted.
-
-The adapter reuse works because the `@openrouter/sdk` `SDKOptions` accepts a `serverURL` override, and LM Studio's API is OpenAI-compatible.
-
 The assistant's ground rules (system prompt in `system-prompt.ts`):
 
 1. It edits the active résumé in place with granular tools; it copies only when the user asks for a copy or variant.

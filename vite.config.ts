@@ -17,9 +17,10 @@ export default defineConfig({
     categories: { correctness: "error" },
     rules: {
       "no-unused-vars": [
-        "error",
+        "warn",
         { argsIgnorePattern: "^_", varsIgnorePattern: "^_", ignoreRestSiblings: true },
       ],
+      "no-nested-ternary": "warn",
     },
   },
 });

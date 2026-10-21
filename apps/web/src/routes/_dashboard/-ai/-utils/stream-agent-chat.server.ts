@@ -31,19 +31,11 @@ const EXPLICIT_CACHE_AUTHORS = new Set(["anthropic", "google"]);
 
 /**
  * The model id is cast on purpose (approved): `createOpenRouterText` only types the
- * package's bundled model list, but the picker offers OpenRouter's live list and
- * LM Studio accepts any local id.
+ * package's bundled model list, but the picker offers OpenRouter's live list.
  */
 function buildTextAdapter(apiKey: string | undefined, model: string | undefined): AnyTextAdapter {
-  if (serverEnv.LMSTUDIO_BASE_URL) {
-    const lmModel = serverEnv.LMSTUDIO_MODEL ?? "gemma-3-12b-it";
-    return createOpenRouterText(lmModel as never, "lm-studio", {
-      serverURL: serverEnv.LMSTUDIO_BASE_URL,
-    }) as unknown as AnyTextAdapter;
-  }
-
   if (!apiKey || !model) {
-    throw new Error("apiKey and model are required when not using a local LM Studio server");
+    throw new Error("apiKey and model are required");
   }
 
   return createOpenRouterText(model as never, apiKey, {
@@ -143,38 +135,31 @@ export type AgentModelSettings = {
   routing?: AiRouting;
 };
 
-/** Runs one agent turn against OpenRouter (or LM Studio) with prompt caching and usage logs. */
-export function streamAgentChat(
-  input: ChatRunParams &
-    AgentModelSettings & {
-      /** Names the agent in usage logs. */
-      agent: string;
-      systemPrompt: string;
-      tools: ReadonlyArray<Tool>;
-      maxIterations: number;
-      /** Shrinks the history sent to the model once it passes `maxTokens`. */
-      compaction?: CompactionOptions;
-    },
-): AsyncIterable<StreamChunk> {
-  const isOpenRouter = !serverEnv.LMSTUDIO_BASE_URL;
+export type StreamAgentChatInput = ChatRunParams &
+  AgentModelSettings & {
+    /** Names the agent in usage logs. */
+    agent: string;
+    systemPrompt: string;
+    tools: ReadonlyArray<Tool>;
+    maxIterations: number;
+    /** Shrinks the history sent to the model once it passes `maxTokens`. */
+    compaction?: CompactionOptions;
+  };
+
+export function streamAgentChat(input: StreamAgentChatInput): AsyncIterable<StreamChunk> {
   const model = input.model ?? "";
   const routing = input.routing ?? DEFAULT_AI_ROUTING;
 
-  const modelOptions: OpenRouterTextModelOptions | undefined = isOpenRouter
-    ? {
-        provider: buildProviderPreferences(routing),
-        ...(routing.maxOutputTokens && { maxCompletionTokens: routing.maxOutputTokens }),
-        sessionId: input.threadId.slice(0, 128),
-        user: input.userId,
-      }
-    : undefined;
+  const modelOptions: OpenRouterTextModelOptions = {
+    provider: buildProviderPreferences(routing),
+    ...(routing.maxOutputTokens && { maxCompletionTokens: routing.maxOutputTokens }),
+    sessionId: input.threadId.slice(0, 128),
+    user: input.userId,
+  };
 
-  const middleware: ChatMiddleware[] = [];
-  if (isOpenRouter) {
-    middleware.push(
-      usageLogMiddleware({ agent: input.agent, model, userId: input.userId, routing }),
-    );
-  }
+  const middleware: ChatMiddleware[] = [
+    usageLogMiddleware({ agent: input.agent, model, userId: input.userId, routing }),
+  ];
   if (input.compaction) {
     const compaction = input.compaction;
     middleware.push(
@@ -204,7 +189,7 @@ export function streamAgentChat(
     parentRunId: input.parentRunId,
     resume: input.resume,
     systemPrompts: [
-      isOpenRouter && EXPLICIT_CACHE_AUTHORS.has(modelAuthor(model))
+      EXPLICIT_CACHE_AUTHORS.has(modelAuthor(model))
         ? {
             content: input.systemPrompt,
             metadata: {
