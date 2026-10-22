@@ -14,9 +14,10 @@ export function ResumeAiSaveApplicationAnswersTool({
 }: ToolProps<ResumeAiChatOptions, "save_application_answers">) {
   const { focusAnswers } = useResumeWorkbenchActions();
   const saved = part.output ?? undefined;
-  const first = saved?.answers[0];
+  const answers = saved?.answers;
+  const first = answers?.[0];
   const jobId = first?.jobId ?? null;
-  const gaps = saved?.answers.reduce((total, row) => total + row.placeholders, 0) ?? 0;
+  const gaps = answers?.reduce((total, row) => total + row.placeholders, 0) ?? 0;
   let answersSearch: { resumeIds: string[] } | { jobId: string } | Record<string, never> = {};
   if (first?.resumeId) answersSearch = { resumeIds: [first.resumeId] };
   else if (jobId) answersSearch = { jobId };
@@ -24,7 +25,7 @@ export function ResumeAiSaveApplicationAnswersTool({
   return (
     <>
       <ResumeAiToolCall part={part} result={result} />
-      {saved && first ? (
+      {answers && first ? (
         <div
           className="rounded-lg bg-[color-mix(in_oklch,var(--color-success)_9%,var(--color-base-100))] p-3 text-sm ring-1 ring-[color-mix(in_oklch,var(--color-success)_25%,transparent)]"
           data-test="resume-ai-answers-card"
@@ -38,7 +39,7 @@ export function ResumeAiSaveApplicationAnswersTool({
                 {first.jobLabel ?? "Application answers"}
               </p>
               <p className="mt-0.5 text-xs text-muted-foreground">
-                {saved.answers.length} {saved.answers.length === 1 ? "answer" : "answers"} saved
+                {answers.length} {answers.length === 1 ? "answer" : "answers"} saved
                 {gaps > 0
                   ? ` · ${gaps} ${gaps === 1 ? "detail" : "details"} for you to fill in`
                   : ""}
@@ -47,7 +48,7 @@ export function ResumeAiSaveApplicationAnswersTool({
           </div>
           <div className="mt-3 flex flex-wrap justify-end gap-1.5">
             <CopyTextButton
-              text={applicationAnswersText(saved.answers)}
+              text={applicationAnswersText(answers)}
               label="Copy all"
               copiedMessage="Questions and answers copied"
               dataTest="resume-ai-answers-card-copy"

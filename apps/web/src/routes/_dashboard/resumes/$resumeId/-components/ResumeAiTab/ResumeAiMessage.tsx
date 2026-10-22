@@ -21,10 +21,11 @@ export function ResumeAiMessage({ message, Parts }: MessageProps<ResumeAiChatOpt
   }
 
   const text = getMessageText(message);
+  const isSystem = message.role === "system";
   const hasTool = message.parts.some(
     (part) => part.type === "tool-call" || part.type === "tool-result",
   );
-  if (!isUser && !text && !hasTool) return null;
+  if (!isUser && !isSystem && !text && !hasTool) return null;
 
   async function copyMessage() {
     if (!text) return;
@@ -38,13 +39,25 @@ export function ResumeAiMessage({ message, Parts }: MessageProps<ResumeAiChatOpt
     }
   }
 
+  let rowAlign = "items-start";
+  if (isUser) rowAlign = "items-end";
+  else if (isSystem) rowAlign = "items-center";
+
+  let rowTest = "resume-ai-message-assistant";
+  if (isUser) rowTest = "resume-ai-message-user";
+  else if (isSystem) rowTest = "resume-ai-message-system";
+
   return (
     <div
-      className={cn("flex w-full flex-col gap-1", isUser ? "items-end" : "items-start")}
-      data-test={`resume-ai-message-${isUser ? "user" : "assistant"}`}
+      className={cn("flex w-full gap-1", isSystem ? "flex-row" : "flex-col", rowAlign)}
+      data-test={rowTest}
     >
       <div
-        className={cn("relative isolate min-w-0 max-w-[min(44rem,calc(100%-3rem))]", bubbleShape)}
+        className={cn(
+          "relative isolate min-w-0",
+          isSystem ? "min-w-0 flex-1" : "max-w-[min(44rem,calc(100%-3rem))]",
+          bubbleShape,
+        )}
       >
         <div
           className={cn(
@@ -68,7 +81,16 @@ export function ResumeAiMessage({ message, Parts }: MessageProps<ResumeAiChatOpt
           </>
         ) : null}
       </div>
-      {isUser || text ? (
+      {isSystem ? (
+        <PromptActionButton
+          label="Copy"
+          disabled={!text}
+          onClick={() => void copyMessage()}
+          dataTest="resume-ai-copy-message"
+        >
+          <Copy className="size-3.5" />
+        </PromptActionButton>
+      ) : isUser || text ? (
         <div className="flex items-center gap-1">
           <PromptActionButton
             label="Copy prompt"
@@ -95,16 +117,7 @@ export function ResumeAiMessage({ message, Parts }: MessageProps<ResumeAiChatOpt
             <RefreshCcw className="size-3.5" />
           </PromptActionButton>
         </div>
-      ) : (
-        <PromptActionButton
-          label="Copy reply"
-          disabled={!text}
-          onClick={() => void copyMessage()}
-          dataTest="resume-ai-copy-message"
-        >
-          <Copy className="size-3.5" />
-        </PromptActionButton>
-      )}
+      ) : null}
     </div>
   );
 }
