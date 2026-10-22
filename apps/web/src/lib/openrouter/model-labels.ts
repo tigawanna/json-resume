@@ -1,7 +1,9 @@
-import type { AiSettings } from "@/types/ai-settings";
+import type { AiRouting } from "@/lib/openrouter/routing";
 
 /** Short model and provider-routing labels for a composer's model switcher. */
-export function aiModelLabels(settings: AiSettings | null | undefined) {
+export function aiModelLabels(
+  settings: { model?: string; routing?: AiRouting } | null | undefined,
+) {
   const model = settings?.model;
   const routing = settings?.routing;
   let routingLabel: string | null = null;

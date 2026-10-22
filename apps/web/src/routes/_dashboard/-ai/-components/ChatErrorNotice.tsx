@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Link } from "@tanstack/react-router";
 import { LogIn, RotateCcw, Settings2 } from "lucide-react";
-import { CHAT_ERROR_HINTS, classifyChatError } from "../-utils/chat-error";
+import { CHAT_ERROR_HINTS, classifyChatError } from "@/lib/openrouter/chat-error";
 
 interface ChatErrorNoticeProps {
   message: string;

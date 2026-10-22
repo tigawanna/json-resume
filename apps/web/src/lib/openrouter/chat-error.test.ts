@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { describe, expect, it } from "vitest";
-import { classifyChatError, failedRunHasReply } from "./chat-error";
+import { classifyChatError, failedRunHasReply } from "@/lib/openrouter/chat-error";
 
 describe("classifyChatError", () => {
   it.each([

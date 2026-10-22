@@ -9,12 +9,12 @@ import { getSessionChars } from "@/routes/_dashboard/resumes/$resumeId/-componen
 import { fetchServerSentEvents, useChat } from "@tanstack/ai-react";
 import { useRouter } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { aiModelLabels } from "../-utils/ai-model-labels";
-import { CONTINUE_AFTER_ERROR_PROMPT, failedRunHasReply } from "../-utils/chat-error";
+import { CONTINUE_AFTER_ERROR_PROMPT, failedRunHasReply } from "@/lib/openrouter/chat-error";
+import { isApiKeyErrorMessage } from "@/lib/openrouter/is-api-key-error";
+import { aiModelLabels } from "@/lib/openrouter/model-labels";
 import { INITIAL_CONTEXT_COMPACTION, reduceContextCompaction } from "../-utils/context-compaction";
 import { dashboardAssistantClientTools } from "../-utils/dashboard-client-tools";
 import { appendChatMessages } from "../-utils/event-sourced-chat-persistence";
-import { isApiKeyErrorMessage } from "../-utils/is-api-key-error";
 import { createLocalChatPersistence } from "../-utils/local-chat-persistence";
 import {
   buildHandoffMessage,

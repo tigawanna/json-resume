@@ -6,8 +6,8 @@ import { fetchServerSentEvents, useChat, type UIMessage } from "@tanstack/ai-rea
 import { eq, useLiveQuery } from "@tanstack/react-db";
 import { useRouter } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { aiModelLabels } from "../-utils/ai-model-labels";
-import { CONTINUE_AFTER_ERROR_PROMPT, failedRunHasReply } from "../-utils/chat-error";
+import { CONTINUE_AFTER_ERROR_PROMPT, failedRunHasReply } from "@/lib/openrouter/chat-error";
+import { aiModelLabels } from "@/lib/openrouter/model-labels";
 import { eventSourcedResumeAiClientTools } from "../-utils/client-tools";
 import {
   createEventSourcedChatPersistence,

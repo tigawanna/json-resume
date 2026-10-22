@@ -8,7 +8,7 @@ import { useState } from "react";
 import { usePanelRef } from "react-resizable-panels";
 import { useEventSourcedResumeAiChat } from "../-hooks/use-event-sourced-resume-ai";
 import { useResumeAiPreviewPanel } from "../-hooks/use-resume-ai-preview-panel";
-import { isApiKeyErrorMessage } from "../-utils/is-api-key-error";
+import { isApiKeyErrorMessage } from "@/lib/openrouter/is-api-key-error";
 import { EventSourcedAiChrome } from "./EventSourcedAiChrome";
 import { ResumeAiLivePreview } from "./ResumeAiLivePreview";
 

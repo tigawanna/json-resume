@@ -1,4 +1,4 @@
-import { isApiKeyErrorMessage, isAppSignedOutMessage } from "./is-api-key-error";
+import { isApiKeyErrorMessage, isAppSignedOutMessage } from "@/lib/openrouter/is-api-key-error";
 
 export type ChatErrorKind =
   | "signed-out"
