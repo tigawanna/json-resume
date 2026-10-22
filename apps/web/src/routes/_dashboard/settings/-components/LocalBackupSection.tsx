@@ -36,8 +36,12 @@ function LocalBackupControls() {
     try {
       const backup = buildLocalBackup(db);
       downloadJson(backupDownloadFilename(backup.exportedAt), JSON.stringify(backup, null, 2));
+      const rowCount = Object.values(backup.collections).reduce(
+        (sum, rows) => sum + rows.length,
+        0,
+      );
       toast.success("Local dataset exported", {
-        description: `${backup.events.length} events from ${Object.keys(backup.collections).length} collections`,
+        description: `${rowCount} rows across ${Object.keys(backup.collections).length} collections`,
       });
     } catch (err: unknown) {
       toast.error("Export failed", {
@@ -78,14 +82,14 @@ function LocalBackupControls() {
       <CardHeader>
         <CardTitle>Local dataset backup</CardTitle>
         <CardDescription>
-          Download this browser’s event-sourced library as JSON. Restoring replays those events in
-          order so a new device can rebuild the same rows.
+          Download this browser’s library as JSON. The file is a snapshot of every collection.
+          Restore inserts rows that are not already in this browser.
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         <p className="text-muted-foreground text-sm">
-          Import is additive: insert events skip rows that already exist, updates overwrite matching
-          ids, and deletes remove matching ids. Use this on an empty library for a full restore.
+          Import is additive. Matching ids are left as they are. Older backups that stored a
+          collection only in the event log still restore those rows.
         </p>
         <div className="flex flex-wrap gap-2">
           <Button

@@ -1,16 +1,18 @@
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
+import { pingOpenRouter } from "@/lib/openrouter/api";
 import { openRouterModelEndpointsQueryOptions } from "@/lib/openrouter/endpoints";
 import { ModelPicker } from "@/lib/openrouter/ModelPicker";
+import { useOpenRouterModels } from "@/lib/openrouter/models";
 import { ProviderRoutingPicker } from "@/lib/openrouter/ProviderRoutingPicker";
 import {
   DEFAULT_AI_ROUTING,
@@ -18,11 +20,10 @@ import {
   resolveRouting,
   type AiRouting,
 } from "@/lib/openrouter/routing";
-import { useOpenRouterModels } from "@/lib/openrouter/models";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
-import { AlertTriangle, Eye, EyeOff, KeyRound } from "lucide-react";
-import { useState, type ReactNode } from "react";
+import { AlertTriangle, Check, Eye, EyeOff, KeyRound, X } from "lucide-react";
+import { useRef, useState, type ReactNode } from "react";
 import { useEventSourcedAiSettings } from "../-hooks/use-event-sourced-ai-settings";
 import {
   DEFAULT_EVENT_SOURCED_SYSTEM_PROMPT,
@@ -37,6 +38,12 @@ interface AiSettingsFormProps {
   footerClassName?: string;
   onSaved?: () => void;
 }
+
+type PingState =
+  | { status: "idle" }
+  | { status: "pending" }
+  | { status: "ok"; reply: string }
+  | { status: "error"; message: string };
 
 /**
  * Edits the AI settings every assistant shares (stored in the local database and synced).
@@ -57,6 +64,8 @@ export function AiSettingsForm({
   const [promptDraft, setPromptDraft] = useState(systemPrompt);
   const [slopGuardDraft, setSlopGuardDraft] = useState(slopGuard);
   const [showKey, setShowKey] = useState(false);
+  const pingKeyRef = useRef("");
+  const [pingState, setPingState] = useState<PingState>({ status: "idle" });
   const promptDirty = promptDraft !== systemPrompt;
   const isFull = variant === "full";
 
@@ -88,6 +97,19 @@ export function AiSettingsForm({
     if (isFull && promptDirty) aiSettings.saveSystemPrompt(promptDraft);
     if (isFull && slopGuardDraft !== slopGuard) aiSettings.saveSlopGuard(slopGuardDraft);
     onSaved?.();
+  }
+
+  async function handlePing(key = apiKey.trim()) {
+    if (!key || !model) return;
+    pingKeyRef.current = key;
+    setPingState({ status: "pending" });
+    try {
+      const reply = await pingOpenRouter({ apiKey: key, model });
+      setPingState({ status: "ok", reply });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "OpenRouter did not respond";
+      setPingState({ status: "error", message });
+    }
   }
 
   function handleClear() {
@@ -129,7 +151,16 @@ export function AiSettingsForm({
               id="event-sourced-api-key"
               type={showKey ? "text" : "password"}
               value={apiKey}
-              onChange={(event) => setApiKey(event.target.value)}
+              onChange={(event) => {
+                const next = event.target.value;
+                setApiKey(next);
+                if (next.trim() !== pingKeyRef.current) setPingState({ status: "idle" });
+              }}
+              onPaste={(event) => {
+                const pasted = event.clipboardData.getData("text").trim();
+                if (!pasted || !model) return;
+                void handlePing(pasted);
+              }}
               placeholder="sk-or-v1-..."
               autoComplete="off"
               aria-label="OpenRouter API key"
@@ -149,6 +180,36 @@ export function AiSettingsForm({
             >
               {showKey ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
             </button>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={!apiKey.trim() || !model || pingState.status === "pending"}
+              onClick={() => void handlePing()}
+              data-test="event-sourced-api-key-ping"
+            >
+              {pingState.status === "pending" ? "Pinging…" : "Try key"}
+            </Button>
+            {pingState.status === "ok" ? (
+              <p
+                className="bg-success/15 text-success flex items-center gap-1.5 rounded-md px-2 py-1 text-sm"
+                data-test="event-sourced-api-key-ping-ok"
+              >
+                <Check className="size-3.5" />
+                Key works. OpenRouter replied: {pingState.reply}
+              </p>
+            ) : null}
+            {pingState.status === "error" ? (
+              <p
+                className="bg-error/15 text-error flex items-center gap-1.5 rounded-md px-2 py-1 text-sm"
+                data-test="event-sourced-api-key-ping-error"
+              >
+                <X className="size-3.5" />
+                {pingState.message}
+              </p>
+            ) : null}
           </div>
         </SettingsSection>
 

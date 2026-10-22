@@ -1,6 +1,12 @@
-import { isApiKeyErrorMessage } from "./is-api-key-error";
+import { isApiKeyErrorMessage, isAppSignedOutMessage } from "./is-api-key-error";
 
-export type ChatErrorKind = "api-key" | "daily-limit" | "rate-limit" | "timeout" | "other";
+export type ChatErrorKind =
+  | "signed-out"
+  | "api-key"
+  | "daily-limit"
+  | "rate-limit"
+  | "timeout"
+  | "other";
 
 const DAILY_LIMIT_PATTERN = /per[- ]day|daily/i;
 const RATE_LIMIT_PATTERN = /rate.?limit|\b429\b|too many requests|free-models-per/i;
@@ -8,6 +14,7 @@ const TIMEOUT_PATTERN =
   /time(d)?[ -]?out|\b(408|502|503|504)\b|ETIMEDOUT|ECONNRESET|socket hang up|fetch failed|network ?error|terminated|overloaded|stream (ended|closed)/i;
 
 export function classifyChatError(message: string): ChatErrorKind {
+  if (isAppSignedOutMessage(message)) return "signed-out";
   if (isApiKeyErrorMessage(message)) return "api-key";
   if (RATE_LIMIT_PATTERN.test(message)) {
     return DAILY_LIMIT_PATTERN.test(message) ? "daily-limit" : "rate-limit";
@@ -17,6 +24,7 @@ export function classifyChatError(message: string): ChatErrorKind {
 }
 
 export const CHAT_ERROR_HINTS: Record<ChatErrorKind, string> = {
+  "signed-out": "This browser is signed out, so the chat never reached OpenRouter.",
   "api-key": "OpenRouter rejected the API key.",
   "daily-limit":
     "This model's daily free limit is used up. Pick another model, or add credits on OpenRouter.",

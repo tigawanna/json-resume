@@ -116,7 +116,7 @@ const libraryIndexes = <T extends { id: string; userId?: string | null; updatedA
 const {
   ensureDb: ensureDbInner,
   db,
-  close,
+  close: closeInner,
 } = createBrowserEventSourcedDB<AppCollectionDefs>({
   databaseName: "agentic-json-resume.sqlite",
   // debug: import.meta.env.DEV,
@@ -364,6 +364,28 @@ async function ensureDb() {
   installStaleReplayGuard(database);
   installSyncPushTuning(database);
   return database;
+}
+
+const beforeCloseListeners = new Set<() => void>();
+let dbClosing = false;
+
+/** True once `close()` has started and the exported `db` proxy is about to go dead. */
+export function isDbClosing() {
+  return dbClosing;
+}
+
+/** Runs synchronously before the singleton proxy is cleared. */
+export function subscribeBeforeDbClose(listener: () => void) {
+  beforeCloseListeners.add(listener);
+  return () => {
+    beforeCloseListeners.delete(listener);
+  };
+}
+
+async function close() {
+  dbClosing = true;
+  for (const listener of beforeCloseListeners) listener();
+  await closeInner();
 }
 
 export { close, db, ensureDb };

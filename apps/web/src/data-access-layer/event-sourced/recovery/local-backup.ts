@@ -1,5 +1,4 @@
-/* Exports and re-imports a validated snapshot of all collections plus the outbox. */
-import type { OutboxEntry } from "event-sourced-collection";
+/* Exports and re-imports a snapshot of every app collection. */
 import { z } from "zod";
 
 import type { AppCollectionDefs, AppDb } from "../collection";
@@ -7,6 +6,7 @@ import {
   applicationAnswerSchema,
   appSettingsSchema,
   coverLetterSchema,
+  jobSchema,
   resumeAiChatSchema,
   resumeAiConversationSchema,
   resumeAiMessageSchema,
@@ -33,36 +33,6 @@ import { isLegacyCollectionId, upgradeLegacySnapshot } from "./legacy-backup";
 export const LOCAL_BACKUP_FORMAT = "agentic-json-resume-event-backup" as const;
 export const LOCAL_BACKUP_FORMAT_VERSION = 1;
 
-const userCollectionIds = [
-  "resume",
-  "resumeExperience",
-  "resumeExperienceBullet",
-  "resumeEducation",
-  "resumeEducationBullet",
-  "resumeSkillGroup",
-  "resumeSkill",
-  "resumeContact",
-  "resumeProject",
-  "resumeSummary",
-  "resumeNote",
-  "resumeLink",
-  "resumeLanguage",
-  "resumeCertification",
-  "resumeVolunteer",
-  "resumeTalk",
-  "resumeAiChat",
-  "resumeAiConversation",
-  "resumeAiMessage",
-  "savedProject",
-  "coverLetter",
-  "applicationAnswer",
-  "settings",
-] as const satisfies ReadonlyArray<keyof AppCollectionDefs>;
-
-type UserCollectionId = (typeof userCollectionIds)[number];
-
-const userCollectionIdSet = new Set<string>(userCollectionIds);
-
 const rowSchemaByCollection = {
   resume: resumeSchema,
   resumeExperience: resumeExperienceSchema,
@@ -84,10 +54,17 @@ const rowSchemaByCollection = {
   resumeAiConversation: resumeAiConversationSchema,
   resumeAiMessage: resumeAiMessageSchema,
   savedProject: savedProjectSchema,
+  job: jobSchema,
   coverLetter: coverLetterSchema,
   applicationAnswer: applicationAnswerSchema,
   settings: appSettingsSchema,
-} satisfies Record<UserCollectionId, z.ZodType>;
+} satisfies Record<keyof AppCollectionDefs, z.ZodType>;
+
+type UserCollectionId = keyof typeof rowSchemaByCollection;
+
+const userCollectionIds = Object.keys(rowSchemaByCollection) as UserCollectionId[];
+
+const userCollectionIdSet = new Set<string>(userCollectionIds);
 
 const backupEventSchema = z.object({
   eventId: z.string(),
@@ -138,27 +115,7 @@ function mutatingCollection(db: AppDb, id: UserCollectionId): MutatingCollection
   return db.collections[id] as unknown as MutatingCollection;
 }
 
-function toBackupEvent(entry: OutboxEntry): LocalBackupEvent {
-  return {
-    eventId: entry.eventId,
-    collectionId: entry.collectionId,
-    type: entry.type,
-    key: entry.key,
-    payload: entry.payload,
-    previous: entry.previous,
-    txId: entry.txId,
-    clientId: entry.clientId,
-    schemaVersion: entry.schemaVersion,
-    timestamp: entry.timestamp,
-    localSeq: entry.localSeq,
-  };
-}
-
 export function buildLocalBackup(db: AppDb): LocalBackupFile {
-  const events = [...db.collections.outbox.toArray]
-    .sort((a, b) => a.localSeq - b.localSeq || a.timestamp - b.timestamp)
-    .map(toBackupEvent);
-
   const collections: LocalBackupFile["collections"] = {};
   for (const id of userCollectionIds) {
     collections[id] = [...mutatingCollection(db, id).toArray];
@@ -170,7 +127,7 @@ export function buildLocalBackup(db: AppDb): LocalBackupFile {
     exportedAt: Date.now(),
     databaseName: "agentic-json-resume.sqlite",
     eventSchemaVersion: 1,
-    events,
+    events: [],
     collections,
   };
 }
@@ -237,34 +194,42 @@ function isLegacyBackup(backup: LocalBackupFile): boolean {
   );
 }
 
+function recordRestoreResult(stats: LocalBackupRestoreStats, result: "applied" | "skipped") {
+  if (result === "applied") stats.applied += 1;
+  else stats.skipped += 1;
+}
+
+/** Older exports stored some collections only in the outbox. Replay those, in order. */
+function eventsMissingFromSnapshot(backup: LocalBackupFile): LocalBackupEvent[] {
+  const snapshotted = new Set(Object.keys(backup.collections));
+  return [...backup.events]
+    .filter((event) => !snapshotted.has(event.collectionId))
+    .sort((a, b) => a.localSeq - b.localSeq || a.timestamp - b.timestamp);
+}
+
 export function restoreLocalBackup(db: AppDb, backup: LocalBackupFile): LocalBackupRestoreStats {
   const stats: LocalBackupRestoreStats = { applied: 0, skipped: 0, failed: 0 };
   const legacy = isLegacyBackup(backup);
-
-  if (backup.events.length > 0 && !legacy) {
-    for (const event of backup.events) {
-      try {
-        const result = applyEvent(db, event);
-        if (result === "applied") stats.applied += 1;
-        else stats.skipped += 1;
-      } catch (err: unknown) {
-        stats.failed += 1;
-        console.error("[local backup] event restore failed", event, err);
-      }
-    }
-    return stats;
-  }
-
   const collections = legacy ? upgradeLegacySnapshot(backup.collections) : backup.collections;
+
   for (const [collectionId, rows] of Object.entries(collections)) {
     for (const row of rows) {
       try {
-        const result = applySnapshotRow(db, collectionId, row);
-        if (result === "applied") stats.applied += 1;
-        else stats.skipped += 1;
+        recordRestoreResult(stats, applySnapshotRow(db, collectionId, row));
       } catch (err: unknown) {
         stats.failed += 1;
         console.error("[local backup] snapshot restore failed", { collectionId, row }, err);
+      }
+    }
+  }
+
+  if (!legacy) {
+    for (const event of eventsMissingFromSnapshot(backup)) {
+      try {
+        recordRestoreResult(stats, applyEvent(db, event));
+      } catch (err: unknown) {
+        stats.failed += 1;
+        console.error("[local backup] event restore failed", event, err);
       }
     }
   }

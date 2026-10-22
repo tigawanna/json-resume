@@ -55,12 +55,6 @@ export function ImportResumeJsonDialog({ open, onOpenChange }: ImportResumeJsonD
   }
 
   async function handleImport() {
-    const userId = viewer.user?.id;
-    if (!userId) {
-      setImportError("You must be signed in to import a résumé");
-      return;
-    }
-
     const parsed = safeParseResumeJson(importText);
     if (!parsed.ok) {
       setImportError(parsed.error);
@@ -71,7 +65,7 @@ export function ImportResumeJsonDialog({ open, onOpenChange }: ImportResumeJsonD
     try {
       const name = importedResumeNameFromDoc(parsed.data);
       const result = await createLocalResumeFromDocument(
-        { db, userId },
+        { db, userId: viewer.user?.id ?? "" },
         { name, document: parsed.data },
       );
       toast.success("Résumé imported from JSON");

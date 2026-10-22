@@ -27,6 +27,43 @@ export async function fetchOpenRouterModelEndpoints(
   return json.data.endpoints;
 }
 
+/** One cheap completion so a saved key and model can be checked before a real chat. */
+export async function pingOpenRouter({
+  apiKey,
+  model,
+}: {
+  apiKey: string;
+  model: string;
+}): Promise<string> {
+  const res = await fetch(`${BASE_URL}/chat/completions`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model,
+      messages: [{ role: "user", content: "Reply with exactly: pong" }],
+      max_tokens: 16,
+    }),
+  });
+  let json: {
+    error?: { message?: string };
+    choices?: Array<{ message?: { content?: string } }>;
+  } = {};
+  try {
+    json = (await res.json()) as typeof json;
+  } catch (err: unknown) {
+    if (!res.ok) throw new Error(`OpenRouter returned ${res.status}`);
+    throw err;
+  }
+  if (res.status === 401) throw new Error("Invalid API key");
+  if (!res.ok) throw new Error(json.error?.message ?? `OpenRouter returned ${res.status}`);
+  const text = json.choices?.[0]?.message?.content?.trim();
+  if (!text) throw new Error("OpenRouter returned an empty reply");
+  return text;
+}
+
 export async function fetchOpenRouterCredits(apiKey: string): Promise<OpenRouterCredits> {
   const res = await fetch(`${BASE_URL}/credits`, {
     headers: { Authorization: `Bearer ${apiKey}` },

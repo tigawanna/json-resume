@@ -27,7 +27,7 @@ export const Route = createFileRoute("/api/ai/event-sourced-resume-tailor")({
         if (!isAllowedOrigin(request)) return jsonError("Forbidden", 403);
 
         const session = await auth.api.getSession({ headers: request.headers });
-        if (!session?.user) return jsonError("Unauthorized", 401);
+        const userId = session?.user.id ?? "local";
 
         try {
           const raw: unknown = await request.json();
@@ -50,7 +50,7 @@ export const Route = createFileRoute("/api/ai/event-sourced-resume-tailor")({
             apiKey: data.apiKey,
             model: data.model,
             routing: data.routing,
-            userId: session.user.id,
+            userId,
           });
 
           return withCors(toServerSentEventsResponse(stream));

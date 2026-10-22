@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
 import type { ResumeDetailDTO } from "@/data-access-layer/resume/resume.types";
 import { useAppForm } from "@/lib/tanstack/form";
@@ -178,6 +179,18 @@ function ExperienceCard({ experience, onMoveUp, onMoveDown }: ExperienceCardProp
     setBullets((prev) => prev.map((b, i) => (i === index ? text : b)));
   }
 
+  function moveBullet(index: number, direction: -1 | 1) {
+    setBullets((prev) => {
+      const next = index + direction;
+      if (next < 0 || next >= prev.length) return prev;
+      const copy = [...prev];
+      const current = copy[index];
+      copy[index] = copy[next];
+      copy[next] = current;
+      return copy;
+    });
+  }
+
   if (!editing) {
     return (
       <Card data-test={`experience-card-${experience.id}`}>
@@ -286,18 +299,45 @@ function ExperienceCard({ experience, onMoveUp, onMoveDown }: ExperienceCardProp
         <div className="flex flex-col gap-2">
           <Label className="text-xs font-medium">Bullets</Label>
           {bullets.map((bullet, index) => (
-            <div key={index} className="flex items-center gap-2">
-              <span className="text-muted-foreground text-xs">•</span>
-              <Input
+            <div key={index} className="flex items-start gap-1">
+              <div className="flex shrink-0 flex-col">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="size-6"
+                  onClick={() => moveBullet(index, -1)}
+                  disabled={index === 0}
+                  title="Move bullet up"
+                  aria-label="Move bullet up"
+                >
+                  <ArrowUp className="size-3" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="size-6"
+                  onClick={() => moveBullet(index, 1)}
+                  disabled={index === bullets.length - 1}
+                  title="Move bullet down"
+                  aria-label="Move bullet down"
+                >
+                  <ArrowDown className="size-3" />
+                </Button>
+              </div>
+              <Textarea
                 value={bullet}
                 onChange={(e) => updateBullet(index, e.target.value)}
-                className="h-8 text-sm"
+                rows={1}
+                className="min-h-8 field-sizing-content py-1.5 text-sm"
               />
               <Button
                 variant="ghost"
                 size="icon"
                 className="size-6 shrink-0"
                 onClick={() => removeBullet(index)}
+                aria-label="Remove bullet"
               >
                 <X className="size-3" />
               </Button>

@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { RotateCcw, Settings2 } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { LogIn, RotateCcw, Settings2 } from "lucide-react";
 import { CHAT_ERROR_HINTS, classifyChatError } from "../-utils/chat-error";
 
 interface ChatErrorNoticeProps {
@@ -21,7 +22,7 @@ export function ChatErrorNotice({
   className,
 }: ChatErrorNoticeProps) {
   const kind = classifyChatError(message);
-  const canRetry = kind !== "api-key";
+  const canRetry = kind !== "api-key" && kind !== "signed-out";
   const settingsLabel = kind === "api-key" ? "Fix key" : "Change model";
   const showSettings = kind === "api-key" || kind === "rate-limit" || kind === "daily-limit";
 
@@ -42,6 +43,19 @@ export function ChatErrorNotice({
         </p>
       </div>
       <div className="flex shrink-0 items-center gap-1.5">
+        {kind === "signed-out" ? (
+          <Button asChild type="button" size="sm" data-test="chat-error-sign-in">
+            <Link
+              to="/auth"
+              search={{
+                returnTo: typeof window === "undefined" ? "/" : window.location.pathname,
+              }}
+            >
+              <LogIn className="size-3.5" />
+              Sign in
+            </Link>
+          </Button>
+        ) : null}
         {showSettings ? (
           <Button
             type="button"

@@ -1,10 +1,17 @@
 /* React context providing the opened event-sourced DB, with OPFS recovery and resync handling. */
-import { createContext, useContext, useEffect, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { flushSync } from "react-dom";
 import { useEnsureDb } from "event-sourced-collection/react";
 import { useViewer } from "@/data-access-layer/auth/viewer";
 import { applyManagedSyncGate, kickManagedSync, setManagedSyncEnabled } from "./app-settings";
 import { consumeResyncAfterReset } from "./recovery/local-reset";
-import { db as dbProxy, ensureDb, type AppDb } from "./collection";
+import {
+  db as dbProxy,
+  ensureDb,
+  isDbClosing,
+  subscribeBeforeDbClose,
+  type AppDb,
+} from "./collection";
 import {
   canAutoReloadForOpfsRecovery,
   isOpfsTempDirBusyError,
@@ -44,6 +51,15 @@ export function EventSourcedDbProvider({
 }: EventSourcedDbProviderProps) {
   const { viewer } = useViewer();
   const isAuthenticated = Boolean(viewer.user?.id);
+  const [closed, setClosed] = useState(false);
+
+  useEffect(
+    () =>
+      subscribeBeforeDbClose(() => {
+        flushSync(() => setClosed(true));
+      }),
+    [],
+  );
 
   const { ready, error } = useEnsureDb({
     ensureDb,
@@ -76,7 +92,7 @@ export function EventSourcedDbProvider({
     throw surfaced;
   }
 
-  if (!ready) {
+  if (!ready || closed || isDbClosing()) {
     return (
       <div className="flex h-full w-full items-center justify-center">
         {fallback ?? (
