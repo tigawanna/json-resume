@@ -35,7 +35,7 @@ export function ResumeAiConversationCard({
 }: ResumeAiConversationCardProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   /** A chat holding only a handoff marker still greets the user like a new one. */
-  const isEmpty = chat.messages.every(isHandoffMessage);
+  const isEmpty = chat.messages.every(isHandoffMessage) && chat.queue.length === 0;
   const handoff = chat.messages.filter(isHandoffMessage).at(-1);
   const isWorking = composerProps.isBusy || composerProps.sessionGenerating;
   const inProgressUserMessageId = isWorking
@@ -117,7 +117,15 @@ export function ResumeAiConversationCard({
             }}
           >
             <ResumeAiChatUI.Provider chat={chat}>
-              <ResumeAiVirtualMessages scrollRef={scrollRef} />
+              <ResumeAiVirtualMessages
+                scrollRef={scrollRef}
+                queue={chat.queue}
+                onCancelQueued={(id) => chat.cancelQueued(id)}
+                onSendQueuedNow={(item) => {
+                  chat.cancelQueued(item.id);
+                  void chat.sendMessage(item.content, { whenBusy: "interrupt" });
+                }}
+              />
             </ResumeAiChatUI.Provider>
           </ResumeAiChatActionsContext>
         )}

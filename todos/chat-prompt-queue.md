@@ -2,7 +2,7 @@
 
 Let the user type and send follow-ups while a reply streams. They show as pending bubbles with a cancel button and send in order once the reply finishes.
 
-## Status: on hold (library bug)
+## Status: enabled on TanStack AI 1.0
 
 Queueing was built and then turned off. The resume AI composer is disabled while a reply streams again, and `useChat` runs with `queue: "drop"` (`apps/web/src/routes/_dashboard/-ai/-hooks/use-event-sourced-resume-ai.ts`).
 

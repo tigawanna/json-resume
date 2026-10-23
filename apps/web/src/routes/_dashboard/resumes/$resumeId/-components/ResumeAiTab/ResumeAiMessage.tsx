@@ -11,7 +11,7 @@ import { getMessageText } from "./resume-ai-message-utils";
 import type { ResumeAiChatOptions } from "./resume-ai-chat-options";
 
 export function ResumeAiMessage({ message, Parts }: MessageProps<ResumeAiChatOptions>) {
-  const { isBusy, isReady, inProgressUserMessageId, onEdit, onResend } = useResumeAiChatActions();
+  const { isReady, inProgressUserMessageId, onEdit, onResend } = useResumeAiChatActions();
   const isUser = message.role === "user";
   const isInProgress = isUser && message.id === inProgressUserMessageId;
   const bubbleShape = isUser ? "rounded-2xl rounded-tr-md" : "rounded-2xl rounded-tl-md";
@@ -110,7 +110,7 @@ export function ResumeAiMessage({ message, Parts }: MessageProps<ResumeAiChatOpt
           </PromptActionButton>
           <PromptActionButton
             label="Resend prompt"
-            disabled={!isReady || isBusy}
+            disabled={!isReady}
             onClick={() => onResend(message)}
             dataTest="resume-ai-resend-past-prompt"
           >

@@ -33,6 +33,7 @@ import { Route as DashboardJobsIndexRouteImport } from './routes/_dashboard/jobs
 import { Route as DashboardLanguagesIndexRouteImport } from './routes/_dashboard/languages/index'
 import { Route as DashboardLinksIndexRouteImport } from './routes/_dashboard/links/index'
 import { Route as DashboardNotesIndexRouteImport } from './routes/_dashboard/notes/index'
+import { Route as DashboardProfileIndexRouteImport } from './routes/_dashboard/profile/index'
 import { Route as DashboardProjectsIndexRouteImport } from './routes/_dashboard/projects/index'
 import { Route as DashboardPublicResumesIndexRouteImport } from './routes/_dashboard/public-resumes/index'
 import { Route as DashboardReposIndexRouteImport } from './routes/_dashboard/repos/index'
@@ -189,6 +190,11 @@ const DashboardLinksIndexRoute = DashboardLinksIndexRouteImport.update({
 const DashboardNotesIndexRoute = DashboardNotesIndexRouteImport.update({
   id: '/notes/',
   path: '/notes/',
+  getParentRoute: () => DashboardLayoutRoute,
+} as any)
+const DashboardProfileIndexRoute = DashboardProfileIndexRouteImport.update({
+  id: '/profile/',
+  path: '/profile/',
   getParentRoute: () => DashboardLayoutRoute,
 } as any)
 const DashboardProjectsIndexRoute = DashboardProjectsIndexRouteImport.update({
@@ -412,6 +418,7 @@ export interface FileRoutesByFullPath {
   '/languages/': typeof DashboardLanguagesIndexRoute
   '/links/': typeof DashboardLinksIndexRoute
   '/notes/': typeof DashboardNotesIndexRoute
+  '/profile/': typeof DashboardProfileIndexRoute
   '/projects/': typeof DashboardProjectsIndexRoute
   '/public-resumes/': typeof DashboardPublicResumesIndexRoute
   '/repos/': typeof DashboardReposIndexRoute
@@ -470,6 +477,7 @@ export interface FileRoutesByTo {
   '/languages': typeof DashboardLanguagesIndexRoute
   '/links': typeof DashboardLinksIndexRoute
   '/notes': typeof DashboardNotesIndexRoute
+  '/profile': typeof DashboardProfileIndexRoute
   '/projects': typeof DashboardProjectsIndexRoute
   '/public-resumes': typeof DashboardPublicResumesIndexRoute
   '/repos': typeof DashboardReposIndexRoute
@@ -531,6 +539,7 @@ export interface FileRoutesById {
   '/_dashboard/languages/': typeof DashboardLanguagesIndexRoute
   '/_dashboard/links/': typeof DashboardLinksIndexRoute
   '/_dashboard/notes/': typeof DashboardNotesIndexRoute
+  '/_dashboard/profile/': typeof DashboardProfileIndexRoute
   '/_dashboard/projects/': typeof DashboardProjectsIndexRoute
   '/_dashboard/public-resumes/': typeof DashboardPublicResumesIndexRoute
   '/_dashboard/repos/': typeof DashboardReposIndexRoute
@@ -592,6 +601,7 @@ export interface FileRouteTypes {
     | '/languages/'
     | '/links/'
     | '/notes/'
+    | '/profile/'
     | '/projects/'
     | '/public-resumes/'
     | '/repos/'
@@ -650,6 +660,7 @@ export interface FileRouteTypes {
     | '/languages'
     | '/links'
     | '/notes'
+    | '/profile'
     | '/projects'
     | '/public-resumes'
     | '/repos'
@@ -710,6 +721,7 @@ export interface FileRouteTypes {
     | '/_dashboard/languages/'
     | '/_dashboard/links/'
     | '/_dashboard/notes/'
+    | '/_dashboard/profile/'
     | '/_dashboard/projects/'
     | '/_dashboard/public-resumes/'
     | '/_dashboard/repos/'
@@ -925,6 +937,13 @@ declare module '@tanstack/react-router' {
       path: '/notes'
       fullPath: '/notes/'
       preLoaderRoute: typeof DashboardNotesIndexRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
+    '/_dashboard/profile/': {
+      id: '/_dashboard/profile/'
+      path: '/profile'
+      fullPath: '/profile/'
+      preLoaderRoute: typeof DashboardProfileIndexRouteImport
       parentRoute: typeof DashboardLayoutRoute
     }
     '/_dashboard/projects/': {
@@ -1184,6 +1203,7 @@ interface DashboardLayoutRouteChildren {
   DashboardLanguagesIndexRoute: typeof DashboardLanguagesIndexRoute
   DashboardLinksIndexRoute: typeof DashboardLinksIndexRoute
   DashboardNotesIndexRoute: typeof DashboardNotesIndexRoute
+  DashboardProfileIndexRoute: typeof DashboardProfileIndexRoute
   DashboardProjectsIndexRoute: typeof DashboardProjectsIndexRoute
   DashboardPublicResumesIndexRoute: typeof DashboardPublicResumesIndexRoute
   DashboardReposIndexRoute: typeof DashboardReposIndexRoute
@@ -1223,6 +1243,7 @@ const DashboardLayoutRouteChildren: DashboardLayoutRouteChildren = {
   DashboardLanguagesIndexRoute: DashboardLanguagesIndexRoute,
   DashboardLinksIndexRoute: DashboardLinksIndexRoute,
   DashboardNotesIndexRoute: DashboardNotesIndexRoute,
+  DashboardProfileIndexRoute: DashboardProfileIndexRoute,
   DashboardProjectsIndexRoute: DashboardProjectsIndexRoute,
   DashboardPublicResumesIndexRoute: DashboardPublicResumesIndexRoute,
   DashboardReposIndexRoute: DashboardReposIndexRoute,

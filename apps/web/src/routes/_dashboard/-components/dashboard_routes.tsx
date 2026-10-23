@@ -18,11 +18,13 @@ import {
   Notebook,
   Settings,
   Shield,
+  UserRound,
   StickyNote,
   Wrench,
 } from "lucide-react";
 
 export const dashboard_account_routes = [
+  { title: "Account", href: "/profile", icon: UserRound },
   { title: "Settings", href: "/settings", icon: Settings },
 ] satisfies SidebarItem[];
 

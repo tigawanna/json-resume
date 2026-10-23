@@ -82,7 +82,7 @@ function isStoredRole(role: string): role is ResumeAiChatMessage["role"] {
   return role === "user" || role === "assistant" || role === "system";
 }
 
-export function toStoredMessages(messages: UIMessage[]): ResumeAiChatMessage[] {
+export function toStoredMessages(messages: readonly UIMessage[]): ResumeAiChatMessage[] {
   return messages.flatMap((message): ResumeAiChatMessage[] => {
     const { role } = message;
     if (!isStoredRole(role)) return [];
@@ -141,7 +141,7 @@ export function getStoredMessagesSignature(messages: ResumeAiChatMessage[]) {
   return JSON.stringify(messages);
 }
 
-export function getUiMessagesSignature(messages: UIMessage[]) {
+export function getUiMessagesSignature(messages: readonly UIMessage[]) {
   return getStoredMessagesSignature(toStoredMessages(messages));
 }
 
@@ -153,7 +153,7 @@ export function getMessageText(message: UIMessage): string {
     .trim();
 }
 
-export function getSessionChars(messages: UIMessage[]) {
+export function getSessionChars(messages: readonly UIMessage[]) {
   return messages.reduce((total, msg) => {
     const textChars = msg.parts
       .filter((part) => part.type === "text")

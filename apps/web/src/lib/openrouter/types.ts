@@ -72,3 +72,23 @@ export interface OpenRouterCredits {
 export interface OpenRouterCreditsResponse {
   data: OpenRouterCredits;
 }
+
+/** One spend cap OpenRouter enforces for this key, from `GET /api/v1/key`. */
+export interface OpenRouterKeyBudget {
+  scope: string;
+  limit_usd: number;
+  remaining_usd: number;
+  reset_interval: "daily" | "weekly" | "monthly" | null;
+}
+
+/** The key's own cap, plus the budget that would block a request first. */
+export interface OpenRouterKeyLimits {
+  limit: number | null;
+  limit_remaining: number | null;
+  limit_reset: string | null;
+  effective_budget: OpenRouterKeyBudget | null;
+}
+
+export interface OpenRouterKeyResponse {
+  data: OpenRouterKeyLimits;
+}

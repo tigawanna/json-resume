@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   EventSourcedDbProvider,
   useEventSourcedDb,
@@ -11,7 +10,8 @@ import {
   restoreLocalBackup,
 } from "@/data-access-layer/event-sourced/recovery/local-backup";
 import { unwrapUnknownError } from "@/utils/errors";
-import { Download, Upload } from "lucide-react";
+import { Download, HardDrive, Upload } from "lucide-react";
+import { SettingsSection } from "./SettingsSection";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -78,72 +78,61 @@ function LocalBackupControls() {
   }
 
   return (
-    <Card data-test="local-backup-section">
-      <CardHeader>
-        <CardTitle>Local dataset backup</CardTitle>
-        <CardDescription>
-          Download this browser’s library as JSON. The file is a snapshot of every collection.
-          Restore inserts rows that are not already in this browser.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-4">
-        <p className="text-muted-foreground text-sm">
-          Import is additive. Matching ids are left as they are. Older backups that stored a
-          collection only in the event log still restore those rows.
-        </p>
-        <div className="flex flex-wrap gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => void handleExport()}
-            disabled={exporting || importing}
-            data-test="local-backup-export-btn"
-          >
-            <Download className="mr-2 size-4" />
-            {exporting ? "Exporting…" : "Download JSON backup"}
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={exporting || importing}
-            data-test="local-backup-import-btn"
-          >
-            <Upload className="mr-2 size-4" />
-            {importing ? "Importing…" : "Restore from JSON"}
-          </Button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="application/json,.json"
-            className="hidden"
-            data-test="local-backup-file-input"
-            onChange={(event) => {
-              const file = event.target.files?.[0];
-              if (file) void handleImportFile(file);
-            }}
-          />
-        </div>
-      </CardContent>
-    </Card>
+    <div className="flex flex-col gap-4" data-test="local-backup-section">
+      <p className="text-muted-foreground text-sm">
+        Import adds missing rows and leaves matching ids as they are.
+      </p>
+      <div className="flex flex-wrap gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => void handleExport()}
+          disabled={exporting || importing}
+          data-test="local-backup-export-btn"
+        >
+          <Download className="mr-2 size-4" />
+          {exporting ? "Exporting…" : "Download JSON backup"}
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={exporting || importing}
+          data-test="local-backup-import-btn"
+        >
+          <Upload className="mr-2 size-4" />
+          {importing ? "Importing…" : "Restore from JSON"}
+        </Button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="application/json,.json"
+          className="hidden"
+          data-test="local-backup-file-input"
+          onChange={(event) => {
+            const file = event.target.files?.[0];
+            if (file) void handleImportFile(file);
+          }}
+        />
+      </div>
+    </div>
   );
 }
 
 export function LocalBackupSection() {
   return (
-    <EventSourcedDbProvider
-      fallback={
-        <Card>
-          <CardHeader>
-            <CardTitle>Local dataset backup</CardTitle>
-            <CardDescription>Opening the local database…</CardDescription>
-          </CardHeader>
-        </Card>
-      }
+    <SettingsSection
+      icon={HardDrive}
+      title="Local backup"
+      description="Download this browser’s library as JSON, or restore rows that are not already here."
     >
-      <LocalBackupControls />
-    </EventSourcedDbProvider>
+      <EventSourcedDbProvider
+        fallback={<p className="text-muted-foreground text-sm">Opening the local database…</p>}
+      >
+        <LocalBackupControls />
+      </EventSourcedDbProvider>
+    </SettingsSection>
   );
 }

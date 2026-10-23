@@ -128,11 +128,7 @@ function LocalOnlyBanner() {
 
   if (viewer.user) return null;
 
-  const showBanner =
-    pathname === "/events" ||
-    pathname.startsWith("/events/") ||
-    pathname === "/settings" ||
-    pathname.startsWith("/settings/");
+  const showBanner = pathname === "/events" || pathname.startsWith("/events/");
   if (!showBanner) return null;
 
   return (

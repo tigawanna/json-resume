@@ -1,17 +1,16 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ListPageHeader } from "@/components/wrappers/ListPageHeader";
 import { useViewer } from "@/data-access-layer/auth/viewer";
 import { deleteAccount } from "@/lib/better-auth/auth.functions";
 import { unwrapUnknownError } from "@/utils/errors";
 import { useMutation } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { AlertCircle, Trash2 } from "lucide-react";
+import { AlertCircle, Building2, ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { AiAssistantSection } from "./-components/AiAssistantSection";
 import { LocalBackupSection } from "./-components/LocalBackupSection";
 import { ManagedSyncSection } from "./-components/ManagedSyncSection";
+import { SettingsSection } from "./-components/SettingsSection";
 
 export const Route = createFileRoute("/_dashboard/settings/")({
   component: SettingsPage,
@@ -32,7 +31,6 @@ function SettingsPage() {
     },
     onSuccess() {
       toast.success("Account deleted successfully");
-      // The user will be logged out and redirected by the server
       window.location.href = "/";
     },
     onError(err: unknown) {
@@ -43,107 +41,107 @@ function SettingsPage() {
   });
 
   return (
-    <div className="flex flex-col gap-8" data-test="settings-page">
-      <ListPageHeader title="Settings" />
-
-      {isAuthenticated ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Account Information</CardTitle>
-            <CardDescription>Manage your account details</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col items-start gap-5 sm:flex-row sm:items-center sm:gap-6">
+    <div
+      className="bg-base-100 mx-auto flex w-full max-w-5xl shrink-0 flex-col overflow-hidden rounded-2xl border shadow-sm"
+      data-test="settings-page"
+    >
+      <header className="relative flex min-h-14 items-center border-b px-4">
+        <Button variant="ghost" size="icon" asChild>
+          <Link to="/dashboard" aria-label="Back to dashboard">
+            <ChevronLeft className="size-4" />
+          </Link>
+        </Button>
+        <h1 className="pointer-events-none absolute inset-x-0 text-center text-sm font-semibold">
+          Settings
+        </h1>
+      </header>
+      <div className="@container flex flex-col gap-14 px-5 py-10 sm:px-8">
+        {isAuthenticated ? (
+          <SettingsSection
+            icon={Building2}
+            title="Account"
+            description="Name, plan, and this sign-in."
+            testId="settings-account-section"
+          >
+            <Link
+              to="/profile"
+              className="hover:bg-base-100 focus-visible:ring-ring/50 flex items-center gap-4 rounded-lg border bg-base-100 px-3 py-3 transition-colors outline-none focus-visible:ring-[3px]"
+              data-test="settings-account-link"
+            >
               {viewer.user?.image ? (
                 <img
                   src={viewer.user.image}
                   alt=""
-                  className="size-24 shrink-0 rounded-full object-cover ring-2 ring-border ring-offset-2 ring-offset-card sm:size-28"
+                  className="size-12 shrink-0 rounded-full object-cover"
                 />
               ) : (
                 <div
                   aria-hidden
-                  className="bg-muted text-muted-foreground flex size-24 shrink-0 items-center justify-center rounded-full text-2xl font-semibold ring-2 ring-border ring-offset-2 ring-offset-card sm:size-28"
+                  className="bg-primary/10 text-primary flex size-12 shrink-0 items-center justify-center rounded-full text-base font-semibold"
                 >
                   {(viewer.user?.name ?? viewer.user?.email ?? "?").slice(0, 1).toUpperCase()}
                 </div>
               )}
-              <dl className="grid min-w-0 flex-1 gap-4 sm:grid-cols-2">
-                <div className="min-w-0">
-                  <dt className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
-                    Name
-                  </dt>
-                  <dd className="mt-1 truncate text-base font-medium">
-                    {viewer.user?.name || "—"}
-                  </dd>
-                </div>
-                <div className="min-w-0">
-                  <dt className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
-                    Email
-                  </dt>
-                  <dd className="mt-1 truncate text-base font-medium">
-                    {viewer.user?.email || "—"}
-                  </dd>
-                </div>
-              </dl>
-            </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <Card data-test="settings-signed-out">
-          <CardHeader>
-            <CardTitle>Working on this computer</CardTitle>
-            <CardDescription>
-              You are not signed in. Local backup still works. Sign in to sync and manage an
-              account.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button asChild>
-              <Link to="/auth" search={{ returnTo: "/settings" }}>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-sm font-medium">
+                  {viewer.user?.name || "—"}
+                </span>
+                <span className="text-muted-foreground block truncate text-sm">
+                  {viewer.user?.email || "—"}
+                </span>
+                <span className="text-muted-foreground mt-1 block text-xs">
+                  {viewer.user?.role === "admin" ? "Admin" : "Free"} ·{" "}
+                  {viewer.user?.emailVerified ? "Email verified" : "Email not verified"}
+                </span>
+              </span>
+              <ChevronRight className="text-muted-foreground size-4 shrink-0" aria-hidden />
+            </Link>
+          </SettingsSection>
+        ) : (
+          <SettingsSection
+            icon={Building2}
+            title="This computer"
+            description="Work stays on this computer until you sign in."
+            testId="settings-signed-out"
+          >
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="min-w-0">
+                <p className="text-sm font-medium">Not signed in</p>
+                <p className="text-muted-foreground mt-1 max-w-md text-sm leading-relaxed">
+                  Resumes and edits stay in this browser until you enable sync.
+                </p>
+              </div>
+              <Link
+                to="/auth"
+                search={{ returnTo: "/settings" }}
+                className="text-primary w-fit shrink-0 text-sm font-medium underline-offset-4 hover:underline"
+              >
                 Sign in to sync
               </Link>
-            </Button>
-          </CardContent>
-        </Card>
-      )}
-
-      <AiAssistantSection />
-
-      <ManagedSyncSection />
-
-      <LocalBackupSection />
-
-      {isAuthenticated ? (
-        <Card className="border-destructive">
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <AlertCircle className="size-5 text-destructive" />
-              <div>
-                <CardTitle className="text-destructive">Danger Zone</CardTitle>
-                <CardDescription>Irreversible actions</CardDescription>
-              </div>
             </div>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-4">
-            <div>
-              <h3 className="font-medium">Delete Account</h3>
-              <p className="text-muted-foreground mt-1 text-sm">
-                Once you delete your account, there is no going back. All your resumes and data will
-                be permanently deleted. This action cannot be undone.
-              </p>
-            </div>
+          </SettingsSection>
+        )}
 
+        <AiAssistantSection />
+        <ManagedSyncSection />
+        <LocalBackupSection />
+
+        {isAuthenticated ? (
+          <SettingsSection
+            icon={AlertCircle}
+            title="Delete account"
+            description="Removes the account and every résumé stored with it. This cannot be undone."
+            tone="destructive"
+            testId="settings-danger-section"
+          >
             {!showDeleteConfirm ? (
               <Button variant="destructive" size="sm" onClick={() => setShowDeleteConfirm(true)}>
-                <Trash2 className="mr-2 size-4" /> Delete Account
+                <Trash2 className="mr-2 size-4" /> Delete account
               </Button>
             ) : (
-              <div className="flex flex-col gap-3 rounded-md border border-destructive bg-destructive/5 p-4">
-                <p className="font-medium text-sm">
-                  Are you sure? This will delete your account and all your data.
-                </p>
-                <div className="flex gap-2">
+              <div className="flex flex-col gap-3">
+                <p className="text-sm font-medium">Delete this account and all of its data?</p>
+                <div className="flex flex-wrap gap-2">
                   <Button
                     variant="destructive"
                     size="sm"
@@ -163,9 +161,9 @@ function SettingsPage() {
                 </div>
               </div>
             )}
-          </CardContent>
-        </Card>
-      ) : null}
+          </SettingsSection>
+        ) : null}
+      </div>
     </div>
   );
 }

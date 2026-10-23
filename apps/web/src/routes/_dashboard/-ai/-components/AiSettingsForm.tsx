@@ -22,8 +22,8 @@ import {
 } from "@/lib/openrouter/routing";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
-import { AlertTriangle, Check, Eye, EyeOff, KeyRound, X } from "lucide-react";
-import { useRef, useState, type ReactNode } from "react";
+import { AlertTriangle, Check, Eye, EyeOff, Info, KeyRound, X } from "lucide-react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useEventSourcedAiSettings } from "../-hooks/use-event-sourced-ai-settings";
 import {
   DEFAULT_EVENT_SOURCED_SYSTEM_PROMPT,
@@ -64,9 +64,14 @@ export function AiSettingsForm({
   const [promptDraft, setPromptDraft] = useState(systemPrompt);
   const [slopGuardDraft, setSlopGuardDraft] = useState(slopGuard);
   const [showKey, setShowKey] = useState(false);
+  const [tipsOpen, setTipsOpen] = useState(() => apiKey.trim() === "");
   const pingKeyRef = useRef("");
   const [pingState, setPingState] = useState<PingState>({ status: "idle" });
   const promptDirty = promptDraft !== systemPrompt;
+
+  useEffect(() => {
+    if (localStorage.getItem(OPENROUTER_TIPS_DISMISSED_KEY) === "1") setTipsOpen(false);
+  }, []);
   const isFull = variant === "full";
 
   const { data: models } = useOpenRouterModels();
@@ -146,39 +151,64 @@ export function AiSettingsForm({
               </p>
             </div>
           ) : null}
-          <div className="relative">
-            <Input
-              id="event-sourced-api-key"
-              type={showKey ? "text" : "password"}
-              value={apiKey}
-              onChange={(event) => {
-                const next = event.target.value;
-                setApiKey(next);
-                if (next.trim() !== pingKeyRef.current) setPingState({ status: "idle" });
+          {tipsOpen ? (
+            <OpenRouterTips
+              onDismiss={() => {
+                localStorage.setItem(OPENROUTER_TIPS_DISMISSED_KEY, "1");
+                setTipsOpen(false);
               }}
-              onPaste={(event) => {
-                const pasted = event.clipboardData.getData("text").trim();
-                if (!pasted || !model) return;
-                void handlePing(pasted);
-              }}
-              placeholder="sk-or-v1-..."
-              autoComplete="off"
-              aria-label="OpenRouter API key"
-              aria-invalid={apiKeyRejected || undefined}
-              className={cn(
-                "pr-11",
-                apiKeyRejected &&
-                  "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/40",
-              )}
-              data-test="event-sourced-api-key-input"
             />
+          ) : null}
+          <div className="flex items-center gap-1.5">
+            <div className="relative min-w-0 flex-1">
+              <Input
+                id="event-sourced-api-key"
+                type={showKey ? "text" : "password"}
+                value={apiKey}
+                onChange={(event) => {
+                  const next = event.target.value;
+                  setApiKey(next);
+                  if (next.trim() !== pingKeyRef.current) setPingState({ status: "idle" });
+                }}
+                onPaste={(event) => {
+                  const pasted = event.clipboardData.getData("text").trim();
+                  if (!pasted || !model) return;
+                  void handlePing(pasted);
+                }}
+                placeholder="sk-or-v1-..."
+                autoComplete="off"
+                aria-label="OpenRouter API key"
+                aria-invalid={apiKeyRejected || undefined}
+                className={cn(
+                  "pr-11",
+                  apiKeyRejected &&
+                    "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/40",
+                )}
+                data-test="event-sourced-api-key-input"
+              />
+              <button
+                type="button"
+                onClick={() => setShowKey((value) => !value)}
+                className="text-muted-foreground hover:text-foreground absolute top-1/2 right-2 flex size-8 -translate-y-1/2 items-center justify-center rounded-md"
+                aria-label={showKey ? "Hide key" : "Show key"}
+              >
+                {showKey ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+              </button>
+            </div>
             <button
               type="button"
-              onClick={() => setShowKey((value) => !value)}
-              className="text-muted-foreground hover:text-foreground absolute top-1/2 right-2 flex size-8 -translate-y-1/2 items-center justify-center rounded-md"
-              aria-label={showKey ? "Hide key" : "Show key"}
+              onClick={() =>
+                setTipsOpen((open) => {
+                  if (open) localStorage.setItem(OPENROUTER_TIPS_DISMISSED_KEY, "1");
+                  return !open;
+                })
+              }
+              className="text-muted-foreground hover:text-foreground flex size-8 shrink-0 items-center justify-center rounded-md"
+              aria-label={tipsOpen ? "Hide OpenRouter tips" : "OpenRouter tips"}
+              aria-expanded={tipsOpen}
+              data-test="openrouter-tips-toggle"
             >
-              {showKey ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+              <Info className="size-4" />
             </button>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -318,6 +348,47 @@ export function AiSettingsForm({
         </Button>
       </div>
     </>
+  );
+}
+
+const OPENROUTER_TIPS_DISMISSED_KEY = "openrouter-key-tips-dismissed";
+
+function OpenRouterTips({ onDismiss }: { onDismiss: () => void }) {
+  return (
+    <div
+      className="bg-base-200/70 relative rounded-lg px-3 py-2.5 pr-8 text-sm text-base-content/80"
+      data-test="openrouter-tips"
+    >
+      <button
+        type="button"
+        onClick={onDismiss}
+        className="text-muted-foreground hover:text-foreground absolute top-2 right-2 flex size-6 items-center justify-center rounded-md"
+        aria-label="Dismiss OpenRouter tips"
+        data-test="openrouter-tips-dismiss"
+      >
+        <X className="size-3.5" />
+      </button>
+      <p className="mb-1.5 font-medium text-base-content">Before you rely on this key</p>
+      <ul className="grid list-disc gap-1 pl-4">
+        <li>
+          Route through the model lab&apos;s official provider. Third-party hosts often drop tool
+          calls.
+        </li>
+        <li>Pick a model that supports tool calls. The résumé agent cannot edit without them.</li>
+        <li>
+          Set a spend limit on the key at{" "}
+          <a
+            href="https://openrouter.ai/keys"
+            target="_blank"
+            rel="noreferrer"
+            className="underline-offset-2 hover:underline"
+          >
+            openrouter.ai/keys
+          </a>
+          . Account balance can still be left after that cap is spent.
+        </li>
+      </ul>
+    </div>
   );
 }
 

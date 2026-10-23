@@ -1,6 +1,8 @@
 import type {
   OpenRouterCredits,
   OpenRouterCreditsResponse,
+  OpenRouterKeyLimits,
+  OpenRouterKeyResponse,
   OpenRouterModelData,
   OpenRouterModelEndpoint,
   OpenRouterModelEndpointsResponse,
@@ -71,6 +73,17 @@ export async function fetchOpenRouterCredits(apiKey: string): Promise<OpenRouter
   if (res.status === 401) throw new Error("Invalid API key");
   if (!res.ok) throw new Error(`Failed to fetch credits: ${res.status}`);
   const json = (await res.json()) as OpenRouterCreditsResponse;
+  return json.data;
+}
+
+/** Spend caps on this key. Account credits can still be left when one of these is spent. */
+export async function fetchOpenRouterKeyLimits(apiKey: string): Promise<OpenRouterKeyLimits> {
+  const res = await fetch(`${BASE_URL}/key`, {
+    headers: { Authorization: `Bearer ${apiKey}` },
+  });
+  if (res.status === 401) throw new Error("Invalid API key");
+  if (!res.ok) throw new Error(`Failed to fetch key limits: ${res.status}`);
+  const json = (await res.json()) as OpenRouterKeyResponse;
   return json.data;
 }
 

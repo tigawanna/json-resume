@@ -154,7 +154,7 @@ The chat renders messages with `createChatUI` from `@tanstack/ai-react/ui` (`Res
 
 Tools defined with `needsApproval: true` pause the run. Their widget gets the approval as the `interrupt` prop and shows Approve / Deny inline (`ResumeAiReplaceDocumentTool`), and the route forwards `resume`, `threadId`, `runId`, and `parentRunId` into `chat()` so the run continues after the answer.
 
-The composer is disabled while a reply streams and `useChat` runs with `queue: "drop"`. Queueing follow-ups is on hold until an `@tanstack/ai-client` fix lands; see `todos/chat-prompt-queue.md`.
+The composer stays enabled while a reply streams. `useChat` queues the next send (`whenBusy: "queue"`) and delivers it after the run, including client-tool rounds, finishes successfully. Pending prompts render under the transcript. Cancel drops one. Send now takes it out of the queue and interrupts the current reply so that text is the next request.
 
 ### API Key Architecture
 

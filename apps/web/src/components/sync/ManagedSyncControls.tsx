@@ -23,9 +23,11 @@ import { toast } from "sonner";
 export function ManagedSyncControls({
   returnTo = "/settings",
   presentation = "card",
+  signIn = "button",
 }: {
   returnTo?: string;
   presentation?: "card" | "plain";
+  signIn?: "button" | "link";
 }) {
   const db = useEventSourcedDb();
   const { isSyncing } = useEventSourcedSyncStatus();
@@ -96,11 +98,22 @@ export function ManagedSyncControls({
           <p className="text-muted-foreground text-sm leading-relaxed">
             Sign in to turn sync on and push your local outbox to the server.
           </p>
-          <Button asChild className="w-full">
-            <Link to="/auth" search={{ returnTo }} data-test="managed-sync-signin">
+          {signIn === "link" ? (
+            <Link
+              to="/auth"
+              search={{ returnTo }}
+              data-test="managed-sync-signin"
+              className="text-primary w-fit text-sm font-medium underline-offset-4 hover:underline"
+            >
               Sign in to sync
             </Link>
-          </Button>
+          ) : (
+            <Button asChild className="w-full">
+              <Link to="/auth" search={{ returnTo }} data-test="managed-sync-signin">
+                Sign in to sync
+              </Link>
+            </Button>
+          )}
         </div>
       ) : null}
       <div className="flex items-center justify-between gap-4">

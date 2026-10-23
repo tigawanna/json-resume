@@ -11,7 +11,7 @@ import type { UIMessage } from "@tanstack/ai-react";
 import { useEffect } from "react";
 
 /** True while an in-flight reply calls a résumé write tool; history loaded on open doesn't count. */
-export function isReplyWritingResume(messages: UIMessage[], isLoading: boolean) {
+export function isReplyWritingResume(messages: readonly UIMessage[], isLoading: boolean) {
   const latest = messages.at(-1);
   return (
     isLoading &&
@@ -21,7 +21,7 @@ export function isReplyWritingResume(messages: UIMessage[], isLoading: boolean) 
 }
 
 /** The cover letter an in-flight reply saved last, or null. */
-export function coverLetterSavedByReply(messages: UIMessage[], isLoading: boolean) {
+export function coverLetterSavedByReply(messages: readonly UIMessage[], isLoading: boolean) {
   const latest = messages.at(-1);
   if (!isLoading || latest?.role !== "assistant") return null;
   for (const part of [...latest.parts].reverse()) {
@@ -34,7 +34,7 @@ export function coverLetterSavedByReply(messages: UIMessage[], isLoading: boolea
 
 /** The job of the application answers an in-flight reply saved last, or null when it saved none. */
 export function answersSavedByReply(
-  messages: UIMessage[],
+  messages: readonly UIMessage[],
   isLoading: boolean,
 ): { jobId: string | null } | null {
   const latest = messages.at(-1);
@@ -58,7 +58,7 @@ export function useResumeAiPreviewPanel({
   messages,
   isLoading,
 }: {
-  messages: UIMessage[];
+  messages: readonly UIMessage[];
   isLoading: boolean;
 }) {
   const open = useResumeWorkbench((state) => state.ai.previewOpen);

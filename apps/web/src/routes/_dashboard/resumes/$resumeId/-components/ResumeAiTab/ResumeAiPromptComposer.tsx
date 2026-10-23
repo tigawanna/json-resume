@@ -107,7 +107,7 @@ export function ResumeAiPromptComposer({
 
   function handleSend(nextSegments: Segment[]) {
     const message = serializeSegments(nextSegments);
-    if (!message || isBusy || !isReady) return;
+    if (!message || !isReady) return;
     const result = onSend(message);
     setSegments([]);
     promptAreaRef.current?.focus();
@@ -118,6 +118,7 @@ export function ResumeAiPromptComposer({
   if (!isReady) placeholder = "Configure your OpenRouter API key in settings to start chatting...";
   else if (awaitingApproval)
     placeholder = "Approve the change above, or reply here to decline it...";
+  else if (isBusy) placeholder = "Queue a follow-up, it sends when this reply finishes...";
   else if (hasMessages) placeholder = "Ask for another change...";
 
   return (
@@ -149,7 +150,7 @@ export function ResumeAiPromptComposer({
             onChange={setSegments}
             onSubmit={handleSend}
             placeholder={placeholder}
-            disabled={!isReady || isBusy}
+            disabled={!isReady}
             markdown
             normalizeBullets={false}
             triggers={[
@@ -246,8 +247,8 @@ export function ResumeAiPromptComposer({
               <Button
                 type="submit"
                 size="icon-sm"
-                aria-label="Send message"
-                disabled={!hasText(segments) || isBusy || !isReady}
+                aria-label={isBusy ? "Queue message" : "Send message"}
+                disabled={!hasText(segments) || !isReady}
                 data-test="resume-ai-send"
               >
                 <ArrowUp className="size-4" />

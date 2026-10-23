@@ -22,7 +22,12 @@ import { resumeAiChatOptions } from "./resume-ai-chat-options";
  */
 export const ResumeAiChatUI = createChatUI(resumeAiChatOptions, {
   components: {
-    layout: ({ Messages }) => <Messages />,
+    layout: ({ Messages, Queue }) => (
+      <>
+        <Messages />
+        <Queue />
+      </>
+    ),
     message: ResumeAiMessage,
   },
   partsComponents: {

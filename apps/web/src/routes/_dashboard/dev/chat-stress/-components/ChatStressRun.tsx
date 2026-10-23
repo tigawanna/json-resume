@@ -171,7 +171,12 @@ export function ChatStressRun({ config, persistence, onRunningChange }: ChatStre
           }}
         >
           <ResumeAiChatUI.Provider chat={chat}>
-            <ResumeAiVirtualMessages scrollRef={scrollRef} />
+            <ResumeAiVirtualMessages
+              scrollRef={scrollRef}
+              queue={[]}
+              onCancelQueued={() => {}}
+              onSendQueuedNow={() => {}}
+            />
           </ResumeAiChatUI.Provider>
         </ResumeAiChatActionsContext>
         {isLoading ? (

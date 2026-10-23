@@ -114,8 +114,7 @@ export function useEventSourcedResumeAiChat(options?: {
     persistence,
     tools: eventSourcedResumeAiClientTools,
     context,
-    // ai-client 0.39 loses messages queued during client-tool rounds; see todos/chat-prompt-queue.md.
-    queue: "drop",
+    queue: { whenBusy: "queue", drain: "fifo" },
     devtools: {
       name: "Event-sourced resume AI",
     },
@@ -133,7 +132,7 @@ export function useEventSourcedResumeAiChat(options?: {
     },
   });
 
-  const { messages, isLoading, status, sessionGenerating } = chat;
+  const { messages, isLoading, status, sessionGenerating, queue } = chat;
 
   useEffect(() => {
     if (!isLoading) persistence.flush();
@@ -174,7 +173,7 @@ export function useEventSourcedResumeAiChat(options?: {
 
   useEffect(() => {
     endOfMessagesRef.current?.scrollIntoView({ block: "end" });
-  }, [messages.length, isLoading, status]);
+  }, [messages.length, queue.length, isLoading, status]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -190,7 +189,7 @@ export function useEventSourcedResumeAiChat(options?: {
 
   async function sendText(text: string) {
     const trimmed = text.trim();
-    if (!trimmed || isLoading || !isReady) return;
+    if (!trimmed || !isReady) return;
     await send(trimmed);
   }
 
@@ -214,7 +213,7 @@ export function useEventSourcedResumeAiChat(options?: {
 
   async function resendPastPrompt(message: UIMessage) {
     const text = getMessageText(message);
-    if (!text || isLoading || !isReady) return;
+    if (!text || !isReady) return;
     await send(text);
   }
 
