@@ -1,5 +1,4 @@
 import { ADMIN_LIST_PER_PAGE } from "@/components/pagination/constants";
-import { Badge } from "@/components/ui/badge";
 import { usePageSearchQuery } from "@/components/search/use-page-search-query";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,11 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  JOB_STATUS_LABELS,
-  deleteJob,
-  jobListLabel,
-} from "@/data-access-layer/event-sourced/rows/job-rows";
+import { deleteJob } from "@/data-access-layer/event-sourced/rows/job-rows";
 import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
 import type { Job } from "@/data-access-layer/event-sourced/schemas";
 import { RouterPendingComponent } from "@/lib/tanstack/router/RouterPendingComponent";
@@ -26,9 +21,6 @@ import { toast } from "sonner";
 import { EventSourcedListScaffold } from "../../-components/EventSourcedListScaffold";
 import { EventSourcedSortToolbar } from "../../-components/EventSourcedSortToolbar";
 import { LibraryEmpty } from "../../-components/LibraryEmpty";
-import { ResponsiveEntityTable } from "../../-components/ResponsiveEntityTable";
-import { RowActionButtons } from "../../-components/RowActionButtons";
-import { TruncatedWithTooltip } from "../../-components/TruncatedWithTooltip";
 import {
   listOffset,
   listOrderByRef,
@@ -37,10 +29,10 @@ import {
   totalPagesFromCount,
 } from "../../-utils/list-query";
 import { usePersistedListTablePrefs } from "../../-utils/use-persisted-list-table-prefs";
-import { formatHourlyUsd } from "@/data-access-layer/event-sourced/rows/pay-quote";
 import { JobCreateForm, JobCreateFormDialog } from "./JobCreateForm";
 import { JobEditForm } from "./JobEditForm";
 import { JobImportFromResumesDialog } from "./JobImportFromResumesDialog";
+import { JobCard } from "./JobCard";
 import { Route } from "..";
 
 const ROUTE_ID = "/_dashboard/jobs/" as const;
@@ -210,60 +202,16 @@ export function JobList() {
       filters={filters}
       dataTest="jobs-list-page"
     >
-      <ResponsiveEntityTable
-        rows={items}
-        tableClassName="table-fixed"
-        columns={[
-          {
-            id: "company",
-            header: "Company",
-            headClassName: "w-[28%]",
-            className: "max-w-0 w-[28%]",
-            cell: (row) => <TruncatedWithTooltip text={row.company || jobListLabel(row)} />,
-          },
-          {
-            id: "title",
-            header: "Title",
-            headClassName: "w-[28%]",
-            className: "max-w-0 w-[28%]",
-            cell: (row) => <TruncatedWithTooltip text={row.title} />,
-          },
-          {
-            id: "status",
-            header: "Status",
-            className: "w-[16%] whitespace-nowrap",
-            cell: (row) => (
-              <Badge variant={row.status === "applied" ? "default" : "secondary"}>
-                {JOB_STATUS_LABELS[row.status]}
-              </Badge>
-            ),
-          },
-          {
-            id: "payRate",
-            header: "Pay",
-            hideOnMobile: true,
-            className: "max-w-0",
-            cell: (row) => (
-              <TruncatedWithTooltip
-                text={formatHourlyUsd(row.hourlyMinCents, row.hourlyMaxCents) || row.payRate}
-              />
-            ),
-          },
-          {
-            id: "location",
-            header: "Location",
-            hideOnMobile: true,
-            className: "max-w-0",
-            cell: (row) => <TruncatedWithTooltip text={row.location} />,
-          },
-        ]}
-        mobileTitle={(row) => jobListLabel(row)}
-        mobileSubtitle={(row) => row.title || JOB_STATUS_LABELS[row.status]}
-        dataTest="jobs-table"
-        actions={(row) => (
-          <RowActionButtons onEdit={() => setEditing(row)} onDelete={() => handleDelete(row.id)} />
-        )}
-      />
+      <div data-test="jobs-table" className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {items.map((row) => (
+          <JobCard
+            key={row.id}
+            job={row}
+            onEdit={() => setEditing(row)}
+            onDelete={() => handleDelete(row.id)}
+          />
+        ))}
+      </div>
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">

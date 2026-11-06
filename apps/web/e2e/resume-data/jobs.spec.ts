@@ -55,3 +55,29 @@ test("paginates, searches, and CRUDs local jobs", async ({ page }) => {
   await clickTableRowAction(page, "jobs-table", "delete", company);
   await expectToast(page, "Job deleted");
 });
+
+test("opens a job card to its detail page and edits it there", async ({ page }) => {
+  const { uniqueId } = await signUp(page);
+  const prefix = `Job${uniqueId.slice(0, 8)}`;
+
+  await openSeededList(page, "/jobs", "jobs-list-page");
+  await seedCollection(page, "job", jobSeedRows(prefix, 1));
+
+  await searchList(page, `${prefix} Needle Labs`);
+  await expectDesktopRowCount(page, "jobs-table", 1);
+
+  const id = `${prefix}-job-000`;
+  await page.getByTestId(`job-card-link-${id}`).click();
+  await expect(page).toHaveURL(new RegExp(`/jobs/${id}`));
+  await expect(page.getByTestId("job-detail-page")).toBeVisible();
+
+  const titleInput = page.getByTestId("job-detail-page").locator("input").nth(1);
+  await expect(titleInput).toHaveValue("Frontend Engineer 000");
+  await titleInput.fill("Detail Staff Engineer");
+  await page.getByRole("button", { name: "Save" }).first().click();
+  await expectToast(page, "Job saved");
+
+  await page.getByTestId("job-detail-back").click();
+  await expect(page).toHaveURL("/jobs");
+  await expect(page.getByTestId("jobs-table")).toContainText("Detail Staff Engineer");
+});
