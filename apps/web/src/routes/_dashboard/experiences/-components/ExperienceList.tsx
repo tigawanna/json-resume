@@ -1,5 +1,4 @@
 import { ADMIN_LIST_PER_PAGE } from "@/components/pagination/constants";
-import { deleteWithReferences } from "@/data-access-layer/event-sourced/rows/library-resolve";
 import { useResumeFilter } from "../../-hooks/use-resume-filter";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,21 +11,14 @@ import {
 import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
 import type { ResumeExperience } from "@/data-access-layer/event-sourced/schemas";
 import { RouterPendingComponent } from "@/lib/tanstack/router/RouterPendingComponent";
-import { count, inArray, useLiveQuery } from "@tanstack/react-db";
+import { inArray, useLiveQuery } from "@tanstack/react-db";
 import { Briefcase, Plus } from "lucide-react";
 import { useState } from "react";
-import { toast } from "sonner";
 import { createSortableColumns } from "@/lib/tanstack/db/sortable-columns";
 import { EventSourcedListScaffold } from "../../-components/EventSourcedListScaffold";
 import { EventSourcedSortToolbar } from "../../-components/EventSourcedSortToolbar";
 import { ImportFromLegacyButton } from "../../-components/ImportFromLegacyButton";
 import { LibraryEmpty } from "../../-components/LibraryEmpty";
-import {
-  formatLibraryDateRange,
-  LibraryEntityCard,
-  LibraryEntityCardGrid,
-} from "../../-components/LibraryEntityCard";
-import { RowActionButtons } from "../../-components/RowActionButtons";
 import {
   listOffset,
   listOrderByRef,
@@ -34,12 +26,38 @@ import {
   orIlike,
   totalPagesFromCount,
 } from "../../-utils/list-query";
-import { unwrapUnknownError } from "@/utils/errors";
 import { Route } from "..";
+import { companyGroupKey } from "../-utils/split-company";
 import { ExperienceCreateForm, ExperienceCreateFormDialog } from "./ExperienceCreateForm";
-import { ExperienceEditForm } from "./ExperienceEditForm";
+import { type ExperienceGroupData } from "./ExperienceGroup";
+import { ExperienceTimelineItem } from "./ExperienceTimelineItem";
 
 const ROUTE_ID = "/_dashboard/experiences/" as const;
+
+function groupKey(experience: ResumeExperience) {
+  return companyGroupKey(experience.company, experience.startDate, experience.endDate);
+}
+
+function groupExperiences(rows: ResumeExperience[]): ExperienceGroupData[] {
+  const groupsByKey = new Map<string, ExperienceGroupData>();
+  for (const row of rows) {
+    const key = groupKey(row);
+    const existing = groupsByKey.get(key);
+    if (existing) {
+      existing.titles.push(row);
+    } else {
+      groupsByKey.set(key, {
+        key,
+        company: row.company,
+        startDate: row.startDate,
+        endDate: row.endDate,
+        titles: [row],
+        groupId: row.id,
+      });
+    }
+  }
+  return [...groupsByKey.values()];
+}
 
 export function ExperienceList() {
   const db = useEventSourcedDb();
@@ -47,7 +65,6 @@ export function ExperienceList() {
   const resumeFilter = useResumeFilter(ROUTE_ID);
   const libraryIds = resumeFilter.libraryIds("experiences");
   const [createOpen, setCreateOpen] = useState(false);
-  const [editing, setEditing] = useState<ResumeExperience | null>(null);
 
   const keyword = q.trim();
   const offset = listOffset(page);
@@ -85,48 +102,16 @@ export function ExperienceList() {
             ),
           )
         : base;
-      return filtered
-        .orderBy(({ row }) => listOrderByRef(row, sortBy, "updatedAt"), sortDir)
-        .limit(ADMIN_LIST_PER_PAGE)
-        .offset(offset);
+      return filtered.orderBy(({ row }) => listOrderByRef(row, sortBy, "startDate"), sortDir);
     },
-    [keyword, offset, sortBy, sortDir, libraryIds?.join(",")],
+    [keyword, sortBy, sortDir, libraryIds?.join(",")],
   );
 
-  const { data: totals } = useLiveQuery(
-    (query) => {
-      const all = query.from({ row: db.collections.resumeExperience });
-      const base = libraryIds ? all.where(({ row }) => inArray(row.id, libraryIds)) : all;
-      const filtered = keyword
-        ? base.where(({ row }) =>
-            orIlike(
-              keyword,
-              row.role,
-              row.company,
-              row.location,
-              row.startDate,
-              row.endDate,
-              row.searchableText,
-            ),
-          )
-        : base;
-      return filtered.select(({ row }) => ({ total: count(row.id) }));
-    },
-    [keyword, libraryIds?.join(",")],
-  );
-
-  const totalItems = totals?.[0]?.total ?? 0;
-  const totalPages = totalPagesFromCount(totalItems);
+  const groups = groupExperiences(items);
+  const totalGroups = groups.length;
+  const pagedGroups = groups.slice(offset, offset + ADMIN_LIST_PER_PAGE);
+  const totalPages = totalPagesFromCount(totalGroups);
   const hasSearch = keyword.length > 0 || resumeFilter.active;
-
-  function handleDelete(id: string) {
-    try {
-      deleteWithReferences(db, "resumeExperience", id);
-      toast.success("Experience deleted");
-    } catch (err: unknown) {
-      toast.error("Failed to delete", { description: unwrapUnknownError(err).message });
-    }
-  }
 
   const actions = (
     <>
@@ -159,7 +144,7 @@ export function ExperienceList() {
     );
   }
 
-  if (items.length === 0) {
+  if (groups.length === 0) {
     return (
       <EventSourcedListScaffold
         routeID={ROUTE_ID}
@@ -199,51 +184,22 @@ export function ExperienceList() {
       filters={filters}
       dataTest="experiences-list-page"
     >
-      <LibraryEntityCardGrid dataTest="experiences-table">
-        {items.map((row) => (
-          <LibraryEntityCard
-            key={row.id}
-            id={row.id}
-            icon={Briefcase}
-            title={row.role}
-            subtitle={row.company}
-            dateRange={formatLibraryDateRange(row.startDate, row.endDate)}
-            location={row.location}
-            sortOrder={row.sortOrder}
-            updatedAt={row.updatedAt}
-            actions={
-              <RowActionButtons
-                onEdit={() => setEditing(row)}
-                onDelete={() => handleDelete(row.id)}
-              />
-            }
-          />
+      <ul className="relative grid gap-4" data-test="experiences-table">
+        {pagedGroups.map((group) => (
+          <ExperienceTimelineItem key={group.key} group={group} />
         ))}
-      </LibraryEntityCardGrid>
+      </ul>
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>New Experience</DialogTitle>
             <DialogDescription>
-              Add an experience to your library so any résumé can reuse it.
+              Add an experience to your library so any résumé can reuse it. Company and period are
+              set here and will be fixed afterwards.
             </DialogDescription>
           </DialogHeader>
           <ExperienceCreateForm onSuccess={() => setCreateOpen(false)} />
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={Boolean(editing)} onOpenChange={(open) => !open && setEditing(null)}>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Edit Experience</DialogTitle>
-            <DialogDescription>
-              Changes apply to every résumé that uses this experience.
-            </DialogDescription>
-          </DialogHeader>
-          {editing ? (
-            <ExperienceEditForm item={editing} onSuccess={() => setEditing(null)} />
-          ) : null}
         </DialogContent>
       </Dialog>
     </EventSourcedListScaffold>

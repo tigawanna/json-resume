@@ -50,6 +50,7 @@ import { Route as ApiAgenticOpenapiRouteImport } from './routes/api/agentic/open
 import { Route as ApiAiChatLabRouteImport } from './routes/api/ai/chat-lab'
 import { Route as ApiAiDashboardAssistantRouteImport } from './routes/api/ai/dashboard-assistant'
 import { Route as ApiAiEventSourcedResumeTailorRouteImport } from './routes/api/ai/event-sourced-resume-tailor'
+import { Route as ApiAiExperienceAgentRouteImport } from './routes/api/ai/experience-agent'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ApiCronProjectSyncEventsRouteImport } from './routes/api/cron/project-sync-events'
 import { Route as ApiCronSquashSyncEventsRouteImport } from './routes/api/cron/squash-sync-events'
@@ -63,6 +64,7 @@ import { Route as DashboardCoverLettersCoverLetterIdIndexRouteImport } from './r
 import { Route as DashboardDevChatLabIndexRouteImport } from './routes/_dashboard/dev/chat-lab/index'
 import { Route as DashboardDevChatStressIndexRouteImport } from './routes/_dashboard/dev/chat-stress/index'
 import { Route as DashboardDevPlaceholdersIndexRouteImport } from './routes/_dashboard/dev/placeholders/index'
+import { Route as DashboardExperiencesExperienceIdIndexRouteImport } from './routes/_dashboard/experiences/$experienceId/index'
 import { Route as DashboardJobsJobIdIndexRouteImport } from './routes/_dashboard/jobs/$jobId/index'
 import { Route as DashboardResumesResumeIdIndexRouteImport } from './routes/_dashboard/resumes/$resumeId/index'
 import { Route as ApiAgenticOpenapiJsonRouteImport } from './routes/api/agentic/openapi.json'
@@ -284,6 +286,11 @@ const ApiAiEventSourcedResumeTailorRoute =
     path: '/api/ai/event-sourced-resume-tailor',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiAiExperienceAgentRoute = ApiAiExperienceAgentRouteImport.update({
+  id: '/api/ai/experience-agent',
+  path: '/api/ai/experience-agent',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
@@ -356,6 +363,12 @@ const DashboardDevPlaceholdersIndexRoute =
     path: '/dev/placeholders/',
     getParentRoute: () => DashboardLayoutRoute,
   } as any)
+const DashboardExperiencesExperienceIdIndexRoute =
+  DashboardExperiencesExperienceIdIndexRouteImport.update({
+    id: '/experiences/$experienceId/',
+    path: '/experiences/$experienceId/',
+    getParentRoute: () => DashboardLayoutRoute,
+  } as any)
 const DashboardJobsJobIdIndexRoute = DashboardJobsJobIdIndexRouteImport.update({
   id: '/jobs/$jobId/',
   path: '/jobs/$jobId/',
@@ -406,6 +419,7 @@ export interface FileRoutesByFullPath {
   '/api/ai/chat-lab': typeof ApiAiChatLabRoute
   '/api/ai/dashboard-assistant': typeof ApiAiDashboardAssistantRoute
   '/api/ai/event-sourced-resume-tailor': typeof ApiAiEventSourcedResumeTailorRoute
+  '/api/ai/experience-agent': typeof ApiAiExperienceAgentRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/cron/project-sync-events': typeof ApiCronProjectSyncEventsRoute
   '/api/cron/squash-sync-events': typeof ApiCronSquashSyncEventsRoute
@@ -446,6 +460,7 @@ export interface FileRoutesByFullPath {
   '/dev/chat-lab/': typeof DashboardDevChatLabIndexRoute
   '/dev/chat-stress/': typeof DashboardDevChatStressIndexRoute
   '/dev/placeholders/': typeof DashboardDevPlaceholdersIndexRoute
+  '/experiences/$experienceId/': typeof DashboardExperiencesExperienceIdIndexRoute
   '/jobs/$jobId/': typeof DashboardJobsJobIdIndexRoute
   '/resumes/$resumeId/': typeof DashboardResumesResumeIdIndexRoute
   '/admin/tables/$table/': typeof DashboardAdminTablesTableIndexRoute
@@ -466,6 +481,7 @@ export interface FileRoutesByTo {
   '/api/ai/chat-lab': typeof ApiAiChatLabRoute
   '/api/ai/dashboard-assistant': typeof ApiAiDashboardAssistantRoute
   '/api/ai/event-sourced-resume-tailor': typeof ApiAiEventSourcedResumeTailorRoute
+  '/api/ai/experience-agent': typeof ApiAiExperienceAgentRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/cron/project-sync-events': typeof ApiCronProjectSyncEventsRoute
   '/api/cron/squash-sync-events': typeof ApiCronSquashSyncEventsRoute
@@ -506,6 +522,7 @@ export interface FileRoutesByTo {
   '/dev/chat-lab': typeof DashboardDevChatLabIndexRoute
   '/dev/chat-stress': typeof DashboardDevChatStressIndexRoute
   '/dev/placeholders': typeof DashboardDevPlaceholdersIndexRoute
+  '/experiences/$experienceId': typeof DashboardExperiencesExperienceIdIndexRoute
   '/jobs/$jobId': typeof DashboardJobsJobIdIndexRoute
   '/resumes/$resumeId': typeof DashboardResumesResumeIdIndexRoute
   '/admin/tables/$table': typeof DashboardAdminTablesTableIndexRoute
@@ -529,6 +546,7 @@ export interface FileRoutesById {
   '/api/ai/chat-lab': typeof ApiAiChatLabRoute
   '/api/ai/dashboard-assistant': typeof ApiAiDashboardAssistantRoute
   '/api/ai/event-sourced-resume-tailor': typeof ApiAiEventSourcedResumeTailorRoute
+  '/api/ai/experience-agent': typeof ApiAiExperienceAgentRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/cron/project-sync-events': typeof ApiCronProjectSyncEventsRoute
   '/api/cron/squash-sync-events': typeof ApiCronSquashSyncEventsRoute
@@ -569,6 +587,7 @@ export interface FileRoutesById {
   '/_dashboard/dev/chat-lab/': typeof DashboardDevChatLabIndexRoute
   '/_dashboard/dev/chat-stress/': typeof DashboardDevChatStressIndexRoute
   '/_dashboard/dev/placeholders/': typeof DashboardDevPlaceholdersIndexRoute
+  '/_dashboard/experiences/$experienceId/': typeof DashboardExperiencesExperienceIdIndexRoute
   '/_dashboard/jobs/$jobId/': typeof DashboardJobsJobIdIndexRoute
   '/_dashboard/resumes/$resumeId/': typeof DashboardResumesResumeIdIndexRoute
   '/_dashboard/admin/tables/$table/': typeof DashboardAdminTablesTableIndexRoute
@@ -592,6 +611,7 @@ export interface FileRouteTypes {
     | '/api/ai/chat-lab'
     | '/api/ai/dashboard-assistant'
     | '/api/ai/event-sourced-resume-tailor'
+    | '/api/ai/experience-agent'
     | '/api/auth/$'
     | '/api/cron/project-sync-events'
     | '/api/cron/squash-sync-events'
@@ -632,6 +652,7 @@ export interface FileRouteTypes {
     | '/dev/chat-lab/'
     | '/dev/chat-stress/'
     | '/dev/placeholders/'
+    | '/experiences/$experienceId/'
     | '/jobs/$jobId/'
     | '/resumes/$resumeId/'
     | '/admin/tables/$table/'
@@ -652,6 +673,7 @@ export interface FileRouteTypes {
     | '/api/ai/chat-lab'
     | '/api/ai/dashboard-assistant'
     | '/api/ai/event-sourced-resume-tailor'
+    | '/api/ai/experience-agent'
     | '/api/auth/$'
     | '/api/cron/project-sync-events'
     | '/api/cron/squash-sync-events'
@@ -692,6 +714,7 @@ export interface FileRouteTypes {
     | '/dev/chat-lab'
     | '/dev/chat-stress'
     | '/dev/placeholders'
+    | '/experiences/$experienceId'
     | '/jobs/$jobId'
     | '/resumes/$resumeId'
     | '/admin/tables/$table'
@@ -714,6 +737,7 @@ export interface FileRouteTypes {
     | '/api/ai/chat-lab'
     | '/api/ai/dashboard-assistant'
     | '/api/ai/event-sourced-resume-tailor'
+    | '/api/ai/experience-agent'
     | '/api/auth/$'
     | '/api/cron/project-sync-events'
     | '/api/cron/squash-sync-events'
@@ -754,6 +778,7 @@ export interface FileRouteTypes {
     | '/_dashboard/dev/chat-lab/'
     | '/_dashboard/dev/chat-stress/'
     | '/_dashboard/dev/placeholders/'
+    | '/_dashboard/experiences/$experienceId/'
     | '/_dashboard/jobs/$jobId/'
     | '/_dashboard/resumes/$resumeId/'
     | '/_dashboard/admin/tables/$table/'
@@ -772,6 +797,7 @@ export interface RootRouteChildren {
   ApiAiChatLabRoute: typeof ApiAiChatLabRoute
   ApiAiDashboardAssistantRoute: typeof ApiAiDashboardAssistantRoute
   ApiAiEventSourcedResumeTailorRoute: typeof ApiAiEventSourcedResumeTailorRoute
+  ApiAiExperienceAgentRoute: typeof ApiAiExperienceAgentRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiCronProjectSyncEventsRoute: typeof ApiCronProjectSyncEventsRoute
   ApiCronSquashSyncEventsRoute: typeof ApiCronSquashSyncEventsRoute
@@ -1070,6 +1096,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAiEventSourcedResumeTailorRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/ai/experience-agent': {
+      id: '/api/ai/experience-agent'
+      path: '/api/ai/experience-agent'
+      fullPath: '/api/ai/experience-agent'
+      preLoaderRoute: typeof ApiAiExperienceAgentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
@@ -1161,6 +1194,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardDevPlaceholdersIndexRouteImport
       parentRoute: typeof DashboardLayoutRoute
     }
+    '/_dashboard/experiences/$experienceId/': {
+      id: '/_dashboard/experiences/$experienceId/'
+      path: '/experiences/$experienceId'
+      fullPath: '/experiences/$experienceId/'
+      preLoaderRoute: typeof DashboardExperiencesExperienceIdIndexRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
     '/_dashboard/jobs/$jobId/': {
       id: '/_dashboard/jobs/$jobId/'
       path: '/jobs/$jobId'
@@ -1241,6 +1281,7 @@ interface DashboardLayoutRouteChildren {
   DashboardDevChatLabIndexRoute: typeof DashboardDevChatLabIndexRoute
   DashboardDevChatStressIndexRoute: typeof DashboardDevChatStressIndexRoute
   DashboardDevPlaceholdersIndexRoute: typeof DashboardDevPlaceholdersIndexRoute
+  DashboardExperiencesExperienceIdIndexRoute: typeof DashboardExperiencesExperienceIdIndexRoute
   DashboardJobsJobIdIndexRoute: typeof DashboardJobsJobIdIndexRoute
   DashboardResumesResumeIdIndexRoute: typeof DashboardResumesResumeIdIndexRoute
   DashboardAdminTablesTableIndexRoute: typeof DashboardAdminTablesTableIndexRoute
@@ -1283,6 +1324,8 @@ const DashboardLayoutRouteChildren: DashboardLayoutRouteChildren = {
   DashboardDevChatLabIndexRoute: DashboardDevChatLabIndexRoute,
   DashboardDevChatStressIndexRoute: DashboardDevChatStressIndexRoute,
   DashboardDevPlaceholdersIndexRoute: DashboardDevPlaceholdersIndexRoute,
+  DashboardExperiencesExperienceIdIndexRoute:
+    DashboardExperiencesExperienceIdIndexRoute,
   DashboardJobsJobIdIndexRoute: DashboardJobsJobIdIndexRoute,
   DashboardResumesResumeIdIndexRoute: DashboardResumesResumeIdIndexRoute,
   DashboardAdminTablesTableIndexRoute: DashboardAdminTablesTableIndexRoute,
@@ -1333,6 +1376,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAiChatLabRoute: ApiAiChatLabRoute,
   ApiAiDashboardAssistantRoute: ApiAiDashboardAssistantRoute,
   ApiAiEventSourcedResumeTailorRoute: ApiAiEventSourcedResumeTailorRoute,
+  ApiAiExperienceAgentRoute: ApiAiExperienceAgentRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiCronProjectSyncEventsRoute: ApiCronProjectSyncEventsRoute,
   ApiCronSquashSyncEventsRoute: ApiCronSquashSyncEventsRoute,
