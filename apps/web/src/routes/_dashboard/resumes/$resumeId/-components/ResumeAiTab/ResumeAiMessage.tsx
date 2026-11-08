@@ -47,6 +47,49 @@ export function ResumeAiMessage({ message, Parts }: MessageProps<ResumeAiChatOpt
   if (isUser) rowTest = "resume-ai-message-user";
   else if (isSystem) rowTest = "resume-ai-message-system";
 
+  let actions: ReactNode = null;
+  if (isSystem) {
+    actions = (
+      <PromptActionButton
+        label="Copy"
+        disabled={!text}
+        onClick={() => void copyMessage()}
+        dataTest="resume-ai-copy-message"
+      >
+        <Copy className="size-3.5" />
+      </PromptActionButton>
+    );
+  } else if (isUser || text) {
+    actions = (
+      <div className="flex items-center gap-1">
+        <PromptActionButton
+          label="Copy prompt"
+          disabled={!text}
+          onClick={() => void copyMessage()}
+          dataTest="resume-ai-copy-message"
+        >
+          <Copy className="size-3.5" />
+        </PromptActionButton>
+        <PromptActionButton
+          label="Edit prompt"
+          disabled={!isReady}
+          onClick={() => onEdit(message)}
+          dataTest="resume-ai-edit-past-prompt"
+        >
+          <PencilLine className="size-3.5" />
+        </PromptActionButton>
+        <PromptActionButton
+          label="Resend prompt"
+          disabled={!isReady}
+          onClick={() => onResend(message)}
+          dataTest="resume-ai-resend-past-prompt"
+        >
+          <RefreshCcw className="size-3.5" />
+        </PromptActionButton>
+      </div>
+    );
+  }
+
   return (
     <div
       className={cn("flex w-full gap-1", isSystem ? "flex-row" : "flex-col", rowAlign)}
@@ -81,43 +124,7 @@ export function ResumeAiMessage({ message, Parts }: MessageProps<ResumeAiChatOpt
           </>
         ) : null}
       </div>
-      {isSystem ? (
-        <PromptActionButton
-          label="Copy"
-          disabled={!text}
-          onClick={() => void copyMessage()}
-          dataTest="resume-ai-copy-message"
-        >
-          <Copy className="size-3.5" />
-        </PromptActionButton>
-      ) : isUser || text ? (
-        <div className="flex items-center gap-1">
-          <PromptActionButton
-            label="Copy prompt"
-            disabled={!text}
-            onClick={() => void copyMessage()}
-            dataTest="resume-ai-copy-message"
-          >
-            <Copy className="size-3.5" />
-          </PromptActionButton>
-          <PromptActionButton
-            label="Edit prompt"
-            disabled={!isReady}
-            onClick={() => onEdit(message)}
-            dataTest="resume-ai-edit-past-prompt"
-          >
-            <PencilLine className="size-3.5" />
-          </PromptActionButton>
-          <PromptActionButton
-            label="Resend prompt"
-            disabled={!isReady}
-            onClick={() => onResend(message)}
-            dataTest="resume-ai-resend-past-prompt"
-          >
-            <RefreshCcw className="size-3.5" />
-          </PromptActionButton>
-        </div>
-      ) : null}
+      {actions}
     </div>
   );
 }

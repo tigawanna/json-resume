@@ -19,8 +19,10 @@ export const auth = betterAuth({
     provider: "sqlite",
     schema: authSchema,
   }),
-  experimental: {
-    joins: true,
+  advanced: {
+    database: {
+      joins: true,
+    },
   },
   emailAndPassword: {
     enabled: true,

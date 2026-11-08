@@ -1,4 +1,3 @@
-import { authClient } from "@/lib/better-auth/client";
 import { tanstackDBPersistence } from "@/lib/tanstack/db/browser-presistor";
 import { queryClient } from "@/lib/tanstack/query/queryclient";
 import { persistedCollectionOptions } from "@tanstack/browser-db-sqlite-persistence";
@@ -7,18 +6,17 @@ import { queryCollectionOptions, type QueryCollectionUtils } from "@tanstack/que
 import { queryOptions } from "@tanstack/react-query";
 import { redirect } from "@tanstack/react-router";
 import { queryKeyPrefixes } from "../query-keys";
+import { fetchGithubAccessToken, githubAuthRedirect } from "./auth";
 import { getRepositories, RepositoryResponse } from "./repos.octo";
 
 export const githubAccessTokenQueryOptions = queryOptions({
   queryKey: [queryKeyPrefixes.githubAccessToken],
   queryFn: async () => {
-    const { data, error } = await authClient.getAccessToken({
-      providerId: "github",
-    });
-    if (error) {
+    const accessToken = await fetchGithubAccessToken();
+    if (!accessToken) {
       throw new Error("Failed to get GitHub access token");
     }
-    return data.accessToken;
+    return accessToken;
   },
 });
 
@@ -34,15 +32,11 @@ export const githubReposCollection = createCollection(
     ...queryCollectionOptions({
       queryKey: [queryKeyPrefixes.github, "repos"] as const,
       queryFn: async () => {
-        const acesssTokenResponse = await authClient.getAccessToken({
-          providerId: "github",
-        });
-
-        if (acesssTokenResponse.error || !acesssTokenResponse.data?.accessToken) {
-          throw redirect({ to: "/auth/github", search: { returnTo: "/dashboard/projects" } });
+        const accessToken = await fetchGithubAccessToken();
+        if (!accessToken) {
+          throw redirect(githubAuthRedirect);
         }
-        const data = await getRepositories(acesssTokenResponse.data.accessToken);
-        return data;
+        return getRepositories(accessToken);
       },
       getKey: (item) => item.id,
       queryClient: queryClient,
