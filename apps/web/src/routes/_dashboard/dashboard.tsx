@@ -1,11 +1,14 @@
 import { AppConfig } from "@/utils/system";
 import { createFileRoute } from "@tanstack/react-router";
+import { z } from "zod";
 import { DashboardChat } from "./-components/dashboard/DashboardChat";
+import { DashboardSearch } from "./-components/dashboard/DashboardSearch";
 import { RecentResumes } from "./-components/dashboard/RecentResumes";
 
 export const Route = createFileRoute("/_dashboard/dashboard")({
   component: RouteComponent,
   ssr: false,
+  validateSearch: (search) => z.object({ q: z.string().optional() }).parse(search),
   head: () => ({
     meta: [
       {
@@ -23,7 +26,7 @@ function RouteComponent() {
         <div className="flex flex-wrap items-center gap-2">
           {/* <ImportAllFromLegacyButton /> */}
         </div>
-        {/* TODO figire put  aw ay to create a serach bar that allows us to serch trough every rown ondevice tha will be used by the searchbar here and the agnet tool to quickly grep though the project */}
+        <DashboardSearch />
       </div>
 
       <div className="h-full w-full flex flex-col items-center justify-center gap-6">

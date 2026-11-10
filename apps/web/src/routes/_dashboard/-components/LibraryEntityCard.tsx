@@ -4,7 +4,6 @@ import {
   ResourceCardBody,
   ResourceCardFooter,
   ResourceCardHeader,
-  ResourceCardMeta,
 } from "@/components/resource-card";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
@@ -89,7 +88,7 @@ export function LibraryEntityCard({
     <li className="min-w-0">
       <ResourceCard
         dataTest={`row-${id}`}
-        className={cn("h-full", onClick ? "cursor-pointer" : null)}
+        className={cn("h-full", className, onClick ? "cursor-pointer" : null)}
         onClick={onClick}
       >
         <ResourceCardHeader
@@ -101,9 +100,8 @@ export function LibraryEntityCard({
           }
           meta={(subtitle ?? dateRange ?? location) ? meta : null}
           actions={
-            actions ? (
-              actions
-            ) : hasActions ? (
+            actions ??
+            (hasActions ? (
               <ResourceCardActions label="Card actions">
                 {onNavigateToDetails ? (
                   <DropdownMenuItem onSelect={onNavigateToDetails} data-test="row-details-btn">
@@ -133,7 +131,7 @@ export function LibraryEntityCard({
                   </>
                 ) : null}
               </ResourceCardActions>
-            ) : null
+            ) : null)
           }
         />
 

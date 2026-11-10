@@ -4,7 +4,6 @@ import {
   ResourceCardBody,
   ResourceCardFooter,
   ResourceCardHeader,
-  ResourceCardMeta,
 } from "@/components/resource-card";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
