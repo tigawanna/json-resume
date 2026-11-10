@@ -1,5 +1,6 @@
 import { ADMIN_LIST_PER_PAGE } from "@/components/pagination/constants";
 import { usePageSearchQuery } from "@/components/search/use-page-search-query";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -8,19 +9,29 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { deleteJob } from "@/data-access-layer/event-sourced/rows/job-rows";
+import {
+  deleteJob,
+  JOB_STATUS_LABELS,
+  jobListLabel,
+} from "@/data-access-layer/event-sourced/rows/job-rows";
 import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
 import type { Job } from "@/data-access-layer/event-sourced/schemas";
 import { RouterPendingComponent } from "@/lib/tanstack/router/RouterPendingComponent";
 import { createSortableColumns } from "@/lib/tanstack/db/sortable-columns";
+import { formatLocaleDate } from "@/utils/date-helpers";
 import { unwrapUnknownError } from "@/utils/errors";
 import { count, useLiveQuery } from "@tanstack/react-db";
+import { Link } from "@tanstack/react-router";
 import { Briefcase, Download, Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { EntityViewToggle } from "../../-components/EntityViewToggle";
 import { EventSourcedListScaffold } from "../../-components/EventSourcedListScaffold";
 import { EventSourcedSortToolbar } from "../../-components/EventSourcedSortToolbar";
 import { LibraryEmpty } from "../../-components/LibraryEmpty";
+import { ResponsiveEntityTable } from "../../-components/ResponsiveEntityTable";
+import { RowActionButtons } from "../../-components/RowActionButtons";
+import { TruncatedWithTooltip } from "../../-components/TruncatedWithTooltip";
 import {
   listOffset,
   listOrderByRef,
@@ -32,7 +43,7 @@ import { usePersistedListTablePrefs } from "../../-utils/use-persisted-list-tabl
 import { JobCreateForm, JobCreateFormDialog } from "./JobCreateForm";
 import { JobEditForm } from "./JobEditForm";
 import { JobImportFromResumesDialog } from "./JobImportFromResumesDialog";
-import { JobCard } from "./JobCard";
+import { JobCard, jobPayDisplay } from "./JobCard";
 import { Route } from "..";
 
 const ROUTE_ID = "/_dashboard/jobs/" as const;
@@ -41,6 +52,7 @@ export function JobList() {
   const db = useEventSourcedDb();
   const search = Route.useSearch();
   const { page = 1, q = "", sortBy, sortDirection } = search;
+  const view = search.view === "table" ? "table" : "cards";
   const { clearSearch } = usePageSearchQuery(ROUTE_ID);
   usePersistedListTablePrefs(db, "jobs", search);
   const [createOpen, setCreateOpen] = useState(false);
@@ -52,18 +64,21 @@ export function JobList() {
   const sortDir = listSortDirection(sortDirection);
 
   const filters = (
-    <EventSourcedSortToolbar
-      collection={db.collections.job}
-      sortableColumns={createSortableColumns(db.collections.job, [
-        { value: "company", label: "Company" },
-        { value: "title", label: "Title" },
-        { value: "status", label: "Status" },
-        { value: "hourlyMinCents", label: "Hourly pay" },
-        { value: "location", label: "Location" },
-        { value: "updatedAt", label: "Updated" },
-      ])}
-      defaultSortBy="updatedAt"
-    />
+    <>
+      <EventSourcedSortToolbar
+        collection={db.collections.job}
+        sortableColumns={createSortableColumns(db.collections.job, [
+          { value: "company", label: "Company" },
+          { value: "title", label: "Title" },
+          { value: "status", label: "Status" },
+          { value: "hourlyMinCents", label: "Hourly pay" },
+          { value: "location", label: "Location" },
+          { value: "updatedAt", label: "Updated" },
+        ])}
+        defaultSortBy="updatedAt"
+      />
+      <EntityViewToggle dataTest="jobs-view-toggle" />
+    </>
   );
 
   const { data: items, isLoading } = useLiveQuery(
@@ -202,16 +217,84 @@ export function JobList() {
       filters={filters}
       dataTest="jobs-list-page"
     >
-      <div data-test="jobs-table" className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {items.map((row) => (
-          <JobCard
-            key={row.id}
-            job={row}
-            onEdit={() => setEditing(row)}
-            onDelete={() => handleDelete(row.id)}
-          />
-        ))}
-      </div>
+      {view === "cards" ? (
+        <div data-test="jobs-table" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {items.map((row) => (
+            <JobCard
+              key={row.id}
+              job={row}
+              onEdit={() => setEditing(row)}
+              onDelete={() => handleDelete(row.id)}
+            />
+          ))}
+        </div>
+      ) : (
+        <ResponsiveEntityTable
+          rows={items}
+          tableClassName="table-fixed"
+          defaultSortBy="updatedAt"
+          columns={[
+            {
+              id: "title",
+              header: "Company / title",
+              headClassName: "w-[30%]",
+              className: "max-w-0 w-[30%]",
+              cell: (row) => (
+                <Link
+                  to="/jobs/$jobId"
+                  params={{ jobId: row.id }}
+                  className="block truncate font-medium hover:underline"
+                  data-test={`job-table-link-${row.id}`}
+                >
+                  {jobListLabel(row)}
+                </Link>
+              ),
+            },
+            {
+              id: "status",
+              header: "Status",
+              headClassName: "w-[12%]",
+              className: "w-[12%]",
+              cell: (row) => (
+                <Badge variant={row.status === "applied" ? "default" : "secondary"}>
+                  {JOB_STATUS_LABELS[row.status]}
+                </Badge>
+              ),
+            },
+            {
+              id: "pay",
+              header: "Pay",
+              sortable: false,
+              hideOnMobile: true,
+              className: "whitespace-nowrap",
+              cell: (row) => jobPayDisplay(row) ?? <span className="text-muted-foreground">—</span>,
+            },
+            {
+              id: "location",
+              header: "Location",
+              hideOnMobile: true,
+              className: "max-w-0",
+              cell: (row) => (row.location ? <TruncatedWithTooltip text={row.location} /> : null),
+            },
+            {
+              id: "updatedAt",
+              header: "Updated",
+              headClassName: "w-[14%]",
+              className: "w-[14%] whitespace-nowrap",
+              cell: (row) => formatLocaleDate(row.updatedAt),
+            },
+          ]}
+          mobileTitle={(row) => jobListLabel(row)}
+          mobileSubtitle={(row) => formatLocaleDate(row.updatedAt)}
+          dataTest="jobs-table"
+          actions={(row) => (
+            <RowActionButtons
+              onEdit={() => setEditing(row)}
+              onDelete={() => handleDelete(row.id)}
+            />
+          )}
+        />
+      )}
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">

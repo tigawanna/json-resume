@@ -16,6 +16,8 @@ import { count, useLiveQuery } from "@tanstack/react-db";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Mail, Plus } from "lucide-react";
 import { toast } from "sonner";
+import { CoverLetterCard } from "./CoverLetterCard";
+import { EntityViewToggle } from "../../-components/EntityViewToggle";
 import { EventSourcedListScaffold } from "../../-components/EventSourcedListScaffold";
 import { EventSourcedSortToolbar } from "../../-components/EventSourcedSortToolbar";
 import { LibraryEmpty } from "../../-components/LibraryEmpty";
@@ -45,6 +47,7 @@ export function CoverLetterList() {
   const navigate = useNavigate();
   const search = Route.useSearch();
   const { page = 1, q = "", sortBy, sortDirection } = search;
+  const view = search.view === "table" ? "table" : "cards";
   const resumeFilter = useResumeFilter(ROUTE_ID);
   const { resumeIds, jobIds } = resumeFilter;
   const scopeKey = resumeFilter.active ? `${resumeIds.join(",")}|${jobIds.join(",")}` : "";
@@ -55,15 +58,18 @@ export function CoverLetterList() {
   const sortDir = listSortDirection(sortDirection);
 
   const filters = (
-    <EventSourcedSortToolbar
-      collection={db.collections.coverLetter}
-      sortableColumns={createSortableColumns(db.collections.coverLetter, [
-        { value: "title", label: "Title" },
-        { value: "updatedAt", label: "Updated" },
-        { value: "createdAt", label: "Created" },
-      ])}
-      defaultSortBy="updatedAt"
-    />
+    <>
+      <EventSourcedSortToolbar
+        collection={db.collections.coverLetter}
+        sortableColumns={createSortableColumns(db.collections.coverLetter, [
+          { value: "title", label: "Title" },
+          { value: "updatedAt", label: "Updated" },
+          { value: "createdAt", label: "Created" },
+        ])}
+        defaultSortBy="updatedAt"
+      />
+      <EntityViewToggle dataTest="cover-letters-view-toggle" />
+    </>
   );
 
   const { data: items, isLoading } = useLiveQuery(
@@ -187,60 +193,73 @@ export function CoverLetterList() {
       filters={filters}
       dataTest="cover-letters-list-page"
     >
-      <ResponsiveEntityTable
-        rows={items}
-        tableClassName="table-fixed"
-        columns={[
-          {
-            id: "title",
-            header: "Title",
-            headClassName: "w-[30%]",
-            className: "max-w-0 w-[30%]",
-            cell: (row) => (
-              <Link
-                to="/cover-letters/$coverLetterId"
-                params={{ coverLetterId: row.id }}
-                className="block truncate font-medium hover:underline"
-                data-test={`cover-letter-link-${row.id}`}
-              >
-                {row.title || "Untitled cover letter"}
-              </Link>
-            ),
-          },
-          {
-            id: "body",
-            header: "Opening",
-            sortable: false,
-            hideOnMobile: true,
-            className: "max-w-0",
-            cell: (row) => <TruncatedWithTooltip text={coverLetterPreview(row.body, 160)} />,
-          },
-          {
-            id: "words",
-            header: "Words",
-            sortable: false,
-            headClassName: "w-[10%]",
-            className: "w-[10%] whitespace-nowrap tabular-nums",
-            cell: (row) => coverLetterWordCount(row.body),
-          },
-          {
-            id: "updatedAt",
-            header: "Updated",
-            headClassName: "w-[14%]",
-            className: "w-[14%] whitespace-nowrap",
-            cell: (row) => formatLocaleDate(row.updatedAt),
-          },
-        ]}
-        mobileTitle={(row) => row.title || "Untitled cover letter"}
-        mobileSubtitle={(row) => coverLetterPreview(row.body, 80)}
-        dataTest="cover-letters-table"
-        actions={(row) => (
-          <RowActionButtons
-            onEdit={() => openLetter(row.id)}
-            onDelete={() => handleDelete(row.id)}
-          />
-        )}
-      />
+      {view === "cards" ? (
+        <div data-test="cover-letters-cards" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {items.map((row) => (
+            <CoverLetterCard
+              key={row.id}
+              letter={row}
+              onOpen={() => openLetter(row.id)}
+              onDelete={() => handleDelete(row.id)}
+            />
+          ))}
+        </div>
+      ) : (
+        <ResponsiveEntityTable
+          rows={items}
+          tableClassName="table-fixed"
+          columns={[
+            {
+              id: "title",
+              header: "Title",
+              headClassName: "w-[30%]",
+              className: "max-w-0 w-[30%]",
+              cell: (row) => (
+                <Link
+                  to="/cover-letters/$coverLetterId"
+                  params={{ coverLetterId: row.id }}
+                  className="block truncate font-medium hover:underline"
+                  data-test={`cover-letter-link-${row.id}`}
+                >
+                  {row.title || "Untitled cover letter"}
+                </Link>
+              ),
+            },
+            {
+              id: "body",
+              header: "Opening",
+              sortable: false,
+              hideOnMobile: true,
+              className: "max-w-0",
+              cell: (row) => <TruncatedWithTooltip text={coverLetterPreview(row.body, 160)} />,
+            },
+            {
+              id: "words",
+              header: "Words",
+              sortable: false,
+              headClassName: "w-[10%]",
+              className: "w-[10%] whitespace-nowrap tabular-nums",
+              cell: (row) => coverLetterWordCount(row.body),
+            },
+            {
+              id: "updatedAt",
+              header: "Updated",
+              headClassName: "w-[14%]",
+              className: "w-[14%] whitespace-nowrap",
+              cell: (row) => formatLocaleDate(row.updatedAt),
+            },
+          ]}
+          mobileTitle={(row) => row.title || "Untitled cover letter"}
+          mobileSubtitle={(row) => coverLetterPreview(row.body, 80)}
+          dataTest="cover-letters-table"
+          actions={(row) => (
+            <RowActionButtons
+              onEdit={() => openLetter(row.id)}
+              onDelete={() => handleDelete(row.id)}
+            />
+          )}
+        />
+      )}
     </EventSourcedListScaffold>
   );
 }

@@ -1,9 +1,14 @@
 import { z } from "zod";
 
-/** Shared `q` + `page` + TanStack DB sort + column-visibility contract. */
+export const entityViewSchema = z.enum(["cards", "table"]);
+export type EntityListView = z.infer<typeof entityViewSchema>;
+
+/** Shared `q` + `page` + `view` + TanStack DB sort + column-visibility contract. */
 export const eventSourcedListSearchSchema = z.object({
   q: z.string().optional(),
   page: z.coerce.number().int().min(1).optional(),
+  /** List layout; `cards` is the default and stays out of the URL. */
+  view: entityViewSchema.optional(),
   sortBy: z.string().optional(),
   sortDirection: z.enum(["asc", "desc"]).optional(),
   /** Comma-separated `ResponsiveColumn.id` values to hide. */

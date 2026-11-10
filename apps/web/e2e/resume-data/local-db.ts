@@ -196,9 +196,14 @@ export async function clickTableRowAction(
   const testId = action === "edit" ? "row-edit-btn" : "row-delete-btn";
   const row = page.getByTestId(tableTestId).locator(ROW_SELECTOR).filter({ hasText: rowText });
   await expect(row).toHaveCount(1);
-  await row.getByTestId(testId).evaluate((el: HTMLButtonElement) => {
-    el.click();
-  });
+  const direct = row.getByTestId(testId);
+  if ((await direct.count()) > 0) {
+    await direct.evaluate((el: HTMLButtonElement) => el.click());
+    return;
+  }
+  // Menu-based rows (resource cards): open the actions dropdown first.
+  await row.getByTestId("row-actions-btn").click();
+  await page.getByTestId(testId).click();
 }
 
 export async function goToNextPage(page: Page, expectedPage: number) {
