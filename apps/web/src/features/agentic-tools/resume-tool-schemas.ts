@@ -3,6 +3,7 @@ import {
   SECTION_KEYS,
   TEMPLATE_IDS,
 } from "@/features/resume/resume-schema";
+import { linkUrlSchema } from "@/modules/links/link-form";
 import { z } from "zod";
 
 /** Search + paging fields shared by every list/search tool input. */
@@ -742,10 +743,13 @@ export const setLinksToolInputSchema = z.object({
   ...targetResumeShape,
   links: z
     .array(
-      z.object({ label: z.string().trim().min(1).max(80), url: z.string().trim().min(1).max(500) }),
+      z.object({
+        label: z.string().trim().min(1).max(80),
+        url: linkUrlSchema,
+      }),
     )
     .max(12)
-    .describe("Every header link, in order."),
+    .describe("Every header link, in order. Plain http(s) web addresses only."),
 });
 
 export const setLinksToolOutputSchema = z.object({

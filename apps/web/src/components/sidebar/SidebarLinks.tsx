@@ -31,7 +31,8 @@ function sidebarHrefMatchesPathname(pathname: string, href: string, fuzzy: boole
 }
 
 export function SidebarLinks({ links, isNested = false }: SidebarLinksProps) {
-  const { state } = useSidebar();
+  const { state, toggleSidebar } = useSidebar();
+
   const pathname = useRouterState({
     select: (s) => s.location.pathname,
   });
@@ -57,6 +58,12 @@ export function SidebarLinks({ links, isNested = false }: SidebarLinksProps) {
               asChild
               defaultOpen={sectionOpenDefault}
               className="group/collapsible"
+              onOpenChange={(open) => {
+                console.log({ open });
+                if (state === "collapsed") {
+                  toggleSidebar();
+                }
+              }}
             >
               <SidebarMenuItem>
                 {showTooltips ? (
@@ -64,7 +71,10 @@ export function SidebarLinks({ links, isNested = false }: SidebarLinksProps) {
                     <Tooltip delayDuration={200}>
                       <CollapsibleTrigger asChild>
                         <TooltipTrigger asChild>
-                          <SidebarMenuButton isActive={sectionOpenDefault}>
+                          <SidebarMenuButton
+                            isActive={sectionOpenDefault}
+                            className="data-[state=open]:bg-primary/40"
+                          >
                             {item.icon && <item.icon />}
                             <span>{item.title}</span>
                             <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
@@ -76,7 +86,10 @@ export function SidebarLinks({ links, isNested = false }: SidebarLinksProps) {
                   </TooltipProvider>
                 ) : (
                   <CollapsibleTrigger asChild>
-                    <SidebarMenuButton isActive={sectionOpenDefault}>
+                    <SidebarMenuButton
+                      isActive={sectionOpenDefault}
+                      className="data-[state=open]:bg-primary/40"
+                    >
                       {item.icon && <item.icon />}
                       <span>{item.title}</span>
                       <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />

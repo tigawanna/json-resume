@@ -1,9 +1,19 @@
 import { EntityPickerSheet } from "@/components/entity-picker/EntityPickerSheet";
 import { useResumeWorkspace } from "@/components/resume/resume-workspace/ResumeWorkspaceContext";
+import type { LinkDraft } from "@/components/resume/resume-workspace/resume-workspace-types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
+import {
+  LINK_ICON_HINT,
+  LINK_ICON_PLACEHOLDER,
+  LINK_URL_HINT,
+  LINK_URL_PLACEHOLDER,
+  defaultLinkIconForUrl,
+  normalizeLinkIcon,
+  normalizeLinkUrl,
+} from "@/modules/links/link-form";
 import { unwrapUnknownError } from "@/utils/errors";
 import { useMutation } from "@tanstack/react-query";
 import { Library, Plus, Trash2 } from "lucide-react";
@@ -36,7 +46,19 @@ export function LinksForm() {
   const [pickOpen, setPickOpen] = useState(false);
 
   function savePromise(rows: LinkRow[]) {
-    return updateLinks(rows.map(({ id: _id, ...link }) => link));
+    const drafts: LinkDraft[] = [];
+    for (const { id: _id, ...link } of rows) {
+      const url = normalizeLinkUrl(link.url);
+      if (!url.ok) throw new Error(`${link.label || link.url || "Link"}: ${url.error}`);
+      const icon = normalizeLinkIcon(link.icon ?? "");
+      if (!icon.ok) throw new Error(`${link.label || url.url}: ${icon.error}`);
+      drafts.push({
+        label: link.label,
+        url: url.url,
+        icon: icon.icon || defaultLinkIconForUrl(url.url),
+      });
+    }
+    return updateLinks(drafts);
   }
 
   const saveMutation = useMutation({
@@ -79,7 +101,17 @@ export function LinksForm() {
   }
 
   function updateLink(index: number, field: keyof LinkRow, value: string) {
-    setLinks((prev) => prev.map((l, i) => (i === index ? { ...l, [field]: value } : l)));
+    setLinks((prev) =>
+      prev.map((l, i) => {
+        if (i !== index) return l;
+        // typing a URL suggests the matching icon while the field is still empty
+        if (field === "url" && !l.icon) {
+          const suggested = defaultLinkIconForUrl(value);
+          return suggested ? { ...l, url: value, icon: suggested } : { ...l, url: value };
+        }
+        return { ...l, [field]: value };
+      }),
+    );
   }
 
   function pickExisting(rows: LinkPickerRow[]) {
@@ -110,7 +142,7 @@ export function LinksForm() {
             <Input
               value={link.url}
               onChange={(e) => updateLink(index, "url", e.target.value)}
-              placeholder="https://github.com/username"
+              placeholder={LINK_URL_PLACEHOLDER}
             />
           </div>
           <div className="w-24">
@@ -118,7 +150,7 @@ export function LinksForm() {
             <Input
               value={link.icon ?? ""}
               onChange={(e) => updateLink(index, "icon", e.target.value)}
-              placeholder="github"
+              placeholder={LINK_ICON_PLACEHOLDER}
             />
           </div>
           <Button
@@ -148,6 +180,9 @@ export function LinksForm() {
           Save Links
         </Button>
       </div>
+      <p className="text-muted-foreground text-[11px]">
+        {LINK_URL_HINT} Icon: {LINK_ICON_HINT}
+      </p>
 
       {searchLinks && (
         <EntityPickerSheet<LinkPickerRow>

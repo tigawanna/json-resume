@@ -116,7 +116,7 @@ export function LibraryEntityCardGrid({
   dataTest?: string;
 }) {
   return (
-    <ul className="grid gap-4 lg:grid-cols-2" data-test={dataTest}>
+    <ul className="grid gap-4 lg:grid-cols-2 pb-10" data-test={dataTest}>
       {children}
     </ul>
   );
