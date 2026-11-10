@@ -33,4 +33,26 @@ describe("toResumeDocumentV1", () => {
     const toolInput = replaceResumeDocumentToolInputSchema.safeParse({ document: coerced });
     expect(toolInput.success).toBe(true);
   });
+
+  it("carries header contacts through migration and drops empties and email/location duplicates", () => {
+    const base = createDefaultResume();
+    const migrated = toResumeDocumentV1({
+      ...base,
+      header: {
+        ...base.header,
+        contacts: [
+          { type: "phone", value: "+1 555 0100", label: "Mobile" },
+          { type: "", value: "", label: "" },
+          { type: "email", value: "dupe@example.com", label: "Email" },
+          null,
+          { value: "https://example.com", label: "Website" },
+        ],
+      },
+    });
+
+    expect(migrated.header.contacts).toEqual([
+      { type: "phone", value: "+1 555 0100", label: "Mobile" },
+      { type: "", value: "https://example.com", label: "Website" },
+    ]);
+  });
 });

@@ -121,6 +121,7 @@ export function planResumeImport(
     [
       { type: "email", value: doc.header.email, label: "Email" },
       { type: "location", value: doc.header.location, label: "Location" },
+      ...(doc.header.contacts ?? []),
     ].filter((contact) => contact.value.trim()),
   );
   const links = reconcileSection(

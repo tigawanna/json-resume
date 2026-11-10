@@ -6,6 +6,10 @@ export function resumeDocumentToPlainText(doc: ResumeDocumentV1): string {
   lines.push(`${h.fullName} — ${h.headline}`);
   if (h.email.trim()) lines.push(h.email);
   if (h.location.trim()) lines.push(h.location);
+  for (const contact of h.contacts ?? []) {
+    if (!contact.value.trim()) continue;
+    lines.push(contact.label.trim() ? `${contact.label}: ${contact.value}` : contact.value);
+  }
   for (const link of h.links) {
     if (link.label.trim() || link.url.trim()) {
       lines.push(`${link.label}: ${link.url}`);

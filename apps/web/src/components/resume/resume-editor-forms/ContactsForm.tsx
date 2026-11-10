@@ -1,28 +1,41 @@
-import { Button } from "@/components/ui/button";
+import { EntityPickerSheet } from "@/components/entity-picker/EntityPickerSheet";
 import { useResumeWorkspace } from "@/components/resume/resume-workspace/ResumeWorkspaceContext";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
 import { unwrapUnknownError } from "@/utils/errors";
 import { useMutation } from "@tanstack/react-query";
-import { Plus, Trash2 } from "lucide-react";
+import { Library, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
 interface ContactRow {
+  /** Library row id when the contact exists, "" for a row not saved yet. */
+  id: string;
   type: string;
   value: string;
   label: string;
 }
 
+type ContactPickerRow = { id: string; type: string; value: string; label: string };
+
 export function ContactsForm() {
-  const { resume, updateContacts } = useResumeWorkspace();
+  const { resume, updateContacts, searches } = useResumeWorkspace();
+  const searchContacts = searches?.contacts;
 
   const [contacts, setContacts] = useState<ContactRow[]>(
-    resume?.contacts.map((c) => ({ type: c.type, value: c.value, label: c.label })) ?? [],
+    resume?.contacts.map((c) => ({ id: c.id, type: c.type, value: c.value, label: c.label })) ?? [],
   );
 
-  const mutation = useMutation({
-    mutationFn: async () => updateContacts(contacts),
+  const [pickOpen, setPickOpen] = useState(false);
+
+  function savePromise(rows: ContactRow[]) {
+    return updateContacts(rows.map(({ id: _id, ...contact }) => contact));
+  }
+
+  const saveMutation = useMutation({
+    mutationFn: async (rows: ContactRow[]) => savePromise(rows),
     onSuccess() {
       toast.success("Contacts saved");
     },
@@ -34,10 +47,26 @@ export function ContactsForm() {
     meta: { invalidates: [["resumes"]] },
   });
 
+  const pickMutation = useMutation({
+    mutationFn: async ({ next, added }: { next: ContactRow[]; added: number }) => {
+      await savePromise(next);
+      return { added };
+    },
+    onSuccess({ added }) {
+      toast.success(`Added ${added} contact(s)`);
+    },
+    onError(err: unknown) {
+      toast.error("Failed to add contacts", {
+        description: unwrapUnknownError(err).message,
+      });
+    },
+    meta: { invalidates: [["resumes"]] },
+  });
+
   if (!resume) return null;
 
   function addContact() {
-    setContacts((prev) => [...prev, { type: "email", value: "", label: "" }]);
+    setContacts((prev) => [...prev, { id: "", type: "email", value: "", label: "" }]);
   }
 
   function removeContact(index: number) {
@@ -46,6 +75,17 @@ export function ContactsForm() {
 
   function updateContact(index: number, field: keyof ContactRow, value: string) {
     setContacts((prev) => prev.map((c, i) => (i === index ? { ...c, [field]: value } : c)));
+  }
+
+  function pickExisting(rows: ContactPickerRow[]) {
+    const picked = rows.map((row) => ({
+      id: row.id,
+      type: row.type,
+      value: row.value,
+      label: row.label,
+    }));
+    setContacts((prev) => [...prev, ...picked]);
+    pickMutation.mutate({ next: [...contacts, ...picked], added: picked.length });
   }
 
   return (
@@ -90,10 +130,40 @@ export function ContactsForm() {
         <Button type="button" variant="outline" size="sm" onClick={addContact}>
           <Plus className="mr-1 size-3" /> Add Contact
         </Button>
-        <Button size="sm" onClick={() => mutation.mutate()} disabled={mutation.isPending}>
+        {searchContacts && (
+          <Button variant="outline" size="sm" onClick={() => setPickOpen(true)}>
+            <Library className="mr-1 size-3" /> Pick from Existing
+          </Button>
+        )}
+        <Button
+          size="sm"
+          onClick={() => saveMutation.mutate(contacts)}
+          disabled={saveMutation.isPending}
+        >
           Save Contacts
         </Button>
       </div>
+
+      {searchContacts && (
+        <EntityPickerSheet<ContactPickerRow>
+          open={pickOpen}
+          onOpenChange={setPickOpen}
+          title="Pick from Existing Contacts"
+          description="Attach contacts from your library. Editing them updates every résumé that uses them."
+          searchPlaceholder="Search by type, value or label…"
+          multi
+          attachedIds={contacts.map((contact) => contact.id).filter(Boolean)}
+          getSearchQueryKey={(q) => [queryKeyPrefixes.resumes, "search", "contacts", q]}
+          getSearchQueryFn={(q) => () => searchContacts(q)}
+          getItem={(contact) => ({
+            id: contact.id,
+            primary: contact.value,
+            badge: contact.type || undefined,
+            secondary: contact.label || undefined,
+          })}
+          onPick={pickExisting}
+        />
+      )}
     </div>
   );
 }

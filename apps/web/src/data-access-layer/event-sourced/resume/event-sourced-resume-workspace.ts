@@ -132,8 +132,8 @@ export function createEventSourcedResumeWorkspace(
 
   function contactIds(contacts: ContactDraft[]) {
     const index = contactIndex(db, userId);
-    return contacts.map((contact) =>
-      index.resolve({ type: contact.type, value: contact.value }, () => {
+    return contacts.map((contact) => {
+      const id = index.resolve({ type: contact.type, value: contact.value }, () => {
         const base = libraryRowBase(userId);
         db.collections.resumeContact.insert({
           ...base,
@@ -143,14 +143,24 @@ export function createEventSourcedResumeWorkspace(
           searchableText: joinSearchable(contact.type, contact.value, contact.label),
         });
         return base.id;
-      }),
-    );
+      });
+      // label is not part of the identity: propagate edits to the shared library row
+      const row = db.collections.resumeContact.get(id);
+      if (row && row.label !== contact.label) {
+        db.collections.resumeContact.update(id, (draft) => {
+          draft.label = contact.label;
+          draft.searchableText = joinSearchable(contact.type, contact.value, contact.label);
+          draft.updatedAt = nowMs();
+        });
+      }
+      return id;
+    });
   }
 
   function linkIds(links: LinkDraft[]) {
     const index = linkIndex(db, userId);
-    return links.map((link) =>
-      index.resolve({ url: link.url }, () => {
+    return links.map((link) => {
+      const id = index.resolve({ url: link.url }, () => {
         const base = libraryRowBase(userId);
         db.collections.resumeLink.insert({
           ...base,
@@ -160,8 +170,19 @@ export function createEventSourcedResumeWorkspace(
           searchableText: joinSearchable(link.label, link.url),
         });
         return base.id;
-      }),
-    );
+      });
+      // label / icon are not part of the identity: propagate edits to the shared library row
+      const row = db.collections.resumeLink.get(id);
+      if (row && (row.label !== link.label || row.icon !== (link.icon ?? null))) {
+        db.collections.resumeLink.update(id, (draft) => {
+          draft.label = link.label;
+          draft.icon = link.icon ?? null;
+          draft.searchableText = joinSearchable(link.label, link.url);
+          draft.updatedAt = nowMs();
+        });
+      }
+      return id;
+    });
   }
 
   function summaryIds(text: string) {
@@ -218,6 +239,19 @@ export function createEventSourcedResumeWorkspace(
     mode: "local",
     resume: detail,
     searches: {
+      contacts: async (query) =>
+        snapshots.contacts
+          .filter((row) => matchQuery(query, row.type, row.value, row.label))
+          .map((row) => ({
+            id: row.id,
+            type: row.type,
+            value: row.value,
+            label: row.label,
+          })),
+      links: async (query) =>
+        snapshots.links
+          .filter((row) => matchQuery(query, row.label, row.url))
+          .map((row) => ({ id: row.id, label: row.label, url: row.url })),
       jobs: async (query) =>
         searchJobs(snapshots.jobs, query).map((job) => ({
           id: job.id,

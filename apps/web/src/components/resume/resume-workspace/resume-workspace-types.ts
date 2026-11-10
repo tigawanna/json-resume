@@ -74,9 +74,19 @@ export interface WorkspaceJobOption extends ResumeJobDTO {
 }
 
 /** Library lists a résumé can link existing rows into by id. */
-export type AttachableLibraryKey = "experiences" | "education" | "projects" | "talks";
+export type AttachableLibraryKey =
+  | "experiences"
+  | "education"
+  | "projects"
+  | "talks"
+  | "contacts"
+  | "links";
 
 export interface ResumeSearchAdapter {
+  contacts?: (
+    query: string,
+  ) => Promise<{ id: string; type: string; value: string; label: string }[]>;
+  links?: (query: string) => Promise<{ id: string; label: string; url: string }[]>;
   experiences?: (
     query: string,
   ) => Promise<{ id: string; company: string; role: string; startDate: string; endDate: string }[]>;

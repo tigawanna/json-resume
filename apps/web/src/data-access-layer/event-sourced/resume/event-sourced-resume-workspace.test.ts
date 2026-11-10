@@ -263,4 +263,84 @@ describe("event-sourced résumé workspace (layout writes)", () => {
     expect(db.collections.resume.toArray).toHaveLength(2);
     expect(detailOf(resumeId)?.experiences.map((row) => row.id)).toEqual(["e1"]);
   });
+
+  it("saves a phone contact once and attaches the library row to another résumé", async () => {
+    insertResume("r1");
+    insertResume("r2");
+
+    await workspace("r1").updateContacts([
+      { type: "email", value: "ada@example.com", label: "Email" },
+      { type: "phone", value: "+1 555 0100", label: "Mobile" },
+    ]);
+
+    // one library row per contact, layout points at both
+    expect(db.collections.resumeContact.toArray).toHaveLength(2);
+
+    const ws2 = workspace("r2");
+    const contactSearch = ws2.searches?.contacts;
+    if (!contactSearch) throw new Error("contacts search missing");
+    const hits = await contactSearch("");
+    const phone = hits.find((row) => row.type === "phone");
+    if (!phone) throw new Error("phone contact not in library search");
+    await ws2.attachLibraryRows("contacts", [phone.id]);
+
+    const detail = detailOf("r2");
+    expect(detail?.contacts.map((row) => row.id)).toEqual([phone.id]);
+    expect(detail?.contacts.map((row) => row.value)).toEqual(["+1 555 0100"]);
+
+    // the phone contact flows into the résumé document header
+    const doc = resumeDetailToDocument(detailOf("r1")!);
+    expect(doc.header.contacts).toEqual([{ type: "phone", value: "+1 555 0100", label: "Mobile" }]);
+  });
+
+  it("attaches an existing link from the library", async () => {
+    insertResume("r1");
+    insertResume("r2");
+
+    await workspace("r1").updateLinks([{ label: "Portfolio", url: "https://example.dev" }]);
+    expect(db.collections.resumeLink.toArray).toHaveLength(1);
+
+    const ws2 = workspace("r2");
+    const linkSearch = ws2.searches?.links;
+    if (!linkSearch) throw new Error("links search missing");
+    const hits = await linkSearch("portfolio");
+    if (!hits[0]) throw new Error("link not in library search");
+    await ws2.attachLibraryRows("links", [hits[0].id]);
+
+    expect(detailOf("r2")?.links.map((row) => row.url)).toEqual(["https://example.dev"]);
+  });
+
+  it("propagates label edits to a shared contact and link", async () => {
+    insertResume("r1");
+    insertResume("r2");
+    const ws1 = workspace("r1");
+    await ws1.updateContacts([{ type: "phone", value: "+1 555 0100", label: "Mobile" }]);
+    await ws1.updateLinks([{ label: "Portfolio", url: "https://example.dev" }]);
+
+    // a second résumé already picked both library rows
+    const ws2 = workspace("r2");
+    const contactSearch = ws2.searches?.contacts;
+    if (!contactSearch) throw new Error("contacts search missing");
+    const hits = await contactSearch("");
+    const phone = hits.find((row) => row.type === "phone");
+    if (!phone) throw new Error("phone contact not in library search");
+    await ws2.attachLibraryRows("contacts", [phone.id]);
+    const linkSearch = ws2.searches?.links;
+    if (!linkSearch) throw new Error("links search missing");
+    const linkHits = await linkSearch("example.dev");
+    if (!linkHits[0]) throw new Error("link not in library search");
+    await ws2.attachLibraryRows("links", [linkHits[0].id]);
+
+    // relabeling propagates to the same library row, no duplicate is created
+    await ws2.updateContacts([{ type: "Phone", value: "+1 555 0100", label: "Mobile line" }]);
+    await ws2.updateLinks([{ label: "Homepage", url: "https://example.dev" }]);
+
+    expect(db.collections.resumeContact.toArray).toHaveLength(1);
+    expect(db.collections.resumeLink.toArray).toHaveLength(1);
+    expect(db.collections.resumeContact.toArray[0]?.label).toBe("Mobile line");
+    expect(db.collections.resumeLink.toArray[0]?.label).toBe("Homepage");
+    // résumé 1 shows the new labels too
+    expect(detailOf("r1")?.contacts[0]?.label).toBe("Mobile line");
+    expect(detailOf("r1")?.links[0]?.label).toBe("Homepage");
+  });
 });

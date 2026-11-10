@@ -32,6 +32,11 @@ export function resumeDetailToDocument(detail: ResumeDetailDTO): ResumeDocumentV
 
   const emailContact = detail.contacts.find((c) => c.type === "email");
   const locationContact = detail.contacts.find((c) => c.type === "location");
+  /** Header contacts beyond the dedicated email / location fields — phone, address, website… */
+  const contacts = detail.contacts
+    .sort((a, b) => a.sortOrder - b.sortOrder)
+    .filter((c) => c.type !== "email" && c.type !== "location" && c.value.trim())
+    .map((c) => ({ type: c.type, value: c.value, label: c.label }));
   const templateId: TemplateId = TEMPLATE_IDS.includes(detail.templateId as TemplateId)
     ? (detail.templateId as TemplateId)
     : "classic";
@@ -46,6 +51,7 @@ export function resumeDetailToDocument(detail: ResumeDetailDTO): ResumeDocumentV
       headline: detail.headline,
       email: emailContact?.value ?? "",
       location: locationContact?.value ?? "",
+      ...(contacts.length > 0 ? { contacts } : {}),
       links: detail.links
         .sort((a, b) => a.sortOrder - b.sortOrder)
         .map((l) => ({ label: l.label, url: l.url })),
@@ -225,6 +231,20 @@ export function documentToInsertData(resumeId: string, userId: string, doc: Resu
     });
     contactItems.push({ resumeId, contactId: id, sortOrder: 1 });
   }
+  doc.header.contacts?.forEach((contact) => {
+    if (!contact.value.trim()) return;
+    const id = crypto.randomUUID();
+    const sortOrder = contacts.length;
+    contacts.push({
+      id,
+      userId,
+      type: contact.type,
+      value: contact.value,
+      label: contact.label,
+      sortOrder,
+    });
+    contactItems.push({ resumeId, contactId: id, sortOrder });
+  });
 
   const links: {
     id: string;

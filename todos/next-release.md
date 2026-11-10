@@ -9,6 +9,7 @@ next. Finished work and design notes stay in the source docs:
 - [`prompt-area-migration.md`](./prompt-area-migration.md) — composer swap (integrated)
 - [`open-router-optimizations.md`](./open-router-optimizations.md) — routing quality (pinning, `requireParameters`, output cap done)
 - [`resume-editor.md`](./resume-editor.md) — every editor item below, grouped into work batches
+- [`broken-tests-undo-and-compaction.md`](./broken-tests-undo-and-compaction.md) — 4 pre-existing failing tests (`undo_last_ai_change` ×4); sync compaction seed test fixed
 
 ---
 
@@ -103,6 +104,9 @@ open a list of things you can attach:
 
 ### 6. Ship gate
 
+- [ ] Fix the 4 pre-existing undo unit-test failures first — see
+      [`broken-tests-undo-and-compaction.md`](./broken-tests-undo-and-compaction.md)
+      (`local-undo-tools.test.ts` ×4 in `undo_last_ai_change`)
 - [ ] `pnpm` typecheck, lint and unit tests pass on the release branch
 - [ ] Merge the feature branch, deploy, smoke-test sign-in, sync, the AI chat and PDF export
 

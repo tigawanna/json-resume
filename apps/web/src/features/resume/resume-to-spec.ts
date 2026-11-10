@@ -40,12 +40,19 @@ function pushSeparator(ctx: SpecCtx, parent: string[]) {
   parent.push(id);
 }
 
+function headerContactParts(doc: ResumeDocumentV1): string[] {
+  const extra = (doc.header.contacts ?? []).map((contact) =>
+    contact.label.trim() ? `${contact.label}: ${contact.value}` : contact.value,
+  );
+  return [doc.header.email, doc.header.location, ...extra].filter((part) => part.trim());
+}
+
 function buildHeaderChildren(ctx: SpecCtx, doc: ResumeDocumentV1, centered: boolean): string[] {
   const c: string[] = [];
   if (!doc.header.enabled) return c;
   pushHeading(ctx, c, doc.header.fullName, "h1");
   pushText(ctx, c, doc.header.headline);
-  const contactParts = [doc.header.email, doc.header.location].filter(Boolean);
+  const contactParts = headerContactParts(doc);
   if (contactParts.length > 0) {
     pushText(ctx, c, contactParts.join(centered ? "  •  " : " · "));
   }

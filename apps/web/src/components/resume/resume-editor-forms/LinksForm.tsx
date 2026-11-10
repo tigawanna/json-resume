@@ -1,28 +1,46 @@
-import { Button } from "@/components/ui/button";
+import { EntityPickerSheet } from "@/components/entity-picker/EntityPickerSheet";
 import { useResumeWorkspace } from "@/components/resume/resume-workspace/ResumeWorkspaceContext";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
 import { unwrapUnknownError } from "@/utils/errors";
 import { useMutation } from "@tanstack/react-query";
-import { Plus, Trash2 } from "lucide-react";
+import { Library, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
 interface LinkRow {
+  /** Library row id when the link exists, "" for a row not saved yet. */
+  id: string;
   label: string;
   url: string;
   icon?: string;
 }
 
+type LinkPickerRow = { id: string; label: string; url: string; icon?: string | null };
+
 export function LinksForm() {
-  const { resume, updateLinks } = useResumeWorkspace();
+  const { resume, updateLinks, searches } = useResumeWorkspace();
+  const searchLinks = searches?.links;
 
   const [links, setLinks] = useState<LinkRow[]>(
-    resume?.links.map((l) => ({ label: l.label, url: l.url, icon: l.icon ?? undefined })) ?? [],
+    resume?.links.map((l) => ({
+      id: l.id,
+      label: l.label,
+      url: l.url,
+      icon: l.icon ?? undefined,
+    })) ?? [],
   );
 
-  const mutation = useMutation({
-    mutationFn: async () => updateLinks(links),
+  const [pickOpen, setPickOpen] = useState(false);
+
+  function savePromise(rows: LinkRow[]) {
+    return updateLinks(rows.map(({ id: _id, ...link }) => link));
+  }
+
+  const saveMutation = useMutation({
+    mutationFn: async (rows: LinkRow[]) => savePromise(rows),
     onSuccess() {
       toast.success("Links saved");
     },
@@ -34,10 +52,26 @@ export function LinksForm() {
     meta: { invalidates: [["resumes"]] },
   });
 
+  const pickMutation = useMutation({
+    mutationFn: async ({ next, added }: { next: LinkRow[]; added: number }) => {
+      await savePromise(next);
+      return { added };
+    },
+    onSuccess({ added }) {
+      toast.success(`Added ${added} link(s)`);
+    },
+    onError(err: unknown) {
+      toast.error("Failed to add links", {
+        description: unwrapUnknownError(err).message,
+      });
+    },
+    meta: { invalidates: [["resumes"]] },
+  });
+
   if (!resume) return null;
 
   function addLink() {
-    setLinks((prev) => [...prev, { label: "", url: "" }]);
+    setLinks((prev) => [...prev, { id: "", label: "", url: "" }]);
   }
 
   function removeLink(index: number) {
@@ -46,6 +80,17 @@ export function LinksForm() {
 
   function updateLink(index: number, field: keyof LinkRow, value: string) {
     setLinks((prev) => prev.map((l, i) => (i === index ? { ...l, [field]: value } : l)));
+  }
+
+  function pickExisting(rows: LinkPickerRow[]) {
+    const picked = rows.map((row) => ({
+      id: row.id,
+      label: row.label,
+      url: row.url,
+      icon: row.icon ?? undefined,
+    }));
+    setLinks((prev) => [...prev, ...picked]);
+    pickMutation.mutate({ next: [...links, ...picked], added: picked.length });
   }
 
   return (
@@ -90,10 +135,39 @@ export function LinksForm() {
         <Button type="button" variant="outline" size="sm" onClick={addLink}>
           <Plus className="mr-1 size-3" /> Add Link
         </Button>
-        <Button size="sm" onClick={() => mutation.mutate()} disabled={mutation.isPending}>
+        {searchLinks && (
+          <Button variant="outline" size="sm" onClick={() => setPickOpen(true)}>
+            <Library className="mr-1 size-3" /> Pick from Existing
+          </Button>
+        )}
+        <Button
+          size="sm"
+          onClick={() => saveMutation.mutate(links)}
+          disabled={saveMutation.isPending}
+        >
           Save Links
         </Button>
       </div>
+
+      {searchLinks && (
+        <EntityPickerSheet<LinkPickerRow>
+          open={pickOpen}
+          onOpenChange={setPickOpen}
+          title="Pick from Existing Links"
+          description="Attach links from your library. Editing them updates every résumé that uses them."
+          searchPlaceholder="Search by label or URL…"
+          multi
+          attachedIds={links.map((link) => link.id).filter(Boolean)}
+          getSearchQueryKey={(q) => [queryKeyPrefixes.resumes, "search", "links", q]}
+          getSearchQueryFn={(q) => () => searchLinks(q)}
+          getItem={(link) => ({
+            id: link.id,
+            primary: link.label || link.url,
+            secondary: link.label ? link.url : undefined,
+          })}
+          onPick={pickExisting}
+        />
+      )}
     </div>
   );
 }

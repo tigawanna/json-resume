@@ -3,3 +3,13 @@ As is we currntlyhave the compaction features upstream but i wat to exlore the p
 Ths sould be a compactuon event type and when a clinet recives one from upstream it's suppoed to chill from impleting it's own comacions and just replay the ones cm=oming infrom the remote . If it had already implemted the compactions and was juts awiatting to push up the events it should not push them up it shold insteda replay the incoming ones as they would probbaly result in a no op or a rare cse of an update that hadnt yet been pulled coming through ina compactde state, shoud tehre be a diff in state that this noe has but the compaction event didnt have it should send it out as a regular event and we should guard from potentialling going inot a detah loop whre clients delete each others events
 
 we shuld alos have tests with real collections and a multi device setup like we have in a test here which should test these edge casesa o of clients that go offline for too long and diverge from the rest then the recive compaction event
+
+---
+
+## Current status
+
+`compactOnClient` and `compactOnServer` are still stubs that throw "not
+implemented". The existing `sync-compaction.test.ts` only exercises the seed
+fixture; it now asserts the `compactOnWrite` coalesced shape and passes. Real
+compaction coverage is still missing. History, cause, and remaining work:
+[`broken-tests-undo-and-compaction.md`](./broken-tests-undo-and-compaction.md#2-sync-compaction-seed--resolved).

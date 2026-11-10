@@ -28,12 +28,20 @@ const linkPair = z.object({
   url: z.string(),
 });
 
+const headerContact = z.object({
+  type: z.string(),
+  value: z.string(),
+  label: z.string(),
+});
+
 const headerBlock = z.object({
   enabled: z.boolean(),
   fullName: z.string(),
   headline: z.string(),
   email: z.string(),
   location: z.string(),
+  /** Header contacts beyond email / location — phone, address, website… */
+  contacts: z.array(headerContact).optional(),
   links: z.array(linkPair),
 });
 
@@ -200,19 +208,34 @@ export function migrateResumeDocumentV1(parsed: unknown): unknown {
   const out: Record<string, unknown> = { ...o };
   out.version = 1;
 
-  const header = coerceEnabledBlock(out.header, true, (raw) => ({
-    fullName: asStr(raw.fullName),
-    headline: asStr(raw.headline),
-    email: asStr(raw.email),
-    location: asStr(raw.location),
-    links: Array.isArray(raw.links)
-      ? raw.links.flatMap((link) => {
-          if (typeof link !== "object" || link === null) return [];
-          const row = link as Record<string, unknown>;
-          return [{ label: asStr(row.label), url: asStr(row.url) }];
+  const header = coerceEnabledBlock(out.header, true, (raw) => {
+    const contacts = Array.isArray(raw.contacts)
+      ? raw.contacts.flatMap((contact) => {
+          if (typeof contact !== "object" || contact === null) return [];
+          const row = contact as Record<string, unknown>;
+          const value = asStr(row.value);
+          const type = asStr(row.type);
+          if (!value.trim()) return [];
+          // email / location stay in their dedicated header fields, never the list
+          if (type === "email" || type === "location") return [];
+          return [{ type, value, label: asStr(row.label) }];
         })
-      : [],
-  }));
+      : [];
+    return {
+      fullName: asStr(raw.fullName),
+      headline: asStr(raw.headline),
+      email: asStr(raw.email),
+      location: asStr(raw.location),
+      ...(contacts.length > 0 ? { contacts } : {}),
+      links: Array.isArray(raw.links)
+        ? raw.links.flatMap((link) => {
+            if (typeof link !== "object" || link === null) return [];
+            const row = link as Record<string, unknown>;
+            return [{ label: asStr(row.label), url: asStr(row.url) }];
+          })
+        : [],
+    };
+  });
   out.header = header;
 
   out.summary = coerceEnabledBlock(out.summary, true, (raw) => ({

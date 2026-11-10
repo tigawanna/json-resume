@@ -24,8 +24,16 @@ const base = StyleSheet.create({
   skillLine: { fontSize: 9, lineHeight: 1.4, color: "#333" },
 });
 
+function headerContactParts(doc: ResumeDocumentV1): string[] {
+  const extra = (doc.header.contacts ?? []).map((contact) =>
+    contact.label.trim() ? `${contact.label}: ${contact.value}` : contact.value,
+  );
+  return [doc.header.email, doc.header.location, ...extra].filter((part) => part.trim());
+}
+
 function ContactLine({ doc }: { doc: ResumeDocumentV1 }) {
-  const parts = [doc.header.email, doc.header.location].filter(Boolean);
+  const parts = headerContactParts(doc);
+  if (parts.length === 0) return null;
   return <Text style={base.contact}>{parts.join("  •  ")}</Text>;
 }
 
@@ -202,9 +210,7 @@ function ClassicPdf({ doc }: { doc: ResumeDocumentV1 }) {
       <View>
         <Text style={centeredName.name}>{doc.header.fullName}</Text>
         <Text style={centeredName.headline}>{doc.header.headline}</Text>
-        <Text style={centeredName.contact}>
-          {doc.header.email} • {doc.header.location}
-        </Text>
+        <Text style={centeredName.contact}>{headerContactParts(doc).join("  •  ")}</Text>
         <View style={centeredName.linkRow}>
           {doc.header.links.map((l) => (
             <Link key={l.url + l.label} src={l.url} style={base.link}>
@@ -306,9 +312,7 @@ function AccentPdf({ doc }: { doc: ResumeDocumentV1 }) {
       <View>
         <Text style={accentStyles.name}>{doc.header.fullName}</Text>
         <Text style={accentStyles.headline}>{doc.header.headline}</Text>
-        <Text style={accentStyles.contact}>
-          {doc.header.email} • {doc.header.location}
-        </Text>
+        <Text style={accentStyles.contact}>{headerContactParts(doc).join("  •  ")}</Text>
         <Links doc={doc} />
       </View>
     ) : null,
@@ -523,9 +527,7 @@ function ModernPdf({ doc }: { doc: ResumeDocumentV1 }) {
         <View style={{ marginBottom: 8 }}>
           <Text style={modernStyles.name}>{doc.header.fullName}</Text>
           <Text style={modernStyles.headline}>{doc.header.headline}</Text>
-          <Text style={modernStyles.contact}>
-            {doc.header.email} • {doc.header.location}
-          </Text>
+          <Text style={modernStyles.contact}>{headerContactParts(doc).join("  •  ")}</Text>
           <Links doc={doc} />
         </View>
       ) : null}

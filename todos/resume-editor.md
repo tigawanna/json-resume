@@ -11,6 +11,7 @@ Sources:
 - [`resume-layout.md`](./resume-layout.md) — phase 6 browser checks
 - [`event-squash.md`](./event-squash.md) — device squash browser check (events tab)
 - [`ai-tools-audit.md`](./ai-tools-audit.md) — active résumé chip (batch 1 leftover)
+- [`broken-tests-undo-and-compaction.md`](./broken-tests-undo-and-compaction.md) — pre-existing `undo_last_ai_change` regression
 - `ResumeAiMessage.tsx` — `getMessageBlocks` TODO
 
 Out of scope here (no editor code): production layout rollout, server squash on the real

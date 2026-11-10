@@ -5,23 +5,33 @@ import { openSeededLibrary } from "./open-seeded-library";
 
 let seeded: Awaited<ReturnType<typeof openSeededLibrary>>;
 
+// The seed writes 5 résumés x 16 collections x (1 insert + 20 updates).
+// `compactOnWrite` folds the unpushed chain on every update, so most of the
+// cost is SQLite I/O rather than outbox growth. 30s keeps it stable under the
+// full parallel suite while still flagging a real regression.
 beforeEach(async () => {
   seeded = await openSeededLibrary({ resumes: 5, updates: HISTORY_UPDATES });
-});
+}, 30_000);
 
 afterEach(() => seeded.close());
 
 describe("compactOnClient", () => {
-  it("seeds one résumé and an outbox event for the create and each update", () => {
+  it("seeds five résumés and folds each row's history into one pending insert", () => {
     expect(seeded.db.collections.resume.toArray).toHaveLength(5);
-    const eventsPerRow = HISTORY_UPDATES + 1;
+
     for (const row of seeded.seeded.rows) {
       const events = seeded.db.collections.outbox.toArray.filter(
         (event) => event.collectionId === row.collectionId && String(event.key) === row.id,
       );
-      expect(events).toHaveLength(eventsPerRow);
-      expect(events.filter((event) => event.type === "insert")).toHaveLength(1);
-      expect(events.filter((event) => event.type === "update")).toHaveLength(HISTORY_UPDATES);
+
+      // `compactOnWrite` (default on in event-sourced-collection) replaces the
+      // create + 20 updates with one insert carrying the newest payload.
+      expect(events).toHaveLength(1);
+      expect(events[0]).toMatchObject({
+        type: "insert",
+        compaction: true,
+        payload: { updatedAt: HISTORY_UPDATES + 1 },
+      });
     }
   });
 });
