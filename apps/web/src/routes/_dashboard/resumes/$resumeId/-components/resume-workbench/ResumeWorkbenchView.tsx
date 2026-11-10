@@ -10,20 +10,22 @@ import {
 import { cn } from "@/lib/utils";
 import { unwrapUnknownError } from "@/utils/errors";
 import { Link } from "@tanstack/react-router";
-import { ArrowLeft, Save } from "lucide-react";
-import { toast } from "sonner";
+import { Save } from "lucide-react";
 import type { ReactNode } from "react";
+import { toast } from "sonner";
 import { EventSourcedResumeAiTab } from "../../../../-ai/-components/EventSourcedResumeAiTab";
 import { ImportResumeJsonDialog } from "../ImportResumeJsonDialog";
+import { ResumeJsonTab } from "../resume-json-editor";
 import { ResumeActionsSheet } from "../ResumeActionsSheet";
 import { ResumePreviewView } from "../ResumePreviewTab";
 import { ResumePromptTab } from "../ResumePromptTab";
-import { ResumeJsonTab } from "../resume-json-editor";
 import {
   useResumeWorkbenchActions,
   useWorkbenchDocument,
   useWorkbenchTemplate,
 } from "./ResumeWorkbenchProvider";
+
+import { FaChevronLeft } from "react-icons/fa";
 
 const WORKBENCH_TABS: Array<{ value: WorkbenchTab; label: string }> = [
   { value: "edit", label: "Edit" },
@@ -104,17 +106,16 @@ export function ResumeWorkbenchView({
   return (
     <div className="flex w-full flex-col gap-6 pb-24" data-test="resume-workbench">
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          <Button asChild variant="ghost" size="sm" className="-ml-2 mb-1">
-            <Link to="/resumes">
-              <ArrowLeft className="size-4" />
-              Résumés
-            </Link>
-          </Button>
-          <h1 className="text-2xl font-bold">{resume.name}</h1>
-          {resume.headline ? (
-            <p className="text-muted-foreground mt-1 truncate text-sm">{resume.headline}</p>
-          ) : null}
+        <div className="min-w-0 flex-1 flex items-center gap-2">
+          <Link to="/resumes" className="hover:text-primary">
+            <FaChevronLeft className="size-10" />
+          </Link>
+          <div className="min-w-0 flex-1">
+            <h1 className="text-2xl font-bold">{resume.name}</h1>
+            {resume.headline ? (
+              <p className="text-muted-foreground mt-1 truncate text-sm">{resume.headline}</p>
+            ) : null}
+          </div>
         </div>
         <div className="flex shrink-0 items-center gap-2">
           <ResumeActionsSheet />
@@ -131,8 +132,6 @@ export function ResumeWorkbenchView({
           </Button>
         </div>
       </div>
-
-      <TemplatePicker selected={templateId} onSelect={pickTemplate} />
 
       <Tabs
         value={tab}
@@ -154,6 +153,9 @@ export function ResumeWorkbenchView({
         </TabsContent>
 
         <TabsContent value="preview" className="mt-4">
+          <div className="mb-4">
+            <TemplatePicker selected={templateId} onSelect={pickTemplate} />
+          </div>
           <ResumePreviewView resumeName={resume.name} selectedTemplate={templateId} doc={doc} />
         </TabsContent>
 

@@ -8,10 +8,11 @@ import { formatLocaleDateTime } from "@/utils/date-helpers";
 import { useLiveQuery } from "@tanstack/react-db";
 import { Link } from "@tanstack/react-router";
 import { History } from "lucide-react";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { collectionLabel, eventStatus, summaryOf, TYPE_STYLES } from "./event-labels";
 
-const SHOWN = 20;
+const COLLAPSED_SHOWN = 4;
+const MAX_SHOWN = 20;
 
 /**
  * This résumé's latest local events: the résumé row, rows scoped to it (sections,
@@ -28,9 +29,13 @@ export function ResumeHistory({
   onOpenFull?: () => void;
 }) {
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [showAll, setShowAll] = useState(false);
   const { data: outbox } = useLiveQuery((q) => q.from({ row: db.collections.outbox }), []);
   const { data: inbox } = useLiveQuery((q) => q.from({ row: db.collections.inbox }), []);
   const events = resumeEventHistory(db, mergeEventHistory(outbox ?? [], inbox ?? []), resumeId);
+  const shown = showAll
+    ? Math.min(events.length, MAX_SHOWN)
+    : Math.min(events.length, COLLAPSED_SHOWN);
 
   const fullLink = (
     <Link
@@ -56,10 +61,39 @@ export function ResumeHistory({
     );
   }
 
+  const hidden = events.length - shown;
+
+  let moreControl: ReactNode;
+  if (hidden <= 0) {
+    moreControl = (
+      <p className="text-[11px] text-base-content/50">
+        {events.length.toLocaleString()} event{events.length === 1 ? "" : "s"} on this device.
+      </p>
+    );
+  } else if (!showAll) {
+    const moreCount = Math.min(hidden, MAX_SHOWN - shown);
+    moreControl = (
+      <button
+        type="button"
+        className="text-xs text-base-content/60 transition-colors hover:text-base-content"
+        onClick={() => setShowAll(true)}
+        data-test="resume-history-more"
+      >
+        Show {moreCount} more · {events.length.toLocaleString()} total
+      </button>
+    );
+  } else {
+    moreControl = (
+      <p className="text-[11px] text-base-content/50">
+        Latest {shown} of {events.length.toLocaleString()} events on this device.
+      </p>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-2" data-test="resume-history">
-      <ol className="flex max-h-80 flex-col overflow-y-auto rounded-lg border border-base-300">
-        {events.slice(0, SHOWN).map((event) => {
+      <ol className="flex max-h-[40dvh] flex-col overflow-y-auto rounded-lg border border-base-300">
+        {events.slice(0, shown).map((event) => {
           const summary = summaryOf(event.payload);
           const open = expanded === event.id;
           return (
@@ -93,11 +127,7 @@ export function ResumeHistory({
           );
         })}
       </ol>
-      <p className="text-[11px] text-base-content/50">
-        {events.length > SHOWN
-          ? `Latest ${SHOWN} of ${events.length.toLocaleString()} events on this device.`
-          : `${events.length.toLocaleString()} events on this device.`}
-      </p>
+      {moreControl}
       {fullLink}
     </div>
   );

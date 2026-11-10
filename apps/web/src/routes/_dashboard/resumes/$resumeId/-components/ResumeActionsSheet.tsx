@@ -14,6 +14,7 @@ import {
   Sheet,
   SheetContent,
   SheetDescription,
+  SheetFooter,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
@@ -130,16 +131,16 @@ export function ResumeActionsSheet() {
           Actions
         </Button>
       </SheetTrigger>
-      <SheetContent side="right" className="w-full sm:max-w-md" data-test="resume-actions-sheet">
-        <SheetHeader className="pr-10">
-          <SheetTitle className="sr-only">Résumé actions</SheetTitle>
-          <div className="flex min-w-0 items-start gap-2">
-            <SheetDescription
-              data-signed-in={viewer.user?.id ? "true" : "false"}
-              className="text-muted-foreground min-w-0 text-sm leading-snug font-normal whitespace-normal data-[signed-in=true]:text-base"
-            >
-              {title}
-            </SheetDescription>
+      <SheetContent
+        side="right"
+        className="w-full gap-0 p-0 sm:max-w-md"
+        data-test="resume-actions-sheet"
+      >
+        <SheetHeader className="border-b pr-12">
+          <div className="flex min-w-0 items-center justify-between gap-2">
+            <SheetTitle className="text-xs font-medium tracking-wide text-base-content/60 uppercase">
+              Résumé actions
+            </SheetTitle>
             {viewer.user?.id ? null : (
               <Button
                 asChild
@@ -160,53 +161,59 @@ export function ResumeActionsSheet() {
               </Button>
             )}
           </div>
+          <SheetDescription className="sr-only">
+            Clone, import, export or delete “{title}”.
+          </SheetDescription>
         </SheetHeader>
 
-        <div className="flex flex-1 flex-col gap-6 overflow-y-auto px-4 pt-1 pb-10">
+        <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto px-4 pt-4">
           <section className="flex flex-col gap-2">
             <h3 className="text-xs font-medium tracking-wide text-base-content/60 uppercase">
               Copy & files
             </h3>
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="grid grid-cols-2 gap-2">
               <Button
                 variant="outline"
                 size="sm"
-                className="max-w-1/2 min-w-0 flex-[1_1_calc((100%-1rem)/3)] gap-1.5 px-2"
+                className="h-9 justify-start gap-2 px-2.5"
                 onClick={handleClone}
+                title="Clone keeps the same library entries"
                 data-test="clone-resume-btn"
               >
-                <GitFork className="size-4" />
+                <GitFork className="text-base-content/70 size-4" />
                 Clone
               </Button>
               <Button
                 variant="outline"
                 size="sm"
-                className="max-w-1/2 min-w-0 flex-[1_1_calc((100%-1rem)/3)] gap-1.5 px-2"
+                className="h-9 justify-start gap-2 px-2.5"
                 onClick={() => openDialog("import-json")}
+                title="Import replaces this résumé from JSON"
                 data-test="import-resume-json-btn"
               >
-                <FileUp className="size-4" />
+                <FileUp className="text-base-content/70 size-4" />
                 Import
               </Button>
               <Button
                 variant="outline"
                 size="sm"
-                className="max-w-1/2 min-w-0 flex-[1_1_calc((100%-1rem)/3)] gap-1.5 px-2"
+                className="h-9 justify-start gap-2 px-2.5"
                 onClick={() => void handleExportJson()}
+                title="Copy JSON puts the current document on the clipboard"
                 data-test="export-resume-json-btn"
               >
-                <ClipboardCopy className="size-4" />
+                <ClipboardCopy className="text-base-content/70 size-4" />
                 Copy JSON
               </Button>
               <Button
                 variant="outline"
                 size="sm"
-                className="max-w-1/2 min-w-0 flex-[1_1_calc((100%-1rem)/3)] gap-1.5 px-2"
+                className="h-9 justify-start gap-2 px-2.5"
                 disabled={savingPdf}
                 onClick={() => void handleSavePdf()}
                 data-test="save-resume-pdf-btn"
               >
-                <FileDown className="size-4" />
+                <FileDown className="text-base-content/70 size-4" />
                 {savingPdf ? "Saving…" : "Save PDF"}
               </Button>
               {viewer.user?.id ? (
@@ -214,57 +221,53 @@ export function ResumeActionsSheet() {
                   sourceResumeId={resumeId}
                   title={title}
                   document={resumeDocument}
-                  className="max-w-1/2 min-w-0 flex-[1_1_calc((100%-1rem)/3)] justify-center gap-1.5 px-2 text-sm"
+                  className="col-span-2 h-9 justify-start gap-2 px-2.5 text-sm"
                 />
               ) : null}
             </div>
-            <p className="text-xs text-base-content/60">
-              Clone keeps the same library entries. Import replaces this résumé from JSON. Copy JSON
-              puts the current document on the clipboard.
-            </p>
           </section>
 
-          <section className="flex flex-col gap-2">
+          <section className="mt-auto flex min-h-0 flex-col gap-2">
             <h3 className="text-xs font-medium tracking-wide text-base-content/60 uppercase">
               History
             </h3>
             <ResumeHistory db={db} resumeId={resumeId} onOpenFull={closeDialog} />
           </section>
-
-          <section className="mt-auto flex flex-col gap-2">
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button
-                  variant="destructive"
-                  className="h-10 w-full justify-center gap-2"
-                  data-test="delete-resume-btn"
-                >
-                  <Trash2 className="size-4" />
-                  Delete résumé
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent data-test="delete-resume-dialog">
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Delete “{title}”?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Removes this résumé and its choices of what to show. Experiences, projects,
-                    skills and other library entries stay for your other résumés.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction
-                    variant="destructive"
-                    onClick={() => void handleDelete()}
-                    data-test="delete-resume-confirm"
-                  >
-                    Delete
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </section>
         </div>
+
+        <SheetFooter className="border-t px-4 py-3">
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="destructive"
+                className="h-10 w-full justify-center gap-2"
+                data-test="delete-resume-btn"
+              >
+                <Trash2 className="size-4" />
+                Delete résumé
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent data-test="delete-resume-dialog">
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete “{title}”?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Removes this résumé and its choices of what to show. Experiences, projects, skills
+                  and other library entries stay for your other résumés.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  variant="destructive"
+                  onClick={() => void handleDelete()}
+                  data-test="delete-resume-confirm"
+                >
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </SheetFooter>
       </SheetContent>
     </Sheet>
   );
