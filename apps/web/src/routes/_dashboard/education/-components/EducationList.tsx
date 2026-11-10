@@ -17,16 +17,20 @@ import { GraduationCap, Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { createSortableColumns } from "@/lib/tanstack/db/sortable-columns";
+import { formatLocaleDate } from "@/utils/date-helpers";
+import { EntityViewToggle } from "../../-components/EntityViewToggle";
 import { EventSourcedListScaffold } from "../../-components/EventSourcedListScaffold";
 import { EventSourcedSortToolbar } from "../../-components/EventSourcedSortToolbar";
 import { ImportFromLegacyButton } from "../../-components/ImportFromLegacyButton";
 import { LibraryEmpty } from "../../-components/LibraryEmpty";
+import { ResponsiveEntityTable } from "../../-components/ResponsiveEntityTable";
+import { RowActionButtons } from "../../-components/RowActionButtons";
+import { TruncatedWithTooltip } from "../../-components/TruncatedWithTooltip";
 import {
   formatLibraryDateRange,
   LibraryEntityCard,
   LibraryEntityCardGrid,
 } from "../../-components/LibraryEntityCard";
-import { RowActionButtons } from "../../-components/RowActionButtons";
 import {
   listOffset,
   listOrderByRef,
@@ -43,7 +47,8 @@ const ROUTE_ID = "/_dashboard/education/" as const;
 
 export function EducationList() {
   const db = useEventSourcedDb();
-  const { page = 1, q = "", sortBy, sortDirection } = Route.useSearch();
+  const { page = 1, q = "", view, sortBy, sortDirection } = Route.useSearch();
+  const tableView = view === "table";
   const resumeFilter = useResumeFilter(ROUTE_ID);
   const libraryIds = resumeFilter.libraryIds("education");
   const [createOpen, setCreateOpen] = useState(false);
@@ -54,18 +59,21 @@ export function EducationList() {
 
   const sortDir = listSortDirection(sortDirection);
   const filters = (
-    <EventSourcedSortToolbar
-      collection={db.collections.resumeEducation}
-      sortableColumns={createSortableColumns(db.collections.resumeEducation, [
-        { value: "school", label: "School" },
-        { value: "degree", label: "Qualification" },
-        { value: "field", label: "Field" },
-        { value: "startDate", label: "Start" },
-        { value: "endDate", label: "End" },
-        { value: "updatedAt", label: "Updated" },
-      ])}
-      defaultSortBy="updatedAt"
-    />
+    <>
+      <EventSourcedSortToolbar
+        collection={db.collections.resumeEducation}
+        sortableColumns={createSortableColumns(db.collections.resumeEducation, [
+          { value: "school", label: "School" },
+          { value: "degree", label: "Qualification" },
+          { value: "field", label: "Field" },
+          { value: "startDate", label: "Start" },
+          { value: "endDate", label: "End" },
+          { value: "updatedAt", label: "Updated" },
+        ])}
+        defaultSortBy="updatedAt"
+      />
+      <EntityViewToggle dataTest="education-view-toggle" />
+    </>
   );
 
   const { data: items, isLoading } = useLiveQuery(
@@ -201,26 +209,87 @@ export function EducationList() {
       filters={filters}
       dataTest="education-list-page"
     >
-      <LibraryEntityCardGrid dataTest="education-table">
-        {items.map((row) => (
-          <LibraryEntityCard
-            key={row.id}
-            id={row.id}
-            icon={GraduationCap}
-            title={row.school}
-            subtitle={[row.degree, row.field].filter(Boolean).join(" in ")}
-            dateRange={formatLibraryDateRange(row.startDate, row.endDate)}
-            sortOrder={row.sortOrder}
-            updatedAt={row.updatedAt}
-            actions={
-              <RowActionButtons
-                onEdit={() => setEditing(row)}
-                onDelete={() => handleDelete(row.id)}
-              />
-            }
-          />
-        ))}
-      </LibraryEntityCardGrid>
+      {tableView ? (
+        <ResponsiveEntityTable
+          rows={items}
+          defaultSortBy="updatedAt"
+          tableClassName="table-fixed"
+          columns={[
+            {
+              id: "school",
+              header: "School",
+              headClassName: "w-[30%]",
+              className: "max-w-0 w-[30%]",
+              cell: (row) => (
+                <span className="block truncate font-medium">{row.school || "Untitled entry"}</span>
+              ),
+            },
+            {
+              id: "degree",
+              header: "Qualification",
+              hideOnMobile: true,
+              className: "max-w-0",
+              cell: (row) => {
+                const qualification = [row.degree, row.field].filter(Boolean).join(" in ");
+                return qualification ? (
+                  <TruncatedWithTooltip text={qualification} />
+                ) : (
+                  <span className="text-muted-foreground">—</span>
+                );
+              },
+            },
+            {
+              id: "startDate",
+              header: "Start",
+              hideOnMobile: true,
+              headClassName: "w-[12%]",
+              className: "w-[12%] whitespace-nowrap",
+              cell: (row) => (row.startDate ? formatLocaleDate(row.startDate) : "—"),
+            },
+            {
+              id: "endDate",
+              header: "End",
+              hideOnMobile: true,
+              headClassName: "w-[12%]",
+              className: "w-[12%] whitespace-nowrap",
+              cell: (row) => (row.endDate ? formatLocaleDate(row.endDate) : "—"),
+            },
+            {
+              id: "updatedAt",
+              header: "Updated",
+              headClassName: "w-[14%]",
+              className: "w-[14%] whitespace-nowrap",
+              cell: (row) => formatLocaleDate(row.updatedAt),
+            },
+          ]}
+          mobileTitle={(row) => row.school || "Untitled entry"}
+          mobileSubtitle={(row) => formatLibraryDateRange(row.startDate, row.endDate)}
+          dataTest="education-table"
+          actions={(row) => (
+            <RowActionButtons
+              onEdit={() => setEditing(row)}
+              onDelete={() => handleDelete(row.id)}
+            />
+          )}
+        />
+      ) : (
+        <LibraryEntityCardGrid dataTest="education-table">
+          {items.map((row) => (
+            <LibraryEntityCard
+              key={row.id}
+              id={row.id}
+              icon={GraduationCap}
+              title={row.school}
+              subtitle={[row.degree, row.field].filter(Boolean).join(" in ")}
+              dateRange={formatLibraryDateRange(row.startDate, row.endDate)}
+              sortOrder={row.sortOrder}
+              updatedAt={row.updatedAt}
+              onEdit={() => setEditing(row)}
+              onDelete={() => handleDelete(row.id)}
+            />
+          ))}
+        </LibraryEntityCardGrid>
+      )}
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent className="sm:max-w-lg">

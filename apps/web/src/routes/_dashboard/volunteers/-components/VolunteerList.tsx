@@ -17,16 +17,17 @@ import { Heart, Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { createSortableColumns } from "@/lib/tanstack/db/sortable-columns";
+import { formatLocaleDate } from "@/utils/date-helpers";
+import { formatLibraryDateRange } from "../../-components/LibraryEntityCard";
+import { EntityViewToggle } from "../../-components/EntityViewToggle";
 import { EventSourcedListScaffold } from "../../-components/EventSourcedListScaffold";
 import { EventSourcedSortToolbar } from "../../-components/EventSourcedSortToolbar";
 import { ImportFromLegacyButton } from "../../-components/ImportFromLegacyButton";
 import { LibraryEmpty } from "../../-components/LibraryEmpty";
-import {
-  formatLibraryDateRange,
-  LibraryEntityCard,
-  LibraryEntityCardGrid,
-} from "../../-components/LibraryEntityCard";
+import { LibraryEntityCard, LibraryEntityCardGrid } from "../../-components/LibraryEntityCard";
+import { ResponsiveEntityTable } from "../../-components/ResponsiveEntityTable";
 import { RowActionButtons } from "../../-components/RowActionButtons";
+import { TruncatedWithTooltip } from "../../-components/TruncatedWithTooltip";
 import {
   listOffset,
   listOrderByRef,
@@ -43,7 +44,8 @@ const ROUTE_ID = "/_dashboard/volunteers/" as const;
 
 export function VolunteerList() {
   const db = useEventSourcedDb();
-  const { page = 1, q = "", sortBy, sortDirection } = Route.useSearch();
+  const { page = 1, q = "", view, sortBy, sortDirection } = Route.useSearch();
+  const tableView = view === "table";
   const resumeFilter = useResumeFilter(ROUTE_ID);
   const libraryIds = resumeFilter.libraryIds("volunteers");
   const [createOpen, setCreateOpen] = useState(false);
@@ -54,17 +56,20 @@ export function VolunteerList() {
 
   const sortDir = listSortDirection(sortDirection);
   const filters = (
-    <EventSourcedSortToolbar
-      collection={db.collections.resumeVolunteer}
-      sortableColumns={createSortableColumns(db.collections.resumeVolunteer, [
-        { value: "organization", label: "Organization" },
-        { value: "role", label: "Role" },
-        { value: "startDate", label: "Start" },
-        { value: "endDate", label: "End" },
-        { value: "updatedAt", label: "Updated" },
-      ])}
-      defaultSortBy="updatedAt"
-    />
+    <>
+      <EventSourcedSortToolbar
+        collection={db.collections.resumeVolunteer}
+        sortableColumns={createSortableColumns(db.collections.resumeVolunteer, [
+          { value: "organization", label: "Organization" },
+          { value: "role", label: "Role" },
+          { value: "startDate", label: "Start" },
+          { value: "endDate", label: "End" },
+          { value: "updatedAt", label: "Updated" },
+        ])}
+        defaultSortBy="updatedAt"
+      />
+      <EntityViewToggle dataTest="volunteers-view-toggle" />
+    </>
   );
 
   const { data: items, isLoading } = useLiveQuery(
@@ -198,26 +203,85 @@ export function VolunteerList() {
       filters={filters}
       dataTest="volunteers-list-page"
     >
-      <LibraryEntityCardGrid dataTest="volunteers-table">
-        {items.map((row) => (
-          <LibraryEntityCard
-            key={row.id}
-            id={row.id}
-            icon={Heart}
-            title={row.role}
-            subtitle={row.organization}
-            dateRange={formatLibraryDateRange(row.startDate, row.endDate)}
-            sortOrder={row.sortOrder}
-            updatedAt={row.updatedAt}
-            actions={
-              <RowActionButtons
-                onEdit={() => setEditing(row)}
-                onDelete={() => handleDelete(row.id)}
-              />
-            }
-          />
-        ))}
-      </LibraryEntityCardGrid>
+      {tableView ? (
+        <ResponsiveEntityTable
+          rows={items}
+          defaultSortBy="updatedAt"
+          tableClassName="table-fixed"
+          columns={[
+            {
+              id: "role",
+              header: "Role",
+              headClassName: "w-[26%]",
+              className: "max-w-0 w-[26%]",
+              cell: (row) => (
+                <span className="block truncate font-medium">{row.role || "Untitled role"}</span>
+              ),
+            },
+            {
+              id: "organization",
+              header: "Organization",
+              headClassName: "w-[24%]",
+              className: "max-w-0 w-[24%]",
+              cell: (row) =>
+                row.organization ? (
+                  <TruncatedWithTooltip text={row.organization} />
+                ) : (
+                  <span className="text-muted-foreground">—</span>
+                ),
+            },
+            {
+              id: "startDate",
+              header: "Start",
+              hideOnMobile: true,
+              headClassName: "w-[12%]",
+              className: "w-[12%] whitespace-nowrap",
+              cell: (row) => (row.startDate ? formatLocaleDate(row.startDate) : "—"),
+            },
+            {
+              id: "endDate",
+              header: "End",
+              hideOnMobile: true,
+              headClassName: "w-[12%]",
+              className: "w-[12%] whitespace-nowrap",
+              cell: (row) => (row.endDate ? formatLocaleDate(row.endDate) : "—"),
+            },
+            {
+              id: "updatedAt",
+              header: "Updated",
+              headClassName: "w-[14%]",
+              className: "w-[14%] whitespace-nowrap",
+              cell: (row) => formatLocaleDate(row.updatedAt),
+            },
+          ]}
+          mobileTitle={(row) => row.role || "Untitled role"}
+          mobileSubtitle={(row) => row.organization}
+          dataTest="volunteers-table"
+          actions={(row) => (
+            <RowActionButtons
+              onEdit={() => setEditing(row)}
+              onDelete={() => handleDelete(row.id)}
+            />
+          )}
+        />
+      ) : (
+        <LibraryEntityCardGrid dataTest="volunteers-table">
+          {items.map((row) => (
+            <LibraryEntityCard
+              key={row.id}
+              id={row.id}
+              icon={Heart}
+              title={row.role}
+              subtitle={row.organization}
+              dateRange={formatLibraryDateRange(row.startDate, row.endDate)}
+              sortOrder={row.sortOrder}
+              updatedAt={row.updatedAt}
+              onEdit={() => setEditing(row)}
+              onDelete={() => handleDelete(row.id)}
+            />
+          ))}
+        </LibraryEntityCardGrid>
+      )}
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent className="sm:max-w-lg">

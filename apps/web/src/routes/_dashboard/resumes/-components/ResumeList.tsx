@@ -13,6 +13,7 @@ import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
 import type { Resume } from "@/data-access-layer/event-sourced/schemas";
 import { RouterPendingComponent } from "@/lib/tanstack/router/RouterPendingComponent";
 import { getResumeCardDisplayName } from "@/utils/resume-display-name";
+import { formatLocaleDate } from "@/utils/date-helpers";
 import { unwrapUnknownError } from "@/utils/errors";
 import { count, useLiveQuery } from "@tanstack/react-db";
 import { useNavigate } from "@tanstack/react-router";
@@ -22,12 +23,15 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { createSortableColumns } from "@/lib/tanstack/db/sortable-columns";
 import { cloneResume } from "@/data-access-layer/event-sourced/resume/clone-resume";
+import { EntityViewToggle } from "../../-components/EntityViewToggle";
 import { EventSourcedListScaffold } from "../../-components/EventSourcedListScaffold";
 import { EventSourcedSortToolbar } from "../../-components/EventSourcedSortToolbar";
 import { ImportFromLegacyButton } from "../../-components/ImportFromLegacyButton";
 import { LibraryEmpty } from "../../-components/LibraryEmpty";
 import { LibraryEntityCard, LibraryEntityCardGrid } from "../../-components/LibraryEntityCard";
+import { ResponsiveEntityTable } from "../../-components/ResponsiveEntityTable";
 import { RowActionButtons } from "../../-components/RowActionButtons";
+import { TruncatedWithTooltip } from "../../-components/TruncatedWithTooltip";
 import { ImportResumeJsonDialog } from "./ImportResumeJsonDialog";
 import {
   listOffset,
@@ -48,7 +52,8 @@ export function ResumeList() {
   const { viewer } = useViewer();
   const navigate = useNavigate();
   const search = Route.useSearch();
-  const { page = 1, q = "", sortBy, sortDirection } = search;
+  const { page = 1, q = "", view, sortBy, sortDirection } = search;
+  const tableView = view === "table";
   const { clearSearch } = usePageSearchQuery(ROUTE_ID);
   usePersistedListTablePrefs(db, "resumes", search);
   const [createOpen, setCreateOpen] = useState(false);
@@ -60,16 +65,19 @@ export function ResumeList() {
 
   const sortDir = listSortDirection(sortDirection);
   const filters = (
-    <EventSourcedSortToolbar
-      collection={db.collections.resume}
-      sortableColumns={createSortableColumns(db.collections.resume, [
-        { value: "name", label: "Name" },
-        { value: "headline", label: "Headline" },
-        { value: "fullName", label: "Full Name" },
-        { value: "updatedAt", label: "Updated" },
-      ])}
-      defaultSortBy="updatedAt"
-    />
+    <>
+      <EventSourcedSortToolbar
+        collection={db.collections.resume}
+        sortableColumns={createSortableColumns(db.collections.resume, [
+          { value: "name", label: "Name" },
+          { value: "headline", label: "Headline" },
+          { value: "fullName", label: "Full Name" },
+          { value: "updatedAt", label: "Updated" },
+        ])}
+        defaultSortBy="updatedAt"
+      />
+      <EntityViewToggle dataTest="resumes-view-toggle" />
+    </>
   );
 
   const { data: items, isLoading } = useLiveQuery(
@@ -229,40 +237,104 @@ export function ResumeList() {
       filters={filters}
       dataTest="resumes-list-page"
     >
-      <LibraryEntityCardGrid dataTest="resumes-table">
-        {items.map((row) => (
-          <LibraryEntityCard
-            key={row.id}
-            id={row.id}
-            icon={FileText}
-            title={getResumeCardDisplayName(row)}
-            subtitle={row.headline}
-            identity={row.fullName}
-            updatedAt={row.updatedAt}
-            onClick={() =>
-              void navigate({
-                to: "/resumes/$resumeId",
-                params: { resumeId: row.id },
-                search: { tab: "edit" },
-              })
-            }
-            actions={
-              <RowActionButtons
-                onEdit={() => setEditing(row)}
-                onDelete={() => handleDelete(row.id)}
-                onClone={() => handleClone(row.id)}
-                onNavigateToDetails={() =>
-                  void navigate({
-                    to: "/resumes/$resumeId",
-                    params: { resumeId: row.id },
-                    search: { tab: "edit" },
-                  })
-                }
-              />
-            }
-          />
-        ))}
-      </LibraryEntityCardGrid>
+      {tableView ? (
+        <ResponsiveEntityTable
+          rows={items}
+          defaultSortBy="updatedAt"
+          tableClassName="table-fixed"
+          columns={[
+            {
+              id: "name",
+              header: "Name",
+              headClassName: "w-[30%]",
+              className: "max-w-0 w-[30%]",
+              cell: (row) => (
+                <span className="block truncate font-medium">{getResumeCardDisplayName(row)}</span>
+              ),
+            },
+            {
+              id: "headline",
+              header: "Headline",
+              headClassName: "w-[24%]",
+              className: "max-w-0 w-[24%]",
+              cell: (row) =>
+                row.headline ? (
+                  <TruncatedWithTooltip text={row.headline} />
+                ) : (
+                  <span className="text-muted-foreground">—</span>
+                ),
+            },
+            {
+              id: "fullName",
+              header: "Full Name",
+              hideOnMobile: true,
+              headClassName: "w-[20%]",
+              className: "max-w-0 w-[20%]",
+              cell: (row) =>
+                row.fullName ? (
+                  <TruncatedWithTooltip text={row.fullName} />
+                ) : (
+                  <span className="text-muted-foreground">—</span>
+                ),
+            },
+            {
+              id: "updatedAt",
+              header: "Updated",
+              headClassName: "w-[14%]",
+              className: "w-[14%] whitespace-nowrap",
+              cell: (row) => formatLocaleDate(row.updatedAt),
+            },
+          ]}
+          mobileTitle={(row) => getResumeCardDisplayName(row)}
+          mobileSubtitle={(row) => row.headline}
+          dataTest="resumes-table"
+          actions={(row) => (
+            <RowActionButtons
+              onEdit={() => setEditing(row)}
+              onDelete={() => handleDelete(row.id)}
+              onClone={() => handleClone(row.id)}
+              onNavigateToDetails={() =>
+                void navigate({
+                  to: "/resumes/$resumeId",
+                  params: { resumeId: row.id },
+                  search: { tab: "edit" },
+                })
+              }
+            />
+          )}
+        />
+      ) : (
+        <LibraryEntityCardGrid dataTest="resumes-table">
+          {items.map((row) => (
+            <LibraryEntityCard
+              key={row.id}
+              id={row.id}
+              icon={FileText}
+              title={getResumeCardDisplayName(row)}
+              subtitle={row.headline}
+              identity={row.fullName}
+              updatedAt={row.updatedAt}
+              onClick={() =>
+                void navigate({
+                  to: "/resumes/$resumeId",
+                  params: { resumeId: row.id },
+                  search: { tab: "edit" },
+                })
+              }
+              onEdit={() => setEditing(row)}
+              onDelete={() => handleDelete(row.id)}
+              onClone={() => handleClone(row.id)}
+              onNavigateToDetails={() =>
+                void navigate({
+                  to: "/resumes/$resumeId",
+                  params: { resumeId: row.id },
+                  search: { tab: "edit" },
+                })
+              }
+            />
+          ))}
+        </LibraryEntityCardGrid>
+      )}
 
       {jsonDialog}
 

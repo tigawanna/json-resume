@@ -17,12 +17,16 @@ import { StickyNote, Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { createSortableColumns } from "@/lib/tanstack/db/sortable-columns";
+import { formatLocaleDate } from "@/utils/date-helpers";
+import { EntityViewToggle } from "../../-components/EntityViewToggle";
 import { EventSourcedListScaffold } from "../../-components/EventSourcedListScaffold";
 import { EventSourcedSortToolbar } from "../../-components/EventSourcedSortToolbar";
 import { ImportFromLegacyButton } from "../../-components/ImportFromLegacyButton";
 import { LibraryEmpty } from "../../-components/LibraryEmpty";
 import { LibraryEntityCard, LibraryEntityCardGrid } from "../../-components/LibraryEntityCard";
+import { ResponsiveEntityTable } from "../../-components/ResponsiveEntityTable";
 import { RowActionButtons } from "../../-components/RowActionButtons";
+import { TruncatedWithTooltip } from "../../-components/TruncatedWithTooltip";
 import {
   listOffset,
   listOrderByRef,
@@ -39,7 +43,8 @@ const ROUTE_ID = "/_dashboard/summaries/" as const;
 
 export function SummaryList() {
   const db = useEventSourcedDb();
-  const { page = 1, q = "", sortBy, sortDirection } = Route.useSearch();
+  const { page = 1, q = "", view, sortBy, sortDirection } = Route.useSearch();
+  const tableView = view === "table";
   const resumeFilter = useResumeFilter(ROUTE_ID);
   const libraryIds = resumeFilter.libraryIds("summaries");
   const [createOpen, setCreateOpen] = useState(false);
@@ -50,14 +55,17 @@ export function SummaryList() {
 
   const sortDir = listSortDirection(sortDirection);
   const filters = (
-    <EventSourcedSortToolbar
-      collection={db.collections.resumeSummary}
-      sortableColumns={createSortableColumns(db.collections.resumeSummary, [
-        { value: "text", label: "Text" },
-        { value: "updatedAt", label: "Updated" },
-      ])}
-      defaultSortBy="updatedAt"
-    />
+    <>
+      <EventSourcedSortToolbar
+        collection={db.collections.resumeSummary}
+        sortableColumns={createSortableColumns(db.collections.resumeSummary, [
+          { value: "text", label: "Text" },
+          { value: "updatedAt", label: "Updated" },
+        ])}
+        defaultSortBy="updatedAt"
+      />
+      <EntityViewToggle dataTest="summaries-view-toggle" />
+    </>
   );
 
   const { data: items, isLoading } = useLiveQuery(
@@ -171,25 +179,67 @@ export function SummaryList() {
       filters={filters}
       dataTest="summaries-list-page"
     >
-      <LibraryEntityCardGrid dataTest="summaries-table">
-        {items.map((row) => (
-          <LibraryEntityCard
-            key={row.id}
-            id={row.id}
-            icon={StickyNote}
-            title="Summary"
-            subtitle={row.text}
-            sortOrder={row.sortOrder}
-            updatedAt={row.updatedAt}
-            actions={
-              <RowActionButtons
-                onEdit={() => setEditing(row)}
-                onDelete={() => handleDelete(row.id)}
-              />
-            }
-          />
-        ))}
-      </LibraryEntityCardGrid>
+      {tableView ? (
+        <ResponsiveEntityTable
+          rows={items}
+          defaultSortBy="updatedAt"
+          tableClassName="table-fixed"
+          columns={[
+            {
+              id: "title",
+              header: "Summary",
+              headClassName: "w-[14%]",
+              className: "w-[14%] whitespace-nowrap",
+              sortable: false,
+              cell: () => <span className="font-medium">Summary</span>,
+            },
+            {
+              id: "text",
+              header: "Text",
+              sortable: false,
+              hideOnMobile: true,
+              className: "max-w-0",
+              cell: (row) =>
+                row.text ? (
+                  <TruncatedWithTooltip text={row.text} />
+                ) : (
+                  <span className="text-muted-foreground">—</span>
+                ),
+            },
+            {
+              id: "updatedAt",
+              header: "Updated",
+              headClassName: "w-[14%]",
+              className: "w-[14%] whitespace-nowrap",
+              cell: (row) => formatLocaleDate(row.updatedAt),
+            },
+          ]}
+          mobileTitle={(row) => (row.text ? row.text.slice(0, 60) : "Summary")}
+          dataTest="summaries-table"
+          actions={(row) => (
+            <RowActionButtons
+              onEdit={() => setEditing(row)}
+              onDelete={() => handleDelete(row.id)}
+            />
+          )}
+        />
+      ) : (
+        <LibraryEntityCardGrid dataTest="summaries-table">
+          {items.map((row) => (
+            <LibraryEntityCard
+              key={row.id}
+              id={row.id}
+              icon={StickyNote}
+              title="Summary"
+              subtitle={row.text}
+              sortOrder={row.sortOrder}
+              updatedAt={row.updatedAt}
+              onEdit={() => setEditing(row)}
+              onDelete={() => handleDelete(row.id)}
+            />
+          ))}
+        </LibraryEntityCardGrid>
+      )}
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent className="sm:max-w-lg">

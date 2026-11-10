@@ -12,18 +12,22 @@ import {
 import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
 import type { ResumeNote } from "@/data-access-layer/event-sourced/schemas";
 import { RouterPendingComponent } from "@/lib/tanstack/router/RouterPendingComponent";
-import { unwrapUnknownError } from "@/utils/errors";
 import { count, inArray, useLiveQuery } from "@tanstack/react-db";
 import { Notebook, Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { createSortableColumns } from "@/lib/tanstack/db/sortable-columns";
+import { formatLocaleDate } from "@/utils/date-helpers";
+import { unwrapUnknownError } from "@/utils/errors";
+import { EntityViewToggle } from "../../-components/EntityViewToggle";
 import { EventSourcedListScaffold } from "../../-components/EventSourcedListScaffold";
 import { EventSourcedSortToolbar } from "../../-components/EventSourcedSortToolbar";
 import { ImportFromLegacyButton } from "../../-components/ImportFromLegacyButton";
 import { LibraryEmpty } from "../../-components/LibraryEmpty";
 import { LibraryEntityCard, LibraryEntityCardGrid } from "../../-components/LibraryEntityCard";
+import { ResponsiveEntityTable } from "../../-components/ResponsiveEntityTable";
 import { RowActionButtons } from "../../-components/RowActionButtons";
+import { TruncatedWithTooltip } from "../../-components/TruncatedWithTooltip";
 import {
   listOffset,
   listOrderByRef,
@@ -39,7 +43,8 @@ const ROUTE_ID = "/_dashboard/notes/" as const;
 
 export function NoteList() {
   const db = useEventSourcedDb();
-  const { page = 1, q = "", sortBy, sortDirection } = Route.useSearch();
+  const { page = 1, q = "", view, sortBy, sortDirection } = Route.useSearch();
+  const tableView = view === "table";
   const resumeFilter = useResumeFilter(ROUTE_ID);
   const libraryIds = resumeFilter.libraryIds("notes");
   const [createOpen, setCreateOpen] = useState(false);
@@ -50,15 +55,18 @@ export function NoteList() {
 
   const sortDir = listSortDirection(sortDirection);
   const filters = (
-    <EventSourcedSortToolbar
-      collection={db.collections.resumeNote}
-      sortableColumns={createSortableColumns(db.collections.resumeNote, [
-        { value: "label", label: "Label" },
-        { value: "text", label: "Text" },
-        { value: "updatedAt", label: "Updated" },
-      ])}
-      defaultSortBy="updatedAt"
-    />
+    <>
+      <EventSourcedSortToolbar
+        collection={db.collections.resumeNote}
+        sortableColumns={createSortableColumns(db.collections.resumeNote, [
+          { value: "label", label: "Label" },
+          { value: "text", label: "Text" },
+          { value: "updatedAt", label: "Updated" },
+        ])}
+        defaultSortBy="updatedAt"
+      />
+      <EntityViewToggle dataTest="notes-view-toggle" />
+    </>
   );
 
   const { data: items, isLoading } = useLiveQuery(
@@ -172,25 +180,69 @@ export function NoteList() {
       filters={filters}
       dataTest="notes-list-page"
     >
-      <LibraryEntityCardGrid dataTest="notes-table">
-        {items.map((row) => (
-          <LibraryEntityCard
-            key={row.id}
-            id={row.id}
-            icon={Notebook}
-            title={row.label || "Notes"}
-            subtitle={row.text}
-            sortOrder={row.sortOrder}
-            updatedAt={row.updatedAt}
-            actions={
-              <RowActionButtons
-                onEdit={() => setEditing(row)}
-                onDelete={() => handleDelete(row.id)}
-              />
-            }
-          />
-        ))}
-      </LibraryEntityCardGrid>
+      {tableView ? (
+        <ResponsiveEntityTable
+          rows={items}
+          defaultSortBy="updatedAt"
+          tableClassName="table-fixed"
+          columns={[
+            {
+              id: "label",
+              header: "Label",
+              headClassName: "w-[24%]",
+              className: "max-w-0 w-[24%]",
+              cell: (row) => (
+                <span className="block truncate font-medium">{row.label || "Notes"}</span>
+              ),
+            },
+            {
+              id: "text",
+              header: "Text",
+              sortable: false,
+              hideOnMobile: true,
+              className: "max-w-0",
+              cell: (row) =>
+                row.text ? (
+                  <TruncatedWithTooltip text={row.text} />
+                ) : (
+                  <span className="text-muted-foreground">—</span>
+                ),
+            },
+            {
+              id: "updatedAt",
+              header: "Updated",
+              headClassName: "w-[14%]",
+              className: "w-[14%] whitespace-nowrap",
+              cell: (row) => formatLocaleDate(row.updatedAt),
+            },
+          ]}
+          mobileTitle={(row) => row.label || "Notes"}
+          mobileSubtitle={(row) => row.text}
+          dataTest="notes-table"
+          actions={(row) => (
+            <RowActionButtons
+              onEdit={() => setEditing(row)}
+              onDelete={() => handleDelete(row.id)}
+            />
+          )}
+        />
+      ) : (
+        <LibraryEntityCardGrid dataTest="notes-table">
+          {items.map((row) => (
+            <LibraryEntityCard
+              key={row.id}
+              id={row.id}
+              icon={Notebook}
+              title={row.label || "Notes"}
+              subtitle={row.text}
+              sortOrder={row.sortOrder}
+              updatedAt={row.updatedAt}
+              onEdit={() => setEditing(row)}
+              onDelete={() => handleDelete(row.id)}
+            />
+          ))}
+        </LibraryEntityCardGrid>
+      )}
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent className="sm:max-w-lg">

@@ -17,12 +17,16 @@ import { FolderKanban, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { createSortableColumns } from "@/lib/tanstack/db/sortable-columns";
+import { formatLocaleDate } from "@/utils/date-helpers";
+import { EntityViewToggle } from "../../-components/EntityViewToggle";
 import { EventSourcedListScaffold } from "../../-components/EventSourcedListScaffold";
 import { EventSourcedSortToolbar } from "../../-components/EventSourcedSortToolbar";
 import { ImportFromLegacyButton } from "../../-components/ImportFromLegacyButton";
 import { LibraryEmpty } from "../../-components/LibraryEmpty";
 import { LibraryEntityCard, LibraryEntityCardGrid } from "../../-components/LibraryEntityCard";
+import { ResponsiveEntityTable } from "../../-components/ResponsiveEntityTable";
 import { RowActionButtons } from "../../-components/RowActionButtons";
+import { TruncatedWithTooltip } from "../../-components/TruncatedWithTooltip";
 import {
   listOffset,
   listOrderByRef,
@@ -59,7 +63,8 @@ export function ProjectList() {
     adoptSavedProjects(db);
   }, [db]);
 
-  const { page = 1, q = "", sortBy, sortDirection } = Route.useSearch();
+  const { page = 1, q = "", view, sortBy, sortDirection } = Route.useSearch();
+  const tableView = view === "table";
   const resumeFilter = useResumeFilter(ROUTE_ID);
   const libraryIds = resumeFilter.libraryIds("projects");
   const [createOpen, setCreateOpen] = useState(false);
@@ -70,16 +75,19 @@ export function ProjectList() {
 
   const sortDir = listSortDirection(sortDirection);
   const filters = (
-    <EventSourcedSortToolbar
-      collection={db.collections.resumeProject}
-      sortableColumns={createSortableColumns(db.collections.resumeProject, [
-        { value: "name", label: "Name" },
-        { value: "description", label: "Description" },
-        { value: "tech", label: "Tech" },
-        { value: "updatedAt", label: "Updated" },
-      ])}
-      defaultSortBy="updatedAt"
-    />
+    <>
+      <EventSourcedSortToolbar
+        collection={db.collections.resumeProject}
+        sortableColumns={createSortableColumns(db.collections.resumeProject, [
+          { value: "name", label: "Name" },
+          { value: "description", label: "Description" },
+          { value: "tech", label: "Tech" },
+          { value: "updatedAt", label: "Updated" },
+        ])}
+        defaultSortBy="updatedAt"
+      />
+      <EntityViewToggle dataTest="resume-projects-view-toggle" />
+    </>
   );
 
   const { data: items, isLoading } = useLiveQuery(
@@ -213,29 +221,88 @@ export function ProjectList() {
       filters={filters}
       dataTest="resume-projects-list-page"
     >
-      <LibraryEntityCardGrid dataTest="resume-projects-table">
-        {items.map((row) => {
-          const tags = parseTechTags(row.tech);
-          return (
-            <LibraryEntityCard
-              key={row.id}
-              id={row.id}
-              icon={FolderKanban}
-              title={row.name}
-              subtitle={row.description}
-              body={tags.length > 0 ? tags.join(" · ") : undefined}
-              sortOrder={row.sortOrder}
-              updatedAt={row.updatedAt}
-              actions={
-                <RowActionButtons
-                  onEdit={() => setEditing(row)}
-                  onDelete={() => handleDelete(row.id)}
-                />
-              }
+      {tableView ? (
+        <ResponsiveEntityTable
+          rows={items}
+          defaultSortBy="updatedAt"
+          tableClassName="table-fixed"
+          columns={[
+            {
+              id: "name",
+              header: "Name",
+              headClassName: "w-[30%]",
+              className: "max-w-0 w-[30%]",
+              cell: (row) => (
+                <span className="block truncate font-medium">{row.name || "Untitled project"}</span>
+              ),
+            },
+            {
+              id: "description",
+              header: "Description",
+              sortable: false,
+              hideOnMobile: true,
+              className: "max-w-0",
+              cell: (row) =>
+                row.description ? (
+                  <TruncatedWithTooltip text={row.description} />
+                ) : (
+                  <span className="text-muted-foreground">—</span>
+                ),
+            },
+            {
+              id: "tech",
+              header: "Tech",
+              sortable: false,
+              hideOnMobile: true,
+              className: "max-w-0",
+              cell: (row) => {
+                const tags = parseTechTags(row.tech);
+                return tags.length > 0 ? (
+                  <TruncatedWithTooltip text={tags.join(" · ")} />
+                ) : (
+                  <span className="text-muted-foreground">—</span>
+                );
+              },
+            },
+            {
+              id: "updatedAt",
+              header: "Updated",
+              headClassName: "w-[14%]",
+              className: "w-[14%] whitespace-nowrap",
+              cell: (row) => formatLocaleDate(row.updatedAt),
+            },
+          ]}
+          mobileTitle={(row) => row.name || "Untitled project"}
+          mobileSubtitle={(row) => row.description}
+          dataTest="resume-projects-table"
+          actions={(row) => (
+            <RowActionButtons
+              onEdit={() => setEditing(row)}
+              onDelete={() => handleDelete(row.id)}
             />
-          );
-        })}
-      </LibraryEntityCardGrid>
+          )}
+        />
+      ) : (
+        <LibraryEntityCardGrid dataTest="resume-projects-table">
+          {items.map((row) => {
+            const tags = parseTechTags(row.tech);
+            return (
+              <LibraryEntityCard
+                key={row.id}
+                id={row.id}
+                icon={FolderKanban}
+                title={row.name}
+                subtitle={row.description}
+                body={tags.length > 0 ? tags.join(" · ") : undefined}
+                sortOrder={row.sortOrder}
+                updatedAt={row.updatedAt}
+                onEdit={() => setEditing(row)}
+                onDelete={() => handleDelete(row.id)}
+              />
+            );
+          })}
+        </LibraryEntityCardGrid>
+      )}
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent className="sm:max-w-lg">

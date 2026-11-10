@@ -17,12 +17,16 @@ import { Globe, Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { createSortableColumns } from "@/lib/tanstack/db/sortable-columns";
+import { formatLocaleDate } from "@/utils/date-helpers";
+import { EntityViewToggle } from "../../-components/EntityViewToggle";
 import { EventSourcedListScaffold } from "../../-components/EventSourcedListScaffold";
 import { EventSourcedSortToolbar } from "../../-components/EventSourcedSortToolbar";
 import { ImportFromLegacyButton } from "../../-components/ImportFromLegacyButton";
 import { LibraryEmpty } from "../../-components/LibraryEmpty";
 import { LibraryEntityCard, LibraryEntityCardGrid } from "../../-components/LibraryEntityCard";
+import { ResponsiveEntityTable } from "../../-components/ResponsiveEntityTable";
 import { RowActionButtons } from "../../-components/RowActionButtons";
+import { TruncatedWithTooltip } from "../../-components/TruncatedWithTooltip";
 import {
   listOffset,
   listOrderByRef,
@@ -39,7 +43,8 @@ const ROUTE_ID = "/_dashboard/languages/" as const;
 
 export function LanguageList() {
   const db = useEventSourcedDb();
-  const { page = 1, q = "", sortBy, sortDirection } = Route.useSearch();
+  const { page = 1, q = "", view, sortBy, sortDirection } = Route.useSearch();
+  const tableView = view === "table";
   const resumeFilter = useResumeFilter(ROUTE_ID);
   const libraryIds = resumeFilter.libraryIds("languages");
   const [createOpen, setCreateOpen] = useState(false);
@@ -50,15 +55,18 @@ export function LanguageList() {
 
   const sortDir = listSortDirection(sortDirection);
   const filters = (
-    <EventSourcedSortToolbar
-      collection={db.collections.resumeLanguage}
-      sortableColumns={createSortableColumns(db.collections.resumeLanguage, [
-        { value: "name", label: "Name" },
-        { value: "proficiency", label: "Proficiency" },
-        { value: "updatedAt", label: "Updated" },
-      ])}
-      defaultSortBy="updatedAt"
-    />
+    <>
+      <EventSourcedSortToolbar
+        collection={db.collections.resumeLanguage}
+        sortableColumns={createSortableColumns(db.collections.resumeLanguage, [
+          { value: "name", label: "Name" },
+          { value: "proficiency", label: "Proficiency" },
+          { value: "updatedAt", label: "Updated" },
+        ])}
+        defaultSortBy="updatedAt"
+      />
+      <EntityViewToggle dataTest="languages-view-toggle" />
+    </>
   );
 
   const { data: items, isLoading } = useLiveQuery(
@@ -172,25 +180,70 @@ export function LanguageList() {
       filters={filters}
       dataTest="languages-list-page"
     >
-      <LibraryEntityCardGrid dataTest="languages-table">
-        {items.map((row) => (
-          <LibraryEntityCard
-            key={row.id}
-            id={row.id}
-            icon={Globe}
-            title={row.name}
-            subtitle={row.proficiency}
-            sortOrder={row.sortOrder}
-            updatedAt={row.updatedAt}
-            actions={
-              <RowActionButtons
-                onEdit={() => setEditing(row)}
-                onDelete={() => handleDelete(row.id)}
-              />
-            }
-          />
-        ))}
-      </LibraryEntityCardGrid>
+      {tableView ? (
+        <ResponsiveEntityTable
+          rows={items}
+          defaultSortBy="updatedAt"
+          tableClassName="table-fixed"
+          columns={[
+            {
+              id: "name",
+              header: "Name",
+              headClassName: "w-[30%]",
+              className: "max-w-0 w-[30%]",
+              cell: (row) => (
+                <span className="block truncate font-medium">
+                  {row.name || "Untitled language"}
+                </span>
+              ),
+            },
+            {
+              id: "proficiency",
+              header: "Proficiency",
+              headClassName: "w-[24%]",
+              className: "max-w-0 w-[24%]",
+              cell: (row) =>
+                row.proficiency ? (
+                  <TruncatedWithTooltip text={row.proficiency} />
+                ) : (
+                  <span className="text-muted-foreground">—</span>
+                ),
+            },
+            {
+              id: "updatedAt",
+              header: "Updated",
+              headClassName: "w-[14%]",
+              className: "w-[14%] whitespace-nowrap",
+              cell: (row) => formatLocaleDate(row.updatedAt),
+            },
+          ]}
+          mobileTitle={(row) => row.name || "Untitled language"}
+          mobileSubtitle={(row) => row.proficiency}
+          dataTest="languages-table"
+          actions={(row) => (
+            <RowActionButtons
+              onEdit={() => setEditing(row)}
+              onDelete={() => handleDelete(row.id)}
+            />
+          )}
+        />
+      ) : (
+        <LibraryEntityCardGrid dataTest="languages-table">
+          {items.map((row) => (
+            <LibraryEntityCard
+              key={row.id}
+              id={row.id}
+              icon={Globe}
+              title={row.name}
+              subtitle={row.proficiency}
+              sortOrder={row.sortOrder}
+              updatedAt={row.updatedAt}
+              onEdit={() => setEditing(row)}
+              onDelete={() => handleDelete(row.id)}
+            />
+          ))}
+        </LibraryEntityCardGrid>
+      )}
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent className="sm:max-w-lg">

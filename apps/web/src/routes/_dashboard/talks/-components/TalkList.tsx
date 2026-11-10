@@ -16,12 +16,17 @@ import { count, inArray, useLiveQuery } from "@tanstack/react-db";
 import { Mic, Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { createSortableColumns } from "@/lib/tanstack/db/sortable-columns";
+import { formatLocaleDate } from "@/utils/date-helpers";
 import { EventSourcedListScaffold } from "../../-components/EventSourcedListScaffold";
+import { EntityViewToggle } from "../../-components/EntityViewToggle";
 import { EventSourcedSortToolbar } from "../../-components/EventSourcedSortToolbar";
 import { ImportFromLegacyButton } from "../../-components/ImportFromLegacyButton";
 import { LibraryEmpty } from "../../-components/LibraryEmpty";
 import { LibraryEntityCard, LibraryEntityCardGrid } from "../../-components/LibraryEntityCard";
+import { ResponsiveEntityTable } from "../../-components/ResponsiveEntityTable";
 import { RowActionButtons } from "../../-components/RowActionButtons";
+import { TruncatedWithTooltip } from "../../-components/TruncatedWithTooltip";
 import {
   listOffset,
   listOrderByRef,
@@ -29,7 +34,6 @@ import {
   orIlike,
   totalPagesFromCount,
 } from "../../-utils/list-query";
-import { createSortableColumns } from "@/lib/tanstack/db/sortable-columns";
 import { unwrapUnknownError } from "@/utils/errors";
 import { parseTalkLinks } from "../-utils/talk-links";
 import { Route } from "..";
@@ -40,7 +44,8 @@ const ROUTE_ID = "/_dashboard/talks/" as const;
 
 export function TalkList() {
   const db = useEventSourcedDb();
-  const { page = 1, q = "", sortBy, sortDirection } = Route.useSearch();
+  const { page = 1, q = "", view, sortBy, sortDirection } = Route.useSearch();
+  const tableView = view === "table";
   const resumeFilter = useResumeFilter(ROUTE_ID);
   const libraryIds = resumeFilter.libraryIds("talks");
   const [createOpen, setCreateOpen] = useState(false);
@@ -50,17 +55,20 @@ export function TalkList() {
   const offset = listOffset(page);
   const sortDir = listSortDirection(sortDirection);
   const filters = (
-    <EventSourcedSortToolbar
-      collection={db.collections.resumeTalk}
-      sortableColumns={createSortableColumns(db.collections.resumeTalk, [
-        { value: "title", label: "Title" },
-        { value: "event", label: "Event" },
-        { value: "date", label: "Date" },
-        { value: "description", label: "Description" },
-        { value: "updatedAt", label: "Updated" },
-      ])}
-      defaultSortBy="updatedAt"
-    />
+    <>
+      <EventSourcedSortToolbar
+        collection={db.collections.resumeTalk}
+        sortableColumns={createSortableColumns(db.collections.resumeTalk, [
+          { value: "title", label: "Title" },
+          { value: "event", label: "Event" },
+          { value: "date", label: "Date" },
+          { value: "description", label: "Description" },
+          { value: "updatedAt", label: "Updated" },
+        ])}
+        defaultSortBy="updatedAt"
+      />
+      <EntityViewToggle dataTest="talks-view-toggle" />
+    </>
   );
 
   const { data: items, isLoading } = useLiveQuery(
@@ -178,39 +186,108 @@ export function TalkList() {
       filters={filters}
       dataTest="talks-list-page"
     >
-      <LibraryEntityCardGrid dataTest="talks-table">
-        {items.map((row) => {
-          const links = parseTalkLinks(row.links);
-          return (
-            <LibraryEntityCard
-              key={row.id}
-              id={row.id}
-              icon={Mic}
-              title={row.title}
-              subtitle={row.event}
-              dateRange={row.date}
-              body={
-                row.description || links.length > 0 ? (
-                  <>
-                    {row.description ? <p className="line-clamp-2">{row.description}</p> : null}
-                    {links.length > 0 ? (
-                      <p className="mt-1 truncate">{links.map((link) => link.label).join(" · ")}</p>
-                    ) : null}
-                  </>
-                ) : undefined
-              }
-              sortOrder={row.sortOrder}
-              updatedAt={row.updatedAt}
-              actions={
-                <RowActionButtons
-                  onEdit={() => setEditing(row)}
-                  onDelete={() => handleDelete(row.id)}
-                />
-              }
+      {tableView ? (
+        <ResponsiveEntityTable
+          rows={items}
+          defaultSortBy="updatedAt"
+          tableClassName="table-fixed"
+          columns={[
+            {
+              id: "title",
+              header: "Title",
+              headClassName: "w-[26%]",
+              className: "max-w-0 w-[26%]",
+              cell: (row) => (
+                <span className="block truncate font-medium">{row.title || "Untitled talk"}</span>
+              ),
+            },
+            {
+              id: "event",
+              header: "Event",
+              headClassName: "w-[20%]",
+              className: "max-w-0 w-[20%]",
+              cell: (row) =>
+                row.event ? (
+                  <TruncatedWithTooltip text={row.event} />
+                ) : (
+                  <span className="text-muted-foreground">—</span>
+                ),
+            },
+            {
+              id: "date",
+              header: "Date",
+              hideOnMobile: true,
+              headClassName: "w-[12%]",
+              className: "w-[12%] whitespace-nowrap",
+              cell: (row) => (row.date ? formatLocaleDate(row.date) : "—"),
+            },
+            {
+              id: "description",
+              header: "Description",
+              sortable: false,
+              hideOnMobile: true,
+              className: "max-w-0",
+              cell: (row) => {
+                const links = parseTalkLinks(row.links);
+                const text = row.description || links.map((link) => link.label).join(" · ");
+                return text ? (
+                  <TruncatedWithTooltip text={text} />
+                ) : (
+                  <span className="text-muted-foreground">—</span>
+                );
+              },
+            },
+            {
+              id: "updatedAt",
+              header: "Updated",
+              headClassName: "w-[14%]",
+              className: "w-[14%] whitespace-nowrap",
+              cell: (row) => formatLocaleDate(row.updatedAt),
+            },
+          ]}
+          mobileTitle={(row) => row.title || "Untitled talk"}
+          mobileSubtitle={(row) => row.event}
+          dataTest="talks-table"
+          actions={(row) => (
+            <RowActionButtons
+              onEdit={() => setEditing(row)}
+              onDelete={() => handleDelete(row.id)}
             />
-          );
-        })}
-      </LibraryEntityCardGrid>
+          )}
+        />
+      ) : (
+        <LibraryEntityCardGrid dataTest="talks-table">
+          {items.map((row) => {
+            const links = parseTalkLinks(row.links);
+            return (
+              <LibraryEntityCard
+                key={row.id}
+                id={row.id}
+                icon={Mic}
+                title={row.title}
+                subtitle={row.event}
+                dateRange={row.date}
+                body={
+                  row.description || links.length > 0 ? (
+                    <>
+                      {row.description ? <p className="line-clamp-2">{row.description}</p> : null}
+                      {links.length > 0 ? (
+                        <p className="mt-1 truncate">
+                          {links.map((link) => link.label).join(" · ")}
+                        </p>
+                      ) : null}
+                    </>
+                  ) : undefined
+                }
+                sortOrder={row.sortOrder}
+                updatedAt={row.updatedAt}
+                onEdit={() => setEditing(row)}
+                onDelete={() => handleDelete(row.id)}
+              />
+            );
+          })}
+        </LibraryEntityCardGrid>
+      )}
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">

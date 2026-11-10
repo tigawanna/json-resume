@@ -50,7 +50,8 @@ export async function expectLibraryCrud(page: Page, route: LibraryRoute) {
   await reloadList(page, route);
   await expect(card(page, route, route.createdText)).toBeVisible();
 
-  await card(page, route, route.createdText).getByTestId("row-edit-btn").click();
+  await card(page, route, route.createdText).getByTestId("row-actions-btn").click();
+  await page.getByTestId("row-edit-btn").click();
   const editDialog = page.getByRole("dialog");
   await route.fillEdit(editDialog);
   await editDialog.getByRole("button", { name: "Save" }).click();
@@ -62,7 +63,8 @@ export async function expectLibraryCrud(page: Page, route: LibraryRoute) {
   const updated = card(page, route, route.updatedText);
   await expect(updated).toBeVisible();
 
-  await updated.getByTestId("row-delete-btn").click();
+  await updated.getByTestId("row-actions-btn").click();
+  await page.getByTestId("row-delete-btn").click();
   await expectToast(page, `${route.noun} deleted`);
   await expect(updated).toBeHidden();
 

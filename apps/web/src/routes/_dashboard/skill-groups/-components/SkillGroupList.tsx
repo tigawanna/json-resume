@@ -19,12 +19,16 @@ import { Plus, Wrench } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { createSortableColumns } from "@/lib/tanstack/db/sortable-columns";
+import { formatLocaleDate } from "@/utils/date-helpers";
+import { EntityViewToggle } from "../../-components/EntityViewToggle";
 import { EventSourcedListScaffold } from "../../-components/EventSourcedListScaffold";
 import { EventSourcedSortToolbar } from "../../-components/EventSourcedSortToolbar";
 import { ImportFromLegacyButton } from "../../-components/ImportFromLegacyButton";
 import { LibraryEmpty } from "../../-components/LibraryEmpty";
 import { LibraryEntityCard, LibraryEntityCardGrid } from "../../-components/LibraryEntityCard";
+import { ResponsiveEntityTable } from "../../-components/ResponsiveEntityTable";
 import { RowActionButtons } from "../../-components/RowActionButtons";
+import { TruncatedWithTooltip } from "../../-components/TruncatedWithTooltip";
 import {
   listOffset,
   listOrderByRef,
@@ -42,7 +46,8 @@ type SkillGroupRow = ResumeSkillGroup & { skills: ResumeSkill[] };
 
 export function SkillGroupList() {
   const db = useEventSourcedDb();
-  const { page = 1, q = "", sortBy, sortDirection } = Route.useSearch();
+  const { page = 1, q = "", view, sortBy, sortDirection } = Route.useSearch();
+  const tableView = view === "table";
   const resumeFilter = useResumeFilter(ROUTE_ID);
   const libraryIds = resumeFilter.libraryIds("skillGroups");
   const [createOpen, setCreateOpen] = useState(false);
@@ -53,14 +58,17 @@ export function SkillGroupList() {
 
   const sortDir = listSortDirection(sortDirection);
   const filters = (
-    <EventSourcedSortToolbar
-      collection={db.collections.resumeSkillGroup}
-      sortableColumns={createSortableColumns(db.collections.resumeSkillGroup, [
-        { value: "name", label: "Name" },
-        { value: "updatedAt", label: "Updated" },
-      ])}
-      defaultSortBy="updatedAt"
-    />
+    <>
+      <EventSourcedSortToolbar
+        collection={db.collections.resumeSkillGroup}
+        sortableColumns={createSortableColumns(db.collections.resumeSkillGroup, [
+          { value: "name", label: "Name" },
+          { value: "updatedAt", label: "Updated" },
+        ])}
+        defaultSortBy="updatedAt"
+      />
+      <EntityViewToggle dataTest="skill-groups-view-toggle" />
+    </>
   );
 
   const { data: groups, isLoading } = useLiveQuery(
@@ -186,28 +194,86 @@ export function SkillGroupList() {
       filters={filters}
       dataTest="skill-groups-list-page"
     >
-      <LibraryEntityCardGrid dataTest="skill-groups-table">
-        {items.map((row) => (
-          <LibraryEntityCard
-            key={row.id}
-            id={row.id}
-            icon={Wrench}
-            title={row.name}
-            subtitle={
-              row.skills.length > 0 ? row.skills.map((skill) => skill.name).join(", ") : undefined
-            }
-            body={`${row.skills.length} skill${row.skills.length === 1 ? "" : "s"}`}
-            sortOrder={row.sortOrder}
-            updatedAt={row.updatedAt}
-            actions={
-              <RowActionButtons
-                onEdit={() => setEditing(row)}
-                onDelete={() => handleDelete(row.id)}
-              />
-            }
-          />
-        ))}
-      </LibraryEntityCardGrid>
+      {tableView ? (
+        <ResponsiveEntityTable
+          rows={items}
+          defaultSortBy="updatedAt"
+          tableClassName="table-fixed"
+          columns={[
+            {
+              id: "name",
+              header: "Name",
+              headClassName: "w-[30%]",
+              className: "max-w-0 w-[30%]",
+              cell: (row) => (
+                <span className="block truncate font-medium">{row.name || "Untitled group"}</span>
+              ),
+            },
+            {
+              id: "skills",
+              header: "Skills",
+              sortable: false,
+              hideOnMobile: true,
+              className: "max-w-0",
+              cell: (row) => {
+                const joined =
+                  row.skills.length > 0 ? row.skills.map((skill) => skill.name).join(", ") : "";
+                return joined ? (
+                  <TruncatedWithTooltip text={joined} />
+                ) : (
+                  <span className="text-muted-foreground">—</span>
+                );
+              },
+            },
+            {
+              id: "count",
+              header: "Skills",
+              sortable: false,
+              hideOnMobile: true,
+              headClassName: "w-[10%]",
+              className: "w-[10%] whitespace-nowrap",
+              cell: (row) => `${row.skills.length}`,
+            },
+            {
+              id: "updatedAt",
+              header: "Updated",
+              headClassName: "w-[14%]",
+              className: "w-[14%] whitespace-nowrap",
+              cell: (row) => formatLocaleDate(row.updatedAt),
+            },
+          ]}
+          mobileTitle={(row) => row.name || "Untitled group"}
+          mobileSubtitle={(row) =>
+            `${row.skills.length} skill${row.skills.length === 1 ? "" : "s"}`
+          }
+          dataTest="skill-groups-table"
+          actions={(row) => (
+            <RowActionButtons
+              onEdit={() => setEditing(row)}
+              onDelete={() => handleDelete(row.id)}
+            />
+          )}
+        />
+      ) : (
+        <LibraryEntityCardGrid dataTest="skill-groups-table">
+          {items.map((row) => (
+            <LibraryEntityCard
+              key={row.id}
+              id={row.id}
+              icon={Wrench}
+              title={row.name}
+              subtitle={
+                row.skills.length > 0 ? row.skills.map((skill) => skill.name).join(", ") : undefined
+              }
+              body={`${row.skills.length} skill${row.skills.length === 1 ? "" : "s"}`}
+              sortOrder={row.sortOrder}
+              updatedAt={row.updatedAt}
+              onEdit={() => setEditing(row)}
+              onDelete={() => handleDelete(row.id)}
+            />
+          ))}
+        </LibraryEntityCardGrid>
+      )}
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent className="sm:max-w-lg">
