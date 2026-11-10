@@ -11,7 +11,7 @@ The current implementation exposes these read-only, Drizzle-backed tools through
 - `list_jobs` (search/paging, with the résumés targeting each job)
 - `get_job` (full posting text; by `jobId`, or by `resumeId` remotely)
 
-Résumé documents are assembled from each résumé's `layout` column (see `todos/resume-layout.md`). There are no server write tools: résumé edits happen in the browser's local collections and sync to the server as events, so a server-side write would bypass the event log.
+Résumé documents are assembled from each résumé's `layout` column (see `todos/resume-editor.md`). There are no server write tools: résumé edits happen in the browser's local collections and sync to the server as events, so a server-side write would bypass the event log.
 
 Do not duplicate the query logic for future work. Add thin adapters that validate input, authenticate the caller, and call the functions in `resume-tools.server.ts`, or go through the typed server-side oRPC client when you already have a trusted user id.
 

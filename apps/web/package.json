@@ -30,6 +30,7 @@
     "@json-render/react": "^0.21.0",
     "@json-render/shadcn": "^0.21.0",
     "@libsql/client": "^0.17.2",
+    "@lucasmarkes/hairline": "^0.5.1",
     "@orpc/client": "^1.16.2",
     "@orpc/openapi": "^1.16.2",
     "@orpc/server": "^1.16.2",
