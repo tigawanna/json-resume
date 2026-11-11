@@ -76,9 +76,18 @@ export const COMPOSE_FEATURES = [
 ] as const;
 
 export const WARDROBE_ROLES = [
-  { name: "AI engineer", picks: "Summary · account service · Playwright · forms" },
-  { name: "CRM developer", picks: "Summary · account service · Jest · forms" },
-  { name: "Platform engineer", picks: "Summary · shared forms · release checks · talks" },
+  {
+    name: "Backend-heavy",
+    picks: "Node · Postgres · AWS Lambda/SQS · event-driven · API design",
+  },
+  {
+    name: "Mobile-heavy",
+    picks: "React Native · Capacitor · offline-first · push · native bridges",
+  },
+  {
+    name: "Frontend + DevOps",
+    picks: "React/TypeScript · design systems · Vite · GitHub Actions · CDN/caching · Sentry",
+  },
 ] as const;
 
 export const CATALOG_GROUPS = [
@@ -145,19 +154,19 @@ export const PRICING_TIERS = [
     cta: "Join the waitlist",
     featured: false,
   },
-  {
-    name: "Team",
-    price: "Later",
-    note: "For cohorts and bootcamps",
-    features: [
-      "Shared libraries (future)",
-      "Reviewer links (future)",
-      "Bulk export (future)",
-      "Priority support (future)",
-    ],
-    cta: "Tell us you are interested",
-    featured: false,
-  },
+  //   {
+  //     name: "Team",
+  //     price: "Later",
+  //     note: "For cohorts and bootcamps",
+  //     features: [
+  //       "Shared libraries (future)",
+  //       "Reviewer links (future)",
+  //       "Bulk export (future)",
+  //       "Priority support (future)",
+  //     ],
+  //     cta: "Tell us you are interested",
+  //     featured: false,
+  //   },
 ] as const;
 
 export const FAQ_ITEMS = [
@@ -174,7 +183,7 @@ export const FAQ_ITEMS = [
   {
     question: "How does the LLM tailoring work?",
     answer:
-      "You attach the résumé parts and a job description, then the assistant returns improved JSON. The app validates it and shows a diff before anything is saved. You bring your own key, and you can set a usage cap in case it leaks.",
+      "You paste in a job description. The agent captures and saves it, then looks for the closest past resume to fork from and makes a clone of it. Next, it reviews your bullets, past skills, projects, and Q&A to figure out the best way to adapt the current resume. Finally, you get a preview that you can download or keep iterating on, including answers to specific questions on the application site that may overlap with answers you gave in the past, or even a cover letter.",
   },
   {
     question: "Is my data sent anywhere?",
@@ -184,17 +193,17 @@ export const FAQ_ITEMS = [
   {
     question: "Can I export without this app?",
     answer:
-      "Yes. The data is the standard JSON Resume schema, so any compatible renderer can read it.",
+      "Yes. The data is the standard JSON Resume schema, so you can feed it to any llm and they'll give you a finished resume.",
   },
-  {
-    question: "What about interview practice and gaps in a posting?",
-    answer:
-      "The library keeps the questions you keep getting asked, with the answers you already wrote, so you reuse them next time. For each posting it can also show what the role asks for that your library does not cover yet, so you know what to build before the next similar role.",
-  },
+  // {
+  //   question: "What about interview practice and gaps in a posting?",
+  //   answer:
+  //     "The library keeps the questions you keep getting asked, with the answers you already wrote, so you reuse them next time. For each posting it can also show what the role asks for that your library does not cover yet, so you know what to build before the next similar role.",
+  // },
   {
     question: "What does it cost?",
     answer:
-      "The app is MIT licensed and free to self-host. Pro is a waitlist, not a price: join it and you get a small usage credit while we build sync. Team features come later.",
+      "The app is MIT licensed and free to self-host. Pro is a waitlist, not a price: join it and you get a small usage credit while we build sync..",
   },
 ] as const;
 

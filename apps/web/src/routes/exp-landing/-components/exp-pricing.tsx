@@ -31,7 +31,7 @@ export function ExpPricing() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 border-t border-border/50 md:grid-cols-3">
+      <div className="grid grid-cols-1 border-t border-border/50 md:grid-cols-2">
         {PRICING_TIERS.map((tier, index) => (
           <div
             key={tier.name}

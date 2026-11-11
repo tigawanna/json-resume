@@ -22,9 +22,9 @@ export function ExpHire() {
         }
       >
         <p>
-          Not every hat belongs on every application. Build the right résumé from the pieces you
-          already own: choose which summary, bullets and skills come forward for this posting, and
-          let the role decide.
+          You've worn lots of hats but not every hat belongs on every job application. Build the
+          right résumé from the pieces you already own: choose which summary, bullets and skills
+          come forward for this posting, and keep the final output tidy and focused.
         </p>
       </SectionIntro>
 

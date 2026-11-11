@@ -15,7 +15,7 @@ export function ExpCatalog() {
       <SectionIntro
         title={
           <>
-            One collection. <span className="text-primary">Every part of your career.</span>
+            Collections of <span className="text-primary">Every part of your career.</span>
           </>
         }
       >
