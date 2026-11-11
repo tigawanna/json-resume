@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 
 import { AppConfig } from "@/utils/system";
 
-import { FOOTER_COLUMNS } from "../-utils/content";
+import { BRAND, FOOTER_COLUMNS } from "../-utils/content";
 
 export function ExpFooter() {
   return (
@@ -15,12 +15,12 @@ export function ExpFooter() {
                 <AppConfig.icon className="size-4" />
               </span>
               <span className="font-mono text-xs font-medium tracking-[0.2em] text-base-content uppercase">
-                {AppConfig.wordmark}
+                {BRAND}
               </span>
             </Link>
             <p className="mt-4 max-w-[36ch] text-sm leading-relaxed text-muted-foreground">
-              Structured résumés, tailored with agents, exported as clean PDFs. Open source and
-              local-first.
+              A career brain for your résumé, cover letters and applications. Structured JSON,
+              tailored with any LLM, exported as a clean PDF. Open source and local-first.
             </p>
             <p className="mt-6 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
               Built with TanStack Start · MIT
@@ -50,7 +50,7 @@ export function ExpFooter() {
 
         <div className="flex flex-col gap-2 border-t border-border/50 px-6 py-4 font-mono text-[10px] text-muted-foreground md:flex-row md:items-center md:justify-between md:px-12">
           <span>
-            © {new Date().getFullYear()} {AppConfig.name}
+            © {new Date().getFullYear()} {BRAND}
           </span>
           <span>Software engineering, sorted for your résumé.</span>
         </div>

@@ -17,7 +17,6 @@ export function ExpProblem() {
       intensity={0.65}
     >
       <SectionIntro
-        eyebrow="The problem"
         title={
           <>
             Résumé editing is fragmented. <span className="text-primary">Bring it together.</span>
@@ -26,7 +25,7 @@ export function ExpProblem() {
       >
         <p>
           Where most job seekers start → where a structured library takes them. The work stops
-          living in six documents and starts living in one set of parts.
+          living in six documents and starts living in one set of parts you can aim at any posting.
         </p>
       </SectionIntro>
 
@@ -34,7 +33,7 @@ export function ExpProblem() {
         {PROBLEM_PAIRS.map((pair) => (
           <li
             key={pair.before}
-            className="flex items-center justify-between gap-3 border-b border-border/50 py-3 last:border-b-0 sm:[&:nth-last-child(2)]:border-b-0"
+            className="flex items-center justify-between gap-3 border-b border-border/50 py-3 last:border-b-0 sm:nth-last-2:border-b-0"
           >
             <span className="text-sm text-muted-foreground line-through decoration-border">
               {pair.before}
@@ -46,7 +45,7 @@ export function ExpProblem() {
       </ul>
 
       <p className="mt-6 pl-4 font-mono text-xs leading-relaxed text-muted-foreground shadow-[inset_2px_0_0_0_var(--color-primary)]">
-        One library. One source of truth. One résumé per role.
+        One collection. One source of truth. One résumé per role.
       </p>
     </FigureSplit>
   );

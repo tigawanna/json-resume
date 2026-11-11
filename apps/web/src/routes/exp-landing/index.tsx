@@ -7,7 +7,10 @@ export const Route = createFileRoute("/exp-landing/")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "exp-landing", description: "Landing page experiment (scrums.com + hairline)" },
+      {
+        title: "Whiskas",
+        description: "A career brain for your résumé, cover letters and applications.",
+      },
     ],
   }),
   beforeLoad: () => {

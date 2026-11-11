@@ -15,16 +15,16 @@ export function ExpHire() {
       intensity={0.7}
     >
       <SectionIntro
-        eyebrow="The wardrobe"
         title={
           <>
-            A wardrobe of <span className="text-primary">reusable parts.</span>
+            A wardrobe of <span className="text-primary">hats for the role.</span>
           </>
         }
       >
         <p>
-          Build the right résumé from the pieces you already own. Swap the summary, keep the shared
-          work, and let the role decide which hangers come forward.
+          Not every hat belongs on every application. Build the right résumé from the pieces you
+          already own: choose which summary, bullets and skills come forward for this posting, and
+          let the role decide.
         </p>
       </SectionIntro>
 

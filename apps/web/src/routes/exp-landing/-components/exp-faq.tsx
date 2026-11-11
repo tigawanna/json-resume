@@ -14,7 +14,6 @@ export function ExpFaq() {
       <div className="grid grid-cols-1 gap-10 px-6 py-16 md:px-12 md:py-24 lg:grid-cols-12 lg:gap-0">
         <div className="lg:col-span-4 lg:pr-12">
           <SectionIntro
-            eyebrow="FAQ"
             title={
               <>
                 Questions, <span className="text-primary">answered.</span>

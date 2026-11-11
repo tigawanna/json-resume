@@ -10,7 +10,6 @@ export function ExpPricing() {
     <Section id="pricing" tone="primary" dataTest="exp-pricing">
       <div className="flex flex-col gap-10 px-6 py-16 md:px-12 md:py-20 lg:flex-row lg:items-end lg:justify-between">
         <SectionIntro
-          eyebrow="Pricing"
           title={
             <>
               Free to start. <span className="text-primary">Open source at the core.</span>
@@ -18,8 +17,8 @@ export function ExpPricing() {
           }
         >
           <p>
-            Run it yourself for nothing. The hosted workspace is free while it is in beta, and team
-            features come later.
+            Run it yourself for nothing. Pro is a waitlist, not a price, and team features come
+            later.
           </p>
         </SectionIntro>
         <div className="hidden w-64 shrink-0 lg:block">

@@ -6,16 +6,22 @@ import { FigureSplit, SectionIntro } from "./primitives";
 export function ExpPlatform() {
   return (
     <FigureSplit
-      id="product"
+      id="career-brain"
       figure={Exploded}
       label="An app window broken into four layers; the pointer opens the gap"
       captionLabel="fig. 03 — exploded"
       intensity={0.65}
     >
-      <SectionIntro eyebrow="The platform" title="What is an agentic résumé?">
+      <SectionIntro
+        title={
+          <>
+            The career brain, not <span className="text-primary">just a résumé builder.</span>
+          </>
+        }
+      >
         <p>
-          It is the same résumé you already write, stored as a typed graph instead of a page. Agents
-          read the graph, propose changes, and the editor shows the diff before anything is saved.
+          Your history, the applications you are running, the questions you keep getting asked, and
+          the gaps a posting exposes. Résumés, cover letters and answers are outputs of that brain.
         </p>
       </SectionIntro>
 

@@ -40,15 +40,22 @@ export function SectionIntro({
   children,
   className,
 }: {
-  eyebrow: string;
+  eyebrow?: string;
   title: ReactNode;
   children?: ReactNode;
   className?: string;
 }) {
   return (
     <div className={cn("max-w-2xl", className)}>
-      <p className="font-mono text-xs uppercase tracking-[0.25em] text-primary">{eyebrow}</p>
-      <h2 className="mt-4 text-balance font-serif text-3xl leading-[1.05] font-medium tracking-tight text-base-content md:text-4xl lg:text-5xl">
+      {eyebrow ? (
+        <p className="font-mono text-xs uppercase tracking-[0.25em] text-primary">{eyebrow}</p>
+      ) : null}
+      <h2
+        className={cn(
+          "text-balance font-serif text-3xl leading-[1.05] font-medium tracking-tight text-base-content md:text-4xl lg:text-5xl",
+          eyebrow ? "mt-4" : "",
+        )}
+      >
         {title}
       </h2>
       {children ? (

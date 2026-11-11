@@ -1,31 +1,50 @@
+import type { CSSProperties } from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
-
 import { Terrain } from "@/components/ui/hairline";
-
-import { STATS } from "../-utils/content";
-import { FigurePanel, Section } from "./primitives";
+import { BRAND, STATS } from "../-utils/content";
+import { Section } from "./primitives";
 
 export function ExpHero() {
   return (
     <Section className="relative overflow-hidden" dataTest="exp-hero">
-      <div className="grid grid-cols-1 lg:grid-cols-12">
-        <div className="flex flex-col justify-center gap-8 px-6 pt-16 pb-12 md:px-12 md:pt-24 lg:col-span-6 lg:border-r lg:border-border/50 lg:py-28 lg:pr-16">
-          <div className="flex items-start gap-3">
-            <span className="mt-1 size-2 shrink-0 bg-primary" aria-hidden />
-            <p className="font-mono text-xs uppercase tracking-[0.25em] text-primary">
-              Open source · Structured résumés
-            </p>
-          </div>
+      <div className="relative">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 flex items-center justify-end"
+        >
+          <Terrain
+            play
+            intensity={0.7}
+            theme="auto"
+            label=""
+            className="w-[min(40rem,92%)] mask-[linear-gradient(90deg,transparent,black_28%)]"
+            style={
+              {
+                "--hairline-hi": "var(--foreground)",
+                "--hairline-edge": "color-mix(in oklab, var(--foreground) 55%, transparent)",
+                "--hairline-mid": "color-mix(in oklab, var(--foreground) 28%, transparent)",
+                "--hairline-lo": "color-mix(in oklab, var(--foreground) 14%, transparent)",
+              } as CSSProperties
+            }
+          />
+        </div>
 
-          <h1 className="max-w-[15ch] text-balance font-serif text-5xl leading-[0.98] font-medium tracking-tight text-base-content md:text-6xl lg:text-7xl">
-            The résumé is the sum of its parts. <span className="text-primary">Sorted.</span>
+        <div className="relative z-10 flex flex-col justify-center gap-8 px-6 pt-16 pb-12 md:px-12 md:pt-24 lg:max-w-184 lg:py-28">
+          <h1 className="max-w-[14ch] font-serif text-6xl leading-[0.9] font-medium tracking-tight text-base-content md:text-7xl lg:text-8xl">
+            Your
+            <br />
+            career brain.
           </h1>
 
-          <p className="max-w-[46ch] text-pretty text-lg leading-relaxed text-muted-foreground md:text-xl">
-            Store every experience, bullet and skill as JSON. Tailor a variation to the job with any
-            LLM, then export a clean PDF — no pasting prose back into a doc.
-          </p>
+          <div className="flex max-w-[48ch] flex-col gap-4 text-pretty text-lg leading-relaxed text-muted-foreground md:text-xl">
+            <p>
+              {BRAND} is a career brain that improves itself. Add a job description and it reads the
+              opening, fits the parts of your history that belong, and keeps the demands it has
+              never seen before: a skill, a responsibility, a way of saying the work. From that same
+              posting it builds a résumé aimed at the role, ready to export.
+            </p>
+          </div>
 
           <div className="flex flex-wrap items-center gap-3">
             <Link
@@ -47,47 +66,27 @@ export function ExpHero() {
             JSON Resume schema · MIT licensed · No account required
           </p>
         </div>
-
-        <div className="relative flex items-center px-4 py-10 md:px-10 lg:col-span-6 lg:py-16">
-          <div className="relative w-full">
-            <div
-              aria-hidden
-              className="absolute -top-3 -left-3 hidden h-6 w-6 border-t border-l border-primary/50 md:block"
-            />
-            <div
-              aria-hidden
-              className="absolute -right-3 -bottom-3 hidden h-6 w-6 border-r border-b border-primary/50 md:block"
-            />
-            <FigurePanel
-              figure={Terrain}
-              label="Eighty-one pillars rising around the pointer, one per résumé part"
-              captionLabel="fig. 01 — terrain"
-              intensity={0.7}
-            />
-            <div className="absolute top-3 right-3 hidden items-center gap-2 border border-border/60 bg-base-100/90 px-2 py-1 font-mono text-[10px] text-muted-foreground backdrop-blur-sm md:flex">
-              <span className="size-1.5 bg-primary" aria-hidden />
-              catalog → production
-            </div>
-          </div>
-        </div>
       </div>
 
-      <div className="grid grid-cols-2 border-t border-border/50 md:grid-cols-5">
-        {STATS.map((stat, index) => (
-          <div
-            key={stat.label}
-            className={
-              "px-5 py-5 md:px-6 " +
-              (index > 0 ? "border-l border-border/50 " : "") +
-              (index >= 2 ? "border-t border-border/50 md:border-t-0 " : "")
-            }
-          >
-            <p className="font-mono text-xs font-medium tracking-tight text-base-content">
-              {stat.value}
-            </p>
-            <p className="mt-1 text-xs text-muted-foreground">{stat.label}</p>
-          </div>
-        ))}
+      <div className="grid grid-cols-2 border-t border-border/50 md:grid-cols-3">
+        {STATS.map((stat, index) => {
+          const wrapped = index > 0 && index % 2 === 0;
+          return (
+            <div
+              key={stat.label}
+              className={
+                "px-5 py-5 md:px-6 " +
+                (index > 0 && !wrapped ? "border-l border-border/50 " : "") +
+                (wrapped ? "border-t border-border/50 md:border-t-0 md:border-l " : "")
+              }
+            >
+              <p className="font-mono text-xs font-medium tracking-tight text-base-content">
+                {stat.value}
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">{stat.label}</p>
+            </div>
+          );
+        })}
       </div>
     </Section>
   );

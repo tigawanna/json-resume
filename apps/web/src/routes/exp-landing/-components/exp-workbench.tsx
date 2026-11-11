@@ -68,7 +68,6 @@ export function ExpWorkbench() {
       <div className="grid grid-cols-1 gap-6 border-b border-border/50 px-6 py-14 md:px-12 md:py-20 lg:grid-cols-12 lg:items-end">
         <div className="lg:col-span-7">
           <SectionIntro
-            eyebrow="The workbench"
             title={
               <>
                 One prompt. <span className="text-primary">A whole application.</span>

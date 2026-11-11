@@ -1,65 +1,72 @@
+export const BRAND = "Whiskas";
+
 export const NAV_LINKS = [
   { label: "Workbench", href: "#workbench" },
-  { label: "Product", href: "#product" },
+  { label: "Career brain", href: "#career-brain" },
   { label: "Library", href: "#library" },
   { label: "How it works", href: "#how" },
   { label: "Pricing", href: "#pricing" },
-  { label: "Docs", href: "#faq" },
+  { label: "FAQ", href: "#faq" },
 ] as const;
 
 export const STATS = [
-  { value: "Open source", label: "MIT licensed" },
-  { value: "JSON Resume", label: "Standard schema" },
-  { value: "Any LLM", label: "Tailor with a job post" },
-  { value: "PDF", label: "Clean export" },
-  { value: "Reversible", label: "Event-sourced history" },
+  { value: "A collection", label: "of parts" },
+  { value: "Any LLM", label: "Bring your own key" },
+  { value: "JSON to PDF", label: "Export" },
 ] as const;
 
 export const PROBLEM_PAIRS = [
-  { before: "Separate documents", after: "One JSON library" },
-  { before: "Disconnected versions", after: "Tailored variations" },
-  { before: "Fragmented wording", after: "Reusable bullets" },
-  { before: "Scattered context", after: "One source of truth" },
-  { before: "Manual formatting", after: "Clean PDF export" },
+  { before: "Six documents", after: "A collection of parts" },
+  { before: "Copy-pasted bullets", after: "Reusable, tagged bullets" },
+  { before: "Disconnected résumés", after: "Tailored variations" },
+  { before: "Manual formatting", after: "Structured JSON to PDF" },
   { before: "Hard to prove impact", after: "Every change tracked" },
 ] as const;
 
 export const PLATFORM_POINTS = [
   {
-    title: "A structured core",
-    body: "Every experience, bullet, skill, project and talk is a typed record, not a paragraph in a document.",
+    title: "A collection of parts",
+    body: "Roles, bullets, skills, projects, talks and summaries are typed records. Write one once and reuse it. A résumé is a set of picks, not a copy.",
   },
   {
-    title: "A library of parts",
-    body: "Write a bullet once and reuse it across roles. A résumé is a set of picks, not a copy.",
+    title: "Applications you are tracking",
+    body: "Every posting you apply to, where you are in the process, and which résumé variation you sent.",
   },
   {
-    title: "LLM tailoring",
-    body: "Send the library and a job description to any assistant, then bring the improved JSON back.",
+    title: "Interview practice bank",
+    body: "Recurring questions from phone screens and forms, with the answers you already wrote. Reuse them next time.",
   },
   {
-    title: "Clean export",
-    body: "Render a print-ready PDF from the same data, so the preview and the file never drift.",
+    title: "Gaps in a posting",
+    body: "What a role asks for that the collection does not cover yet, so you can build the project, talk or post before the next similar role.",
+  },
+  {
+    title: "LLM tailoring, any model",
+    body: "Paste your own key. Send the collection and a posting, get improved JSON back with a diff.",
+  },
+  {
+    title: "Structured JSON to PDF outputs",
+    body: "Render a PDF from the same data, so the preview and the file never drift.",
   },
 ] as const;
 
 export const GOVERN_POINTS = [
   "Local-first: your data lives in your browser and your database, not ours.",
-  "Event-sourced: every edit is an event you can replay, diff or undo.",
-  "Export anytime: the JSON is the product, and it is never locked in.",
+  "Bring your own key: paste it once, set a usage cap in case it leaks.",
+  "Export anytime: the JSON is never locked in.",
   "No hidden formatting: the preview is the same component tree the PDF uses.",
 ] as const;
 
 export const COMPOSE_FEATURES = [
   {
     tag: "Variations",
-    title: "One library, many résumés",
+    title: "One collection, many résumés",
     body: "Pick the summary and the bullets that fit the role. Shared work stays shared.",
   },
   {
-    tag: "Ordering",
-    title: "Sections that follow the job",
-    body: "Reorder experiences, bullets and skill groups per résumé without forking the records.",
+    tag: "Hats",
+    title: "Show the role that fits this job",
+    body: "Not every hat belongs on every application. Choose which summary, bullets and skills come forward for this posting.",
   },
   {
     tag: "Diff",
@@ -81,11 +88,13 @@ export const CATALOG_GROUPS = [
   { label: "Projects", count: "9", note: "Links and stack" },
   { label: "Talks", count: "6", note: "Events and slides" },
   { label: "Summaries", count: "4", note: "Per-role voice" },
+  { label: "Applications", count: "7", note: "Postings, status, answers" },
+  { label: "Answers", count: "18", note: "Reusable Q&A bank" },
 ] as const;
 
 export const METRICS = [
   { value: "540", label: "Events in a full résumé" },
-  { value: "14", label: "Variations from one library" },
+  { value: "14", label: "Variations from one collection" },
   { value: "0", label: "Pasted paragraphs" },
   { value: "1", label: "Source of truth" },
 ] as const;
@@ -93,7 +102,7 @@ export const METRICS = [
 export const CASE_STUDIES = [
   {
     tag: "AI engineer",
-    title: "Four variations from one library",
+    title: "Four variations from one collection",
     body: "One account service bullet, four role-specific summaries, no copy-paste.",
   },
   {
@@ -112,39 +121,50 @@ export const PRICING_TIERS = [
   {
     name: "Local",
     price: "Free",
-    note: "Run it yourself",
-    features: ["Full editor", "Any LLM", "JSON + PDF export", "Event history"],
-    cta: "Open the editor",
-    featured: false,
-  },
-  {
-    name: "Hosted",
-    price: "Free while beta",
-    note: "No setup",
+    note: "The real offer today",
     features: [
-      "Everything in Local",
-      "Managed database",
-      "Sync across devices",
-      "MCP + API access",
+      "Full editor, runs in your browser",
+      "Any LLM, your key",
+      "JSON + PDF export",
+      "Event history you can browse and undo",
+      "No account required",
     ],
-    cta: "Start free",
+    cta: "Open the editor",
     featured: true,
   },
   {
+    name: "Pro",
+    price: "Waitlist",
+    note: "I want the premium idea",
+    features: [
+      "Everything in Local",
+      "Sync across your devices",
+      "A small usage credit while we build",
+      "Early access to new agents",
+    ],
+    cta: "Join the waitlist",
+    featured: false,
+  },
+  {
     name: "Team",
-    price: "Talk to us",
+    price: "Later",
     note: "For cohorts and bootcamps",
-    features: ["Shared libraries", "Reviewer links", "Bulk export", "Priority support"],
-    cta: "Talk to us",
+    features: [
+      "Shared libraries (future)",
+      "Reviewer links (future)",
+      "Bulk export (future)",
+      "Priority support (future)",
+    ],
+    cta: "Tell us you are interested",
     featured: false,
   },
 ] as const;
 
 export const FAQ_ITEMS = [
   {
-    question: "What is Agentic JSON Resume?",
+    question: `What is ${BRAND}?`,
     answer:
-      "An open-source résumé editor that stores every part as structured JSON, tailors a variation with any LLM, and exports a clean PDF.",
+      "A career brain that stores your history as structured JSON: roles, bullets, skills, projects, talks and summaries. Résumés, cover letters and application answers are outputs of that brain, tailored to a posting with any LLM you bring, and exported as a clean PDF.",
   },
   {
     question: "Do I need an account?",
@@ -154,7 +174,7 @@ export const FAQ_ITEMS = [
   {
     question: "How does the LLM tailoring work?",
     answer:
-      "You attach the résumé parts and a job description, then the assistant returns improved JSON. The app validates it and shows a diff before anything is saved.",
+      "You attach the résumé parts and a job description, then the assistant returns improved JSON. The app validates it and shows a diff before anything is saved. You bring your own key, and you can set a usage cap in case it leaks.",
   },
   {
     question: "Is my data sent anywhere?",
@@ -167,9 +187,14 @@ export const FAQ_ITEMS = [
       "Yes. The data is the standard JSON Resume schema, so any compatible renderer can read it.",
   },
   {
+    question: "What about interview practice and gaps in a posting?",
+    answer:
+      "The library keeps the questions you keep getting asked, with the answers you already wrote, so you reuse them next time. For each posting it can also show what the role asks for that your library does not cover yet, so you know what to build before the next similar role.",
+  },
+  {
     question: "What does it cost?",
     answer:
-      "The app is MIT licensed and free to self-host. The hosted beta is free while it lasts, and paid team features are coming later.",
+      "The app is MIT licensed and free to self-host. Pro is a waitlist, not a price: join it and you get a small usage credit while we build sync. Team features come later.",
   },
 ] as const;
 

@@ -13,10 +13,9 @@ export function ExpCatalog() {
       intensity={0.65}
     >
       <SectionIntro
-        eyebrow="The library"
         title={
           <>
-            One library. <span className="text-primary">Every part of your career.</span>
+            One collection. <span className="text-primary">Every part of your career.</span>
           </>
         }
       >

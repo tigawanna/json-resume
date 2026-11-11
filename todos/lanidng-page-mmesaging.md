@@ -14,6 +14,32 @@ Trim duplicates while rewriting. The page currently restates “one JSON library
 source of truth / tailored variations” in the hero, problem pairs, platform,
 compose, catalog, proof, and FAQ.
 
+The product name on the page is still Agentic JSON Resume (`AppConfig.name`,
+hero, FAQ). That name does not roll off the tongue. The name to use is
+**Whiskas**.
+
+## 0. Name and theme: Whiskas
+
+A cat’s whiskers tell it whether it can fit through an opening. It does not
+force the gap. It reads the space, then adapts: turn sideways, pick another
+opening, or wait. That is the product. The library is the set of whiskers.
+Each posting is an opening. Whiskas reads the role and shows which parts of
+you fit, which hats to wear, and how to reshape the rest.
+
+- `[ ]` **Call the product Whiskas** in the nav, hero, FAQ, footer, and page
+  title. “Agentic JSON Resume” can stay as a one-line description of what the
+  data is (a structured résumé), not as the name.
+- `[ ]` **Say the metaphor once, early.** A short line in the hero or the
+  eyebrow: cats use their whiskers to test a gap, then adapt. You use Whiskas
+  the same way on a job.
+- `[ ]` **Carry it through the existing beats** instead of adding a mascot
+  section: the wardrobe rail is which whisker (which hat) you extend; the
+  workbench is the adaptation after the reading; gaps in a job description
+  are openings you cannot fit yet.
+- `[ ]` **Trademark check before this ships.** Whiskas is Mars’s cat-food
+  brand. The metaphor is whiskers. Confirm the spelling and the name before
+  it is public.
+
 ---
 
 ## 1. Career brain, not just a résumé builder
@@ -106,6 +132,21 @@ Pricing is not set. Do not invent tiers.
   future / waitlist, or remove them until they exist.
 
 ## 6. Copy to trim or retarget
+
+---
+
+## Done in this pass (2026-11-11)
+
+- Name: product is now **Whiskas** in the nav, hero, footer, FAQ and page title. "Agentic JSON Resume" survives as the one-line description of the data format.
+- Hero says the whisker metaphor once: "Test the gap. Adapt the résumé." with a small inline whisker SVG accent (hairline has no whisker figure, so this is a hand-drawn inline SVG in the same thin-stroke style).
+- New "Career brain" section (`#career-brain`) with applications tracking, interview practice bank, gaps in a posting, and how you talk about the work. Catalog gains Applications + Answers groups.
+- Platform reframed as "The career brain, not just a résumé builder"; BYOK (paste your own key, usage cap) added to platform, govern and FAQ.
+- Hats metaphor carried through compose ("Show the role that fits this job") and the wardrobe rail.
+- Pricing is honest: Local is the featured free offer; Pro is a waitlist with a small usage credit; Team is "later" with future-tagged features. No invented tiers.
+- Problem pairs trimmed from 6 to 5; footer/CTA copy updated.
+- Workbench preview keeps its BYOK + cover letter + Q&A labels.
+
+Not done (needs more product work): blazingly-fast claim, desktop app, hats motion figure, trademark check on "Whiskas", promoting to `/`.
 
 - `[~]` Hero line “The résumé is the sum of its parts. Sorted.” and the
   problem/platform/catalog repetition of the library idea. Keep one strong

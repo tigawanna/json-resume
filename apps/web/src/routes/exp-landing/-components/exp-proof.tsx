@@ -1,40 +1,12 @@
 import { ArrowUpRight } from "lucide-react";
 
-import { Branches } from "@/components/ui/hairline";
-
 import { CASE_STUDIES } from "../-utils/content";
-import { FigurePanel, Section, SectionIntro } from "./primitives";
+import { Section } from "./primitives";
 
 export function ExpProof() {
   return (
     <Section id="proof" dataTest="exp-proof">
-      <div className="grid grid-cols-1 items-center gap-10 px-6 py-16 md:px-12 md:py-24 lg:grid-cols-12 lg:gap-0">
-        <div className="lg:col-span-5 lg:pr-12">
-          <FigurePanel
-            figure={Branches}
-            label="A commit graph; the commit under the pointer rises and its history rises after it"
-            captionLabel="fig. 09 — branches"
-            intensity={0.65}
-          />
-        </div>
-        <div className="lg:col-span-7">
-          <SectionIntro
-            eyebrow="Defining résumés since 2025"
-            title={
-              <>
-                Structured résumés, <span className="text-primary">proven in production.</span>
-              </>
-            }
-          >
-            <p>
-              A library is only useful if it survives real applications. These are the patterns that
-              keep showing up.
-            </p>
-          </SectionIntro>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 border-t border-border/50 md:grid-cols-3">
+      <div className="grid grid-cols-1 border-b border-border/50 md:grid-cols-3">
         {CASE_STUDIES.map((study, index) => (
           <article
             key={study.title}

@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useTheme } from "@/lib/tanstack/router/use-theme";
 import { AppConfig } from "@/utils/system";
 
-import { NAV_LINKS } from "../-utils/content";
+import { BRAND, NAV_LINKS } from "../-utils/content";
 
 export function ExpNavbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -27,10 +27,7 @@ export function ExpNavbar() {
           </span>
           <span className="flex items-baseline gap-2">
             <span className="font-mono text-xs font-medium tracking-[0.2em] text-base-content uppercase">
-              {AppConfig.wordmark}
-            </span>
-            <span className="hidden font-serif text-sm text-muted-foreground sm:inline">
-              {AppConfig.name}
+              {BRAND}
             </span>
           </span>
         </Link>

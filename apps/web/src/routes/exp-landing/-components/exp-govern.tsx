@@ -17,16 +17,15 @@ export function ExpGovern() {
       intensity={0.6}
     >
       <SectionIntro
-        eyebrow="Control"
         title={
           <>
-            You own the JSON. <span className="text-primary">Every change is reversible.</span>
+            Your data stays <span className="text-primary">on your device.</span>
           </>
         }
       >
         <p>
-          The résumé is the product, not the editor. Keep it local, export it whenever you like, and
-          replay the history when an agent gets something wrong.
+          The editor runs locally. You bring the model key, and you can export the JSON whenever you
+          want.
         </p>
       </SectionIntro>
 
