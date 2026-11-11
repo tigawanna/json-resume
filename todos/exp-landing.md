@@ -20,6 +20,10 @@ Progress log:
 - 2026-11-11 — full page built (12 sections + nav/footer), 11 hairline figures
   wired, theme mapping + dark-border fix, responsive pass, headless Chromium
   checks at 1440 and 390 (no console errors, no horizontal overflow).
+- 2026-11-11 — added the **workbench preview** after the hero: a scripted
+  stream (thinking → markdown → `set_summary` tool call) that edits the résumé
+  panel beside it. Runs only while on screen; loops; reduced-motion renders the
+  finished pass statically.
 
 ---
 
@@ -97,6 +101,7 @@ apps/web/src/routes/exp-landing/
     primitives.tsx                # Section, SectionIntro, FigurePanel, FigureSplit
     exp-navbar.tsx
     exp-hero.tsx                  # hero + stats strip
+    exp-workbench.tsx             # scripted AI workbench preview (after hero)
     exp-problem.tsx               # Drawer
     exp-platform.tsx              # Exploded
     exp-govern.tsx                # Vault
@@ -109,8 +114,11 @@ apps/web/src/routes/exp-landing/
     exp-faq.tsx
     exp-final-cta.tsx             # Riffle
     exp-footer.tsx
+  -hooks/
+    use-workbench-stream.ts       # ticking loop + IntersectionObserver gating
   -utils/
     content.ts                    # nav, stats, section copy
+    workbench-script.ts           # scripted steps (perf-harness shaped)
 ```
 
 Hairline components are reused from the existing
@@ -171,6 +179,58 @@ Do not hand-edit `routeTree.gen.ts`.
 - [x] Content mode: **B (adapted to the résumé product)** — scrums.com rhythm,
       our copy. Easier to promote than a literal clone.
 
+### Phase 4.5 — Workbench preview (dummy stream)
+
+Preview of the AI workbench right after the hero, so visitors see the whole
+application loop before opening the dashboard. It copies the real AI tab:
+chrome row (Preview/settings/clear), chat + composer, and the live preview
+panel with the real `Preview | Changes | Letter | Q&A` tabs.
+
+- [x] Scripted source shaped like the perf harness
+      (`routes/_dashboard/dev/chat-stress/-utils/fake-chat-stream.ts`): thinking →
+      markdown → tool start/args/result. Landing-local copy in
+      `-utils/workbench-script.ts` because importing the dev harness pulls in the
+      DB, the viewer and the full chat UI.
+- [x] State is an ordered `parts` timeline (`thinking` | `text` | `tool`), so
+      text and tool calls interleave instead of one mutable tool slot. The
+      reducer (`applyWorkbenchStep`) is shared by the ticking hook and the
+      static reduced-motion render.
+- [x] The prompt types itself into the composer (2 chars / 45ms), the send button
+      fills in, then `send` moves the text into the user bubble.
+- [x] Six tools, in playbook order: `save_job` (capture the posting) →
+      `set_summary` → `set_experience_bullets` → `set_skills` →
+      `save_cover_letter` → `save_application_answers`.
+- [x] Tool chips mirror `ResumeAiToolPanels`: Wrench icon, `Save Job` style
+      label, state pill (`input-streaming` → `complete`) and a success summary.
+      The letter and answer tools also render the green success cards from
+      `ResumeAiCoverLetterTool` / `ResumeAiApplicationAnswersTool`, with a
+      working Preview button.
+- [x] Panel tabs mirror `ResumeAiLivePreview` (`Preview | Changes | Letter |
+      Q&A`) and switch themselves when a writing tool lands:
+      `set_experience_bullets` → Changes (shows `+n −m`), `save_cover_letter` →
+      Letter, `save_application_answers` → Q&A, `set_skills` → Preview.
+- [x] A manual tab click pins the view for the rest of the run; the next loop
+      resets to Preview and unpins.
+- [x] `Changes` renders line diffs for the tools that have landed; `Letter`
+      renders the cover letter paper; `Q&A` renders three answers, one with a
+      `needs your detail` chip. Both show a hint until their tool lands.
+- [x] The résumé paper reflects `set_summary`, `set_experience_bullets` (three
+      rewrites, two strikes) and `set_skills` (TypeScript/React first).
+- [x] `useWorkbenchStream` ticks the steps, loops with a 4.4s hold, and renders
+      the finished pass for `prefers-reduced-motion` (no timers).
+- [x] Runs only while on screen (`IntersectionObserver`, threshold 0.25); leaving
+      the viewport stops the timer.
+- [x] Composer mirrors `ResumeAiPromptComposer`: rounded-2xl shell on
+      `bg-primary/10`, placeholder per state ("Queue a follow-up…" while busy),
+      model row, résumé chip, send/stop buttons, and a status line
+      (Drafting / Request sent / Streaming response / Calling tools / Ready).
+- [x] Mobile order is chat → composer → preview; the tab strip takes its own row
+      below `lg` so the panel title is never squeezed.
+- [x] Labelled "scripted demo · no API calls" so it is never mistaken for live.
+- [x] `data-test="exp-workbench"`, `exp-workbench-frame`, `-chat`, `-composer`,
+      `-resume`, `-letter`, `-answers`, `-changes`, `-tabs`, `-preview`,
+      `-ai-chrome`, `-replay`, plus `-letter-card` / `-answers-card`.
+
 ### Phase 5 — Polish
 
 - [x] Theme tokens: hairline wrapper maps to shadcn tokens; dark mode works.
@@ -201,6 +261,10 @@ Verification (headless Chromium, 2026-11-11):
 - Theme toggle, FAQ accordion, anchor nav (lands at 56px below the sticky nav)
   and mobile menu all work.
 - Rail figure animates on its own and responds to hover.
+- Workbench preview: streams (0 → 141 tok), completes with the tool result and
+  the edited summary, holds ~5s, then loops. Replay restarts it. Scrolling away
+  pauses the timer. Under `prefers-reduced-motion` it renders the finished pass
+  and never starts a timer. Checked at 390 / 768 / 1440, light and dark.
 
 ## 4. Decisions & open questions
 

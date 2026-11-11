@@ -12,6 +12,7 @@ import { ExpPlatform } from "./exp-platform";
 import { ExpPricing } from "./exp-pricing";
 import { ExpProblem } from "./exp-problem";
 import { ExpProof } from "./exp-proof";
+import { ExpWorkbench } from "./exp-workbench";
 
 export function ExpLandingPage() {
   return (
@@ -19,6 +20,7 @@ export function ExpLandingPage() {
       <ExpNavbar />
       <main>
         <ExpHero />
+        <ExpWorkbench />
         <ExpProblem />
         <ExpPlatform />
         <ExpGovern />

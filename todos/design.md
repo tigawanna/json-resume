@@ -157,7 +157,59 @@ Companion doc: [`exp-landing.md`](./exp-landing.md) (the build plan and status).
   registry, but new custom wrappers should go in a named concern folder
   (`components/hairline/`) if we outgrow it.
 
-## 10. Design TODOs
+## 10. Live product previews (scripted data)
+
+The workbench preview (`exp-landing/-components/exp-workbench.tsx`) is the
+pattern to copy when a landing needs to show the real product without a login.
+
+- **Shape the data like the real stream.** The script emits the same phases as
+  `routes/_dashboard/dev/chat-stress/-utils/fake-chat-stream.ts` (thinking →
+  markdown text → tool start/args/result). Anyone who has seen the dashboard
+  recognises it, and swapping in the real source later is mechanical.
+- **Do not import the dev harness from marketing.** It drags in the
+  event-sourced DB, `useViewer`, persistence and the full `ResumeAiChatUI`.
+  Keep a landing-sized copy in `-utils/workbench-script.ts` and comment why.
+- **Render the effect of the tool call, not just the call.** `set_summary`
+  rewrites the summary, `set_experience_bullets` rewrites three bullets and
+  strikes two, `set_skills` reorders the chips. A chat bubble alone does not show
+  what the product does.
+- **Order the timeline, do not keep one mutable tool slot.** Multiple tool calls
+  interleave with text, so state is `parts: (thinking | text | tool)[]` and each
+  delta appends to the last matching part. One reducer
+  (`applyWorkbenchStep`) serves both the ticking loop and the static render, so
+  the finished frame can never drift from the animation.
+- **Let the panel follow the story.** The preview tabs switch themselves when a
+  writing tool lands (`save_cover_letter` → Letter,
+  `save_application_answers` → Q&A, résumé diffs → Changes). A manual click
+  pins the tab and stops the script from moving it; the next loop unpins.
+- **Show the artefacts, not just their names.** The letter and answer tools
+  render the same green success cards as the dashboard, and the tabs render the
+  actual letter and three Q&As (one deliberately unfinished). That is what sells
+  "one prompt, a whole application".
+- **Gate on visibility.** `IntersectionObserver` (threshold 0.25) starts/stops
+  the tick loop; the preview costs nothing while the user reads the hero. The
+  timer lives in a `useEffect` with a cleanup, never in render.
+- **Loop with a hold.** Finish → keep the completed pass visible ~5s → reset.
+  An instant reset reads as a bug; a long hold lets a visitor arrive mid-story
+  and still see the ending.
+- **Reduced motion gets the finished pass, not a blank panel.** Render the
+  completed state synchronously and skip the timers.
+- **Replay is a feature, not an afterthought.** One button with `RotateCcw`
+  restarts the loop; it also proves the demo is not a video.
+- **Label it.** "Scripted demo · no API calls · loops while it is on screen" is
+  the honest version and still sells.
+- **Toast/scroll details:** auto-scroll the chat container to the bottom on new
+  content (`scrollTop = scrollHeight`), but never scroll the page.
+- **Cheap markdown renderer beats a dependency.** Split on blank lines, then
+  handle `##`, `- `, `> `, `**bold**` and `` `code` ``. Strip trailing `**` /
+  backtick markers so partial tokens do not flash as symbols.
+- **Desktop vs mobile:** two columns (`chat | panel`) from `md`, chat first in
+  the DOM so mobile reads chat → composer → preview. The four panel tabs need
+  their own row below `lg`; inline them only when the panel is wide enough for
+  the title plus ~280px of tabs. Chat height is fixed
+  (`h-[18rem] md:h-[22rem]`) with `overflow-y-auto`.
+
+## 11. Design TODOs
 
 - [ ] Decide whether `/exp-landing` promotes onto `/` (see `exp-landing.md` §6).
 - [ ] If promoting, replace `HeroDiagram` + `BackgroundRippleEffect` on `/` with
@@ -175,6 +227,12 @@ Companion doc: [`exp-landing.md`](./exp-landing.md) (the build plan and status).
 - [ ] Add e2e coverage for theme toggle, accordion, anchor offsets, mobile menu.
 - [ ] Consider one shared `HairlineFigure` type/registry so section files import
       figures from one place.
+- [ ] Decide whether the workbench preview ships on `/`, or only on the lab
+      route. If it ships, measure it on low-end mobile before keeping the loop.
+- [ ] If the perf harness grows a reusable script module, point
+      `workbench-script.ts` at it instead of keeping two copies of the script.
+- [ ] Add a pause control to the workbench preview (replay exists; pause does
+      not) and stop the loop if the tab is hidden for a long time.
 
 ---
 
@@ -191,4 +249,6 @@ H2:          font-serif text-3xl md:text-4xl lg:text-5xl leading-[1.05]
 Body:        text-muted-foreground text-base md:text-lg leading-relaxed
 Figure:      @lucasmarkes/hairline/react, 5:4, max-w-md lg:max-w-none, play
 Accent line: ring-1 ring-primary/40 or inset shadow (not border colour in dark)
+Preview:     scripted steps in -utils, timer in -hooks, IntersectionObserver
+             gated, loop 5s hold, finished pass under prefers-reduced-motion
 ```
