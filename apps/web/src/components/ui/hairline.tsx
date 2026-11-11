@@ -4,8 +4,8 @@ import type { ComponentProps, CSSProperties } from "react";
 import * as Hairline from "@lucasmarkes/hairline/react";
 
 /**
- * hairline, wearing your theme. The six figures from @lucasmarkes/hairline,
- * with their palette mapped to shadcn's tokens, so they follow light, dark and
+ * hairline, wearing your theme. The figures from @lucasmarkes/hairline, with
+ * their palette mapped to shadcn's tokens, so they follow light, dark and
  * whatever you have made of them. A `style` you pass wins over the mapping.
  *
  * Docs: https://hairline.lucasmarkes.com
@@ -116,4 +116,36 @@ export function Rebuild({ style, ...props }: ComponentProps<typeof Hairline.Rebu
 
 export function Stack({ style, ...props }: ComponentProps<typeof Hairline.Stack>) {
   return <Hairline.Stack style={{ ...tokens, ...style }} {...props} />;
+}
+
+export function Loupe({ style, ...props }: ComponentProps<typeof Hairline.Loupe>) {
+  return <Hairline.Loupe style={{ ...tokens, ...style }} {...props} />;
+}
+
+export function Sieve({ style, ...props }: ComponentProps<typeof Hairline.Sieve>) {
+  return <Hairline.Sieve style={{ ...tokens, ...style }} {...props} />;
+}
+
+export function Plug({ style, ...props }: ComponentProps<typeof Hairline.Plug>) {
+  return <Hairline.Plug style={{ ...tokens, ...style }} {...props} />;
+}
+
+export function Query({ style, ...props }: ComponentProps<typeof Hairline.Query>) {
+  return <Hairline.Query style={{ ...tokens, ...style }} {...props} />;
+}
+
+export function Drawer({ style, ...props }: ComponentProps<typeof Hairline.Drawer>) {
+  return <Hairline.Drawer style={{ ...tokens, ...style }} {...props} />;
+}
+
+export function Basket({ style, ...props }: ComponentProps<typeof Hairline.Basket>) {
+  return <Hairline.Basket style={{ ...tokens, ...style }} {...props} />;
+}
+
+export function Plot({ style, ...props }: ComponentProps<typeof Hairline.Plot>) {
+  return <Hairline.Plot style={{ ...tokens, ...style }} {...props} />;
+}
+
+export function Rail({ style, ...props }: ComponentProps<typeof Hairline.Rail>) {
+  return <Hairline.Rail style={{ ...tokens, ...style }} {...props} />;
 }

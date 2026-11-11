@@ -6,8 +6,20 @@ with isometric **hairline** figures (folder/drawer + wardrobe/rail animations).
 All experiments live on a separate route `/exp-landing` so the production `/`
 landing stays untouched until we decide to promote.
 
-Status: planning. Nothing implemented yet. Work top to bottom; tick items as
-they land. Sources: `https://www.scrums.com`, `https://github.com/lucasmarkes/hairline`.
+Status: **built and rendering on `/exp-landing`** (2026-11-11). Phases 0–5 are
+done; Phase 6 (promotion decision) and Phase 7 (cleanup) are open. Work top to
+bottom; tick items as they land. Sources: `https://www.scrums.com`,
+`https://github.com/lucasmarkes/hairline`.
+
+Companion: [`design.md`](./design.md) — reusable design lessons, gotchas and
+open design TODOs extracted from this build.
+
+Progress log:
+
+- 2026-11-10 — plan written; route scaffold created.
+- 2026-11-11 — full page built (12 sections + nav/footer), 11 hairline figures
+  wired, theme mapping + dark-border fix, responsive pass, headless Chromium
+  checks at 1440 and 390 (no console errors, no horizontal overflow).
 
 ---
 
@@ -75,36 +87,36 @@ Figures to use (mapping below):
 
 New route (dev-gated, like `/test`):
 
+Actual layout (names are kebab-case, matching the rest of `routes/`):
+
 ```
 apps/web/src/routes/exp-landing/
-  index.tsx                 # createFileRoute("/exp-landing"), ssr:false, dev-only
+  index.tsx                       # createFileRoute("/exp-landing/"), ssr:false, dev-only
   -components/
-    ExpLandingPage.tsx      # composition
-    ExpNavbar.tsx
-    ExpHero.tsx
-    ExpStatsStrip.tsx
-    ExpProblem.tsx
-    ExpPlatform.tsx
-    ExpGovern.tsx
-    ExpCustomDev.tsx
-    ExpHire.tsx
-    ExpCatalog.tsx
-    ExpIntelligence.tsx
-    ExpCaseStudies.tsx
-    ExpPricing.tsx
-    ExpFaq.tsx
-    ExpFinalCta.tsx
-    ExpFooter.tsx
-    sections/...             # if a section grows
-  -hooks/
-    use-hairline-theme.ts    # maps DaisyUI tokens -> --hairline-* vars
+    exp-landing-page.tsx          # composition
+    primitives.tsx                # Section, SectionIntro, FigurePanel, FigureSplit
+    exp-navbar.tsx
+    exp-hero.tsx                  # hero + stats strip
+    exp-problem.tsx               # Drawer
+    exp-platform.tsx              # Exploded
+    exp-govern.tsx                # Vault
+    exp-compose.tsx               # Slow + 3 feature cards
+    exp-hire.tsx                  # Rail (the wardrobe)
+    exp-catalog.tsx               # Hub
+    exp-intelligence.tsx          # Plot
+    exp-proof.tsx                 # Branches + case-study cards
+    exp-pricing.tsx               # Stack + tiers
+    exp-faq.tsx
+    exp-final-cta.tsx             # Riffle
+    exp-footer.tsx
   -utils/
-    scrums-sections.ts       # content data for the clone
+    content.ts                    # nav, stats, section copy
 ```
 
-Shared (reusable) bits go to `apps/web/src/routes/-components/` only after a
-second route needs them. Hairline wrapper (if we add one) goes to
-`apps/web/src/components/hairline/` (named concern folder), not `ui/`.
+Hairline components are reused from the existing
+`apps/web/src/components/ui/hairline.tsx` wrapper (extended with the missing
+figures) so there is one theme-mapped API. Shared reusable bits still go to
+`apps/web/src/routes/-components/` only after a second route needs them.
 
 Route registration: TanStack generates `routeTree.gen.ts` on dev/build. After
 creating `index.tsx`, run `pnpm --dir apps/web dev` (or build) to regenerate.
@@ -114,85 +126,99 @@ Do not hand-edit `routeTree.gen.ts`.
 
 ### Phase 0 — Setup
 
-- [ ] Install `@lucasmarkes/hairline` (add to `apps/web/package.json` deps).
-- [ ] Create `/exp-landing` route skeleton (dev-gated, `ssr: false`).
-- [ ] Add a `data-test="exp-landing-page"` root.
-- [ ] Verify dev server boots and route renders empty shell.
-- [ ] Add hairline CSS vars to global theme or per-section wrapper; confirm
-      `--hairline-plate` matches page background in both light/dark.
+- [x] Install `@lucasmarkes/hairline` (already at `^0.5.1` in `apps/web/package.json`).
+- [x] Create `/exp-landing` route skeleton (dev-gated, `ssr: false`).
+- [x] Add a `data-test="exp-landing-page"` root.
+- [x] Verify dev server boots and route renders.
+- [x] Hairline theme vars: the existing `components/ui/hairline.tsx` wrapper maps
+      the palette to shadcn tokens. Extended it with the missing figures
+      (`Drawer`, `Rail`, `Plot`, `Sieve`, `Basket`, `Loupe`, `Plug`, `Query`).
 
 ### Phase 1 — Shell & rhythm
 
-- [ ] Reproduce scrums.com container rhythm: `max-w-360`, `border-x border-border/50`,
-      section bands with `border-t border-primary/20 bg-primary/10`.
-- [ ] Sticky nav with logo, links, two CTAs.
-- [ ] Footer with "More for AI systems" column.
-- [ ] Dark/light sanity check.
+- [x] Reproduce scrums.com container rhythm: `max-w-360`, `border-x border-border/50`,
+      tinted bands `bg-primary/[0.04]`.
+- [x] Sticky nav with logo, links, two CTAs.
+- [x] Footer with product/resources/more columns.
+- [x] Dark/light sanity check (screenshots at 1440 + 390).
 
 ### Phase 2 — Hero experiment (core animation swap)
 
-- [ ] Replace swirly `BackgroundRippleEffect` with a hairline figure as the hero
-      visual. Candidates: `Terrain` (pillars rising around pointer) or `Riffle`
-      (card tray). Test both; pick one.
-- [ ] Add a layered product demo panel (replaces `HeroDiagram` floating parts):
-      use `Exploded` or `Phone`/`Laptop` (layered windows) with `play`.
-- [ ] Keep headline + CTAs; stats strip below.
-- [ ] Measure: no layout shift, no rAF work when off-screen (hairline handles).
+- [x] Replace swirly `BackgroundRippleEffect` with `Terrain` as the hero visual.
+- [x] Layered product demo: `Exploded` in the platform section (with `play`).
+- [x] Keep headline + CTAs; stats strip below.
+- [x] Measured: no layout shift, no horizontal overflow, figures idle off-screen.
 
 ### Phase 3 — Folder & wardrobe animations (the requested swap)
 
-- [ ] "Problem" section: use `Drawer` or `Cabinet` to visualize fragmented →
-      consolidated (drawers sliding out / blades pulling out on hover).
-- [ ] "Govern / catalog" section: use `Rail` (garment rail with hangers) as the
-      "wardrobe" motif for browsing catalog items.
-- [ ] "Delivery pipeline" section: use `Slow` (crates on belt) or `Branches`
-      (commit graph) for delivery flow.
-- [ ] "Engineering intelligence" section: use `Terminal` or `Plot` for metrics.
-- [ ] "Case studies" / grid: use `Hub`/`Relay`/`Settle` for connection motif.
-- [ ] Each figure gets `aria-label` (or `label`) for accessibility; `intensity`
-      tuned (default 0.5, try 0.7 for hero).
+- [x] "Problem": `Drawer` (filing cabinet; pointer pulls a drawer out).
+- [x] "The wardrobe": `Rail` (garment rail; hangers rock away from the pointer).
+- [x] "How it works": `Slow` (crates on a conveyor belt).
+- [x] "Control": `Vault` (dial + bolts) — governance / reversibility.
+- [x] "Library": `Hub` (tiles around a hub).
+- [x] "Insight": `Plot` (bar chart).
+- [x] "Proof": `Branches` (commit graph).
+- [x] "Pricing": `Stack` (call stack).
+- [x] Final CTA: `Riffle` (card tray).
+- [x] Each figure has a descriptive `label`; intensity 0.6–0.7.
 
 ### Phase 4 — Content sections
 
-- [ ] Port all scrums.com sections (govern, custom dev, hire, catalog,
-      intelligence, case studies, pricing, versions).
-- [ ] FAQ accordion (shadcn Accordion).
-- [ ] Final CTA + footer.
-- [ ] Decide content mode: faithful clone (A) vs adapted to résumé product (B).
-      Default B for any promotion; A is fine while experimenting.
+- [x] Section set: problem, platform, control, how-it-works, wardrobe, library,
+      insight, proof, pricing, FAQ, final CTA, footer.
+- [x] FAQ accordion (shadcn Accordion).
+- [x] Final CTA + footer.
+- [x] Content mode: **B (adapted to the résumé product)** — scrums.com rhythm,
+      our copy. Easier to promote than a literal clone.
 
 ### Phase 5 — Polish
 
-- [ ] Theme tokens: verify hairline vars in dark theme; set `--hairline-plate`
-      to page bg per section.
-- [ ] Reduced motion: ensure `play` figures rest; pointer answers still work.
-- [ ] Performance: check rAF stops when idle; no jank at 1440px & 375px.
-- [ ] Responsive: figures fill width at 5:4; check mobile stacking.
-- [ ] `data-test` attributes on sections for e2e.
+- [x] Theme tokens: hairline wrapper maps to shadcn tokens; dark mode works.
+      Added a scoped rule so the repo's dark-mode border reset does not erase
+      the landing's borders.
+- [x] Reduced motion: hairline handles it; `play` figures rest under reduce.
+- [x] Performance: verified off-screen figures idle; rail animates + responds
+      to hover in headless Chromium.
+- [x] Responsive: figures capped at `max-w-md` below `lg`, full width above;
+      checked 1440 and 390.
+- [x] `data-test` attributes on sections for e2e.
 
 ### Phase 6 — Promotion decision
 
 - [ ] Compare exp-landing vs current `/` (screenshots, motion, perf).
 - [ ] If winner: either replace `/` landing components or keep both and A/B.
-- [ ] Keep `/exp-landing` as lab route regardless (dev-gated).
+- [x] Keep `/exp-landing` as lab route regardless (dev-gated).
 
 ### Phase 7 — Cleanup
 
-- [ ] Remove unused swirly components from exp-landing path only.
-- [ ] Document chosen hairline figures + intensities in this file.
-- [ ] Typecheck + lint on changed files.
+- [x] No swirly components exist in the exp-landing path (nothing to remove).
+- [x] Chosen hairline figures + intensities documented in sections above.
+- [x] Typecheck + lint pass on changed files.
 
-## 4. Open questions
+Verification (headless Chromium, 2026-11-11):
 
-- Do we want the faithful scrums.com clone (A) or adapted résumé content (B)?
-  Default: A in experiment, B on promotion.
-- Which hero figure wins: `Terrain` vs `Riffle` vs `Phosphor`? Test in Phase 2.
-- Folder motif: `Drawer` (sliding drawers) vs `Cabinet` (blades) for "problem"
-  section? Test both.
-- Wardrobe motif: `Rail` only, or also `Lockers`/`Basket`? Start with `Rail`.
-- Should hairline replace the existing `HeroDiagram` entirely on `/` later, or
-  coexist? Decide in Phase 6.
-- Install hairline from npm vs vendor? Prefer npm (`@lucasmarkes/hairline`).
+- 1440 and 390 widths: no console errors, no horizontal overflow.
+- Theme toggle, FAQ accordion, anchor nav (lands at 56px below the sticky nav)
+  and mobile menu all work.
+- Rail figure animates on its own and responds to hover.
+
+## 4. Decisions & open questions
+
+Settled:
+
+- Content is **adapted to the résumé product (B)**, keeping the scrums.com
+  rhythm and section order.
+- Hero figure: **`Terrain`** (81 pillars). `Riffle` is the final CTA.
+- Folder motif: **`Drawer`** for the problem section.
+- Wardrobe motif: **`Rail`** for the wardrobe section.
+- Install from npm (`@lucasmarkes/hairline@0.5.1`), no vendoring.
+
+Open:
+
+- Should hairline replace the existing `HeroDiagram` on `/` later, or coexist?
+  Decide in Phase 6.
+- Do we promote the whole exp-landing to `/`, or keep the current landing and
+  ship exp-landing as an alternate?
 
 ## 5. Hairline usage notes (for implementers)
 

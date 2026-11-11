@@ -520,3 +520,16 @@
     @apply bg-background text-foreground;
   }
 }
+
+/*
+ * exp-landing experiment: the dark-mode reset above clears every border colour
+ * with `!important`. Restore a visible neutral default inside that subtree so
+ * the landing keeps its section rhythm. Accent lines use ring/shadow instead of
+ * border colour so they survive the reset.
+ */
+.dark .exp-landing,
+.dark .exp-landing *,
+.dark .exp-landing ::before,
+.dark .exp-landing ::after {
+  border-color: color-mix(in oklch, var(--color-base-content) 18%, transparent) !important;
+}
