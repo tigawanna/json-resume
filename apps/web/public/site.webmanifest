@@ -1,6 +1,6 @@
 {
-  "name": "MyWebSite",
-  "short_name": "MySite",
+  "name": "Whiskers",
+  "short_name": "Whiskers",
   "icons": [
     {
       "src": "/web-app-manifest-192x192.png",
@@ -16,6 +16,6 @@
     }
   ],
   "theme_color": "#0f100f",
-  "background_color": "#020000",
+  "background_color": "#0f100f",
   "display": "standalone"
 }
