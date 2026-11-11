@@ -20,3 +20,4 @@ db.sqlite
 *.sqlite3
 *.db
 tsconfig.tsbuildinfo
+.vitest/

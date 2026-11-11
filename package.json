@@ -29,60 +29,6 @@
   },
   "packageManager": "pnpm@10.27.0",
   "pnpm": {
-    "packageExtensions": {
-      "better-auth": {
-        "peerDependencies": {
-          "better-sqlite3": "^12.0.0 || ^13.0.0",
-          "vitest": "^2.0.0 || ^3.0.0 || ^4.0.0 || ^5.0.0"
-        }
-      }
-    },
-    "overrides": {
-      "@types/react": "^19.2.14",
-      "@types/react-dom": "^19.2.3",
-      "@babel/core": "^7.29.13",
-      "@protobufjs/utf8": "^1.1.2",
-      "@tanstack/db": "0.7.2",
-      "@tanstack/db-sqlite-persistence-core": "0.2.12",
-      "adm-zip": "^0.6.1",
-      "baseline-browser-mapping": "^2.11.35",
-      "body-parser": "^2.4.0",
-      "browserslist": "^4.29.5",
-      "defu": "^6.1.5",
-      "esbuild": "^0.28.2",
-      "fast-uri": "^3.1.2",
-      "ip-address": "^10.1.1",
-      "js-yaml": "^4.3.2",
-      "launch-editor": "^2.14.2",
-      "lodash": "^4.18.0",
-      "oxfmt": "0.72.0",
-      "protobufjs": "^7.6.6",
-      "proxy-addr": "^2.0.8",
-      "qs": "^6.17.1",
-      "seroval": "^1.7.10",
-      "sharp": "^0.35.5",
-      "shell-quote": "^1.12.0",
-      "source-map-js": "^1.2.2",
-      "vite": "npm:@voidzero-dev/vite-plus-core@1.5.0",
-      "vitest": "5.1.0",
-      "ws": "^8.22.2",
-      "picomatch": "^4.0.4",
-      "postcss": "^8.5.10"
-    },
-    "onlyBuiltDependencies": [
-      "@openrouter/sdk",
-      "better-sqlite3",
-      "core-js",
-      "es5-ext",
-      "esbuild",
-      "futurescript",
-      "protobufjs",
-      "sharp",
-      "workerd"
-    ],
-    "ignoredBuiltDependencies": [
-      "@journeyapps/wa-sqlite"
-    ],
     "minimumReleaseAgeExclude": [
       "event-sourced-collection"
     ]

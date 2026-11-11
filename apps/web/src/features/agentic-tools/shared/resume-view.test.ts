@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import type { ResumeDetailDTO } from "@/data-access-layer/resume/resume.types";
 import { resumeViewSchema } from "../resume-tool-schemas";
 import { parseTech, resumeView } from "./resume-view";

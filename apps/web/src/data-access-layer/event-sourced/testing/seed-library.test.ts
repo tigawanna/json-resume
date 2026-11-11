@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vite-plus/test";
 import { libraryKeys, type LibraryCollectionId } from "@/modules/library/library-keys";
 import type { AppDb } from "../collection";
 import { openTestAppDb } from "./app-test-db";

@@ -1,5 +1,5 @@
 import { createCollection, localOnlyCollectionOptions, queryOnce } from "@tanstack/db";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import {
   keywordPattern,
   listOffset,

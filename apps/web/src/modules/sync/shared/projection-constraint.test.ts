@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { uniqueConstraintColumns } from "./projection-constraint.ts";
 
 describe("uniqueConstraintColumns", () => {

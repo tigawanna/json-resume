@@ -1,6 +1,6 @@
 import type { Resume } from "@/data-access-layer/event-sourced/schemas";
 import { emptyResumeLayout } from "@/features/resume/resume-layout";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { resumeLabel, resumesJobIds, resumesLibraryIds } from "./resume-filter";
 
 function resume(overrides: Partial<Resume>): Resume {

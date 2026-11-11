@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { createDefaultResume, resumeDocumentV1Schema, toResumeDocumentV1 } from "./resume-schema";
 import { replaceResumeDocumentToolInputSchema } from "@/features/agentic-tools/resume-tool-schemas";
 

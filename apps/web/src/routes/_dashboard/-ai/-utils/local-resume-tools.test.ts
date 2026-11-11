@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { emptyResumeLayout } from "@/features/resume/resume-layout";
 import { useLocalToolDb } from "./local-tool-fixtures";
 import { getLocalResume, listLocalResumes, setLocalActiveResume } from "./local-resume-tools";

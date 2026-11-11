@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import type { ResumeHandoff } from "@/features/agentic-tools/definitions/tool-context";
 import type { UIMessage } from "@tanstack/ai-react";
 import {

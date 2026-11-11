@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vite-plus/test";
 import { HISTORY_UPDATES } from "@/data-access-layer/event-sourced/testing/seed-history/history";
 import { openSeededLibrary } from "./open-seeded-library";
 

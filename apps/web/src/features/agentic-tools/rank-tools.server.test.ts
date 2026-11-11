@@ -1,6 +1,6 @@
 // @vitest-environment node
 
-import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vite-plus/test";
 import { createMigratedTestDatabase, stubTestServerEnv, type TestDatabase } from "@/test/test-db";
 
 vi.mock("@tanstack/react-start/server-only", () => ({}));

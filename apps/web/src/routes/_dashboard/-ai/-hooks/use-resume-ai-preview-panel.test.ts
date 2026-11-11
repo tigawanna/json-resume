@@ -1,6 +1,6 @@
 import { resumeWriteToolNames } from "@/features/agentic-tools/resume-write-tools";
 import type { UIMessage } from "@tanstack/ai-react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import {
   answersSavedByReply,
   coverLetterSavedByReply,

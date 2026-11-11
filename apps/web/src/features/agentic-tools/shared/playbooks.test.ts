@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { chatToolDefinitions } from "../definitions/chat-tool-definitions";
 import { playbookNameSchema } from "../resume-tool-schemas";
 import { getPlaybook } from "./playbooks";

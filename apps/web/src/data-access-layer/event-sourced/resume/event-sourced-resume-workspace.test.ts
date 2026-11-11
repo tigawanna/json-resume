@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vite-plus/test";
 import { resumeDetailToDocument } from "@/data-access-layer/resume/resume-converters";
 import { emptyResumeLayout, type ResumeLayout } from "@/features/resume/resume-layout";
 import { openTestAppDb } from "../testing/app-test-db";

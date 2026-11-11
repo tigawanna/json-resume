@@ -1,5 +1,5 @@
 /* Tests the (copy) name numbering used when cloning résumés. */
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { copyName } from "./clone-resume";
 
 describe("copyName", () => {

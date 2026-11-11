@@ -1,5 +1,5 @@
 import type { Segment } from "@/components/prompt-area/types";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { attachChip, serializeSegments } from "./resume-ai-prompt";
 
 function chip(trigger: string, value: string, displayText: string, data?: unknown): Segment {

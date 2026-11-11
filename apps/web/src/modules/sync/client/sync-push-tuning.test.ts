@@ -1,5 +1,5 @@
 /* Tests HTTP-413 push backoff: batch-size steps and byte caps. */
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import {
   eventsThatFit,
   limitsAfterTooLarge,

@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { emptyResumeLayout, type ResumeLayout } from "@/features/resume/resume-layout";
 import { planCompaction, type CompactionOp } from "./compact-plan.ts";
 

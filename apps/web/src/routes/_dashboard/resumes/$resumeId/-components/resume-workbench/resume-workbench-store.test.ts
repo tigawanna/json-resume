@@ -1,5 +1,5 @@
 import { createDefaultResume } from "@/features/resume/resume-schema";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { createResumeWorkbenchStore } from "./resume-workbench-store";
 
 function createWorkbench() {

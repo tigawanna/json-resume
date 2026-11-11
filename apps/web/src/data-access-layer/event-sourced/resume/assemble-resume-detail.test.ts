@@ -1,5 +1,5 @@
 /* Tests assembling a résumé detail DTO from library snapshots. */
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { emptyResumeLayout } from "@/features/resume/resume-layout";
 import {
   assembleResumeDetail,

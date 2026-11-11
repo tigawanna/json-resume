@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import type { OpenRouterModelEndpoint } from "@/lib/openrouter/types";
 import {
   AGENT_MAX_OUTPUT_TOKENS,

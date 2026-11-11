@@ -7,7 +7,7 @@ import { syncEvent, syncSquashState, user } from "@/lib/drizzle/scheam";
 import { asc, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/libsql/node";
 import { migrate } from "drizzle-orm/libsql/migrator";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vite-plus/test";
 import { SQUASH_STEP_EVENTS, squashUserLogsIncrementally } from "./squash-incremental.server.ts";
 import { SYNC_RESET_COLLECTION } from "../shared/sync-reset.ts";
 

@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { useLocalToolDb } from "./local-tool-fixtures";
 import { setLocalSummary, updateLocalResumeDetails } from "./local-resume-edit-tools";
 import { createLocalResume } from "./local-resume-lifecycle-tools";

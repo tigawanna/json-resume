@@ -1,6 +1,6 @@
 // @vitest-environment node
 
-import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vite-plus/test";
 import { emptyResumeLayout } from "@/features/resume/resume-layout";
 import { createMigratedTestDatabase, stubTestServerEnv, type TestDatabase } from "@/test/test-db";
 

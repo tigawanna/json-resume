@@ -3,7 +3,7 @@ import { readdirSync, readFileSync, rmSync } from "node:fs";
 import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { vi } from "vitest";
+import { vi } from "vite-plus/test";
 
 export type TestDatabase = {
   databasePath: string;

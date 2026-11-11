@@ -1,5 +1,5 @@
 import type { MutationType } from "event-sourced-collection";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { planRestore, planSquash, type RestorableEvent } from "./squash-plan.ts";
 
 let seq = 0;

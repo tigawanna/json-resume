@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { INITIAL_CONTEXT_COMPACTION, reduceContextCompaction } from "./context-compaction";
 
 const started = { before: 7_200, messagesBefore: 14, reusedCheckpoint: false, maxTokens: 5_000 };

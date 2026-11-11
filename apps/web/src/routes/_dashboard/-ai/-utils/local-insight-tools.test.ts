@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import type { JobStatus } from "@/data-access-layer/event-sourced/schemas";
 import { useLocalToolDb } from "./local-tool-fixtures";
 import {

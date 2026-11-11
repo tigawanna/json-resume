@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { dashboardChatToolDefinitions } from "@/features/agentic-tools/definitions/dashboard-tool-definitions";
 import { dashboardAssistantClientTools } from "./dashboard-client-tools";
 

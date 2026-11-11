@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vite-plus/test";
 import type { AppDb } from "@/data-access-layer/event-sourced/collection";
 import { openTestAppDb } from "@/data-access-layer/event-sourced/testing/app-test-db";
 import { emptyResumeLayout } from "@/features/resume/resume-layout";

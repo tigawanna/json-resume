@@ -49,6 +49,10 @@ const config = defineConfig({
       router: {
         routeToken: "layout", // <-- Add this line
       },
+      prerender: {
+        enabled: true,
+        crawlLinks: true, // Automatically discovers and prerenders linked pages
+      },
     }),
     viteReact({
       babel: {

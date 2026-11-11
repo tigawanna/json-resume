@@ -8,7 +8,7 @@
  * upstream event. The guard lives on `acceptMutations`, which is where both
  * pull and a later inbox replay write the row.
  */
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vite-plus/test";
 import { createSyncDevices } from "./sync-test-devices";
 
 type ResumeRow = {

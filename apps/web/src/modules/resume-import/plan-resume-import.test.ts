@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vite-plus/test";
 import { openTestAppDb } from "@/data-access-layer/event-sourced/testing/app-test-db";
 import { assembleResumeDetail } from "@/data-access-layer/event-sourced/resume/assemble-resume-detail";
 import type { AppDb } from "@/data-access-layer/event-sourced/collection";
