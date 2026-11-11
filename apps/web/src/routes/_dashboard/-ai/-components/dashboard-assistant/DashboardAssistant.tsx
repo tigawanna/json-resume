@@ -22,9 +22,13 @@ import { DashboardAssistantConversation } from "./DashboardAssistantConversation
 
 const PANEL_ID = "dashboard-assistant-panel";
 
-/** The résumé editor has its own assistant in its AI tab. */
+/** The résumé editor has its own assistant in its AI tab. The dashboard has its own chat sheet. */
 function isResumeEditorPath(pathname: string) {
   return /^\/resumes\/[^/]+/.test(pathname);
+}
+
+function isDashboardHome(pathname: string) {
+  return pathname === "/dashboard";
 }
 
 function isDevRoute(pathname: string) {
@@ -40,7 +44,7 @@ export function DashboardAssistant() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const pathname = useLocation({ select: (location) => location.pathname });
   const assistant = useDashboardAssistantChat({ onHandedOff: () => setOpen(false) });
-  const hidden = isResumeEditorPath(pathname) || isDevRoute(pathname);
+  const hidden = isResumeEditorPath(pathname) || isDevRoute(pathname) || isDashboardHome(pathname);
   const isWorking = assistant.isLoading || assistant.sessionGenerating;
   const { composerRef } = assistant;
 

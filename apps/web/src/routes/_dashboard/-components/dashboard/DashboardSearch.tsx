@@ -5,8 +5,12 @@ import { cn } from "@/lib/utils";
 import { Search } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useLiveQuery } from "@tanstack/react-db";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
+import { Activity } from "react";
+import { DashboardSheetBrand } from "./DashboardSheetBrand";
+import { AppConfig } from "@/utils/system";
+import { ResumeCreateFormDialog } from "../../resumes/-components/ResumeCreateForm";
 
 type SearchCollectionKey =
   | "resume"
@@ -110,6 +114,31 @@ const COLLECTIONS: CollectionConfig[] = [
 const DEFAULT_SELECTED: SearchCollectionKey[] = ["resume", "job", "resumeExperience"];
 
 export function DashboardSearch() {
+  const search = useSearch({ from: "/_dashboard/dashboard" });
+  const navigate = useNavigate();
+  const open = search.q !== undefined;
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => {
+          void navigate({ to: "/dashboard", search: { q: "" }, replace: true });
+        }}
+        className="flex size-9 shrink-0 items-center justify-center rounded-full border border-base-content/15 bg-primary/10 text-muted-foreground shadow-sm"
+        aria-label="Search across your library"
+        data-test="dashboard-search-trigger"
+      >
+        <Search className="size-6" />
+      </button>
+      <Activity mode={open ? "visible" : "hidden"} name="dashboard-search">
+        <DashboardSearchSheet />
+      </Activity>
+    </>
+  );
+}
+
+function DashboardSearchSheet() {
   const db = useEventSourcedDb();
   const search = useSearch({ from: "/_dashboard/dashboard" });
   const navigate = useNavigate();
@@ -117,6 +146,7 @@ export function DashboardSearch() {
   const open = q !== undefined;
   const [query, setQuery] = useState(q ?? "");
   const [selected, setSelected] = useState<SearchCollectionKey[]>(DEFAULT_SELECTED);
+  const [createOpen, setCreateOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const terms = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
 
@@ -405,142 +435,142 @@ export function DashboardSearch() {
   );
 
   return (
-    <>
-      <button
-        type="button"
-        onClick={() => {
+    <Sheet
+      open={open}
+      onOpenChange={(nextOpen) => {
+        if (!nextOpen) {
           setQuery("");
-          void navigate({ to: "/dashboard", search: { q: "" }, replace: true });
-        }}
-        className="w-full text-left"
-        data-test="dashboard-search-trigger"
+          void navigate({ to: "/dashboard", search: {}, replace: true });
+        }
+      }}
+    >
+      <SheetContent
+        side="top"
+        showCloseButton={false}
+        className="inset-0 h-full w-full border-none p-0"
       >
-        <div className="flex items-center gap-2 rounded-2xl border border-base-content/15 bg-primary/10 px-4 py-3 shadow-sm">
-          <Search className="size-4 text-muted-foreground" />
-          <span className="text-sm text-muted-foreground">Search across your library...</span>
-        </div>
-      </button>
+        <div className="mx-auto flex h-full w-full max-w-5xl flex-col gap-4 p-6">
+          <SheetHeader className="flex flex-row items-center justify-between gap-4 p-0">
+            <DashboardSheetBrand title="Search" />
+            <div className="flex-1">{searchInput}</div>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setQuery("");
+                void navigate({ to: "/dashboard", search: {}, replace: true });
+              }}
+              aria-label="Close search"
+              data-test="dashboard-search-close"
+            >
+              Done
+            </Button>
+          </SheetHeader>
 
-      <Sheet
-        open={open}
-        onOpenChange={(nextOpen) => {
-          if (!nextOpen) {
-            setQuery("");
-            void navigate({ to: "/dashboard", search: {}, replace: true });
-          }
-        }}
-      >
-        <SheetContent
-          side="top"
-          showCloseButton={false}
-          className="inset-0 h-full w-full border-none p-0"
-        >
-          <div className="mx-auto flex h-full w-full max-w-5xl flex-col gap-4 p-6">
-            <SheetHeader className="flex flex-row items-center justify-between gap-4 p-0">
-              <SheetTitle className="sr-only">Search</SheetTitle>
-              <div className="flex-1">{searchInput}</div>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  setQuery("");
-                  void navigate({ to: "/dashboard", search: {}, replace: true });
-                }}
-                aria-label="Close search"
-                data-test="dashboard-search-close"
-              >
-                Done
-              </Button>
-            </SheetHeader>
-
-            <div className="flex flex-wrap gap-2" data-test="dashboard-search-collections">
-              {COLLECTIONS.map((c) => (
-                <label
-                  key={c.key}
-                  className={cn(
-                    "flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1 text-xs transition-colors",
-                    selected.includes(c.key)
-                      ? "border-primary/40 bg-primary/10 text-primary"
-                      : "border-base-content/15 text-muted-foreground",
-                  )}
-                >
-                  <input
-                    type="checkbox"
-                    checked={selected.includes(c.key)}
-                    onChange={() => toggle(c.key)}
-                    className="sr-only"
-                  />
-                  {c.label}
-                </label>
-              ))}
-            </div>
-
-            <div className="flex-1 overflow-y-auto" data-test="dashboard-search-results">
-              {terms.length === 0 ? (
-                <p className="text-sm text-muted-foreground">
-                  Type to search across the selected collections.
-                </p>
-              ) : null}
-              <div className="flex flex-col gap-4">
-                {resultsByCollection.map(({ config, hits }) =>
-                  hits.length === 0 ? null : (
-                    <section key={config.key} className="flex flex-col gap-2">
-                      <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                        {config.label} ({hits.length})
-                      </h3>
-                      <div className="grid gap-2 sm:grid-cols-2">
-                        {hits.map((hit) => {
-                          const className =
-                            "block rounded-xl border border-base-content/15 bg-primary/10 p-3 text-sm shadow-sm transition-colors hover:bg-primary/20";
-                          const content = (
-                            <>
-                              <p className="font-medium">{hit.title}</p>
-                              {hit.subtitle ? (
-                                <p className="text-xs text-muted-foreground">{hit.subtitle}</p>
-                              ) : null}
-                              {hit.snippet ? (
-                                <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
-                                  {hit.snippet}
-                                </p>
-                              ) : null}
-                            </>
-                          );
-                          return hit.href ? (
-                            <Link
-                              key={hit.id}
-                              to={hit.href}
-                              onClick={() => {
-                                setQuery("");
-                                void navigate({ to: "/dashboard", search: {}, replace: true });
-                              }}
-                              className={className}
-                              data-test={`dashboard-search-hit-${config.key}`}
-                            >
-                              {content}
-                            </Link>
-                          ) : (
-                            <div
-                              key={hit.id}
-                              className={className}
-                              data-test={`dashboard-search-hit-${config.key}`}
-                            >
-                              {content}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </section>
-                  ),
+          <div className="flex flex-wrap gap-2" data-test="dashboard-search-collections">
+            {COLLECTIONS.map((c) => (
+              <label
+                key={c.key}
+                className={cn(
+                  "flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1 text-xs transition-colors",
+                  selected.includes(c.key)
+                    ? "border-primary/40 bg-primary/10 text-primary"
+                    : "border-base-content/15 text-muted-foreground",
                 )}
-                {terms.length > 0 && resultsByCollection.every((r) => r.hits.length === 0) ? (
-                  <p className="text-sm text-muted-foreground">No matches found.</p>
-                ) : null}
+              >
+                <input
+                  type="checkbox"
+                  checked={selected.includes(c.key)}
+                  onChange={() => toggle(c.key)}
+                  className="sr-only"
+                />
+                {c.label}
+              </label>
+            ))}
+          </div>
+
+          <div className="flex-1 overflow-y-auto" data-test="dashboard-search-results">
+            {terms.length === 0 ? (
+              <div
+                className="mx-auto flex h-full max-w-sm flex-col items-center gap-4 py-16 text-center"
+                data-test="dashboard-search-empty"
+              >
+                <AppConfig.icon className="size-16 text-primary" />
+                <div className="flex flex-col gap-1">
+                  <p className="text-base font-medium">Search your library</p>
+                  <p className="text-sm text-muted-foreground">
+                    Type above, or start a résumé with nothing in it yet.
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  onClick={() => setCreateOpen(true)}
+                  data-test="dashboard-search-create-resume"
+                >
+                  Create a résumé from scratch
+                </Button>
+                <ResumeCreateFormDialog open={createOpen} setOpen={setCreateOpen} />
               </div>
+            ) : null}
+            <div className="flex flex-col gap-4">
+              {resultsByCollection.map(({ config, hits }) =>
+                hits.length === 0 ? null : (
+                  <section key={config.key} className="flex flex-col gap-2">
+                    <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                      {config.label} ({hits.length})
+                    </h3>
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      {hits.map((hit) => {
+                        const className =
+                          "block rounded-xl border border-base-content/15 bg-primary/10 p-3 text-sm shadow-sm transition-colors hover:bg-primary/20";
+                        const content = (
+                          <>
+                            <p className="font-medium">{hit.title}</p>
+                            {hit.subtitle ? (
+                              <p className="text-xs text-muted-foreground">{hit.subtitle}</p>
+                            ) : null}
+                            {hit.snippet ? (
+                              <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
+                                {hit.snippet}
+                              </p>
+                            ) : null}
+                          </>
+                        );
+                        return hit.href ? (
+                          <Link
+                            key={hit.id}
+                            to={hit.href}
+                            onClick={() => {
+                              setQuery("");
+                              void navigate({ to: "/dashboard", search: {}, replace: true });
+                            }}
+                            className={className}
+                            data-test={`dashboard-search-hit-${config.key}`}
+                          >
+                            {content}
+                          </Link>
+                        ) : (
+                          <div
+                            key={hit.id}
+                            className={className}
+                            data-test={`dashboard-search-hit-${config.key}`}
+                          >
+                            {content}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </section>
+                ),
+              )}
+              {terms.length > 0 && resultsByCollection.every((r) => r.hits.length === 0) ? (
+                <p className="text-sm text-muted-foreground">No matches found.</p>
+              ) : null}
             </div>
           </div>
-        </SheetContent>
-      </Sheet>
-    </>
+        </div>
+      </SheetContent>
+    </Sheet>
   );
 }

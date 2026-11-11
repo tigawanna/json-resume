@@ -3,12 +3,15 @@ import { getResumeCardDisplayName } from "@/utils/resume-display-name";
 import { formatLocaleDate } from "@/utils/date-helpers";
 import { ResourceCard } from "@/components/resource-card";
 import { Link } from "@tanstack/react-router";
-import { FileText } from "lucide-react";
+import { FileText, Plus, Sparkle } from "lucide-react";
 import { useLiveQuery } from "@tanstack/react-db";
 import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { ResumeCreateFormDialog } from "../../resumes/-components/ResumeCreateForm";
 
-export function RecentResumes() {
+export function RecentResumes({ onStartFromJob }: { onStartFromJob: () => void }) {
   const db = useEventSourcedDb();
+  const [createOpen, setCreateOpen] = useState(false);
   const { data: resumes, isLoading } = useLiveQuery((q) =>
     q
       .from({ row: db.collections.resume })
@@ -16,7 +19,44 @@ export function RecentResumes() {
       .limit(3),
   );
 
-  if (isLoading || !resumes || resumes.length === 0) return null;
+  if (isLoading || !resumes) return null;
+
+  if (resumes.length === 0) {
+    return (
+      <div
+        className="w-full flex flex-col items-center gap-4 py-8 text-center "
+        data-test="dashboard-empty"
+      >
+        <div className="flex flex-col gap-1">
+          <p className="text-base font-medium">Nothing here yet</p>
+          <p className="text-sm text-muted-foreground">
+            Start from a job description, or from scratch.
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center justify-center gap-2">
+          <Button
+            variant="outline"
+            type="button"
+            onClick={onStartFromJob}
+            data-test="dashboard-start-from-job"
+          >
+            Start from a job description
+            <Sparkle className="size-4" />
+          </Button>
+          <Button
+            variant="outline"
+            type="button"
+            onClick={() => setCreateOpen(true)}
+            data-test="dashboard-create-resume"
+          >
+            From scratch
+            <Plus className="size-4" />
+          </Button>
+        </div>
+        <ResumeCreateFormDialog open={createOpen} setOpen={setCreateOpen} />
+      </div>
+    );
+  }
 
   return (
     <section className="flex w-full flex-col gap-3" data-test="recent-resumes">

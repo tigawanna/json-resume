@@ -1,5 +1,5 @@
-import { AppConfig } from "@/utils/system";
 import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
 import { z } from "zod";
 import { DashboardChat } from "./-components/dashboard/DashboardChat";
 import { DashboardSearch } from "./-components/dashboard/DashboardSearch";
@@ -20,26 +20,21 @@ export const Route = createFileRoute("/_dashboard/dashboard")({
 });
 
 function RouteComponent() {
-  return (
-    <div className="flex w-full flex-col gap-8 h-full" data-test="event-sourced-dashboard">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div className="flex flex-wrap items-center gap-2">
-          {/* <ImportAllFromLegacyButton /> */}
-        </div>
-        <DashboardSearch />
-      </div>
+  const [chatOpen, setChatOpen] = useState(false);
 
-      <div className="h-full w-full flex flex-col items-center justify-center gap-6">
-        <div className="h-full w-full flex flex-col items-center justify-center gap-6">
-          <h1 className="text-4xl font-bold tracking-tight">{AppConfig.name}</h1>
-          <h2 className="text-lg text-muted-foreground">Let's get crafting</h2>
+  return (
+    <div className="relative flex h-full w-full flex-col gap-8" data-test="event-sourced-dashboard">
+      <div className="flex h-full w-full flex-col items-center justify-center gap-8">
+        <div className="flex items-center justify-center gap-3">
+          <h2 className="text-4xl text-muted-foreground">Let's get crafting</h2>
+          <DashboardSearch />
         </div>
-        <div className="h-full max-w-[90%] md:max-w-[70%]">
-          <RecentResumes />
+        <div className="w-full max-w-[90%] md:max-w-[70%]">
+          <RecentResumes onStartFromJob={() => setChatOpen(true)} />
         </div>
       </div>
-      <div className="h-full w-full flex justify-center">
-        <DashboardChat />
+      <div className="w-full flex justify-center pb-10">
+        <DashboardChat open={chatOpen} onOpenChange={setChatOpen} />
       </div>
     </div>
   );
