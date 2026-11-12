@@ -46,7 +46,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         title: AppConfig.name,
         description: AppConfig.description,
         keywords:
-          "resume, JSON resume, PDF, job application, LLM, tailored resume, TanStack Start, React",
+          "free resume builder for developers, ATS friendly PDF, JSON resume, software engineer resume, tailored resume",
         og: {
           title: AppConfig.name,
           description: AppConfig.description,

@@ -16,7 +16,7 @@ import { ExpWorkbench } from "./exp-workbench";
 
 export function ExpLandingPage() {
   return (
-    <div data-test="exp-landing-page" className="exp-landing min-h-dvh bg-base-100">
+    <div data-test="landing-page" className="exp-landing min-h-dvh bg-base-100">
       <ExpNavbar />
       <main>
         <ExpHero />

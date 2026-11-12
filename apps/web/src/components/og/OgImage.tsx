@@ -9,7 +9,7 @@ export interface OgImageProps {
  * Reusable OG image template (1200x630).
  * Render with Takumi (`takumi-js`) to produce a PNG.
  */
-export function OgImage({ title, description, siteLabel = "Whiskers", iconDataUrl }: OgImageProps) {
+export function OgImage({ title, description, siteLabel = "Crafted", iconDataUrl }: OgImageProps) {
   return (
     <div
       style={{
@@ -110,8 +110,8 @@ export function OgImage({ title, description, siteLabel = "Whiskers", iconDataUr
           color: "#cfd3c8",
         }}
       >
-        <span>whiskers.app</span>
-        <span>Whiskers</span>
+        <span>crafted.app</span>
+        <span>Crafted</span>
       </div>
     </div>
   );

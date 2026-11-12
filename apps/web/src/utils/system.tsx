@@ -1,21 +1,25 @@
 import { WhiskersIcon } from "@/components/icon/WhiskersIcon";
 
+const contactEmail = "denniskinuthiawaweru@gmail.com";
+
 export const AppConfig = {
-  name: "Whiskers",
-  wordmark: "Whiskers",
+  name: "Crafted",
+  wordmark: "Crafted",
   brief:
     "Turn your résumé into JSON, tailor it with any LLM using a job description, and export a clean PDF—without pasting prose back into a doc.",
   description:
-    "A structured JSON résumé you can copy into ChatGPT or any assistant with a job posting, paste the improved JSON back, and download a PDF. Built with React, TanStack Start, and Vite+.",
+    "A free résumé builder for developers. Keep your history as structured JSON, tailor it to a posting, and export an ATS-friendly PDF.",
   logo: {
     src: "/logo.png",
-    alt: "Whiskers",
+    alt: "Crafted",
     href: "/",
   },
   icon: WhiskersIcon,
-  themeStorageKey: "whiskers.theme",
+  themeStorageKey: "crafted.theme",
+  email: contactEmail,
   links: {
-    github: "https://github.com/your-org/whiskers",
-    mail: "mailto:hello@example.com",
+    mail: `mailto:${contactEmail}`,
+    github: "https://github.com/tigawanna/crafted",
+    twitter: "https://twitter.com/tigawanna",
   },
 };

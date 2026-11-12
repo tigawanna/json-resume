@@ -1,4 +1,4 @@
-export const BRAND = "Whiskas";
+export const BRAND = "Crafted";
 
 export const NAV_LINKS = [
   { label: "Workbench", href: "#workbench" },
@@ -12,7 +12,7 @@ export const NAV_LINKS = [
 export const STATS = [
   { value: "A collection", label: "of parts" },
   { value: "Any LLM", label: "Bring your own key" },
-  { value: "JSON to PDF", label: "Export" },
+  { value: "ATS-friendly PDF", label: "Export" },
 ] as const;
 
 export const PROBLEM_PAIRS = [
@@ -45,8 +45,8 @@ export const PLATFORM_POINTS = [
     body: "Paste your own key. Send the collection and a posting, get improved JSON back with a diff.",
   },
   {
-    title: "Structured JSON to PDF outputs",
-    body: "Render a PDF from the same data, so the preview and the file never drift.",
+    title: "ATS-friendly PDF outputs",
+    body: "The exported PDF is real, selectable text in a standard section order — the same tree as the preview — so applicant tracking systems can read it.",
   },
 ] as const;
 
@@ -54,18 +54,18 @@ export const GOVERN_POINTS = [
   "Local-first: your data lives in your browser and your database, not ours.",
   "Bring your own key: paste it once, set a usage cap in case it leaks.",
   "Export anytime: the JSON is never locked in.",
-  "No hidden formatting: the preview is the same component tree the PDF uses.",
+  "No hidden formatting: the preview is the same component tree the ATS-friendly PDF uses.",
 ] as const;
 
 export const COMPOSE_FEATURES = [
   {
     tag: "Variations",
-    title: "One collection, many résumés",
-    body: "Pick the summary and the bullets that fit the role. Shared work stays shared.",
+    title: "A collection of the parts of your resumes",
+    body: "Pick the summary and the bullets that fit the role and only change what is mis-aligned",
   },
   {
     tag: "Hats",
-    title: "Show the role that fits this job",
+    title: "Show the bullets that fits this job",
     body: "Not every hat belongs on every application. Choose which summary, bullets and skills come forward for this posting.",
   },
   {
@@ -173,7 +173,7 @@ export const FAQ_ITEMS = [
   {
     question: `What is ${BRAND}?`,
     answer:
-      "A career brain that stores your history as structured JSON: roles, bullets, skills, projects, talks and summaries. Résumés, cover letters and application answers are outputs of that brain, tailored to a posting with any LLM you bring, and exported as a clean PDF.",
+      "A career brain that stores your history as structured JSON: roles, bullets, skills, projects, talks and summaries. Résumés, cover letters and application answers are outputs of that brain, tailored to a posting with any LLM you bring, and exported as an ATS-friendly PDF: selectable text, standard headings, no text baked into images.",
   },
   {
     question: "Do I need an account?",

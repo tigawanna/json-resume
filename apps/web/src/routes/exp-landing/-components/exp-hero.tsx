@@ -31,6 +31,9 @@ export function ExpHero() {
         </div>
 
         <div className="relative z-10 flex flex-col justify-center gap-8 px-6 pt-16 pb-12 md:px-12 md:pt-24 lg:max-w-184 lg:py-28">
+          <p className="font-mono text-[11px] tracking-[0.18em] text-primary uppercase">
+            A free résumé builder for developers
+          </p>
           <h1 className="max-w-[14ch] font-serif text-6xl leading-[0.9] font-medium tracking-tight text-base-content md:text-7xl lg:text-8xl">
             Your
             <br />
@@ -63,7 +66,7 @@ export function ExpHero() {
           </div>
 
           <p className="font-mono text-[11px] text-muted-foreground">
-            JSON Resume schema · MIT licensed · No account required
+            Free for developers · ATS-friendly PDF · MIT licensed · No account required
           </p>
         </div>
       </div>

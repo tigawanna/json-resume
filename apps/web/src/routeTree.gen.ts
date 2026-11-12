@@ -19,6 +19,8 @@ import { Route as AuthIndexRouteImport } from './routes/auth/index'
 import { Route as AuthGithubRouteImport } from './routes/auth/github'
 import { Route as AuthSignupRouteImport } from './routes/auth/signup'
 import { Route as ExpLandingIndexRouteImport } from './routes/exp-landing/index'
+import { Route as PrivacyIndexRouteImport } from './routes/privacy/index'
+import { Route as TermsIndexRouteImport } from './routes/terms/index'
 import { Route as TestIndexRouteImport } from './routes/test/index'
 import { Route as DashboardAdminIndexRouteImport } from './routes/_dashboard/admin/index'
 import { Route as DashboardAdminRouteRouteImport } from './routes/_dashboard/admin/route'
@@ -121,6 +123,16 @@ const AuthSignupRoute = AuthSignupRouteImport.update({
 const ExpLandingIndexRoute = ExpLandingIndexRouteImport.update({
   id: '/exp-landing/',
   path: '/exp-landing/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyIndexRoute = PrivacyIndexRouteImport.update({
+  id: '/privacy/',
+  path: '/privacy/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermsIndexRoute = TermsIndexRouteImport.update({
+  id: '/terms/',
+  path: '/terms/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TestIndexRoute = TestIndexRouteImport.update({
@@ -425,6 +437,8 @@ export interface FileRoutesByFullPath {
   '/auth/signup': typeof AuthSignupRoute
   '/auth/': typeof AuthIndexRoute
   '/exp-landing/': typeof ExpLandingIndexRoute
+  '/privacy/': typeof PrivacyIndexRoute
+  '/terms/': typeof TermsIndexRoute
   '/test/': typeof TestIndexRoute
   '/admin/route': typeof DashboardAdminRouteRoute
   '/api/agentic/$': typeof ApiAgenticSplatRoute
@@ -489,6 +503,8 @@ export interface FileRoutesByTo {
   '/auth/signup': typeof AuthSignupRoute
   '/auth': typeof AuthIndexRoute
   '/exp-landing': typeof ExpLandingIndexRoute
+  '/privacy': typeof PrivacyIndexRoute
+  '/terms': typeof TermsIndexRoute
   '/test': typeof TestIndexRoute
   '/admin/route': typeof DashboardAdminRouteRoute
   '/api/agentic/$': typeof ApiAgenticSplatRoute
@@ -556,6 +572,8 @@ export interface FileRoutesById {
   '/auth/signup': typeof AuthSignupRoute
   '/auth/': typeof AuthIndexRoute
   '/exp-landing/': typeof ExpLandingIndexRoute
+  '/privacy/': typeof PrivacyIndexRoute
+  '/terms/': typeof TermsIndexRoute
   '/test/': typeof TestIndexRoute
   '/_dashboard/admin/route': typeof DashboardAdminRouteRoute
   '/api/agentic/$': typeof ApiAgenticSplatRoute
@@ -623,6 +641,8 @@ export interface FileRouteTypes {
     | '/auth/signup'
     | '/auth/'
     | '/exp-landing/'
+    | '/privacy/'
+    | '/terms/'
     | '/test/'
     | '/admin/route'
     | '/api/agentic/$'
@@ -687,6 +707,8 @@ export interface FileRouteTypes {
     | '/auth/signup'
     | '/auth'
     | '/exp-landing'
+    | '/privacy'
+    | '/terms'
     | '/test'
     | '/admin/route'
     | '/api/agentic/$'
@@ -753,6 +775,8 @@ export interface FileRouteTypes {
     | '/auth/signup'
     | '/auth/'
     | '/exp-landing/'
+    | '/privacy/'
+    | '/terms/'
     | '/test/'
     | '/_dashboard/admin/route'
     | '/api/agentic/$'
@@ -816,6 +840,8 @@ export interface RootRouteChildren {
   SearchRoute: typeof SearchRoute
   ApiMcpRoute: typeof ApiMcpRoute
   ExpLandingIndexRoute: typeof ExpLandingIndexRoute
+  PrivacyIndexRoute: typeof PrivacyIndexRoute
+  TermsIndexRoute: typeof TermsIndexRoute
   TestIndexRoute: typeof TestIndexRoute
   ApiAgenticSplatRoute: typeof ApiAgenticSplatRoute
   ApiAgenticOpenapiRoute: typeof ApiAgenticOpenapiRouteWithChildren
@@ -903,6 +929,20 @@ declare module '@tanstack/react-router' {
       path: '/exp-landing'
       fullPath: '/exp-landing/'
       preLoaderRoute: typeof ExpLandingIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy/': {
+      id: '/privacy/'
+      path: '/privacy'
+      fullPath: '/privacy/'
+      preLoaderRoute: typeof PrivacyIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terms/': {
+      id: '/terms/'
+      path: '/terms'
+      fullPath: '/terms/'
+      preLoaderRoute: typeof TermsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/test/': {
@@ -1411,6 +1451,8 @@ const rootRouteChildren: RootRouteChildren = {
   SearchRoute: SearchRoute,
   ApiMcpRoute: ApiMcpRoute,
   ExpLandingIndexRoute: ExpLandingIndexRoute,
+  PrivacyIndexRoute: PrivacyIndexRoute,
+  TermsIndexRoute: TermsIndexRoute,
   TestIndexRoute: TestIndexRoute,
   ApiAgenticSplatRoute: ApiAgenticSplatRoute,
   ApiAgenticOpenapiRoute: ApiAgenticOpenapiRouteWithChildren,

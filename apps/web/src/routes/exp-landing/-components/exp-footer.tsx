@@ -20,7 +20,7 @@ export function ExpFooter() {
             </Link>
             <p className="mt-4 max-w-[36ch] text-sm leading-relaxed text-muted-foreground">
               A career brain for your résumé, cover letters and applications. Structured JSON,
-              tailored with any LLM, exported as a clean PDF. Open source and local-first.
+              tailored with any LLM, exported as an ATS-friendly PDF. Open source and local-first.
             </p>
             <p className="mt-6 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
               Built with TanStack Start · MIT
@@ -52,7 +52,14 @@ export function ExpFooter() {
           <span>
             © {new Date().getFullYear()} {BRAND}
           </span>
-          <span>Software engineering, sorted for your résumé.</span>
+          <span className="flex gap-4">
+            <Link to="/privacy" className="transition-colors hover:text-base-content">
+              Privacy
+            </Link>
+            <Link to="/terms" className="transition-colors hover:text-base-content">
+              Terms
+            </Link>
+          </span>
         </div>
       </div>
     </footer>

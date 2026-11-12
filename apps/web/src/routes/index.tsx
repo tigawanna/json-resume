@@ -1,24 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
-import {
-  LandingCTA,
-  LandingFeatures,
-  LandingFooter,
-  LandingHero,
-  LandingNavbar,
-  LandingShowcase,
-} from "./-components/landing";
 
-export const Route = createFileRoute("/")({ component: LandingPage });
+import { ExpLandingPage } from "./exp-landing/-components/exp-landing-page";
 
-function LandingPage() {
-  return (
-    <div data-test="landing-page" className="min-h-dvh bg-base-100 bg-grid">
-      <LandingNavbar />
-      <LandingHero />
-      <LandingFeatures />
-      <LandingShowcase />
-      <LandingCTA />
-      <LandingFooter />
-    </div>
-  );
-}
+export const Route = createFileRoute("/")({
+  component: ExpLandingPage,
+  head: () => ({
+    meta: [
+      {
+        title: "Crafted: a free résumé builder for developers",
+        description:
+          "A free résumé builder for developers. Keep your history as structured JSON, tailor it to a posting, and export an ATS-friendly PDF.",
+        keywords:
+          "free resume builder for developers, ATS friendly PDF, JSON resume, software engineer resume",
+      },
+    ],
+  }),
+});

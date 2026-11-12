@@ -51,7 +51,9 @@ const config = defineConfig({
       },
       prerender: {
         enabled: true,
-        crawlLinks: true, // Automatically discovers and prerenders linked pages
+        // Follow links from the landing page (privacy, terms). Skip the client-only app.
+        crawlLinks: true,
+        filter: (page) => page.path !== "/dashboard" && !page.path.startsWith("/dashboard/"),
       },
     }),
     viteReact({
