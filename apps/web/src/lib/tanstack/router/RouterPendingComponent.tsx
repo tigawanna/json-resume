@@ -1,21 +1,31 @@
-import { SiteIcon } from "@/components/icon/SiteIcon";
-import { BackgroundRippleEffect } from "@/components/ui/background-ripple-effect";
+import { MorphingShape } from "@/components/loaders/shadcn-loaders";
+import { cn } from "@/lib/utils";
+import { AppConfig } from "@/utils/system";
+import { Link } from "@tanstack/react-router";
 
-export function RouterPendingComponent() {
+export function RouterPendingComponent({
+  showHeader = true,
+  height = "h-dvh",
+}: {
+  showHeader?: boolean;
+  height?: string;
+}) {
   return (
-    <div className="flex min-h-screen w-full flex-col items-center justify-center gap-2 relative overflow-hidden">
-      <BackgroundRippleEffect
-        rows={10}
-        cols={10}
-        cellSize={56}
-        className="mt-20"
-        pulse
-        pulseTarget="random"
-        pulseInterval={3000}
-      />
-      <SiteIcon size={250} />
-      {/* <div className="bg-primary/5 flex h-[80vh] w-[95%] items-center justify-center rounded-2xl">
-      </div> */}
+    <div className={cn("flex w-full flex-col items-center justify-center gap-4", height)}>
+      {showHeader ? (
+        <div className="flex w-full items-center justify-center gap-1 ">
+          <Link
+            to="/"
+            className="flex w-fit items-center gap-2 text-lg font-medium hover:text-primary hover:underline"
+          >
+            <AppConfig.icon className="size-10" />
+            {AppConfig.wordmark}
+          </Link>
+        </div>
+      ) : null}
+      <div className="flex  w-full flex-col items-center justify-center gap-4">
+        <MorphingShape />
+      </div>
     </div>
   );
 }

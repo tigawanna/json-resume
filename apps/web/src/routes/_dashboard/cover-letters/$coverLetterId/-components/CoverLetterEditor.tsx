@@ -102,25 +102,30 @@ export function CoverLetterEditor({ letter }: { letter: CoverLetter }) {
   return (
     <div className="flex flex-col gap-4" data-test="cover-letter-editor">
       <div className="flex flex-col gap-3">
-        <Button asChild variant="ghost" size="sm" className="-ml-2 w-fit">
-          <Link to="/cover-letters" data-test="cover-letter-back">
-            <ArrowLeft className="size-4" />
-            Cover letters
-          </Link>
-        </Button>
         <div className="flex flex-col gap-3 md:flex-row md:items-center">
-          <Input
-            value={title}
-            onChange={(event) => setTitle(event.target.value)}
-            onBlur={saveTitle}
-            onKeyDown={(event) => {
-              if (event.key === "Enter") event.currentTarget.blur();
-            }}
-            placeholder="Untitled cover letter"
-            aria-label="Cover letter title"
-            className="h-10 text-lg font-semibold md:flex-1"
-            data-test="cover-letter-title"
-          />
+          <div className="flex min-w-0 flex-1 items-center gap-2">
+            <Button asChild variant="ghost" size="icon-sm">
+              <Link
+                to="/cover-letters"
+                aria-label="Back to cover letters"
+                data-test="cover-letter-back"
+              >
+                <ArrowLeft />
+              </Link>
+            </Button>
+            <Input
+              value={title}
+              onChange={(event) => setTitle(event.target.value)}
+              onBlur={saveTitle}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") event.currentTarget.blur();
+              }}
+              placeholder="Untitled cover letter"
+              aria-label="Cover letter title"
+              className="h-10 min-w-0 flex-1 text-lg font-semibold"
+              data-test="cover-letter-title"
+            />
+          </div>
           <div className="flex items-center gap-1.5">
             <CoverLetterActions title={letter.title} body={draftBody} />
             <AlertDialog>

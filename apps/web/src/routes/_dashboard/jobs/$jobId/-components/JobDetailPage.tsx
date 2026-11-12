@@ -90,52 +90,52 @@ export function JobDetailPage({ jobId }: JobDetailPageProps) {
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-4" data-test="job-detail-page">
-      <Button asChild variant="ghost" size="sm" className="-ml-2 w-fit">
-        <Link to="/jobs" data-test="job-detail-back">
-          <ArrowLeft className="size-4" />
-          Jobs
-        </Link>
-      </Button>
-
       <div className="flex flex-col gap-3">
         <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-          <div className="min-w-0 flex-1">
-            <h1 className="truncate text-xl font-semibold">{heading}</h1>
-            <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
-              <Badge variant={job.status === "applied" ? "default" : "secondary"}>
-                {JOB_STATUS_LABELS[job.status]}
-              </Badge>
-              {payDisplay ? (
-                <span className="font-medium text-foreground">{payDisplay}</span>
-              ) : null}
-              {job.payBasis ? (
-                <span className="max-w-full truncate" title={job.payBasis}>
-                  {job.payBasis}
-                </span>
-              ) : null}
-              {job.location ? (
-                <span className="inline-flex items-center gap-1">
-                  <MapPin className="size-3" />
-                  {job.location}
-                </span>
+          <div className="flex min-w-0 flex-1 items-start gap-2">
+            <Button asChild variant="ghost" size="icon-sm">
+              <Link to="/jobs" aria-label="Back to jobs" data-test="job-detail-back">
+                <ArrowLeft />
+              </Link>
+            </Button>
+            <div className="min-w-0 flex-1">
+              <h1 className="truncate text-xl font-semibold">{heading}</h1>
+              <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+                <Badge variant={job.status === "applied" ? "default" : "secondary"}>
+                  {JOB_STATUS_LABELS[job.status]}
+                </Badge>
+                {payDisplay ? (
+                  <span className="font-medium text-foreground">{payDisplay}</span>
+                ) : null}
+                {job.payBasis ? (
+                  <span className="max-w-full truncate" title={job.payBasis}>
+                    {job.payBasis}
+                  </span>
+                ) : null}
+                {job.location ? (
+                  <span className="inline-flex items-center gap-1">
+                    <MapPin className="size-3" />
+                    {job.location}
+                  </span>
+                ) : null}
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground tabular-nums">
+                Created {formatLocaleDateTime(job.createdAt)} · Updated{" "}
+                {formatLocaleDateTime(job.updatedAt)}
+              </p>
+              {job.url ? (
+                <a
+                  href={job.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-1 inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                  data-test={`job-external-link-${job.id}`}
+                >
+                  <ExternalLink className="size-3" />
+                  Open original posting
+                </a>
               ) : null}
             </div>
-            <p className="mt-1 text-xs text-muted-foreground tabular-nums">
-              Created {formatLocaleDateTime(job.createdAt)} · Updated{" "}
-              {formatLocaleDateTime(job.updatedAt)}
-            </p>
-            {job.url ? (
-              <a
-                href={job.url}
-                target="_blank"
-                rel="noreferrer"
-                className="mt-1 inline-flex items-center gap-1 text-xs text-primary hover:underline"
-                data-test={`job-external-link-${job.id}`}
-              >
-                <ExternalLink className="size-3" />
-                Open original posting
-              </a>
-            ) : null}
           </div>
 
           <AlertDialog>

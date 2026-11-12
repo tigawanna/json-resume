@@ -1,4 +1,4 @@
-import { RouterErrorComponent } from "@/lib/tanstack/router/routerErrorComponent";
+import { RouterErrorComponent } from "@/lib/tanstack/router/RouterErrorComponent";
 import * as Sentry from "@sentry/tanstackstart-react";
 import { useEffect } from "react";
 

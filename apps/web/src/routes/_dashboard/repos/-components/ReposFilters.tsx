@@ -1,3 +1,4 @@
+import { SearchBox } from "@/components/search/SearchBox";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -19,7 +20,7 @@ import {
 } from "@/components/ui/select";
 import { useDebouncedValue } from "@/hooks/use-debouncer";
 import { getRouteApi } from "@tanstack/react-router";
-import { RotateCcw, Search, SlidersHorizontal } from "lucide-react";
+import { RotateCcw, SlidersHorizontal } from "lucide-react";
 import { useEffect, useState } from "react";
 import { REPO_PAGE_ROUTEID } from "./constants";
 import {
@@ -70,7 +71,7 @@ export function ReposFilters() {
     commitFilters({ ...filters, ...patch });
   }
 
-  const { debouncedValue: debouncedQueryDraft } = useDebouncedValue(queryDraft, 300);
+  const { debouncedValue: debouncedQueryDraft, isDebouncing } = useDebouncedValue(queryDraft, 300);
 
   useEffect(() => {
     const next = parseRepoSearchBar(debouncedQueryDraft, filters);
@@ -97,17 +98,19 @@ export function ReposFilters() {
       className="flex flex-col gap-3 sm:flex-row sm:items-center"
       data-test="repo-search-builder"
     >
-      <div className="relative min-w-0 flex-1">
-        <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          id="repo-query"
-          data-test="repo-query"
-          placeholder="user:{you} portfolio in:name archived:false …"
-          value={queryDraft}
-          onChange={(event) => setQueryDraft(event.target.value)}
-          className="pl-9 font-mono text-sm"
-          spellCheck={false}
-          aria-label="GitHub search query string"
+      <div className="min-w-0 flex-1">
+        <SearchBox
+          keyword={queryDraft}
+          setKeyword={setQueryDraft}
+          isDebouncing={isDebouncing}
+          dataTest="repo-query"
+          inputProps={{
+            id: "repo-query",
+            placeholder: "user:{you} portfolio in:name archived:false …",
+            className: "h-9 min-w-40 font-mono text-sm",
+            spellCheck: false,
+            "aria-label": "GitHub search query string",
+          }}
         />
       </div>
 

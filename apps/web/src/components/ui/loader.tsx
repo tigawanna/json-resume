@@ -1,0 +1,1262 @@
+import * as React from "react";
+
+export type LoaderVariant =
+  | "classic-spinner"
+  | "dots-pulse"
+  | "pulse-ring"
+  | "bars"
+  | "square-spin"
+  | "double-bounce"
+  | "circular-progress"
+  | "wave-loader"
+  | "skeleton"
+  | "glow-pulse"
+  | "clock"
+  | "hourglass"
+  | "gear"
+  | "orbit"
+  | "snake"
+  | "infinity"
+  | "text-shimmer"
+  | "grid"
+  | "heartbeat"
+  | "floating-bubble"
+  | "matrix"
+  | "loader-dna"
+  | "hex-spin"
+  | "concentric-rings"
+  | "dots-rotate"
+  | "morphing-hex"
+  | "ripple-pulse"
+  | "orbiting-spheres"
+  | "paired-revolution"
+  | "eyes-gaze"
+  | "ripple-wave"
+  | "audio-wave"
+  | "fading-ring"
+  | "morphing-shape"
+  | "dots-chase"
+  | "atom"
+  | "solar-system"
+  | "radar-sweep"
+  | "blocks-wave"
+  | "coffee-cup"
+  | "progress-slider"
+  | "flower-spin"
+  | "bouncing-ball"
+  | "walking-steps"
+  | "corner-chase"
+  | "newtons-cradle"
+  | "comet-trail"
+  | "liquid-fill"
+  | "battery-charge"
+  | "domino-fall";
+
+export interface LoaderProps {
+  variant: LoaderVariant;
+  size?: "sm" | "md" | "lg" | "xl";
+  className?: string;
+}
+
+const sizeClasses = {
+  sm: "w-4 h-4",
+  md: "w-8 h-8",
+  lg: "w-12 h-12",
+  xl: "w-16 h-16",
+};
+
+const loaderSnakeKeyframes = `
+@keyframes loader-snake {
+  0%, 100% { clip-path: inset(0 0 95% 0); }
+  25% { clip-path: inset(0 95% 0 0); }
+  50% { clip-path: inset(95% 0 0 0); }
+  75% { clip-path: inset(0 0 0 95%); }
+}
+.animate-loader-snake { animation: loader-snake 2s linear infinite; }
+`;
+
+const loaderShimmerKeyframes = `
+@keyframes loader-shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+.animate-loader-shimmer { animation: loader-shimmer 2s infinite; }
+`;
+
+const loaderPingKeyframes = `
+@keyframes loader-ping {
+  75%, 100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+`;
+
+const loaderMorphHexKeyframes = `
+@keyframes loader-morph-hex {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(180deg) scale(0.875); }
+}
+`;
+
+const variantKeyframes: Partial<Record<LoaderVariant, string>> = {
+  snake: loaderSnakeKeyframes,
+  skeleton: loaderShimmerKeyframes,
+  infinity: loaderShimmerKeyframes,
+  "text-shimmer": loaderShimmerKeyframes,
+  matrix: loaderShimmerKeyframes,
+  "ripple-pulse": loaderPingKeyframes,
+  "morphing-hex": loaderMorphHexKeyframes,
+};
+
+export const Loader: React.FC<LoaderProps> = ({ variant, size = "md", className = "" }) => {
+  const containerSize = sizeClasses[size] ?? sizeClasses.md;
+  const primaryColorClass = "text-zinc-900 dark:text-zinc-50";
+  const primaryBgClass = "bg-zinc-900 dark:bg-zinc-50";
+  const primaryBorderClass = "border-zinc-900 dark:border-zinc-50";
+  const keyframes = variantKeyframes[variant];
+  const hourglassBorder = size === "sm" ? 8 : size === "md" ? 12 : size === "lg" ? 16 : 20;
+
+  let content: React.ReactNode = null;
+
+  switch (variant) {
+    case "classic-spinner":
+      content = (
+        <div
+          className={`${containerSize} border-2 border-zinc-200 dark:border-zinc-800 border-t-zinc-900 dark:border-t-zinc-50 rounded-full animate-spin ${className}`}
+        />
+      );
+      break;
+
+    case "dots-pulse":
+      content = (
+        <div className={`flex gap-1 items-center ${className}`}>
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              className={`${size === "sm" ? "w-1 h-1" : "w-2 h-2"} ${primaryBgClass} rounded-full animate-bounce`}
+              style={{ animationDelay: `${i * 0.15}s` }}
+            />
+          ))}
+        </div>
+      );
+      break;
+
+    case "pulse-ring":
+      content = (
+        <div className={`relative ${containerSize} ${className}`}>
+          <div className="absolute inset-0 border-2 border-zinc-900 dark:border-zinc-50 rounded-full animate-ping opacity-75" />
+          <div className="absolute inset-2 border-2 border-zinc-600 dark:border-zinc-400 rounded-full animate-pulse" />
+        </div>
+      );
+      break;
+
+    case "bars":
+      content = (
+        <div className={`flex items-end gap-1 h-8 ${className}`}>
+          {[0, 1, 2, 3, 4].map((i) => (
+            <div
+              key={i}
+              className={`w-1 ${primaryBgClass} rounded-full animate-[pulse_1s_ease-in-out_infinite]`}
+              style={{
+                height: `${20 + ((i * 15) % 80)}%`,
+                animationDelay: `${i * 0.1}s`,
+              }}
+            />
+          ))}
+        </div>
+      );
+      break;
+
+    case "square-spin":
+      content = (
+        <div
+          className={`${containerSize} ${primaryBgClass} animate-[spin_2s_linear_infinite] rounded-sm shadow-sm ${className}`}
+        />
+      );
+      break;
+
+    case "double-bounce":
+      content = (
+        <div className={`relative ${containerSize} ${className}`}>
+          <div
+            className={`absolute inset-0 ${primaryBgClass} rounded-full opacity-60 animate-bounce`}
+          />
+          <div className="absolute inset-0 bg-zinc-400 dark:bg-zinc-600 rounded-full opacity-60 animate-bounce [animation-delay:700ms]" />
+        </div>
+      );
+      break;
+
+    case "circular-progress":
+      content = (
+        <svg className={`${containerSize} animate-spin ${className}`} viewBox="0 0 50 50">
+          <circle
+            className="stroke-zinc-900 dark:stroke-zinc-50 fill-none"
+            cx="25"
+            cy="25"
+            r="20"
+            strokeWidth="4"
+            strokeLinecap="round"
+            strokeDasharray="80, 200"
+          />
+        </svg>
+      );
+      break;
+
+    case "wave-loader":
+      content = (
+        <div className={`flex gap-0.5 ${className}`}>
+          {[...Array(10)].map((_, i) => (
+            <div
+              key={i}
+              className={`w-1 h-4 ${primaryBgClass} animate-[pulse_1.5s_infinite]`}
+              style={{ animationDelay: `${i * 0.1}s` }}
+            />
+          ))}
+        </div>
+      );
+      break;
+
+    case "skeleton":
+      content = (
+        <div
+          className={`relative overflow-hidden bg-zinc-100 dark:bg-zinc-900 rounded border border-zinc-200/50 dark:border-zinc-800/50 ${containerSize} ${className}`}
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-zinc-200 dark:via-zinc-800 to-transparent animate-loader-shimmer -translate-x-full" />
+        </div>
+      );
+      break;
+
+    case "glow-pulse":
+      content = (
+        <div
+          className={`${primaryBgClass} rounded-full shadow-[0_0_20px_rgba(0,0,0,0.2)] dark:shadow-[0_0_20px_rgba(255,255,255,0.1)] animate-pulse ${containerSize} ${className}`}
+        />
+      );
+      break;
+
+    case "clock":
+      content = (
+        <div
+          className={`${containerSize} border-2 border-zinc-300 dark:border-zinc-700 rounded-full relative ${className}`}
+        >
+          <div className="absolute top-1/2 left-1/2 w-[40%] h-0.5 bg-zinc-900 dark:bg-zinc-50 origin-left -rotate-90 animate-[spin_2s_linear_infinite]" />
+          <div className="absolute top-1/2 left-1/2 w-[30%] h-0.5 bg-zinc-500 origin-left -rotate-90 animate-[spin_8s_linear_infinite]" />
+        </div>
+      );
+      break;
+
+    case "hourglass":
+      content = (
+        <div
+          className={`${containerSize} relative animate-[spin_2s_ease-in-out_infinite] ${className}`}
+        >
+          <div
+            className="absolute inset-0 border-t-zinc-900 dark:border-t-zinc-50 border-x-transparent border-b-transparent rounded-t-full"
+            style={{
+              borderTopWidth: hourglassBorder,
+              borderLeftWidth: hourglassBorder,
+              borderRightWidth: hourglassBorder,
+              borderBottomWidth: hourglassBorder,
+            }}
+          />
+          <div
+            className="absolute inset-0 border-b-zinc-400 dark:border-b-zinc-600 border-x-transparent border-t-transparent rounded-b-full"
+            style={{
+              borderTopWidth: hourglassBorder,
+              borderLeftWidth: hourglassBorder,
+              borderRightWidth: hourglassBorder,
+              borderBottomWidth: hourglassBorder,
+            }}
+          />
+        </div>
+      );
+      break;
+
+    case "gear":
+      content = (
+        <div
+          className={`${containerSize} ${primaryColorClass} animate-[spin_3s_linear_infinite] ${className}`}
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="w-full h-full"
+          >
+            <path d="M12.22 2h-.44a2 2 0 0 0-2 2 2 2 0 0 1-2 2 2 2 0 0 0-2 2 2 2 0 0 1-2 2 2 2 0 0 0-2 2v.44a2 2 0 0 0 2 2 2 2 0 0 1 2 2 2 2 0 0 0 2 2 2 2 0 0 1 2 2 2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2 2 2 0 0 1 2-2 2 2 0 0 0 2-2 2 2 0 0 1 2-2 2 2 0 0 0 2-2v-.44a2 2 0 0 0-2-2 2 2 0 0 1-2-2 2 2 0 0 0-2-2 2 2 0 0 1-2-2 2 2 0 0 0-2-2Z" />
+            <circle cx="12" cy="12" r="3" />
+          </svg>
+        </div>
+      );
+      break;
+
+    case "orbit":
+      content = (
+        <div className={`${containerSize} relative flex items-center justify-center ${className}`}>
+          <div className={`w-2 h-2 ${primaryBgClass} rounded-full`} />
+          <div className="absolute w-full h-full border border-zinc-200 dark:border-zinc-800 rounded-full animate-spin">
+            <div
+              className={`absolute top-0 left-1/2 -translate-x-1/2 w-1.5 h-1.5 ${primaryBgClass} rounded-full`}
+            />
+          </div>
+        </div>
+      );
+      break;
+
+    case "snake":
+      content = (
+        <div
+          className={`${containerSize} border-2 border-zinc-100 dark:border-zinc-900 relative rounded-md overflow-hidden ${className}`}
+        >
+          <div className={`absolute inset-0 border-2 ${primaryBorderClass} animate-loader-snake`} />
+        </div>
+      );
+      break;
+
+    case "infinity":
+      content = (
+        <div className={`${containerSize} ${primaryColorClass} ${className}`}>
+          <svg viewBox="0 0 100 50" className="w-full h-full">
+            <path
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="4"
+              strokeDasharray="10 5"
+              className="animate-[loader-shimmer_2s_linear_infinite]"
+              d="M25,25 C25,10 40,10 50,25 C60,40 75,40 75,25 C75,10 60,10 50,25 C40,40 25,40 25,25"
+            />
+          </svg>
+        </div>
+      );
+      break;
+
+    case "text-shimmer":
+      content = (
+        <div
+          className={`text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-zinc-400 via-zinc-900 dark:via-zinc-100 to-zinc-400 bg-[length:200%_auto] animate-[loader-shimmer_2s_linear_infinite] ${className}`}
+        >
+          Loading...
+        </div>
+      );
+      break;
+
+    case "grid":
+      content = (
+        <div className={`grid grid-cols-3 gap-1 ${className}`}>
+          {[...Array(9)].map((_, i) => (
+            <div
+              key={i}
+              className={`w-2 h-2 ${primaryBgClass} rounded-sm animate-pulse`}
+              style={{ animationDelay: `${i * 0.1}s` }}
+            />
+          ))}
+        </div>
+      );
+      break;
+
+    case "heartbeat":
+      content = (
+        <div
+          className={`${containerSize} ${primaryColorClass} animate-[ping_1.5s_infinite] flex items-center justify-center ${className}`}
+        >
+          <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+          </svg>
+        </div>
+      );
+      break;
+
+    case "matrix":
+      content = (
+        <div
+          className={`flex flex-col gap-0.5 overflow-hidden ${containerSize} items-center ${className}`}
+        >
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="w-full h-1 bg-zinc-100 dark:bg-zinc-900 relative">
+              <div
+                className={`absolute top-0 bottom-0 w-4 ${primaryBgClass} shadow-[0_0_10px_rgba(0,0,0,0.1)]`}
+                style={{
+                  left: "-20%",
+                  animation: `loader-shimmer 2s linear infinite`,
+                  animationDelay: `${i * 0.5}s`,
+                }}
+              />
+            </div>
+          ))}
+        </div>
+      );
+      break;
+
+    case "loader-dna":
+      content = (
+        <div className={`flex justify-center items-center h-full gap-1 ${className}`}>
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="flex flex-col gap-2">
+              <div
+                className={`w-2 h-2 ${primaryBgClass} rounded-full animate-bounce`}
+                style={{ animationDelay: `${i * 0.1}s` }}
+              />
+              <div
+                className="w-2 h-2 bg-zinc-300 dark:bg-zinc-700 rounded-full animate-bounce"
+                style={{ animationDelay: `${i * 0.1 + 0.5}s` }}
+              />
+            </div>
+          ))}
+        </div>
+      );
+      break;
+
+    case "floating-bubble":
+      content = (
+        <div
+          className={`relative overflow-hidden ${containerSize} border border-zinc-200 dark:border-zinc-800 rounded-lg bg-zinc-50/50 dark:bg-zinc-900/50 ${className}`}
+        >
+          {[...Array(5)].map((_, i) => {
+            const width = [6, 10, 8, 5, 11][i];
+            const left = [15, 35, 55, 75, 45][i];
+            const duration = [2.5, 3.8, 2.1, 4.5, 3.2][i];
+            const delay = [0.2, 1.1, 0.5, 1.8, 0.8][i];
+            return (
+              <div
+                key={i}
+                className={`absolute ${primaryBgClass} opacity-30 rounded-full animate-bounce`}
+                style={{
+                  width: `${width}px`,
+                  height: `${width}px`,
+                  left: `${left}%`,
+                  bottom: "-20%",
+                  animationDuration: `${duration}s`,
+                  animationDelay: `${delay}s`,
+                }}
+              />
+            );
+          })}
+        </div>
+      );
+      break;
+
+    case "hex-spin":
+      content = (
+        <div
+          className={`${containerSize} ${primaryColorClass} flex items-center justify-center ${className}`}
+        >
+          <svg
+            viewBox="0 0 100 100"
+            className="w-full h-full animate-[spin_1.6s_linear_infinite]"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="4"
+          >
+            <polygon points="50,10 80,30 80,70 50,90 20,70 20,30" className="stroke-current" />
+          </svg>
+        </div>
+      );
+      break;
+
+    case "concentric-rings":
+      content = (
+        <div className={`relative ${containerSize} flex items-center justify-center ${className}`}>
+          <div className="absolute inset-0 rounded-full border-2 border-zinc-200 dark:border-zinc-800 animate-ping" />
+          <div className="absolute inset-2 rounded-full border-2 border-zinc-300 dark:border-zinc-700 animate-ping [animation-delay:200ms]" />
+          <div className="absolute inset-4 rounded-full border-2 border-zinc-400 dark:border-zinc-600 animate-pulse [animation-delay:400ms]" />
+        </div>
+      );
+      break;
+
+    case "dots-rotate":
+      content = (
+        <div className={`relative ${containerSize} ${className}`}>
+          <div className="absolute inset-0 flex items-center justify-center animate-[spin_1.2s_linear_infinite]">
+            {[0, 1, 2].map((i) => (
+              <div
+                key={i}
+                className="absolute w-2 h-2 bg-zinc-900 dark:bg-zinc-50 rounded-full"
+                style={{ transform: `rotate(${i * 120}deg) translateY(-40%)` }}
+              />
+            ))}
+          </div>
+        </div>
+      );
+      break;
+
+    case "morphing-hex":
+      content = (
+        <div className={`${containerSize} ${className}`}>
+          <svg
+            viewBox="0 0 100 100"
+            className="w-full h-full"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="4"
+          >
+            <polygon
+              points="50,10 80,30 80,70 50,90 20,70 20,30"
+              className="stroke-zinc-900 dark:stroke-zinc-50"
+              style={{
+                transformBox: "fill-box",
+                transformOrigin: "center",
+                animation: "loader-morph-hex 3s ease-in-out infinite",
+              }}
+            />
+          </svg>
+        </div>
+      );
+      break;
+
+    case "ripple-pulse":
+      content = (
+        <div
+          className={`relative ${containerSize} flex items-center justify-center overflow-hidden ${className}`}
+        >
+          <div className={`absolute w-2 h-2 ${primaryBgClass} rounded-full`} />
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              className="absolute rounded-full border-2 border-zinc-900 dark:border-zinc-50"
+              style={{
+                width: `${12 + i * 8}px`,
+                height: `${12 + i * 8}px`,
+                animation: `loader-ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite`,
+                animationDelay: `${i * 0.4}s`,
+                opacity: 1 - i * 0.3,
+              }}
+            />
+          ))}
+        </div>
+      );
+      break;
+
+    case "orbiting-spheres":
+      content = (
+        <div className={`${containerSize} ${className}`}>
+          <style>{`
+            @keyframes loader-rotate {
+              0% { transform: rotate(0deg); }
+              100% { transform: rotate(360deg); }
+            }
+            @keyframes loader-orbit-motion {
+              0% { transform: translateX(8px) scale(0.73); opacity: 0.65; }
+              25% { transform: translateX(0%) scale(0.47); opacity: 0.3; }
+              50% { transform: translateX(-8px) scale(0.73); opacity: 0.65; }
+              75% { transform: translateX(0%) scale(1); opacity: 1; }
+              100% { transform: translateX(8px) scale(0.73); opacity: 0.65; }
+            }
+          `}</style>
+          <div
+            className="relative flex items-center justify-center w-full h-full"
+            style={{ animation: "loader-rotate 2.5s linear infinite" }}
+          >
+            {[0, 1].map((i) => (
+              <div
+                key={i}
+                className={`absolute rounded-full ${primaryBgClass}`}
+                style={{
+                  width: "35%",
+                  height: "35%",
+                  animation: `loader-orbit-motion 1.5s linear ${i * -0.75}s infinite`,
+                }}
+              />
+            ))}
+          </div>
+        </div>
+      );
+      break;
+
+    case "paired-revolution":
+      content = (
+        <div className={`${containerSize} relative flex items-center justify-center ${className}`}>
+          <style>{`
+            @keyframes loader-twin-orbit-rotate {
+              100% {
+                transform: rotate(360deg) translate(155%);
+              }
+            }
+          `}</style>
+          <div
+            className={`absolute rounded-full ${primaryBgClass}`}
+            style={{
+              width: "10px",
+              height: "10px",
+              zIndex: 10,
+            }}
+          />
+          <div className="absolute w-full h-full">
+            {[0, 1].map((i) => (
+              <div
+                key={i}
+                className={`absolute rounded-full ${primaryBgClass}`}
+                style={{
+                  width: "10px",
+                  height: "10px",
+                  top: "50%",
+                  left: "50%",
+                  transform: "rotate(0deg) translate(155%)",
+                  animation: "loader-twin-orbit-rotate 1.4s ease infinite",
+                  animationDelay: `${i * 0.7}s`,
+                  marginTop: "-5px",
+                  marginLeft: "-5px",
+                }}
+              />
+            ))}
+          </div>
+        </div>
+      );
+      break;
+
+    case "eyes-gaze":
+      content = (
+        <div className={`relative flex items-center justify-center gap-4 ${className}`}>
+          <style>{`
+            @keyframes loader-gaze {
+              0% { transform: translateX(-6px); }
+              25% { transform: translateX(-6px); }
+              50% { transform: translateX(6px); }
+              75% { transform: translateX(6px); }
+              100% { transform: translateX(-6px); }
+            }
+          `}</style>
+          {[0, 1].map((i) => (
+            <div
+              key={i}
+              className="relative w-8 h-8 bg-zinc-900 dark:bg-zinc-50 rounded-full flex items-center justify-center"
+            >
+              <div
+                className="w-3 h-3 bg-white dark:bg-zinc-900 rounded-full flex items-center justify-center"
+                style={{ animation: "loader-gaze 2s ease-in-out infinite" }}
+              >
+                <div className="w-2 h-2 bg-zinc-900 dark:bg-zinc-50 rounded-full" />
+              </div>
+            </div>
+          ))}
+        </div>
+      );
+      break;
+
+    case "ripple-wave":
+      content = (
+        <div className={`relative ${containerSize} flex items-center justify-center ${className}`}>
+          <div
+            className={`absolute inset-0 border-4 ${primaryBorderClass} rounded-full animate-ping opacity-75`}
+          />
+          <div className={`w-3 h-3 ${primaryBgClass} rounded-full`} />
+        </div>
+      );
+      break;
+
+    case "audio-wave":
+      content = (
+        <div className={`flex items-center gap-1 h-6 ${className}`}>
+          {[0, 1, 2, 3].map((i) => (
+            <div
+              key={i}
+              className={`w-1 h-full ${primaryBgClass} rounded-full animate-[pulse_1s_ease-in-out_infinite]`}
+              style={{ animationDelay: `${i * 0.2}s` }}
+            />
+          ))}
+        </div>
+      );
+      break;
+
+    case "fading-ring":
+      content = (
+        <svg className={`${containerSize} animate-spin ${className}`} viewBox="0 0 32 32">
+          <circle
+            className="stroke-zinc-900 dark:stroke-zinc-50 fill-none opacity-25"
+            cx="16"
+            cy="16"
+            r="14"
+            strokeWidth="3"
+          />
+          <circle
+            className="stroke-zinc-900 dark:stroke-zinc-50 fill-none"
+            cx="16"
+            cy="16"
+            r="14"
+            strokeWidth="3"
+            strokeLinecap="round"
+            strokeDasharray="20 60"
+          />
+        </svg>
+      );
+      break;
+
+    case "morphing-shape":
+      content = (
+        <div className={`${containerSize} ${className}`}>
+          <style>{`
+            @keyframes loader-morph-shape {
+              0%, 100% { border-radius: 4px; transform: rotate(0deg); }
+              50% { border-radius: 50%; transform: rotate(180deg); }
+            }
+          `}</style>
+          <div
+            className={`w-full h-full ${primaryBgClass}`}
+            style={{ animation: "loader-morph-shape 2s ease-in-out infinite" }}
+          />
+        </div>
+      );
+      break;
+
+    case "dots-chase":
+      content = (
+        <div className={`flex items-center justify-center gap-2 ${className}`}>
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              className={`w-2 h-2 ${primaryBgClass} rounded-full animate-[pulse_1.2s_infinite]`}
+              style={{ animationDelay: `${i * 0.2}s` }}
+            />
+          ))}
+        </div>
+      );
+      break;
+
+    case "atom":
+      content = (
+        <div className={`relative ${containerSize} flex items-center justify-center ${className}`}>
+          <style>{`
+            @keyframes loader-atom-orbit {
+              0% { transform: rotate(0deg); }
+              100% { transform: rotate(360deg); }
+            }
+          `}</style>
+          <div className={`absolute z-10 w-1/5 h-1/5 rounded-full ${primaryBgClass}`} />
+          {[0, 60, 120].map((rot, i) => (
+            <div
+              key={rot}
+              className="absolute inset-0"
+              style={{
+                transform: `rotate(${rot}deg)`,
+                animation: `loader-atom-orbit ${2 + i * 0.5}s linear infinite`,
+                animationDelay: `${i * -0.8}s`,
+              }}
+            >
+              <div className="absolute top-1/2 left-1/2 w-full h-2/5 -translate-x-1/2 -translate-y-1/2 rounded-full border border-zinc-900/40 dark:border-zinc-50/40" />
+              <div
+                className={`absolute top-1/2 left-0 w-1/5 h-1/5 -translate-y-1/2 -translate-x-1/2 rounded-full ${primaryBgClass}`}
+              />
+            </div>
+          ))}
+        </div>
+      );
+      break;
+
+    case "solar-system":
+      content = (
+        <div className={`relative ${containerSize} flex items-center justify-center ${className}`}>
+          <style>{`
+            @keyframes loader-solar-spin {
+              0% { transform: rotate(0deg); }
+              100% { transform: rotate(360deg); }
+            }
+          `}</style>
+          <div className={`absolute z-10 w-[16%] h-[16%] rounded-full ${primaryBgClass}`} />
+          {[
+            { inset: "8%", speed: 3.5, delay: 0 },
+            { inset: "20%", speed: 2.6, delay: -1.3 },
+            { inset: "32%", speed: 5.4, delay: -0.4 },
+          ].map((ring, i) => (
+            <div
+              key={i}
+              className="absolute rounded-full border border-zinc-900/30 dark:border-zinc-50/30"
+              style={{
+                inset: ring.inset,
+                animation: `loader-solar-spin ${ring.speed}s linear infinite`,
+                animationDelay: `${ring.delay}s`,
+              }}
+            >
+              <div
+                className={`absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 rounded-full ${
+                  i === 1 ? "bg-zinc-400 dark:bg-zinc-600" : primaryBgClass
+                }`}
+                style={{
+                  width: `${[9, 6, 7][i]}%`,
+                  height: `${[9, 6, 7][i]}%`,
+                }}
+              />
+            </div>
+          ))}
+        </div>
+      );
+      break;
+
+    case "radar-sweep":
+      content = (
+        <div
+          className={`relative overflow-hidden rounded-full border border-zinc-900/30 dark:border-zinc-50/30 ${containerSize} ${primaryColorClass} ${className}`}
+        >
+          <style>{`
+            @keyframes loader-radar-spin {
+              0% { transform: rotate(0deg); }
+              100% { transform: rotate(360deg); }
+            }
+          `}</style>
+          <div
+            className="absolute rounded-full border border-zinc-900/20 dark:border-zinc-50/20"
+            style={{ inset: "22%" }}
+          />
+          <div
+            className="absolute rounded-full border border-zinc-900/15 dark:border-zinc-50/15"
+            style={{ inset: "42%" }}
+          />
+          <div className="absolute top-1/2 left-0 right-0 h-px bg-zinc-900/15 dark:bg-zinc-50/15" />
+          <div className="absolute top-0 bottom-0 left-1/2 w-px bg-zinc-900/15 dark:bg-zinc-50/15" />
+          <div
+            className="absolute inset-0 rounded-full"
+            style={{
+              background: "conic-gradient(from 0deg, currentColor 0deg, transparent 62deg)",
+              animation: "loader-radar-spin 1.8s linear infinite",
+              opacity: 0.5,
+            }}
+          />
+          <div
+            className={`absolute w-[12%] h-[12%] rounded-full ${primaryBgClass} animate-ping`}
+            style={{ left: "68%", top: "58%", opacity: 0.9 }}
+          />
+          <div
+            className={`absolute w-[8%] h-[8%] rounded-full ${primaryBgClass} animate-ping`}
+            style={{ left: "26%", top: "30%", opacity: 0.7, animationDelay: "0.6s" }}
+          />
+        </div>
+      );
+      break;
+
+    case "blocks-wave":
+      content = (
+        <div className={`flex items-end gap-1 h-8 ${className}`}>
+          <style>{`
+            @keyframes loader-wave-bob {
+              0%, 100% { transform: scaleY(0.35); }
+              50% { transform: scaleY(1); }
+            }
+          `}</style>
+          {[0, 1, 2, 3, 4].map((i) => (
+            <div
+              key={i}
+              className={`w-3 ${primaryBgClass} rounded-sm`}
+              style={{
+                height: `${[34, 65, 100, 65, 34][i]}%`,
+                transformOrigin: "bottom",
+                animation: `loader-wave-bob ${1.1}s ease-in-out infinite`,
+                animationDelay: `${i * 0.12}s`,
+              }}
+            />
+          ))}
+        </div>
+      );
+      break;
+
+    case "coffee-cup":
+      content = (
+        <div
+          className={`relative flex items-center justify-center ${containerSize} ${primaryColorClass} ${className}`}
+        >
+          <style>{`
+            @keyframes loader-steam {
+              0% { transform: translateY(0) translateX(0) scaleX(1); opacity: 0; }
+              30% { opacity: 0.9; }
+              100% { transform: translateY(-200%) translateX(45%) scaleX(1.4); opacity: 0; }
+            }
+          `}</style>
+          <div
+            className="absolute flex gap-[10%]"
+            style={{ bottom: "56%", width: "42%", height: "16%" }}
+          >
+            {[0, 1, 2].map((i) => (
+              <div
+                key={i}
+                className="w-[16%] h-full rounded-full bg-current"
+                style={{
+                  animation: `loader-steam ${1.6 + i * 0.3}s ease-in-out infinite`,
+                  animationDelay: `${i * 0.45}s`,
+                  marginTop: i === 1 ? "-24%" : 0,
+                }}
+              />
+            ))}
+          </div>
+          <div className="relative" style={{ width: "58%", height: "40%" }}>
+            <div
+              className="absolute bottom-0 rounded-b-md border-[3px] border-current"
+              style={{ left: "6%", width: "70%", height: "100%", borderTop: "none" }}
+            />
+            <div
+              className="absolute bottom-[12%] rounded-r-full border-[3px] border-current"
+              style={{ right: "0%", width: "24%", height: "26%" }}
+            />
+            <div
+              className="absolute bottom-0 bg-current opacity-35"
+              style={{ left: "6%", width: "70%", height: "16%", borderRadius: "0 0 5px 5px" }}
+            />
+          </div>
+        </div>
+      );
+      break;
+
+    case "progress-slider":
+      content = (
+        <div
+          className={`relative w-24 h-2 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800 ${className}`}
+        >
+          <style>{`
+            @keyframes loader-slide {
+              0% { transform: translateX(-110%); }
+              100% { transform: translateX(260%); }
+            }
+          `}</style>
+          <div
+            className={`absolute top-0 bottom-0 w-1/3 rounded-full ${primaryBgClass}`}
+            style={{ animation: "loader-slide 1.4s ease-in-out infinite" }}
+          />
+        </div>
+      );
+      break;
+
+    case "flower-spin":
+      content = (
+        <svg
+          viewBox="0 0 64 64"
+          className={`${containerSize} ${primaryColorClass} ${className}`}
+          fill="currentColor"
+          style={{
+            transformBox: "fill-box",
+            transformOrigin: "center",
+            animation: "loader-flower-bloom 2.4s ease-in-out infinite",
+          }}
+        >
+          <style>{`
+            @keyframes loader-flower-bloom {
+              0%, 100% { transform: scale(0.85) rotate(0deg); }
+              50% { transform: scale(1.05) rotate(180deg); }
+            }
+            @keyframes loader-flower-petal {
+              0%, 100% { opacity: 0.4; }
+              50% { opacity: 1; }
+            }
+          `}</style>
+          {[0, 60, 120, 180, 240, 300].map((a, i) => (
+            <circle
+              key={a}
+              cx="32"
+              cy="24"
+              r="12"
+              transform={`rotate(${a} 32 32)`}
+              style={{
+                animation: `loader-flower-petal 1.2s ease-in-out ${i * 0.15}s infinite`,
+              }}
+            />
+          ))}
+          <circle cx="32" cy="32" r="5" fill="none" stroke="currentColor" strokeWidth="2.5" />
+        </svg>
+      );
+      break;
+
+    case "bouncing-ball":
+      content = (
+        <div className={`relative ${className}`} style={{ aspectRatio: 2 }}>
+          <style>{`
+            @keyframes loader-ball-ground {
+              to { background-position: -125% 100%; }
+            }
+            @keyframes loader-ball-bounce {
+              0%, 2% { bottom: 0%; }
+              50% { bottom: 55%; }
+              98%, to { bottom: 0.1%; }
+            }
+          `}</style>
+          <div
+            className="absolute bottom-0 left-0 right-0 h-[3px]"
+            style={{
+              background:
+                "linear-gradient(90deg, currentColor 50%, transparent 0) -25% 100% / 50% 3px repeat-x border-box",
+              animation: "loader-ball-ground 0.75s linear infinite",
+            }}
+          />
+          <div
+            className="absolute bottom-0 w-[18%] aspect-square rounded-full bg-current"
+            style={{
+              left: "41%",
+              animation: "loader-ball-bounce 0.75s cubic-bezier(0, 900, 1, 900) infinite",
+            }}
+          />
+        </div>
+      );
+      break;
+
+    case "walking-steps":
+      content = (
+        <div className={`relative ${containerSize} ${className}`}>
+          <style>{`
+            @keyframes loader-walk-leg-1 {
+              0%, 10% { transform: translateY(0); background-position: 0 calc(var(--s, 0) * -100%), calc(var(--s, 0) * 100%) 50%; }
+              33% { transform: translateY(-20%); background-position: 0 calc(var(--s, 0) * -100%), calc(var(--s, 0) * 100%) 50%; }
+              66% { transform: translateY(-20%); background-position: 0 calc(var(--s, 0) * -100%), calc(var(--s, 0) * 100% + 100%) 50%; }
+              90%, 100% { transform: translateY(0); background-position: 0 calc(var(--s, 0) * -100%), calc(var(--s, 0) * 100% + 100%) 50%; }
+            }
+            @keyframes loader-walk-leg-2 {
+              0%, 10% { transform: translateY(0); background-position: 0 calc(-1 * -100%), calc(-1 * 100%) 50%; }
+              33% { transform: translateY(20%); background-position: 0 calc(-1 * -100%), calc(-1 * 100%) 50%; }
+              66% { transform: translateY(20%); background-position: 0 calc(-1 * -100%), calc(-1 * 100% + 100%) 50%; }
+              90%, 100% { transform: translateY(0); background-position: 0 calc(-1 * -100%), calc(-1 * 100% + 100%) 50%; }
+            }
+          `}</style>
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(currentColor 0 0) 0 0 / 100% calc(100% / 3), repeating-linear-gradient(90deg, currentColor 0 25%, transparent 0 50%) 0 50% / calc(4 * 100% / 3) calc(100% / 3)",
+              backgroundRepeat: "no-repeat",
+              animation: "loader-walk-leg-1 2s infinite",
+            }}
+          />
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(currentColor 0 0) 0 -100% / 100% calc(100% / 3), repeating-linear-gradient(90deg, currentColor 0 25%, transparent 0 50%) -100% 50% / calc(4 * 100% / 3) calc(100% / 3)",
+              backgroundRepeat: "no-repeat",
+              animation: "loader-walk-leg-2 2s infinite",
+            }}
+          />
+        </div>
+      );
+      break;
+
+    case "corner-chase":
+      content = (
+        <div className={`relative ${containerSize} ${className}`}>
+          <style>{`
+            @keyframes loader-chase-1 {
+              0% { inset: 0 35% 35% 0; }
+              12.5% { inset: 0 35% 0 0; }
+              25% { inset: 35% 35% 0 0; }
+              37.5% { inset: 35% 0 0 0; }
+              50% { inset: 35% 0 0 35%; }
+              62.5% { inset: 0 0 0 35%; }
+              75% { inset: 0 0 35% 35%; }
+              87.5% { inset: 0 0 35% 0; }
+              100% { inset: 0 35% 35% 0; }
+            }
+            @keyframes loader-chase-2 {
+              0% { inset: 0 35% 35% 0; }
+              12.5% { inset: 0 35% 0 0; }
+              25% { inset: 35% 35% 0 0; }
+              37.5% { inset: 35% 0 0 0; }
+              50% { inset: 35% 0 0 35%; }
+              62.5% { inset: 0 0 0 35%; }
+              75% { inset: 0 0 35% 35%; }
+              87.5% { inset: 0 0 35% 0; }
+              100% { inset: 0 35% 35% 0; }
+            }
+          `}</style>
+          <div
+            className="absolute rounded-full"
+            style={{
+              boxShadow: "0 0 0 3px inset currentColor",
+              animation: "loader-chase-1 2.5s infinite",
+            }}
+          />
+          <div
+            className="absolute rounded-full"
+            style={{
+              boxShadow: "0 0 0 3px inset currentColor",
+              animation: "loader-chase-2 2.5s infinite",
+              animationDelay: "-1.25s",
+            }}
+          />
+        </div>
+      );
+      break;
+
+    case "newtons-cradle":
+      content = (
+        <div className={`relative ${containerSize} ${primaryColorClass} ${className}`}>
+          <style>{`
+            @keyframes loader-cradle-left {
+              0% {
+                transform: rotate(0deg);
+                animation-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+              }
+              25% {
+                transform: rotate(25deg);
+                animation-timing-function: cubic-bezier(0.55, 0.085, 0.68, 0.53);
+              }
+              50%, 100% { transform: rotate(0deg); }
+            }
+            @keyframes loader-cradle-right {
+              0% { transform: rotate(0deg); }
+              50% {
+                transform: rotate(0deg);
+                animation-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+              }
+              75% {
+                transform: rotate(-25deg);
+                animation-timing-function: cubic-bezier(0.55, 0.085, 0.68, 0.53);
+              }
+              100% { transform: rotate(0deg); }
+            }
+          `}</style>
+          <div className="absolute top-[12%] left-[18%] right-[18%] h-px rounded-full bg-current opacity-40" />
+          <div className="absolute top-[12%] bottom-[10%] left-[18%] right-[18%] flex">
+            {[0, 1, 2, 3, 4].map((i) => (
+              <div
+                key={i}
+                className="relative flex h-full flex-1 flex-col items-center"
+                style={{
+                  transformOrigin: "top center",
+                  animation:
+                    i === 0
+                      ? "loader-cradle-left 1.8s linear infinite"
+                      : i === 4
+                        ? "loader-cradle-right 1.8s linear infinite"
+                        : undefined,
+                }}
+              >
+                <div className="w-px flex-1 bg-current opacity-40" />
+                <div className="w-[88%] aspect-square rounded-full bg-current" />
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+      break;
+
+    case "comet-trail":
+      content = (
+        <div className={`relative ${containerSize} ${primaryColorClass} ${className}`}>
+          <style>{`
+            @keyframes loader-comet-spin {
+              0% { transform: rotate(0deg); }
+              100% { transform: rotate(360deg); }
+            }
+          `}</style>
+          <div
+            className="absolute inset-0"
+            style={{ animation: "loader-comet-spin 1.5s linear infinite" }}
+          >
+            <div
+              className="absolute inset-0 rounded-full"
+              style={{
+                background:
+                  "conic-gradient(from 0deg, transparent 0deg, transparent 235deg, currentColor 360deg)",
+                WebkitMask: "radial-gradient(farthest-side, transparent 82%, #000 83%)",
+                mask: "radial-gradient(farthest-side, transparent 82%, #000 83%)",
+              }}
+            />
+            <div className="absolute top-[6%] left-1/2 w-[16%] aspect-square -translate-x-1/2 rounded-full bg-current" />
+            <div className="absolute top-[6%] left-1/2 w-[34%] aspect-square -translate-x-1/2 rounded-full bg-current opacity-25 blur-[2px]" />
+          </div>
+        </div>
+      );
+      break;
+
+    case "liquid-fill":
+      content = (
+        <div
+          className={`relative overflow-hidden ${containerSize} rounded-xl border-2 border-zinc-900/60 dark:border-zinc-50/60 ${primaryColorClass} ${className}`}
+        >
+          <style>{`
+            @keyframes loader-liquid-spin {
+              0% { transform: rotate(0deg); }
+              100% { transform: rotate(360deg); }
+            }
+            @keyframes loader-liquid-level {
+              0%, 100% { top: 58%; }
+              50% { top: 34%; }
+            }
+          `}</style>
+          <div
+            className="absolute left-[-50%] w-[200%] h-[200%] rounded-[44%] bg-current"
+            style={{
+              animation:
+                "loader-liquid-spin 3.6s linear infinite, loader-liquid-level 2.8s ease-in-out infinite",
+            }}
+          />
+          <div
+            className="absolute left-[-50%] w-[200%] h-[200%] rounded-[42%] bg-current opacity-30"
+            style={{
+              animation:
+                "loader-liquid-spin 5s linear infinite reverse, loader-liquid-level 2.8s ease-in-out infinite",
+            }}
+          />
+        </div>
+      );
+      break;
+
+    case "battery-charge":
+      content = (
+        <div className={`relative ${containerSize} ${primaryColorClass} ${className}`}>
+          <style>{`
+            @keyframes loader-battery-fill {
+              0%, 8% { transform: scaleX(0); }
+              55%, 82% { transform: scaleX(1); }
+              92%, 100% { transform: scaleX(1); opacity: 0; }
+            }
+          `}</style>
+          <svg viewBox="0 0 64 32" fill="none" className="w-full h-full">
+            <rect
+              x="3"
+              y="7"
+              width="50"
+              height="18"
+              rx="4"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              opacity="0.35"
+            />
+            <rect x="56" y="12" width="5" height="8" rx="2" fill="currentColor" opacity="0.35" />
+            <rect
+              x="6.5"
+              y="10.5"
+              width="43"
+              height="11"
+              rx="2"
+              fill="currentColor"
+              style={{
+                transformBox: "fill-box",
+                transformOrigin: "left center",
+                animation: "loader-battery-fill 2.4s ease-in-out infinite",
+              }}
+            />
+          </svg>
+        </div>
+      );
+      break;
+
+    case "domino-fall":
+      content = (
+        <div
+          className={`flex items-end justify-center gap-[6%] ${containerSize} ${primaryColorClass} ${className}`}
+        >
+          <style>{`
+            @keyframes loader-domino {
+              0%, 100% { transform: rotate(0deg); }
+              20% { transform: rotate(72deg); }
+              38% { transform: rotate(72deg); }
+              56% { transform: rotate(0deg); }
+            }
+          `}</style>
+          {[0, 1, 2, 3, 4].map((i) => (
+            <div
+              key={i}
+              className="w-[11%] h-[64%] rounded-[2px] bg-current origin-bottom-right"
+              style={{
+                animation: `loader-domino 1.9s ease-in-out ${i * 0.14}s infinite`,
+              }}
+            />
+          ))}
+        </div>
+      );
+      break;
+  }
+
+  return (
+    <>
+      {keyframes ? <style>{keyframes}</style> : null}
+      {content}
+    </>
+  );
+};

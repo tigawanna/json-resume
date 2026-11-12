@@ -14,6 +14,7 @@ interface SearchBoxProps {
   inputProps?: React.InputHTMLAttributes<HTMLInputElement>;
   /** Filter chips shown before the text, inside the box. */
   leading?: ReactNode;
+  dataTest?: string;
 }
 
 export function SearchBox({
@@ -22,6 +23,7 @@ export function SearchBox({
   keyword,
   inputProps,
   leading,
+  dataTest = "list-search-input",
 }: SearchBoxProps) {
   return (
     <div className="sticky top-0 w-full">
@@ -42,7 +44,7 @@ export function SearchBox({
             setKeyword(e.target.value);
           }}
           {...inputProps}
-          data-test="list-search-input"
+          data-test={dataTest}
         />
         {isDebouncing || keyword.length > 0 ? (
           <InputGroupAddon align="inline-end">

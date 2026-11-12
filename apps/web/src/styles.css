@@ -331,6 +331,29 @@
   --color-sidebar-accent-foreground: var(--color-sidebar-foreground);
   --color-sidebar-border: color-mix(in oklch, var(--color-base-content) 20%, transparent);
   --color-sidebar-ring: var(--color-neutral);
+  @keyframes snake {
+    0%,
+    100% {
+      clip-path: inset(0 0 95% 0);
+    }
+    25% {
+      clip-path: inset(0 95% 0 0);
+    }
+    50% {
+      clip-path: inset(95% 0 0 0);
+    }
+    75% {
+      clip-path: inset(0 0 0 95%);
+    }
+  }
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
 }
 
 ::-webkit-scrollbar {
@@ -532,4 +555,12 @@
 .dark .landing ::before,
 .dark .landing ::after {
   border-color: color-mix(in oklch, var(--color-base-content) 18%, transparent) !important;
+}
+
+@utility animate-snake {
+  animation: snake 2s linear infinite;
+}
+
+@utility animate-shimmer {
+  animation: shimmer 2s infinite;
 }

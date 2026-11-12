@@ -1,3 +1,4 @@
+import { RouterPendingComponent } from "@/lib/tanstack/router/RouterPendingComponent";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { z } from "zod";
@@ -17,6 +18,7 @@ export const Route = createFileRoute("/_dashboard/dashboard")({
       },
     ],
   }),
+  pendingComponent: RouterPendingComponent,
 });
 
 function RouteComponent() {

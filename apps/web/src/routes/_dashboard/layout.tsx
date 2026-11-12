@@ -34,7 +34,7 @@ function DashboardShell() {
   const primaryRoutes = getDashboardPrimaryRoutes();
   const { viewer } = useViewer();
   return (
-    <EventSourcedDbProvider fallback={<RouterPendingComponent />}>
+    <EventSourcedDbProvider fallback={<RouterPendingComponent height="h-dvh" />}>
       <DashboardLayout
         sidebarRoutes={primaryRoutes}
         sidebarLabel="Menu"

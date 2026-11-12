@@ -212,26 +212,30 @@ export function ExperienceDetailPage({ experienceId }: ExperienceDetailPageProps
       className="mx-auto flex min-h-full w-full max-w-3xl flex-col gap-4"
       data-test="experience-detail-page"
     >
-      <Button asChild variant="ghost" size="sm" className="-ml-2 w-fit">
-        <Link to="/experiences" data-test="experience-detail-back">
-          <ArrowLeft className="size-4" />
-          Experiences
-        </Link>
-      </Button>
-
       <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-        <div className="min-w-0 flex-1">
-          <h1 className="truncate text-xl font-semibold">{companyName}</h1>
-          <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
-            <span>{dateRange || "—"}</span>
-            {hint ? <Badge variant="secondary">{hint}</Badge> : null}
-            <span>
-              {groupTitles.length} {groupTitles.length === 1 ? "title" : "titles"}
-            </span>
+        <div className="flex min-w-0 flex-1 items-start gap-2">
+          <Button asChild variant="ghost" size="icon-sm">
+            <Link
+              to="/experiences"
+              aria-label="Back to experiences"
+              data-test="experience-detail-back"
+            >
+              <ArrowLeft />
+            </Link>
+          </Button>
+          <div className="min-w-0 flex-1">
+            <h1 className="truncate text-xl font-semibold">{companyName}</h1>
+            <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+              <span>{dateRange || "—"}</span>
+              {hint ? <Badge variant="secondary">{hint}</Badge> : null}
+              <span>
+                {groupTitles.length} {groupTitles.length === 1 ? "title" : "titles"}
+              </span>
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Titles and bullets belong to this company and period.
+            </p>
           </div>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Titles and bullets belong to this company and period.
-          </p>
         </div>
         <AlertDialog>
           <AlertDialogTrigger asChild>

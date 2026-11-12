@@ -3,6 +3,7 @@ import { createFileRoute, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/test/")({
   component: RouteComponent,
+  pendingComponent: RouterPendingComponent,
   ssr: false,
   head: () => ({
     meta: [{ title: "Test Route", description: "A test route for development" }],
@@ -18,9 +19,5 @@ export const Route = createFileRoute("/test/")({
 });
 
 function RouteComponent() {
-  return (
-    <div>
-      <RouterPendingComponent />
-    </div>
-  );
+  return <RouterPendingComponent />;
 }

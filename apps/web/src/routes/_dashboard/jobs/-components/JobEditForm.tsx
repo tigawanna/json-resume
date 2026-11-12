@@ -51,16 +51,16 @@ export function JobEditForm({ item, onSuccess }: JobEditFormProps) {
   const form = useAppForm({
     ...editOpts,
     defaultValues: {
-      company: item.company,
-      title: item.title,
-      description: item.description,
-      location: item.location,
-      payRate: item.payRate,
+      company: item.company ?? "",
+      title: item.title ?? "",
+      description: item.description ?? "",
+      location: item.location ?? "",
+      payRate: item.payRate ?? "",
       hourlyMinUsd: centsToDollarInput(item.hourlyMinCents),
       hourlyMaxUsd: centsToDollarInput(item.hourlyMaxCents),
-      url: item.url,
+      url: item.url ?? "",
       status: item.status,
-      notes: item.notes,
+      notes: item.notes ?? "",
     },
     onSubmit: async ({ value }) => {
       setPending(true);
@@ -205,7 +205,7 @@ export function JobEditForm({ item, onSuccess }: JobEditFormProps) {
         <form.Subscribe selector={(state) => state.values.payRate}>
           {(payRate) => (
             <p className="text-muted-foreground sm:col-span-2 text-xs">
-              {item.payBasis || (payRate.trim() ? quotePayRate(payRate).basis : "")}
+              {item.payBasis || (payRate?.trim() ? quotePayRate(payRate).basis : "")}
             </p>
           )}
         </form.Subscribe>
@@ -258,7 +258,7 @@ export function JobEditForm({ item, onSuccess }: JobEditFormProps) {
       </form.AppField>
       <form.Subscribe selector={(s) => s.values}>
         {(values) => {
-          const hasRequired = Boolean(values.description.trim());
+          const hasRequired = Boolean(values.description?.trim());
           return (
             <DialogFooter>
               <Button
