@@ -138,9 +138,8 @@ export function DashboardAssistant() {
             </Button>
           </header>
 
-          {!signedIn ? (
-            <HostedAiSignIn />
-          ) : assistant.isReady ? (
+          {!signedIn ? <HostedAiSignIn /> : null}
+          {signedIn && assistant.isReady ? (
             <DashboardAssistantConversation
               activeModelLabel={assistant.activeModelLabel}
               activeRoutingLabel={assistant.activeRoutingLabel}
@@ -162,9 +161,10 @@ export function DashboardAssistant() {
               onEscape={() => setOpen(false)}
               onOpenSettings={() => setSettingsOpen(true)}
             />
-          ) : (
+          ) : null}
+          {signedIn && !assistant.isReady ? (
             <AssistantSetup onOpenSettings={() => setOpen(false)} />
-          )}
+          ) : null}
         </section>
       ) : null}
 

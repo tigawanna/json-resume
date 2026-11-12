@@ -142,9 +142,8 @@ export function ExperienceAiPanel({ titles, groupKey }: ExperienceAiPanelProps) 
           </Button>
         </header>
 
-        {!signedIn ? (
-          <HostedAiSignIn />
-        ) : ai.isReady ? (
+        {!signedIn ? <HostedAiSignIn /> : null}
+        {signedIn && ai.isReady ? (
           <>
             {hasMessages ? (
               <div
@@ -273,7 +272,8 @@ export function ExperienceAiPanel({ titles, groupKey }: ExperienceAiPanelProps) 
               </div>
             </form>
           </>
-        ) : (
+        ) : null}
+        {signedIn && !ai.isReady ? (
           <div
             className="flex shrink-0 flex-col items-start gap-2.5 px-1 py-1.5"
             data-test="experience-ai-setup"
@@ -286,7 +286,7 @@ export function ExperienceAiPanel({ titles, groupKey }: ExperienceAiPanelProps) 
               <Sparkles className="mr-1.5 size-3.5" /> Set up AI
             </Button>
           </div>
-        )}
+        ) : null}
 
         <EventSourcedAiSettingsSheet
           open={settingsOpen}

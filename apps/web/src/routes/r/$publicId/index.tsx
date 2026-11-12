@@ -13,7 +13,7 @@ import { ResumePreviewView } from "@/routes/_dashboard/resumes/$resumeId/-compon
 import { AppConfig } from "@/utils/system";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { ArrowLeft, FileX } from "lucide-react";
+import { FileX } from "lucide-react";
 
 function asTemplateId(value: string): TemplateId {
   return (TEMPLATE_IDS as readonly string[]).includes(value) ? (value as TemplateId) : "classic";
