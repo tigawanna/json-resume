@@ -1,11 +1,11 @@
 import { ArrowUpRight } from "lucide-react";
 
-import { CASE_STUDIES } from "../-utils/content";
+import { CASE_STUDIES } from "./content";
 import { Section } from "./primitives";
 
-export function ExpProof() {
+export function LandingProof() {
   return (
-    <Section id="proof" dataTest="exp-proof">
+    <Section id="proof" dataTest="landing-proof">
       <div className="grid grid-cols-1 border-b border-border/50 md:grid-cols-3">
         {CASE_STUDIES.map((study, index) => (
           <article

@@ -10,7 +10,7 @@ import {
 import { cn } from "@/lib/utils";
 import { unwrapUnknownError } from "@/utils/errors";
 import { Link } from "@tanstack/react-router";
-import { Save } from "lucide-react";
+import { ArrowLeft, Save } from "lucide-react";
 import type { ReactNode } from "react";
 import { toast } from "sonner";
 import { EventSourcedResumeAiTab } from "../../../../-ai/-components/EventSourcedResumeAiTab";
@@ -24,8 +24,6 @@ import {
   useWorkbenchDocument,
   useWorkbenchTemplate,
 } from "./ResumeWorkbenchProvider";
-
-import { FaChevronLeft } from "react-icons/fa";
 
 const WORKBENCH_TABS: Array<{ value: WorkbenchTab; label: string }> = [
   { value: "edit", label: "Edit" },
@@ -107,9 +105,11 @@ export function ResumeWorkbenchView({
     <div className="flex w-full flex-col gap-6 pb-24" data-test="resume-workbench">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0 flex-1 flex items-center gap-2">
-          <Link to="/resumes" className="hover:text-primary">
-            <FaChevronLeft className="size-10" />
-          </Link>
+          <Button asChild variant="ghost" size="icon-sm">
+            <Link to="/resumes" aria-label="Back to résumés">
+              <ArrowLeft />
+            </Link>
+          </Button>
           <div className="min-w-0 flex-1">
             <h1 className="text-2xl font-bold">{resume.name}</h1>
             {resume.headline ? (

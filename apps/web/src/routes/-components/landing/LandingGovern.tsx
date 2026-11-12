@@ -2,10 +2,10 @@ import { Check } from "lucide-react";
 
 import { Vault } from "@/components/ui/hairline";
 
-import { GOVERN_POINTS } from "../-utils/content";
+import { GOVERN_POINTS } from "./content";
 import { FigureSplit, SectionIntro } from "./primitives";
 
-export function ExpGovern() {
+export function LandingGovern() {
   return (
     <FigureSplit
       id="control"

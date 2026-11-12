@@ -1,9 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { ExpLandingPage } from "./exp-landing/-components/exp-landing-page";
+import { LandingPage } from "./-components/landing/LandingPage";
 
 export const Route = createFileRoute("/")({
-  component: ExpLandingPage,
+  component: LandingPage,
   head: () => ({
     meta: [
       {

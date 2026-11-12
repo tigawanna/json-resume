@@ -1,6 +1,5 @@
+export { LandingPage } from "./LandingPage";
 export { LandingNavbar } from "./LandingNavbar";
 export { LandingHero } from "./LandingHero";
-export { LandingFeatures } from "./LandingFeatures";
-export { LandingShowcase } from "./LandingShowcase";
-export { LandingCTA } from "./LandingCTA";
+export { LandingWorkbench } from "./LandingWorkbench";
 export { LandingFooter } from "./LandingFooter";

@@ -5,12 +5,12 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
-import { FAQ_ITEMS } from "../-utils/content";
+import { FAQ_ITEMS } from "./content";
 import { Section, SectionIntro } from "./primitives";
 
-export function ExpFaq() {
+export function LandingFaq() {
   return (
-    <Section id="faq" dataTest="exp-faq">
+    <Section id="faq" dataTest="landing-faq">
       <div className="grid grid-cols-1 gap-10 px-6 py-16 md:px-12 md:py-24 lg:grid-cols-12 lg:gap-0">
         <div className="lg:col-span-4 lg:pr-12">
           <SectionIntro

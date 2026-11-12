@@ -1,9 +1,9 @@
 import { Rail } from "@/components/ui/hairline";
 
-import { WARDROBE_ROLES } from "../-utils/content";
+import { WARDROBE_ROLES } from "./content";
 import { FigureSplit, SectionIntro } from "./primitives";
 
-export function ExpHire() {
+export function LandingHire() {
   return (
     <FigureSplit
       id="roles"

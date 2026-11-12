@@ -10,6 +10,7 @@ import {
 import { publicResumeQueryOptions } from "@/data-access-layer/public-resume/query-options";
 import { TEMPLATE_IDS, type TemplateId } from "@/features/resume/resume-schema";
 import { ResumePreviewView } from "@/routes/_dashboard/resumes/$resumeId/-components/ResumePreviewTab";
+import { AppConfig } from "@/utils/system";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { ArrowLeft, FileX } from "lucide-react";
@@ -51,10 +52,10 @@ function PublicResumePage() {
             </EmptyDescription>
           </EmptyHeader>
           <EmptyContent>
-            <Button asChild variant="outline" size="sm">
+            <Button asChild variant="ghost" size="sm">
               <Link to="/">
-                <ArrowLeft className="size-4" />
-                Home
+                <AppConfig.icon className="size-4" />
+                {AppConfig.wordmark}
               </Link>
             </Button>
           </EmptyContent>
@@ -67,19 +68,15 @@ function PublicResumePage() {
 
   return (
     <div className="bg-base-100 text-base-content min-h-dvh" data-test="public-resume-page">
-      <header className="border-base-content/10 border-b">
-        <div className="mx-auto flex w-full max-w-400 flex-wrap items-center justify-between gap-3 px-4 py-4">
-          <div className="min-w-0">
-            <p className="text-muted-foreground text-xs tracking-wide uppercase">Public résumé</p>
-            <h1 className="truncate text-xl font-semibold">{data.title}</h1>
-          </div>
-          <Button asChild variant="ghost" size="sm">
-            <Link to="/">
-              <ArrowLeft className="size-4" />
-              Home
-            </Link>
-          </Button>
+      <header className="p-4 w-full flex items-center justify-between mx-aito">
+        <div className="min-w-0">
+          <p className="text-muted-foreground text-xs tracking-wide uppercase">Public résumé</p>
+          <h1 className="truncate text-xl font-semibold">{data.title}</h1>
         </div>
+        <Link to="/" className="inline-flex w-fit items-center gap-2 text-sm font-medium">
+          <AppConfig.icon className="size-4" />
+          {AppConfig.wordmark}
+        </Link>
       </header>
       <main className="mx-auto w-full max-w-400 px-4 py-6">
         <ResumePreviewView

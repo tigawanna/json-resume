@@ -2,10 +2,10 @@ import { ArrowRight } from "lucide-react";
 
 import { Drawer } from "@/components/ui/hairline";
 
-import { PROBLEM_PAIRS } from "../-utils/content";
+import { PROBLEM_PAIRS } from "./content";
 import { FigureSplit, SectionIntro } from "./primitives";
 
-export function ExpProblem() {
+export function LandingProblem() {
   return (
     <FigureSplit
       id="problem"

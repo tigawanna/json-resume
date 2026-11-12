@@ -23,7 +23,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
 
-import { useWorkbenchStream } from "../-hooks/use-workbench-stream";
+import { useWorkbenchStream } from "./use-workbench-stream";
 import {
   APPLICATION_ANSWERS_CONTENT,
   COVER_LETTER_CONTENT,
@@ -36,7 +36,7 @@ import {
   type WorkbenchStreamState,
   type WorkbenchToolRun,
   type WorkbenchView,
-} from "../-utils/workbench-script";
+} from "./workbench-script";
 import { Section, SectionIntro } from "./primitives";
 
 const ATTACHED = ["job-description.md", "library/bullets.json", "library/skills.json"] as const;
@@ -62,9 +62,9 @@ const VIEW_META = {
   answers: { label: "Q&A", icon: MessageSquareText },
 } as const;
 
-export function ExpWorkbench() {
+export function LandingWorkbench() {
   return (
-    <Section id="workbench" dataTest="exp-workbench">
+    <Section id="workbench" dataTest="landing-workbench">
       <div className="grid grid-cols-1 gap-6 border-b border-border/50 px-6 py-14 md:px-12 md:py-20 lg:grid-cols-12 lg:items-end">
         <div className="lg:col-span-7">
           <SectionIntro
@@ -145,7 +145,7 @@ function WorkbenchFrame() {
   return (
     <div
       ref={frameRef}
-      data-test="exp-workbench-frame"
+      data-test="landing-workbench-frame"
       className="mx-auto max-w-5xl overflow-hidden border border-border/60 bg-base-100 shadow-sm"
     >
       <WindowBar />
@@ -157,7 +157,7 @@ function WorkbenchFrame() {
           <div
             ref={scrollRef}
             className="flex h-[18rem] flex-col gap-3 overflow-y-auto px-3 py-4 md:h-[22rem] md:px-4"
-            data-test="exp-workbench-chat"
+            data-test="landing-workbench-chat"
           >
             {state.prompt ? (
               <>
@@ -217,7 +217,7 @@ function WorkbenchFrame() {
           type="button"
           onClick={restart}
           className="flex items-center gap-1 transition-colors hover:text-base-content"
-          data-test="exp-workbench-replay"
+          data-test="landing-workbench-replay"
         >
           <RotateCcw className="size-3" />
           replay
@@ -258,7 +258,7 @@ function AiChrome() {
     <div
       aria-hidden
       className="flex h-9 shrink-0 items-center justify-end gap-1 border-b border-border/60 px-2"
-      data-test="exp-workbench-ai-chrome"
+      data-test="landing-workbench-ai-chrome"
     >
       <span className="flex items-center gap-1.5 rounded-md bg-secondary px-2 py-1 text-[11px] text-secondary-content">
         <FileText className="size-3.5" />
@@ -283,7 +283,7 @@ function Composer({ state }: { state: WorkbenchStreamState }) {
   else if (state.prompt) placeholder = "Ask for another change...";
 
   return (
-    <div className="border-t border-border/60 px-3 py-3" data-test="exp-workbench-composer">
+    <div className="border-t border-border/60 px-3 py-3" data-test="landing-workbench-composer">
       <div className="overflow-hidden rounded-2xl border border-base-content/15 bg-primary/10 text-base-content shadow-sm">
         <div className="min-h-[52px] px-4 pt-3 pb-1 text-[13px] leading-relaxed">
           {state.draft ? (
@@ -367,7 +367,7 @@ function ChatStream({
   const lastPart = state.parts[state.parts.length - 1];
 
   return (
-    <div data-test="exp-workbench-stream">
+    <div data-test="landing-workbench-stream">
       {state.parts.map((part) => {
         const streaming = part.id === lastPart?.id;
         return (
@@ -441,7 +441,7 @@ function ToolSuccess({
   return (
     <div
       className="mt-1.5 flex items-center gap-2 rounded-lg bg-[color-mix(in_oklch,var(--color-success)_9%,var(--color-base-100))] px-2.5 py-2 ring-1 ring-[color-mix(in_oklch,var(--color-success)_25%,transparent)]"
-      data-test={`exp-workbench-${view}-card`}
+      data-test={`landing-workbench-${view}-card`}
     >
       <span className="flex size-7 shrink-0 items-center justify-center rounded-md bg-success/15 text-success">
         {icon}
@@ -485,13 +485,13 @@ function PreviewPanel({
   return (
     <div
       className={cn("flex min-h-0 flex-col bg-base-100", className)}
-      data-test="exp-workbench-preview"
+      data-test="landing-workbench-preview"
     >
       <header className="flex flex-wrap items-center gap-2 border-b border-border/60 px-3 py-2">
         <span className="min-w-0 flex-1 truncate text-xs font-medium">{RESUME_CONTENT.name}</span>
         <div
           className="flex w-full items-center gap-0.5 overflow-x-auto rounded-lg bg-base-200 p-0.5 [scrollbar-width:none] lg:w-auto [&::-webkit-scrollbar]:hidden"
-          data-test="exp-workbench-tabs"
+          data-test="landing-workbench-tabs"
         >
           {WORKBENCH_VIEWS.map((value) => {
             const meta = VIEW_META[value];
@@ -554,7 +554,7 @@ function ResumePaper({
   return (
     <div
       className="mx-auto flex max-w-sm flex-col gap-3 bg-base-100 p-3 ring-1 ring-border/60 md:p-4"
-      data-test="exp-workbench-resume"
+      data-test="landing-workbench-resume"
     >
       <div>
         <p className="font-serif text-lg leading-tight tracking-tight text-base-content">
@@ -637,7 +637,7 @@ function ChangesView({ landed }: { landed: ReadonlySet<string> }) {
   }
 
   return (
-    <div className="mx-auto max-w-sm space-y-2" data-test="exp-workbench-changes">
+    <div className="mx-auto max-w-sm space-y-2" data-test="landing-workbench-changes">
       <p className="px-1 font-mono text-[9px] tracking-[0.2em] text-muted-foreground uppercase">
         This pass
       </p>
@@ -680,7 +680,7 @@ function LetterView({ ready }: { ready: boolean }) {
   return (
     <div
       className="mx-auto max-w-sm bg-base-100 p-4 ring-1 ring-border/60"
-      data-test="exp-workbench-letter"
+      data-test="landing-workbench-letter"
     >
       <div className="flex items-start justify-between gap-2 border-b border-border/60 pb-2">
         <div className="min-w-0">
@@ -714,7 +714,7 @@ function AnswersView({ ready }: { ready: boolean }) {
   }
 
   return (
-    <div className="mx-auto max-w-sm space-y-2" data-test="exp-workbench-answers">
+    <div className="mx-auto max-w-sm space-y-2" data-test="landing-workbench-answers">
       <div className="flex items-center justify-between px-1">
         <p className="font-mono text-[9px] tracking-[0.2em] text-muted-foreground uppercase">
           Application answers

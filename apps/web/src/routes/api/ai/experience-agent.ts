@@ -4,7 +4,7 @@ import { z } from "zod";
 import { experienceGroupSnapshotSchema } from "@/features/agentic-tools/experience-snapshot";
 import { streamExperienceAgentChat } from "@/routes/_dashboard/-ai/-utils/stream-experience-chat.server";
 import { aiRoutingSchema } from "@/lib/openrouter/routing";
-import { auth } from "@/lib/auth";
+import { resolveHostedAiUserId } from "./-utils/hosted-ai-session";
 import { isAllowedOrigin, jsonError, preflightResponse, withCors } from "./-utils/same-origin-cors";
 
 const forwardedSchema = z.object({
@@ -21,8 +21,8 @@ export const Route = createFileRoute("/api/ai/experience-agent")({
       POST: async ({ request }: { request: Request }) => {
         if (!isAllowedOrigin(request)) return jsonError("Forbidden", 403);
 
-        const session = await auth.api.getSession({ headers: request.headers });
-        const userId = session?.user.id ?? "local";
+        const userId = await resolveHostedAiUserId(request);
+        if (typeof userId !== "string") return userId;
 
         try {
           const raw: unknown = await request.json();

@@ -2,12 +2,12 @@ import { Check } from "lucide-react";
 
 import { Stack } from "@/components/ui/hairline";
 
-import { PRICING_TIERS } from "../-utils/content";
+import { PRICING_TIERS } from "./content";
 import { FigurePanel, Section, SectionIntro } from "./primitives";
 
-export function ExpPricing() {
+export function LandingPricing() {
   return (
-    <Section id="pricing" tone="primary" dataTest="exp-pricing">
+    <Section id="pricing" tone="primary" dataTest="landing-pricing">
       <div className="flex flex-col gap-10 px-6 py-16 md:px-12 md:py-20 lg:flex-row lg:items-end lg:justify-between">
         <SectionIntro
           title={

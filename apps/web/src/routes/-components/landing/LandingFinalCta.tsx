@@ -5,9 +5,9 @@ import { Riffle } from "@/components/ui/hairline";
 
 import { FigurePanel, Section } from "./primitives";
 
-export function ExpFinalCta() {
+export function LandingFinalCta() {
   return (
-    <Section tone="primary" dataTest="exp-final-cta">
+    <Section tone="primary" dataTest="landing-final-cta">
       <div className="grid grid-cols-1 items-center gap-10 px-6 py-16 md:px-12 md:py-24 lg:grid-cols-12 lg:gap-0">
         <div className="lg:col-span-7 lg:pr-12">
           <h2 className="mt-4 max-w-[18ch] text-balance font-serif text-4xl leading-[0.98] font-medium tracking-tight text-base-content md:text-5xl lg:text-6xl">

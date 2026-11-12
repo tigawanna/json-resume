@@ -129,7 +129,7 @@ export function FigureSplit({
   children: ReactNode;
 }) {
   return (
-    <Section id={id} tone={tone} dataTest={id ? `exp-${id}` : undefined}>
+    <Section id={id} tone={tone} dataTest={id ? `landing-${id}` : undefined}>
       <div className="grid grid-cols-1 items-center gap-10 px-6 py-16 md:px-12 md:py-24 lg:grid-cols-12 lg:gap-0">
         <div className={cn("lg:col-span-5", reverse ? "lg:order-2 lg:pl-12" : "lg:pr-12")}>
           <FigurePanel

@@ -4,6 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader } from "@/components/ui/sheet";
 import { DashboardSheetBrand } from "./DashboardSheetBrand";
 import { cn } from "@/lib/utils";
+import {
+  HostedAiSignIn,
+  useHostedAiSignedIn,
+} from "@/routes/_dashboard/-ai/-components/HostedAiSignIn";
 import { useEventSourcedAiSettings } from "@/routes/_dashboard/-ai/-hooks/use-event-sourced-ai-settings";
 import { fetchServerSentEvents, useChat } from "@tanstack/ai-react";
 import { ArrowUp, LoaderCircle, Sparkle } from "lucide-react";
@@ -49,6 +53,7 @@ function DashboardChatSheet({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const signedIn = useHostedAiSignedIn();
   const { settings } = useEventSourcedAiSettings();
   const isReady = !!settings;
   const composerRef = useRef<PromptAreaHandle>(null);
@@ -108,16 +113,20 @@ function DashboardChatSheet({
               Done
             </Button>
           </SheetHeader>
-          <ChatBody
-            composerRef={composerRef}
-            disabled={!isReady}
-            isLoading={isLoading}
-            messages={messages}
-            placeholder={placeholder}
-            segments={segments}
-            onSegmentsChange={setSegments}
-            onSend={handleSend}
-          />
+          {signedIn ? (
+            <ChatBody
+              composerRef={composerRef}
+              disabled={!isReady}
+              isLoading={isLoading}
+              messages={messages}
+              placeholder={placeholder}
+              segments={segments}
+              onSegmentsChange={setSegments}
+              onSend={handleSend}
+            />
+          ) : (
+            <HostedAiSignIn />
+          )}
         </div>
       </SheetContent>
     </Sheet>

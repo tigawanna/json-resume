@@ -23,6 +23,7 @@ import {
 } from "@/data-access-layer/public-resume/query-options";
 import { RouterPendingComponent } from "@/lib/tanstack/router/RouterPendingComponent";
 import { unwrapUnknownError } from "@/utils/errors";
+import { AppConfig } from "@/utils/system";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, Copy, ExternalLink, FileText, Globe, Pencil, Trash2 } from "lucide-react";
@@ -106,16 +107,25 @@ export function PublicResumeList() {
 
   if (!isAuthenticated) {
     return (
-      <div className="flex min-h-full w-full flex-col gap-4" data-test="public-resumes-signin">
-        <h1 className="text-2xl font-bold tracking-tight">Public résumés</h1>
-        <p className="text-muted-foreground text-sm">
-          Sign in to see résumés you have published for sharing.
-        </p>
-        <Button asChild variant="outline" size="sm" className="w-fit">
-          <Link to="/auth" search={{ returnTo: "/public-resumes" }}>
-            Sign in
-          </Link>
-        </Button>
+      <div
+        className="flex min-h-full w-full flex-1 items-center justify-center px-4 py-16"
+        data-test="public-resumes-signin"
+      >
+        <div className="flex max-w-sm flex-col items-center gap-4 text-center">
+          <AppConfig.icon className="size-12 text-primary" />
+          <div className="flex flex-col gap-1">
+            <p className="text-sm font-medium tracking-tight">{AppConfig.wordmark}</p>
+            <h1 className="text-2xl font-bold tracking-tight">Public résumés</h1>
+            <p className="text-muted-foreground text-sm">
+              Sign in to see résumés you have published for sharing.
+            </p>
+          </div>
+          <Button asChild variant="outline" size="sm">
+            <Link to="/auth" search={{ returnTo: "/public-resumes" }}>
+              Sign in
+            </Link>
+          </Button>
+        </div>
       </div>
     );
   }

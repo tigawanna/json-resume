@@ -1,16 +1,11 @@
-import { useTheme } from "@/lib/tanstack/router/use-theme";
-import { AppConfig } from "@/utils/system";
 import { Link } from "@tanstack/react-router";
 import { Menu, X } from "lucide-react";
-import { lazy, Suspense, useState } from "react";
+import { useState } from "react";
 
-const DashboardLink = lazy(() => import("./LandingDashboardLink"));
+import { useTheme } from "@/lib/tanstack/router/use-theme";
+import { AppConfig } from "@/utils/system";
 
-const NAV_LINKS = [
-  { label: "Parts", href: "#parts" },
-  { label: "Agents", href: "#agents" },
-  { label: "Sync", href: "#sync" },
-] as const;
+import { BRAND, NAV_LINKS } from "./content";
 
 export function LandingNavbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -23,102 +18,99 @@ export function LandingNavbar() {
   return (
     <header
       data-test="landing-navbar"
-      className="sticky top-0 z-50 border-b border-border/50 bg-base-100/80 backdrop-blur-md transition-all duration-300"
+      className="sticky top-0 z-50 border-b border-border/50 bg-base-100/80 backdrop-blur-md"
     >
-      <div className="mx-auto flex h-12 max-w-360 items-center justify-between border-x border-border/50">
-        <Link
-          to="/"
-          aria-label={AppConfig.name}
-          className="flex h-full items-center border-r border-border/50 px-4"
-        >
-          <img src="/logo.svg" alt="" className="size-7" />
+      <div className="mx-auto flex h-14 w-full max-w-360 items-center justify-between border-x border-border/50 px-4 md:px-6">
+        <Link to="/" aria-label={AppConfig.name} className="flex items-center gap-2">
+          <span className="flex size-7 items-center justify-center bg-primary/10 text-primary ring-1 ring-primary/40">
+            <AppConfig.icon className="size-4" />
+          </span>
+          <span className="flex items-baseline gap-2">
+            <span className="font-mono text-xs font-medium tracking-[0.2em] text-base-content uppercase">
+              {BRAND}
+            </span>
+          </span>
         </Link>
 
-        <div className="flex-1" />
-
-        {/* Right actions — desktop */}
-        <div className="flex h-full items-center">
-          <button
-            onClick={toggleTheme}
-            className="hidden h-full border-l border-border/50 px-4 font-mono text-xs text-muted-foreground transition-colors hover:text-base-content sm:block"
-            aria-label="Toggle theme"
-          >
-            {theme === "light" ? "[ Dark ]" : "[ Light ]"}
-          </button>
-
+        <nav className="hidden items-center gap-1 lg:flex" aria-label="Primary">
           {NAV_LINKS.map((item) => (
             <a
               key={item.label}
               href={item.href}
-              className="hidden h-full items-center border-l border-border/50 px-4 font-mono text-xs text-muted-foreground transition-colors hover:text-base-content md:flex"
+              className="px-3 py-2 font-mono text-xs text-muted-foreground transition-colors hover:text-base-content"
             >
-              [ {item.label} ]
+              {item.label}
             </a>
           ))}
+        </nav>
 
-          <Suspense
-            fallback={
-              <Link
-                to="/dashboard"
-                className="flex h-full items-center bg-primary px-6 font-mono text-xs uppercase tracking-widest text-primary-content transition-opacity hover:opacity-90"
-              >
-                Dashboard →
-              </Link>
-            }
-          >
-            <DashboardLink />
-          </Suspense>
-
-          {/* Mobile toggle */}
+        <div className="flex items-center gap-2">
           <button
-            onClick={() => setMobileOpen(!mobileOpen)}
-            className="flex h-full items-center border-l border-border/50 px-4 text-base-content md:hidden"
+            type="button"
+            onClick={toggleTheme}
+            aria-label="Toggle theme"
+            className="hidden border border-border/60 px-3 py-2 font-mono text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-base-content sm:block"
+          >
+            {theme === "light" ? "Dark" : "Light"}
+          </button>
+          <a
+            href="#pricing"
+            className="hidden border border-border/60 px-4 py-2 font-mono text-xs text-base-content transition-colors hover:border-primary/40 md:block"
+          >
+            Talk to us
+          </a>
+          <Link
+            to="/dashboard"
+            className="bg-primary px-4 py-2 font-mono text-xs font-medium text-primary-content transition-opacity hover:opacity-90 active:scale-[0.98]"
+          >
+            Open the editor
+          </Link>
+          <button
+            type="button"
+            onClick={() => setMobileOpen((open) => !open)}
             aria-label={mobileOpen ? "Close menu" : "Open menu"}
+            className="border border-border/60 p-2 text-base-content lg:hidden"
           >
             {mobileOpen ? <X className="size-4" /> : <Menu className="size-4" />}
           </button>
         </div>
       </div>
 
-      {/* Mobile menu */}
-      {mobileOpen && (
-        <div className="space-y-3 border-t border-border/50 bg-base-100/95 p-6 font-mono text-xs backdrop-blur-xl md:hidden">
-          <button
-            onClick={() => {
-              toggleTheme();
-              setMobileOpen(false);
-            }}
-            className="block text-muted-foreground transition-colors hover:text-base-content"
+      {mobileOpen ? (
+        <div className="border-t border-border/50 bg-base-100/95 backdrop-blur-xl lg:hidden">
+          <nav
+            className="mx-auto grid max-w-360 gap-1 border-x border-border/50 px-4 py-4"
+            aria-label="Mobile"
           >
-            {theme === "light" ? "[ Dark mode ]" : "[ Light mode ]"}
-          </button>
-          {NAV_LINKS.map((item) => (
-            <a
-              key={item.label}
-              href={item.href}
-              onClick={() => setMobileOpen(false)}
-              className="block text-muted-foreground transition-colors hover:text-base-content"
-            >
-              [ {item.label} ]
-            </a>
-          ))}
-          <Link
-            to="/auth/signup"
-            search={{ returnTo: "/dashboard" }}
-            onClick={() => setMobileOpen(false)}
-            className="block text-muted-foreground transition-colors hover:text-base-content"
-          >
-            [ Sign up ]
-          </Link>
-          <Link
-            to="/dashboard"
-            onClick={() => setMobileOpen(false)}
-            className="mt-3 block bg-primary px-4 py-2 text-center uppercase tracking-widest text-primary-content"
-          >
-            Dashboard →
-          </Link>
+            {NAV_LINKS.map((item) => (
+              <a
+                key={item.label}
+                href={item.href}
+                onClick={() => setMobileOpen(false)}
+                className="px-2 py-2 font-mono text-sm text-muted-foreground transition-colors hover:text-base-content"
+              >
+                {item.label}
+              </a>
+            ))}
+            <div className="mt-2 flex gap-2">
+              <button
+                type="button"
+                onClick={toggleTheme}
+                className="flex-1 border border-border/60 px-3 py-2 font-mono text-xs text-muted-foreground"
+              >
+                {theme === "light" ? "Dark mode" : "Light mode"}
+              </button>
+              <a
+                href="#pricing"
+                onClick={() => setMobileOpen(false)}
+                className="flex-1 border border-border/60 px-3 py-2 text-center font-mono text-xs text-base-content"
+              >
+                Talk to us
+              </a>
+            </div>
+          </nav>
         </div>
-      )}
+      ) : null}
     </header>
   );
 }

@@ -9,6 +9,7 @@ import { usePanelRef } from "react-resizable-panels";
 import { useEventSourcedResumeAiChat } from "../-hooks/use-event-sourced-resume-ai";
 import { useResumeAiPreviewPanel } from "../-hooks/use-resume-ai-preview-panel";
 import { isApiKeyErrorMessage } from "@/lib/openrouter/is-api-key-error";
+import { HostedAiSignIn, useHostedAiSignedIn } from "./HostedAiSignIn";
 import { EventSourcedAiChrome } from "./EventSourcedAiChrome";
 import { ResumeAiLivePreview } from "./ResumeAiLivePreview";
 
@@ -16,6 +17,7 @@ export function EventSourcedResumeAiTab(props?: {
   /** Dev chat lab: scripted endpoint and the preset the next send should play. */
   lab?: { connection: string; preset: string };
 }) {
+  const signedIn = useHostedAiSignedIn();
   const chat = useEventSourcedResumeAiChat(
     props?.lab ? { connection: props.lab.connection, labPreset: props.lab.preset } : undefined,
   );
@@ -73,28 +75,32 @@ export function EventSourcedResumeAiTab(props?: {
           onResize={() => setChatCollapsed(chatPanelRef.current?.isCollapsed() ?? false)}
         >
           <div className={cn("h-full", split && "px-3")}>
-            <ResumeAiConversationCard
-              chat={chat.chat}
-              activeModelLabel={chat.activeModelLabel}
-              activeResume={chat.activeResume}
-              activeRoutingLabel={chat.activeRoutingLabel}
-              apiKey={chat.settings?.apiKey ?? null}
-              awaitingApproval={chat.awaitingApproval}
-              sessionChars={chat.sessionChars}
-              sessionGenerating={chat.sessionGenerating}
-              status={chat.status}
-              promptAreaRef={chat.composerRef}
-              endOfMessagesRef={chat.endOfMessagesRef}
-              errorMessage={labError}
-              historyPending={false}
-              isBusy={chat.isLoading}
-              isReady={chat.isReady}
-              onEditPastPrompt={chat.editPastPrompt}
-              onResendPastPrompt={(message) => void chat.resendPastPrompt(message)}
-              onSend={(message) => void chat.sendText(message)}
-              onRetry={chat.retryLastRun}
-              onStop={chat.stop}
-            />
+            {signedIn ? (
+              <ResumeAiConversationCard
+                chat={chat.chat}
+                activeModelLabel={chat.activeModelLabel}
+                activeResume={chat.activeResume}
+                activeRoutingLabel={chat.activeRoutingLabel}
+                apiKey={chat.settings?.apiKey ?? null}
+                awaitingApproval={chat.awaitingApproval}
+                sessionChars={chat.sessionChars}
+                sessionGenerating={chat.sessionGenerating}
+                status={chat.status}
+                promptAreaRef={chat.composerRef}
+                endOfMessagesRef={chat.endOfMessagesRef}
+                errorMessage={labError}
+                historyPending={false}
+                isBusy={chat.isLoading}
+                isReady={chat.isReady}
+                onEditPastPrompt={chat.editPastPrompt}
+                onResendPastPrompt={(message) => void chat.resendPastPrompt(message)}
+                onSend={(message) => void chat.sendText(message)}
+                onRetry={chat.retryLastRun}
+                onStop={chat.stop}
+              />
+            ) : (
+              <HostedAiSignIn className="flex h-full flex-col items-center justify-center gap-3 px-5 text-center" />
+            )}
           </div>
         </ResizablePanel>
         {split ? (

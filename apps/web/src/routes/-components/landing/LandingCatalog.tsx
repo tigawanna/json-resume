@@ -1,9 +1,9 @@
 import { Hub } from "@/components/ui/hairline";
 
-import { CATALOG_GROUPS } from "../-utils/content";
+import { CATALOG_GROUPS } from "./content";
 import { FigureSplit, SectionIntro } from "./primitives";
 
-export function ExpCatalog() {
+export function LandingCatalog() {
   return (
     <FigureSplit
       id="library"

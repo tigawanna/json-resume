@@ -8,7 +8,7 @@ import {
   type WorkbenchStep,
   type WorkbenchStreamState,
   type WorkbenchView,
-} from "../-utils/workbench-script";
+} from "./workbench-script";
 
 /** Pause between loops, so a returning visitor can catch the start. */
 const LOOP_HOLD_MS = 4_400;

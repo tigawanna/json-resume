@@ -1,9 +1,9 @@
-import { COMPOSE_FEATURES } from "../-utils/content";
+import { COMPOSE_FEATURES } from "./content";
 import { Section } from "./primitives";
 
-export function ExpCompose() {
+export function LandingCompose() {
   return (
-    <Section id="how" dataTest="exp-how">
+    <Section id="how" dataTest="landing-how">
       <div className="grid grid-cols-1 border-b border-border/50 md:grid-cols-3">
         {COMPOSE_FEATURES.map((feature, index) => (
           <article

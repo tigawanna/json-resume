@@ -1,9 +1,9 @@
 import { Exploded } from "@/components/ui/hairline";
 
-import { PLATFORM_POINTS } from "../-utils/content";
+import { PLATFORM_POINTS } from "./content";
 import { FigureSplit, SectionIntro } from "./primitives";
 
-export function ExpPlatform() {
+export function LandingPlatform() {
   return (
     <FigureSplit
       id="career-brain"

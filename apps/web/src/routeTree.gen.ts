@@ -18,7 +18,6 @@ import { Route as ApiMcpRouteImport } from './routes/api/mcp'
 import { Route as AuthIndexRouteImport } from './routes/auth/index'
 import { Route as AuthGithubRouteImport } from './routes/auth/github'
 import { Route as AuthSignupRouteImport } from './routes/auth/signup'
-import { Route as ExpLandingIndexRouteImport } from './routes/exp-landing/index'
 import { Route as PrivacyIndexRouteImport } from './routes/privacy/index'
 import { Route as TermsIndexRouteImport } from './routes/terms/index'
 import { Route as TestIndexRouteImport } from './routes/test/index'
@@ -119,11 +118,6 @@ const AuthSignupRoute = AuthSignupRouteImport.update({
   id: '/signup',
   path: '/signup',
   getParentRoute: () => AuthLayoutRoute,
-} as any)
-const ExpLandingIndexRoute = ExpLandingIndexRouteImport.update({
-  id: '/exp-landing/',
-  path: '/exp-landing/',
-  getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyIndexRoute = PrivacyIndexRouteImport.update({
   id: '/privacy/',
@@ -436,7 +430,6 @@ export interface FileRoutesByFullPath {
   '/auth/github': typeof AuthGithubRoute
   '/auth/signup': typeof AuthSignupRoute
   '/auth/': typeof AuthIndexRoute
-  '/exp-landing/': typeof ExpLandingIndexRoute
   '/privacy/': typeof PrivacyIndexRoute
   '/terms/': typeof TermsIndexRoute
   '/test/': typeof TestIndexRoute
@@ -502,7 +495,6 @@ export interface FileRoutesByTo {
   '/auth/github': typeof AuthGithubRoute
   '/auth/signup': typeof AuthSignupRoute
   '/auth': typeof AuthIndexRoute
-  '/exp-landing': typeof ExpLandingIndexRoute
   '/privacy': typeof PrivacyIndexRoute
   '/terms': typeof TermsIndexRoute
   '/test': typeof TestIndexRoute
@@ -571,7 +563,6 @@ export interface FileRoutesById {
   '/auth/github': typeof AuthGithubRoute
   '/auth/signup': typeof AuthSignupRoute
   '/auth/': typeof AuthIndexRoute
-  '/exp-landing/': typeof ExpLandingIndexRoute
   '/privacy/': typeof PrivacyIndexRoute
   '/terms/': typeof TermsIndexRoute
   '/test/': typeof TestIndexRoute
@@ -640,7 +631,6 @@ export interface FileRouteTypes {
     | '/auth/github'
     | '/auth/signup'
     | '/auth/'
-    | '/exp-landing/'
     | '/privacy/'
     | '/terms/'
     | '/test/'
@@ -706,7 +696,6 @@ export interface FileRouteTypes {
     | '/auth/github'
     | '/auth/signup'
     | '/auth'
-    | '/exp-landing'
     | '/privacy'
     | '/terms'
     | '/test'
@@ -774,7 +763,6 @@ export interface FileRouteTypes {
     | '/auth/github'
     | '/auth/signup'
     | '/auth/'
-    | '/exp-landing/'
     | '/privacy/'
     | '/terms/'
     | '/test/'
@@ -839,7 +827,6 @@ export interface RootRouteChildren {
   AuthLayoutRoute: typeof AuthLayoutRouteWithChildren
   SearchRoute: typeof SearchRoute
   ApiMcpRoute: typeof ApiMcpRoute
-  ExpLandingIndexRoute: typeof ExpLandingIndexRoute
   PrivacyIndexRoute: typeof PrivacyIndexRoute
   TermsIndexRoute: typeof TermsIndexRoute
   TestIndexRoute: typeof TestIndexRoute
@@ -923,13 +910,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/auth/signup'
       preLoaderRoute: typeof AuthSignupRouteImport
       parentRoute: typeof AuthLayoutRoute
-    }
-    '/exp-landing/': {
-      id: '/exp-landing/'
-      path: '/exp-landing'
-      fullPath: '/exp-landing/'
-      preLoaderRoute: typeof ExpLandingIndexRouteImport
-      parentRoute: typeof rootRouteImport
     }
     '/privacy/': {
       id: '/privacy/'
@@ -1450,7 +1430,6 @@ const rootRouteChildren: RootRouteChildren = {
   AuthLayoutRoute: AuthLayoutRouteWithChildren,
   SearchRoute: SearchRoute,
   ApiMcpRoute: ApiMcpRoute,
-  ExpLandingIndexRoute: ExpLandingIndexRoute,
   PrivacyIndexRoute: PrivacyIndexRoute,
   TermsIndexRoute: TermsIndexRoute,
   TestIndexRoute: TestIndexRoute,

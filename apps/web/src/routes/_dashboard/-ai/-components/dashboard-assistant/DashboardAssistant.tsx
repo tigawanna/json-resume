@@ -17,6 +17,7 @@ import { useEffect, useState } from "react";
 import { useDashboardAssistantChat } from "../../-hooks/use-dashboard-assistant";
 import { AiSettingsForm } from "../AiSettingsForm";
 import { EventSourcedAiSettingsSheet } from "../EventSourcedAiSettingsSheet";
+import { HostedAiSignIn, useHostedAiSignedIn } from "../HostedAiSignIn";
 import { AssistantFace } from "./AssistantFace";
 import { DashboardAssistantConversation } from "./DashboardAssistantConversation";
 
@@ -43,6 +44,7 @@ export function DashboardAssistant() {
   const [open, setOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const pathname = useLocation({ select: (location) => location.pathname });
+  const signedIn = useHostedAiSignedIn();
   const assistant = useDashboardAssistantChat({ onHandedOff: () => setOpen(false) });
   const hidden = isResumeEditorPath(pathname) || isDevRoute(pathname) || isDashboardHome(pathname);
   const isWorking = assistant.isLoading || assistant.sessionGenerating;
@@ -136,7 +138,9 @@ export function DashboardAssistant() {
             </Button>
           </header>
 
-          {assistant.isReady ? (
+          {!signedIn ? (
+            <HostedAiSignIn />
+          ) : assistant.isReady ? (
             <DashboardAssistantConversation
               activeModelLabel={assistant.activeModelLabel}
               activeRoutingLabel={assistant.activeRoutingLabel}

@@ -12,6 +12,10 @@ import {
 } from "@/routes/_dashboard/resumes/$resumeId/-components/ResumeAiTab/resume-ai-prompt";
 import { ArrowUp, ChevronDown, Sparkles, Square } from "lucide-react";
 import { memo, useState } from "react";
+import {
+  HostedAiSignIn,
+  useHostedAiSignedIn,
+} from "@/routes/_dashboard/-ai/-components/HostedAiSignIn";
 import { useExperienceAi } from "../../-hooks/use-experience-ai";
 import { ExperienceAiChatUI } from "./experience-ai-chat-ui";
 
@@ -57,6 +61,7 @@ const StableExperienceMessage = memo(
  * the text (up to ~40% of the viewport) and the conversation scrolls above it.
  */
 export function ExperienceAiPanel({ titles, groupKey }: ExperienceAiPanelProps) {
+  const signedIn = useHostedAiSignedIn();
   const ai = useExperienceAi({ titles, groupKey });
   const [open, setOpen] = useState(() => ai.messages.length > 0);
   const [segments, setSegments] = useState<Segment[]>([]);
@@ -137,7 +142,9 @@ export function ExperienceAiPanel({ titles, groupKey }: ExperienceAiPanelProps) 
           </Button>
         </header>
 
-        {ai.isReady ? (
+        {!signedIn ? (
+          <HostedAiSignIn />
+        ) : ai.isReady ? (
           <>
             {hasMessages ? (
               <div
