@@ -22,7 +22,7 @@ Before editing files for a substantial task:
 - **TanStack Router** (file-based routing)
 - **TanStack Query** (React Query)
 - **TanStack Form** (If a form primitive doesnt exost make one)
-- **Elysia Eden Treaty** (end-to-end type-safe API)
+- **Hono + Hono RPC** (end-to-end type-safe API; backend lives in `apps/api`)
 - **Better Auth**
 - **DaisyUI** (powers themes)
 - **shadcn/ui components**
@@ -54,6 +54,8 @@ if (routing.mode === "official" && endpoints) {
 
 `apps/web/src/` is a TanStack Start app. Routes live in `routes/<route>/index.tsx`. Route-only UI, helpers, and hooks use a `-` prefix so the router ignores them. Shared UI is `components/` (`ui/` is shadcn codegen only). Data loading is `data-access-layer/`. Package wrappers are `lib/`. App rules and server functions are `modules/`. External HTTP clients are `services/`. Load the `tanstack-src-layout` skill before adding or moving files under `apps/web/src/`.
 
+Backend logic (new code) lives in `apps/api/` (Hono + Hono RPC). `apps/web/src/modules/*` and `src/routes/api/*` are the legacy home; migrate a piece when you touch it instead of adding to it. See `Backend: Hono RPC (apps/api)` below.
+
 ## Group files in folders
 
 Folders are the grouping mechanism. Do not keep adding loose files to helper directories (`utils/`, `-utils/`, `hooks/`, `lib/`) or to `modules/` until unrelated files sit side by side, especially when their names share no prefix. Put related logic in a named folder for that concern so the files that belong together stay together.
@@ -66,7 +68,191 @@ TanStack Start's import protection (Vite, on by default) keeps client and server
 
 ---
 
-## ✅ DO
+## Backend: Hono RPC (`apps/api`)
+
+All backend logic lives in `apps/api/` (Hono on Node, Better Auth, Drizzle/libsql). The web app is UI only and talks to it through a typed `hc<AppType>` client. **Do not add new `createServerFn` handlers, `src/routes/api/*` route files, or `*.server.ts` data-access code.** When a task touches legacy server code, migrate that piece into `apps/api` (see the checklist at the end of this section) instead of extending it.
+
+### Package layout
+
+```
+apps/api/
+  package.json
+  tsconfig.json
+  src/
+    app.ts          # one chained Hono expression -> `AppType`
+    index.ts        # node serve entry (Vercel uses `app.fetch`)
+    env.ts          # zod-validated env (DATABASE_URL, BETTER_AUTH_*, GITHUB_*, …)
+    db/client.ts    # drizzle client (shared schema from @repo/db)
+    auth/
+      auth.ts       # Better Auth instance (no tanstackStartCookies)
+      middleware.ts # requireSession / requireAdmin Hono middleware
+    routes/
+      <resource>/route.ts   # one Hono instance per resource
+    lib/            # http error helpers, etc.
+```
+
+### Composition rule (chained routes)
+
+`AppType = typeof app` is the whole type-safety story. Build it in one chained expression so the client sees every route:
+
+```ts
+// apps/api/src/app.ts
+export const app = new Hono<EvlogVariables>()
+  .basePath("/api")
+  .use("*", evlog({ ... }))
+  .use("*", cors({ origin, credentials: true }))
+  .on(["GET", "POST"], "/auth/*", (c) => auth.handler(c.req.raw))
+  .route("/health", healthRoute)
+  .route("/viewer", viewerRoute)
+  .route("/me", meRoute)
+  .onError((err, c) => errorResponse({ c, err, isProduction }));
+```
+
+- `basePath("/api")` is part of the type, so the client calls `honoClient.api.health.$get()`.
+- Mount a resource with `.route("/<name>", <name>Route)`, never `app.use()` with a nested handler — the latter hides types.
+- Keep each resource in its own file exporting `const <name>Route = new Hono<AppEnv>().get(...).post(...)`.
+
+### Route file pattern
+
+```ts
+// apps/api/src/routes/me/route.ts
+import { zValidator } from "@hono/zod-validator";
+import { Hono } from "hono";
+import { z } from "zod";
+import { auth } from "@api/auth/auth";
+import { requireSession } from "@api/auth/middleware";
+import { errorBody } from "@api/lib/http";
+import type { AppEnv } from "@api/types";
+
+export const updateMeInput = z.object({
+  name: z.string().trim().min(1).max(120),
+});
+
+export const meRoute = new Hono<AppEnv>()
+  .get("/", requireSession, (c) => c.json({ user: c.get("session").user }))
+  .patch(
+    "/",
+    requireSession,
+    zValidator("json", updateMeInput, (result, c) => {
+      if (!result.success) {
+        return c.json(
+          errorBody({
+            message: "Invalid request body",
+            code: "VALIDATION_ERROR",
+            issues: result.error.issues,
+          }),
+          400,
+        );
+      }
+    }),
+    async (c) => {
+      const { name } = c.req.valid("json");
+      await auth.api.updateUser({ body: { name }, headers: c.req.raw.headers });
+      const updated = await auth.api.getSession({ headers: c.req.raw.headers });
+      if (!updated)
+        return c.json(errorBody({ message: "Unauthorized", code: "UNAUTHORIZED" }), 401);
+      return c.json({ user: updated.user });
+    },
+  );
+```
+
+Rules:
+
+- ✅ Validate input with `zValidator("json" | "query" | "param", zodSchema)`. Zod v4: `z.email()`, `z.url()`, `z.string().trim()`.
+- ✅ Chain middleware positionally: `.get("/", requireSession, requireAdmin, handler)`. Middleware runs left-to-right.
+- ✅ Read the body/params/query via `c.req.valid("json")` — never `c.req.json()` without validation.
+- ✅ Return plain `c.json(...)`. Do not throw for expected failures; return the right status.
+- ✅ Use `errorBody({ message, code?, issues? })` from `@api/lib/http` so the client unwraps one shape.
+- ❌ No `any` / casts. `HTTPException.status` is already typed; pass it straight through.
+
+### Auth middleware
+
+```ts
+// apps/api/src/auth/middleware.ts
+export const requireSession = createMiddleware<AppEnv>(async (c, next) => {
+  const session = await auth.api.getSession({ headers: c.req.raw.headers });
+  if (!session) return c.json(errorBody({ message: "Unauthorized", code: "UNAUTHORIZED" }), 401);
+  c.set("session", session);
+  await next();
+});
+```
+
+- Web + API share the same database and `BETTER_AUTH_SECRET`. The API's `baseURL` is its own public origin; `trustedOrigins` contains the web origin.
+- Better Auth is mounted at `/api/auth/*` via `.on(["GET", "POST"], "/auth/*", (c) => auth.handler(c.req.raw))`. Do not add a separate TanStack auth route.
+- `tanstackStartCookies()` is web-only; the API never uses it.
+- Desktop support is **not wired yet**. When it is, add the `@better-auth/electron` + `bearer` plugins to `apps/api/src/auth/auth.ts` and register the desktop origin in `TRUSTED_ORIGINS`. Until then, keep them out of the API.
+
+### Error handling
+
+`app.onError` converts every thrown value to `{ error: { message, code } }`. Expected failures are returned, not thrown. The web client uses the `ApiErrorBody` shape.
+
+### Web client
+
+```ts
+// apps/web/src/lib/api/client.ts
+import type { AppType } from "@api/app";
+import { hc } from "hono/client";
+import { clientEnv } from "@/lib/env/client-env";
+
+export const honoClient = hc<AppType>(clientEnv.VITE_HONO_API_URL, {
+  init: { credentials: "include" },
+});
+```
+
+- `import type` only — never a value import of `@api/*`, or the API server lands in the browser bundle.
+- `VITE_HONO_API_URL` defaults to `http://localhost:3100` and is the API origin (not the web origin).
+
+React Query usage (same rules as before, but against the typed client):
+
+```ts
+export const viewerQueryOptions = queryOptions({
+  queryKey: ["viewer"],
+  queryFn: async () => {
+    const res = await honoClient.api.viewer.$get();
+    if (!res.ok) throw new Error((await res.json()).error.message);
+    return res.json();
+  },
+});
+
+const mutation = useMutation({
+  mutationFn: async (data: { name: string }) => {
+    const res = await honoClient.api.me.$patch({ json: data });
+    if (!res.ok) throw new Error((await res.json()).error.message);
+    return res.json();
+  },
+  meta: { invalidates: [["viewer"]] },
+});
+```
+
+- Hono routes are inferred from the chained expression; `$get()`, `$post()`, `$patch()`, and `{ json, query, param }` inputs are fully typed.
+- `credentials: "include"` is required so the Better Auth session cookie reaches the API.
+
+### Cookies / origins in dev and prod
+
+- Dev: API on `:3100`, web on `:3040`. Same host (`localhost`) so the session cookie is shared; CORS is configured with `credentials: true`.
+- Prod: put the API on a subdomain (`api.example.com`) of the same registrable domain as the web app, enable `advanced.crossSubDomainCookies: { enabled: true, domain: ".example.com" }`, and set `VITE_HONO_API_URL` to the API origin.
+- Do **not** add a blanket `/api/*` proxy in `apps/web` while legacy `/api/*` TanStack routes still exist; that would shadow them. A same-origin proxy is the end state once all routes have migrated.
+
+### Migration checklist (legacy → `apps/api`)
+
+When you touch a piece of legacy server code, move it instead of extending it:
+
+1. Move the DB tables it needs into `@repo/db` (start with the auth tables already shared) and update imports.
+2. Add a resource under `apps/api/src/routes/<name>/route.ts` with zod validation and `requireSession`/`requireAdmin`.
+3. Mount it in `apps/api/src/app.ts` with `.route("/<name>", <name>Route)`.
+4. Replace the `createServerFn`/`src/routes/api/*` usage in `apps/web` with `honoClient.api.<name>.*` + React Query.
+5. Delete the legacy server file and its route handler.
+
+### Common API mistakes to avoid
+
+1. Value-importing `@api/*` in the browser (use `import type`).
+2. Building `app` from multiple `new Hono()` instances glued together with `app.route()` inside a function — the chained expression is what carries `AppType`.
+3. Reading `c.req.json()` without `zValidator`.
+4. Forgetting `credentials: "include"` on `hc` (session cookie never arrives).
+5. Mounting Better Auth anywhere except `/api/auth/*` on the API.
+6. Adding desktop/electron plugins before desktop support is in scope.
+
+---
 
 ### Routing
 
@@ -90,7 +276,11 @@ TanStack Start's import protection (Vite, on by default) keeps client and server
   ```typescript
   export const usersQueryOptions = queryOptions({
     queryKey: ["users"],
-    queryFn: async () => treatyClient.users.get(),
+    queryFn: async () => {
+      const res = await honoClient.api.users.$get();
+      if (!res.ok) throw new Error((await res.json()).error.message);
+      return res.json();
+    },
   });
 
   // In component
@@ -167,6 +357,7 @@ TanStack Start's import protection (Vite, on by default) keeps client and server
 - ❌ DON'T put route-specific components in global `components/` folder
 - ❌ DON'T create components in route file itself - use `-components` folder
 - ❌ DON'T forget to use path aliases (`@/`)
+- ❌ DON'T add new `createServerFn`, `src/routes/api/*` handlers, or `*.server.ts` data-access code — put backend logic in `apps/api`
 
 ---
 
@@ -198,9 +389,9 @@ function DashboardPage() {
 export const itemsQueryOptions = queryOptions({
   queryKey: ["items"],
   queryFn: async () => {
-    const { data, error } = await treatyClient.items.get();
-    if (error) throw error;
-    return data;
+    const res = await honoClient.api.items.$get();
+    if (!res.ok) throw new Error((await res.json()).error.message);
+    return res.json();
   },
 });
 
@@ -212,13 +403,17 @@ const { data } = useSuspenseQuery(itemsQueryOptions);
 
 ```typescript
 const mutation = useMutation({
-  mutationFn: async (data) => treatyClient.items.post(data),
+  mutationFn: async (data) => {
+    const res = await honoClient.api.items.$post({ json: data });
+    if (!res.ok) throw new Error((await res.json()).error.message);
+    return res.json();
+  },
   onSuccess() {
     toast.success("Success!");
   },
-  meta:{
-    invalidates:[["items]]
-  }
+  meta: {
+    invalidates: [["items"]],
+  },
 });
 ```
 
@@ -260,7 +455,10 @@ const form = useAppForm({
 7. Creating routes without folder structure
 8. Avoid casting to any or any types , request for permisson to do any such thig .Hiding type issues by casting t other pes is STRICTLY FORBIDDEN
 9. Errors should be of type unknown in the catch block
-   Do
+10. Value-importing `@api/*` in the browser (use `import type`)
+11. Reading `c.req.json()` without `zValidator`
+12. Forgetting `credentials: "include"` on `hc`
+    Do
 
 ```ts
     onSuccess() {

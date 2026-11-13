@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { user } from "../auth-schema";
+import { user } from "@repo/db/schema/auth-schema";
 import { resume } from "./resume";
 import { job } from "../job-schema";
 import { resumeAiChat, resumeAiConversation, resumeAiMessage } from "./resume-ai-chat";

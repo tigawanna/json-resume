@@ -1,6 +1,6 @@
 import { relations, sql } from "drizzle-orm";
 import { blob, index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
-import { user } from "./auth-schema";
+import { user } from "@repo/db/schema/auth-schema";
 
 export const savedProject = sqliteTable(
   "saved_project",

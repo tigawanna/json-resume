@@ -52,9 +52,7 @@ import { Route as ApiAgenticSplatRouteImport } from './routes/api/agentic/$'
 import { Route as ApiAgenticOpenapiRouteImport } from './routes/api/agentic/openapi'
 import { Route as ApiAiChatLabRouteImport } from './routes/api/ai/chat-lab'
 import { Route as ApiAiDashboardAssistantRouteImport } from './routes/api/ai/dashboard-assistant'
-import { Route as ApiAiDashboardChatRouteImport } from './routes/api/ai/dashboard-chat'
 import { Route as ApiAiEventSourcedResumeTailorRouteImport } from './routes/api/ai/event-sourced-resume-tailor'
-import { Route as ApiAiExperienceAgentRouteImport } from './routes/api/ai/experience-agent'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ApiCronProjectSyncEventsRouteImport } from './routes/api/cron/project-sync-events'
 import { Route as ApiCronSquashSyncEventsRouteImport } from './routes/api/cron/squash-sync-events'
@@ -301,22 +299,12 @@ const ApiAiDashboardAssistantRoute = ApiAiDashboardAssistantRouteImport.update({
   path: '/api/ai/dashboard-assistant',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiAiDashboardChatRoute = ApiAiDashboardChatRouteImport.update({
-  id: '/api/ai/dashboard-chat',
-  path: '/api/ai/dashboard-chat',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiAiEventSourcedResumeTailorRoute =
   ApiAiEventSourcedResumeTailorRouteImport.update({
     id: '/api/ai/event-sourced-resume-tailor',
     path: '/api/ai/event-sourced-resume-tailor',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ApiAiExperienceAgentRoute = ApiAiExperienceAgentRouteImport.update({
-  id: '/api/ai/experience-agent',
-  path: '/api/ai/experience-agent',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
@@ -452,9 +440,7 @@ export interface FileRoutesByFullPath {
   '/api/agentic/openapi': typeof ApiAgenticOpenapiRouteWithChildren
   '/api/ai/chat-lab': typeof ApiAiChatLabRoute
   '/api/ai/dashboard-assistant': typeof ApiAiDashboardAssistantRoute
-  '/api/ai/dashboard-chat': typeof ApiAiDashboardChatRoute
   '/api/ai/event-sourced-resume-tailor': typeof ApiAiEventSourcedResumeTailorRoute
-  '/api/ai/experience-agent': typeof ApiAiExperienceAgentRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/cron/project-sync-events': typeof ApiCronProjectSyncEventsRoute
   '/api/cron/squash-sync-events': typeof ApiCronSquashSyncEventsRoute
@@ -519,9 +505,7 @@ export interface FileRoutesByTo {
   '/api/agentic/openapi': typeof ApiAgenticOpenapiRouteWithChildren
   '/api/ai/chat-lab': typeof ApiAiChatLabRoute
   '/api/ai/dashboard-assistant': typeof ApiAiDashboardAssistantRoute
-  '/api/ai/dashboard-chat': typeof ApiAiDashboardChatRoute
   '/api/ai/event-sourced-resume-tailor': typeof ApiAiEventSourcedResumeTailorRoute
-  '/api/ai/experience-agent': typeof ApiAiExperienceAgentRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/cron/project-sync-events': typeof ApiCronProjectSyncEventsRoute
   '/api/cron/squash-sync-events': typeof ApiCronSquashSyncEventsRoute
@@ -589,9 +573,7 @@ export interface FileRoutesById {
   '/api/agentic/openapi': typeof ApiAgenticOpenapiRouteWithChildren
   '/api/ai/chat-lab': typeof ApiAiChatLabRoute
   '/api/ai/dashboard-assistant': typeof ApiAiDashboardAssistantRoute
-  '/api/ai/dashboard-chat': typeof ApiAiDashboardChatRoute
   '/api/ai/event-sourced-resume-tailor': typeof ApiAiEventSourcedResumeTailorRoute
-  '/api/ai/experience-agent': typeof ApiAiExperienceAgentRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/cron/project-sync-events': typeof ApiCronProjectSyncEventsRoute
   '/api/cron/squash-sync-events': typeof ApiCronSquashSyncEventsRoute
@@ -659,9 +641,7 @@ export interface FileRouteTypes {
     | '/api/agentic/openapi'
     | '/api/ai/chat-lab'
     | '/api/ai/dashboard-assistant'
-    | '/api/ai/dashboard-chat'
     | '/api/ai/event-sourced-resume-tailor'
-    | '/api/ai/experience-agent'
     | '/api/auth/$'
     | '/api/cron/project-sync-events'
     | '/api/cron/squash-sync-events'
@@ -726,9 +706,7 @@ export interface FileRouteTypes {
     | '/api/agentic/openapi'
     | '/api/ai/chat-lab'
     | '/api/ai/dashboard-assistant'
-    | '/api/ai/dashboard-chat'
     | '/api/ai/event-sourced-resume-tailor'
-    | '/api/ai/experience-agent'
     | '/api/auth/$'
     | '/api/cron/project-sync-events'
     | '/api/cron/squash-sync-events'
@@ -795,9 +773,7 @@ export interface FileRouteTypes {
     | '/api/agentic/openapi'
     | '/api/ai/chat-lab'
     | '/api/ai/dashboard-assistant'
-    | '/api/ai/dashboard-chat'
     | '/api/ai/event-sourced-resume-tailor'
-    | '/api/ai/experience-agent'
     | '/api/auth/$'
     | '/api/cron/project-sync-events'
     | '/api/cron/squash-sync-events'
@@ -860,9 +836,7 @@ export interface RootRouteChildren {
   ApiAgenticOpenapiRoute: typeof ApiAgenticOpenapiRouteWithChildren
   ApiAiChatLabRoute: typeof ApiAiChatLabRoute
   ApiAiDashboardAssistantRoute: typeof ApiAiDashboardAssistantRoute
-  ApiAiDashboardChatRoute: typeof ApiAiDashboardChatRoute
   ApiAiEventSourcedResumeTailorRoute: typeof ApiAiEventSourcedResumeTailorRoute
-  ApiAiExperienceAgentRoute: typeof ApiAiExperienceAgentRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiCronProjectSyncEventsRoute: typeof ApiCronProjectSyncEventsRoute
   ApiCronSquashSyncEventsRoute: typeof ApiCronSquashSyncEventsRoute
@@ -1175,25 +1149,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAiDashboardAssistantRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/ai/dashboard-chat': {
-      id: '/api/ai/dashboard-chat'
-      path: '/api/ai/dashboard-chat'
-      fullPath: '/api/ai/dashboard-chat'
-      preLoaderRoute: typeof ApiAiDashboardChatRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/ai/event-sourced-resume-tailor': {
       id: '/api/ai/event-sourced-resume-tailor'
       path: '/api/ai/event-sourced-resume-tailor'
       fullPath: '/api/ai/event-sourced-resume-tailor'
       preLoaderRoute: typeof ApiAiEventSourcedResumeTailorRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/ai/experience-agent': {
-      id: '/api/ai/experience-agent'
-      path: '/api/ai/experience-agent'
-      fullPath: '/api/ai/experience-agent'
-      preLoaderRoute: typeof ApiAiExperienceAgentRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/auth/$': {
@@ -1482,9 +1442,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAgenticOpenapiRoute: ApiAgenticOpenapiRouteWithChildren,
   ApiAiChatLabRoute: ApiAiChatLabRoute,
   ApiAiDashboardAssistantRoute: ApiAiDashboardAssistantRoute,
-  ApiAiDashboardChatRoute: ApiAiDashboardChatRoute,
   ApiAiEventSourcedResumeTailorRoute: ApiAiEventSourcedResumeTailorRoute,
-  ApiAiExperienceAgentRoute: ApiAiExperienceAgentRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiCronProjectSyncEventsRoute: ApiCronProjectSyncEventsRoute,
   ApiCronSquashSyncEventsRoute: ApiCronSquashSyncEventsRoute,

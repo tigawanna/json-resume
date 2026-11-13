@@ -62,6 +62,54 @@ export function DashboardToolCall<TName extends DashboardAssistantToolName>({
   );
 }
 
+/** Asks before a library row changes, and names the collection, the operation, and the row. */
+export function DashboardMutateTool({
+  part,
+  result,
+  interrupt,
+}: ToolProps<DashboardAssistantChatOptions, "mutate_collection">) {
+  if (!interrupt) return <DashboardToolCall part={part} result={result} />;
+  const args = interrupt.originalArgs;
+  const busy = interrupt.status !== "pending" && interrupt.status !== "error";
+  const fields = args.values ? Object.keys(args.values).join(", ") : "";
+  return (
+    <div
+      className="flex flex-col gap-3 rounded-xl p-3 ring-1 ring-primary/40"
+      data-test="dashboard-assistant-approval"
+    >
+      <div className="flex flex-col gap-1">
+        <p className="text-sm font-semibold">
+          {args.op} {args.collection}
+          {args.id ? ` · ${args.id}` : ""}
+        </p>
+        {fields ? <p className="text-xs text-muted-foreground">{fields}</p> : null}
+      </div>
+      {interrupt.errors[0] ? (
+        <p className="text-xs text-destructive">{interrupt.errors[0].message}</p>
+      ) : null}
+      <div className="flex flex-wrap justify-end gap-2">
+        <Button
+          variant="ghost"
+          size="sm"
+          disabled={busy}
+          onClick={() => interrupt.resolveInterrupt(false)}
+          data-test="dashboard-assistant-approval-deny"
+        >
+          Deny
+        </Button>
+        <Button
+          size="sm"
+          disabled={busy}
+          onClick={() => interrupt.resolveInterrupt(true)}
+          data-test="dashboard-assistant-approval-approve"
+        >
+          Approve
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 /** Asks before copying or opening a résumé, then links to it once it is ready. */
 export function DashboardStartResumeTool({
   part,

@@ -1,6 +1,6 @@
 import { index, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 import type { ResumeDocumentV1 } from "@/features/resume/resume-schema";
-import { user } from "../auth-schema";
+import { user } from "@repo/db/schema/auth-schema";
 import { timestamps } from "./shared-columns";
 
 /**

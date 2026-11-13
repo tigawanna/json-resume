@@ -5,6 +5,7 @@ import {
   type DashboardAssistantChatOptions,
 } from "./dashboard-assistant-chat-options";
 import {
+  DashboardMutateTool,
   DashboardStartResumeTool,
   DashboardTextPart,
   DashboardThinkingPart,
@@ -63,5 +64,14 @@ export const DashboardAssistantChatUI = createChatUI(dashboardAssistantChatOptio
     get_application_stats: DashboardToolCall,
     get_profile_overview: DashboardToolCall,
     start_resume_for_job: DashboardStartResumeTool,
+    query_collection: DashboardToolCall,
+    mutate_collection: DashboardMutateTool,
+    search_conversations: DashboardToolCall,
+    list_experience_titles: DashboardToolCall,
+    list_experience_bullets: DashboardToolCall,
+    update_experience_bullet: DashboardToolCall,
+    move_experience_bullet: DashboardToolCall,
+    delete_experience_bullet: DashboardToolCall,
+    set_experience_title_bullets: DashboardToolCall,
   },
 });

@@ -53,3 +53,6 @@ apps/site/*.sqlite3
 apps/web/tsconfig.tsbuildinfo
 apps/web/tsconfig.tsbuildinfo
 apps/web/tsconfig.tsbuildinfo
+
+# Local wide-event logs
+.evlog

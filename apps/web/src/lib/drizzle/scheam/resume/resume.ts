@@ -1,6 +1,6 @@
 import { index, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import type { ResumeLayout } from "@/features/resume/resume-layout";
-import { user } from "../auth-schema";
+import { user } from "@repo/db/schema/auth-schema";
 import { embeddable, timestamps } from "./shared-columns";
 
 export const resume = sqliteTable(

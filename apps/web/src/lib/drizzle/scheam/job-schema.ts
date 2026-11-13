@@ -1,6 +1,6 @@
 import { relations } from "drizzle-orm";
 import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
-import { user } from "./auth-schema";
+import { user } from "@repo/db/schema/auth-schema";
 import { embeddable, timestamps } from "./resume/shared-columns";
 
 export const job = sqliteTable(

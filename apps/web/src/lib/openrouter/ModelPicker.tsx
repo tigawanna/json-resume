@@ -191,7 +191,10 @@ export function ModelPicker({ value, onChange }: ModelPickerProps) {
           variant="outline"
           size="sm"
           pressed={toolsOnly}
-          onPressedChange={setToolsOnly}
+          onPressedChange={(pressed) => {
+            setToolsOnly(pressed);
+            setLab("");
+          }}
           className="gap-1 text-xs"
           aria-label="Only models with tool use"
           data-test="model-picker-tools-only"
@@ -203,7 +206,10 @@ export function ModelPicker({ value, onChange }: ModelPickerProps) {
           variant="outline"
           size="sm"
           pressed={freeOnly}
-          onPressedChange={setFreeOnly}
+          onPressedChange={(pressed) => {
+            setFreeOnly(pressed);
+            setLab("");
+          }}
           className="gap-1 text-xs"
           aria-label="Only free models"
         >

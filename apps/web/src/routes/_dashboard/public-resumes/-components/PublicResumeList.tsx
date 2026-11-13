@@ -1,6 +1,8 @@
 import { ADMIN_LIST_PER_PAGE } from "@/components/pagination/constants";
 import { usePageSearchQuery } from "@/components/search/use-page-search-query";
+import { ResourceCardActions } from "@/components/resource-card";
 import { Button } from "@/components/ui/button";
+import { DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import {
   Dialog,
   DialogClose,
@@ -245,45 +247,28 @@ export function PublicResumeList() {
               window.open(`/r/${row.id}`, "_blank", "noopener,noreferrer");
             }}
             actions={
-              <div className="flex items-center justify-end gap-0.5">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="size-8"
-                  onClick={() => void handleCopy(row.id)}
+              <ResourceCardActions label="Public résumé actions">
+                <DropdownMenuItem
+                  onSelect={() => void handleCopy(row.id)}
                   data-test="public-resume-copy-btn"
-                  aria-label="Copy public link"
                 >
                   {copiedId === row.id ? (
-                    <Check className="size-3.5" />
+                    <Check className="text-muted-foreground" />
                   ) : (
-                    <Copy className="size-3.5" />
+                    <Copy className="text-muted-foreground" />
                   )}
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="size-8"
-                  asChild
+                  Copy link
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onSelect={() => {
+                    window.open(`/r/${row.id}`, "_blank", "noopener,noreferrer");
+                  }}
                   data-test="public-resume-open-btn"
                 >
-                  <a
-                    href={`/r/${row.id}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    aria-label="Open public page"
-                  >
-                    <ExternalLink className="size-3.5" />
-                  </a>
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="size-8"
-                  onClick={() =>
+                  <ExternalLink className="text-muted-foreground" /> Open public page
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onSelect={() =>
                     void navigate({
                       to: "/resumes/$resumeId",
                       params: { resumeId: row.sourceResumeId },
@@ -291,37 +276,28 @@ export function PublicResumeList() {
                     })
                   }
                   data-test="public-resume-source-btn"
-                  aria-label="Open source résumé"
                 >
-                  <FileText className="size-3.5" />
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="size-8"
-                  onClick={() => {
+                  <FileText className="text-muted-foreground" /> Open source résumé
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onSelect={() => {
                     setRenaming(row);
                     setRenameTitle(row.title);
                   }}
                   data-test="public-resume-rename-btn"
-                  aria-label="Rename listing"
                 >
-                  <Pencil className="size-3.5" />
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="text-destructive hover:text-destructive size-8"
+                  <Pencil className="text-muted-foreground" /> Rename
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  variant="destructive"
                   disabled={unpublishMutation.isPending}
-                  onClick={() => void unpublishMutation.mutateAsync(row.id)}
+                  onSelect={() => void unpublishMutation.mutateAsync(row.id)}
                   data-test="public-resume-unpublish-btn"
-                  aria-label="Unpublish"
                 >
-                  <Trash2 className="size-3.5" />
-                </Button>
-              </div>
+                  <Trash2 /> Unpublish
+                </DropdownMenuItem>
+              </ResourceCardActions>
             }
           />
         ))}

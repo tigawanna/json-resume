@@ -11,44 +11,47 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Link, useLocation } from "@tanstack/react-router";
-import { ChevronDown, Settings, Trash2, X } from "lucide-react";
+import { useLocation } from "@tanstack/react-router";
+import {
+  ChevronDown,
+  History,
+  Maximize2,
+  Minimize2,
+  Plus,
+  Settings,
+  Sparkles,
+  Trash2,
+  X,
+} from "lucide-react";
 import { useEffect, useState } from "react";
-import { useDashboardAssistantChat } from "../../-hooks/use-dashboard-assistant";
-import { AiSettingsForm } from "../AiSettingsForm";
+import {
+  OPEN_ASSISTANT_EVENT,
+  useDashboardAssistantChat,
+} from "../../-hooks/use-dashboard-assistant";
+import { formatConversationAge } from "../../-utils/assistant-conversations";
+import { assistantHidden } from "../../-utils/page-context";
 import { EventSourcedAiSettingsSheet } from "../EventSourcedAiSettingsSheet";
 import { HostedAiSignIn, useHostedAiSignedIn } from "../HostedAiSignIn";
-import { AssistantFace } from "./AssistantFace";
 import { DashboardAssistantConversation } from "./DashboardAssistantConversation";
 
 const PANEL_ID = "dashboard-assistant-panel";
 
-/** The résumé editor has its own assistant in its AI tab. The dashboard has its own chat sheet. */
-function isResumeEditorPath(pathname: string) {
-  return /^\/resumes\/[^/]+/.test(pathname);
-}
-
-function isDashboardHome(pathname: string) {
-  return pathname === "/dashboard";
-}
-
-function isDevRoute(pathname: string) {
-  return pathname === "/dev" || pathname.startsWith("/dev/");
-}
-
 /**
- * Floating assistant for every dashboard page except the résumé editor. Stays
- * mounted across navigation, so a reply keeps streaming while the user moves around.
+ * Floating assistant for every dashboard page except the résumé editor.
+ * Stays mounted across navigation, so a reply keeps streaming while the user moves around.
  */
 export function DashboardAssistant() {
   const [open, setOpen] = useState(false);
+  const [presentation, setPresentation] = useState<"dock" | "sheet">("dock");
+  const [historyOpen, setHistoryOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const pathname = useLocation({ select: (location) => location.pathname });
   const signedIn = useHostedAiSignedIn();
   const assistant = useDashboardAssistantChat({ onHandedOff: () => setOpen(false) });
-  const hidden = isResumeEditorPath(pathname) || isDevRoute(pathname) || isDashboardHome(pathname);
+  const hidden = assistantHidden(pathname);
   const isWorking = assistant.isLoading || assistant.sessionGenerating;
   const { composerRef } = assistant;
+  const sheet = open && presentation === "sheet";
 
   useEffect(() => {
     if (!open || !assistant.isReady) return;
@@ -56,32 +59,80 @@ export function DashboardAssistant() {
     return () => window.clearTimeout(timer);
   }, [open, assistant.isReady, composerRef]);
 
+  useEffect(() => {
+    function openFromPage() {
+      setOpen(true);
+    }
+    window.addEventListener(OPEN_ASSISTANT_EVENT, openFromPage);
+    return () => window.removeEventListener(OPEN_ASSISTANT_EVENT, openFromPage);
+  }, []);
+
   if (hidden) return null;
 
   return (
     <>
+      {sheet ? (
+        <div
+          className="fixed inset-0 z-40 bg-black/40"
+          onClick={() => setPresentation("dock")}
+          data-test="dashboard-assistant-sheet-overlay"
+        />
+      ) : null}
       {open ? (
         <section
           id={PANEL_ID}
           role="dialog"
-          aria-label="Dashboard assistant"
+          aria-label="Assistant"
           className={cn(
-            "fixed z-40 flex flex-col overflow-hidden rounded-2xl border border-border/70 bg-base-100 text-base-content shadow-2xl",
-            "inset-x-2 top-16 bottom-22 sm:inset-x-auto sm:top-auto sm:right-6 sm:bottom-24 sm:h-[min(42rem,calc(100dvh-8rem))] sm:w-108",
-            "origin-bottom-right animate-in fade-in-0 zoom-in-95 slide-in-from-bottom-4 duration-200",
+            "fixed z-40 flex flex-col overflow-hidden bg-base-100 text-base-content",
+            sheet
+              ? "inset-y-0 right-0 w-full border-l border-border/70 shadow-2xl sm:w-[min(42rem,calc(100%-16rem))]"
+              : "inset-x-2 top-16 bottom-22 rounded-2xl border border-border/70 shadow-2xl sm:inset-x-auto sm:top-auto sm:right-6 sm:bottom-24 sm:h-[min(42rem,calc(100dvh-8rem))] sm:w-108",
           )}
-          data-test="dashboard-assistant-panel"
+          data-test={sheet ? "dashboard-assistant-sheet" : "dashboard-assistant-panel"}
         >
-          <header className="flex shrink-0 items-center gap-2.5 border-b border-border/60 px-3 py-2.5">
+          <header className="flex shrink-0 items-center gap-2 border-b border-border/60 px-3 py-2.5">
             <div className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-primary/12 text-primary">
-              <AssistantFace className="size-5" working={isWorking} />
+              <Sparkles className={cn("size-4", isWorking && "animate-pulse")} aria-hidden />
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-sm leading-tight font-semibold">Assistant</p>
-              <p className="truncate text-xs text-muted-foreground">
-                {assistant.isReady ? "Résumés, jobs and applications" : "Not set up"}
-              </p>
+              <p className="truncate text-xs text-muted-foreground">{assistant.routeLabel}</p>
             </div>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              className="text-muted-foreground"
+              onClick={assistant.startNew}
+              aria-label="New conversation"
+              data-test="dashboard-assistant-new"
+            >
+              <Plus className="size-4" />
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              className="text-muted-foreground"
+              onClick={() => setHistoryOpen((value) => !value)}
+              aria-label="Conversation history"
+              aria-expanded={historyOpen}
+              data-test="dashboard-assistant-history"
+            >
+              <History className="size-4" />
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              className="text-muted-foreground"
+              onClick={() => setPresentation(sheet ? "dock" : "sheet")}
+              aria-label={sheet ? "Collapse assistant" : "Expand assistant"}
+              data-test={sheet ? "dashboard-assistant-collapse" : "dashboard-assistant-expand"}
+            >
+              {sheet ? <Minimize2 className="size-4" /> : <Maximize2 className="size-4" />}
+            </Button>
             <Button
               type="button"
               variant="ghost"
@@ -111,8 +162,8 @@ export function DashboardAssistant() {
                 <AlertDialogHeader>
                   <AlertDialogTitle>Clear this conversation?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Removes the dashboard assistant's messages from this browser. Jobs it saved and
-                    résumés it opened stay as they are.
+                    Removes this conversation from this browser. Other pages keep theirs. Rows it
+                    already saved stay as they are.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -130,7 +181,11 @@ export function DashboardAssistant() {
               variant="ghost"
               size="icon-sm"
               className="text-muted-foreground"
-              onClick={() => setOpen(false)}
+              onClick={() => {
+                setOpen(false);
+                setPresentation("dock");
+                setHistoryOpen(false);
+              }}
               aria-label="Close assistant"
               data-test="dashboard-assistant-close"
             >
@@ -138,13 +193,55 @@ export function DashboardAssistant() {
             </Button>
           </header>
 
-          {!signedIn ? <HostedAiSignIn /> : null}
-          {signedIn && assistant.isReady ? (
+          {historyOpen ? (
+            <div
+              className="min-h-0 flex-1 overflow-y-auto"
+              data-test="dashboard-assistant-history-list"
+            >
+              {assistant.conversations.length === 0 ? (
+                <p className="px-3 py-3 text-xs text-muted-foreground">
+                  No other conversations yet.
+                </p>
+              ) : (
+                assistant.conversations.map((conversation) => {
+                  const selected = conversation.id === assistant.activeConversationId;
+                  const titled = conversation.title !== conversation.routeLabel;
+                  return (
+                    <button
+                      key={conversation.id}
+                      type="button"
+                      onClick={() => {
+                        assistant.selectConversation(conversation.id);
+                        setHistoryOpen(false);
+                      }}
+                      className={cn(
+                        "flex w-full flex-col gap-0.5 px-3 py-2 text-left hover:bg-base-200/70",
+                        selected && "bg-primary/10",
+                      )}
+                      data-test="dashboard-assistant-history-item"
+                    >
+                      <span className="truncate text-sm font-medium">
+                        {titled ? conversation.title : conversation.routeLabel}
+                      </span>
+                      <span className="truncate text-xs text-muted-foreground">
+                        {titled ? `${conversation.routeLabel} · ` : ""}
+                        {formatConversationAge(conversation.updatedAt)}
+                      </span>
+                    </button>
+                  );
+                })
+              )}
+            </div>
+          ) : null}
+
+          {!historyOpen && !signedIn ? <HostedAiSignIn /> : null}
+          {!historyOpen && signedIn ? (
             <DashboardAssistantConversation
               activeModelLabel={assistant.activeModelLabel}
               activeRoutingLabel={assistant.activeRoutingLabel}
               apiKey={assistant.settings?.apiKey ?? null}
               awaitingApproval={assistant.awaitingApproval}
+              canSend={assistant.isReady}
               chat={assistant.chat}
               compacting={assistant.compacting}
               lastCompaction={assistant.lastCompaction}
@@ -160,10 +257,9 @@ export function DashboardAssistant() {
               onStop={assistant.stop}
               onEscape={() => setOpen(false)}
               onOpenSettings={() => setSettingsOpen(true)}
+              pageLabel={assistant.routeLabel}
+              pageSummary={assistant.page.summary}
             />
-          ) : null}
-          {signedIn && !assistant.isReady ? (
-            <AssistantSetup onOpenSettings={() => setOpen(false)} />
           ) : null}
         </section>
       ) : null}
@@ -174,15 +270,17 @@ export function DashboardAssistant() {
         aria-expanded={open}
         aria-controls={PANEL_ID}
         aria-label={open ? "Close assistant" : "Open assistant"}
-        className={cn(
-          "fixed right-4 bottom-4 z-40 flex size-14 items-center justify-center rounded-full bg-primary text-primary-content shadow-lg ring-4 ring-primary/15 transition-transform duration-200 hover:scale-105 focus-visible:ring-primary/40 focus-visible:outline-none active:scale-95 sm:right-6 sm:bottom-6",
-        )}
+        className="fixed right-4 bottom-4 z-40 flex size-14 items-center justify-center rounded-full border border-primary/35 bg-base-100 text-primary shadow-[0_0_24px_color-mix(in_oklch,var(--color-primary)_45%,transparent)] transition-transform duration-200 hover:scale-105 focus-visible:ring-4 focus-visible:ring-primary/30 focus-visible:outline-none active:scale-95 sm:right-6 sm:bottom-6"
         data-test="dashboard-assistant-fab"
       >
+        <span
+          aria-hidden
+          className="absolute inset-0 animate-pulse rounded-full bg-primary/15 blur-[2px]"
+        />
         {open ? (
-          <ChevronDown className="size-6" />
+          <ChevronDown className="relative size-6" />
         ) : (
-          <AssistantFace className="size-8" working={isWorking} />
+          <Sparkles className="relative size-6" aria-hidden />
         )}
         {!open && isWorking ? (
           <span
@@ -198,36 +296,5 @@ export function DashboardAssistant() {
         onOpenChange={setSettingsOpen}
       />
     </>
-  );
-}
-
-function AssistantSetup({ onOpenSettings }: { onOpenSettings: () => void }) {
-  return (
-    <div
-      className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 py-5"
-      data-test="dashboard-assistant-setup"
-    >
-      <div className="flex flex-col items-center gap-3 text-center">
-        <div className="flex size-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-          <AssistantFace className="size-9" />
-        </div>
-        <div className="flex flex-col gap-1">
-          <p className="font-semibold">Connect a model to get started</p>
-          <p className="text-sm text-muted-foreground text-pretty">
-            Add your OpenRouter key and pick a model. Every assistant in the app uses it.
-          </p>
-        </div>
-      </div>
-      <AiSettingsForm variant="connection" footerClassName="pt-1" />
-      <Link
-        to="/settings"
-        hash="ai"
-        onClick={onOpenSettings}
-        className="text-center text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
-        data-test="dashboard-assistant-settings-link"
-      >
-        More options in Settings
-      </Link>
-    </div>
   );
 }

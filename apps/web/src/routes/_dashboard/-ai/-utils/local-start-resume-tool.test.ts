@@ -18,6 +18,9 @@ function dashboardContext(): DashboardToolContext & { handoffs: ResumeHandoff[] 
     handOff: (handoff) => {
       handoffs.push(handoff);
     },
+    getGroupTitleIds: () => [],
+    getActiveConversationId: () => "conversation",
+    getToolPack: () => "resume-list",
   };
 }
 

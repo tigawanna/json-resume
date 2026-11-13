@@ -3,39 +3,21 @@ import { PromptArea } from "@/components/prompt-area/prompt-area";
 import type { PromptAreaHandle, Segment } from "@/components/prompt-area/types";
 import { Button } from "@/components/ui/button";
 import { CreditsDisplay } from "@/routes/_dashboard/resumes/$resumeId/-components/ResumeAiTab/ResumeAiCredits";
+import { ResumeAiAttachSheet } from "@/routes/_dashboard/resumes/$resumeId/-components/ResumeAiTab/ResumeAiAttachSheet";
 import {
+  attachChip,
+  attachedChips,
   hasText,
   serializeSegments,
 } from "@/routes/_dashboard/resumes/$resumeId/-components/ResumeAiTab/resume-ai-prompt";
 import { chatMessagesEqual } from "../../-utils/chat-message-equal";
-import { ArrowUp, Square } from "lucide-react";
+import { ArrowUp, Plus, Square } from "lucide-react";
 import { memo, useState, type RefObject } from "react";
 import type { ContextCompaction } from "../../-utils/context-compaction";
 import { ChatErrorNotice } from "../ChatErrorNotice";
-import { AssistantFace } from "./AssistantFace";
 import { ContextCompactionBadge, ContextCompactionLiveNotice } from "./ContextCompactionNotice";
 import type { DashboardAssistantChat } from "./dashboard-assistant-chat-options";
 import { DashboardAssistantChatUI } from "./dashboard-assistant-chat-ui";
-
-const JOB_PROMPT = "Find the best résumé to start from for this job:\n\n";
-
-/** `send: false` puts the prompt in the composer for the user to finish. */
-type Suggestion = { label: string; prompt: string; send: boolean };
-
-const SUGGESTIONS: Suggestion[] = [
-  { label: "Find a résumé for a job", prompt: JOB_PROMPT, send: false },
-  { label: "How is my job search going?", prompt: "How is my job search going?", send: true },
-  {
-    label: "What kind of developer am I?",
-    prompt: "Based on my library, what kind of developer am I and what are my strongest skills?",
-    send: true,
-  },
-  {
-    label: "Compare my résumés",
-    prompt: "Give me an overview of my résumés: what each one targets and how they differ.",
-    send: true,
-  },
-];
 
 type DashboardMessage = Parameters<typeof DashboardAssistantChatUI.Message>[0]["message"];
 
@@ -52,6 +34,8 @@ interface DashboardAssistantConversationProps {
   apiKey: string | null;
   /** A tool approval is pending; sending declines it. */
   awaitingApproval: boolean;
+  /** False until an OpenRouter key and model are saved. */
+  canSend: boolean;
   chat: DashboardAssistantChat;
   compacting: boolean;
   lastCompaction: ContextCompaction | null;
@@ -67,6 +51,8 @@ interface DashboardAssistantConversationProps {
   onStop: () => void;
   onEscape: () => void;
   onOpenSettings: () => void;
+  pageLabel: string;
+  pageSummary: string;
 }
 
 export function DashboardAssistantConversation({
@@ -74,6 +60,7 @@ export function DashboardAssistantConversation({
   activeRoutingLabel,
   apiKey,
   awaitingApproval,
+  canSend,
   chat,
   compacting,
   lastCompaction,
@@ -89,10 +76,14 @@ export function DashboardAssistantConversation({
   onStop,
   onEscape,
   onOpenSettings,
+  pageLabel,
+  pageSummary,
 }: DashboardAssistantConversationProps) {
   const [segments, setSegments] = useState<Segment[]>([]);
+  const [attachOpen, setAttachOpen] = useState(false);
   const isEmpty = chat.messages.length === 0;
   const isWorking = isBusy || sessionGenerating;
+  const attachedIds = attachedChips(segments).map((item) => item.id);
 
   async function handleSend(nextSegments: Segment[]) {
     const message = serializeSegments(nextSegments);
@@ -102,50 +93,26 @@ export function DashboardAssistantConversation({
     setSegments([]);
   }
 
-  function pickSuggestion(suggestion: Suggestion) {
-    if (suggestion.send) {
-      void onSend(suggestion.prompt);
-      return;
-    }
-    composerRef.current?.setText(suggestion.prompt);
-    composerRef.current?.focus();
-  }
-
   let placeholder = "Ask a follow-up...";
-  if (awaitingApproval) placeholder = "Pick an option above, or reply here to decline it...";
-  else if (isEmpty) placeholder = "Paste a job description or ask a question...";
+  if (!canSend) placeholder = "Add an OpenRouter key to send...";
+  else if (awaitingApproval) placeholder = "Pick an option above, or reply here to decline it...";
+  else if (isEmpty) placeholder = "Ask about this page...";
 
   return (
     <div className="flex min-h-0 flex-1 flex-col" data-test="dashboard-assistant-conversation">
       <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 py-4">
         {isEmpty ? (
           <div
-            className="flex flex-1 flex-col items-center justify-center gap-5 text-center"
+            className="flex flex-1 flex-col items-center justify-center px-8 text-center"
             data-test="dashboard-assistant-intro"
           >
-            <div className="flex size-16 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-              <AssistantFace className="size-10" />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <p className="text-base font-semibold">Hi! Not sure where to start?</p>
-              <p className="text-sm text-muted-foreground text-pretty">
-                Paste a job description and I will pick the best résumé to start from, then hand you
-                over to the editor. Or ask me about your applications.
-              </p>
-            </div>
-            <div className="flex flex-wrap justify-center gap-2">
-              {SUGGESTIONS.map((suggestion) => (
-                <button
-                  key={suggestion.label}
-                  type="button"
-                  onClick={() => pickSuggestion(suggestion)}
-                  className="rounded-full border border-border bg-base-200/50 px-3 py-1.5 text-xs text-base-content/75 transition-colors hover:bg-base-200 hover:text-base-content"
-                  data-test="dashboard-assistant-suggestion"
-                >
-                  {suggestion.label}
-                </button>
-              ))}
-            </div>
+            <p className="max-w-xs text-base font-semibold tracking-tight text-balance">
+              Ask about {pageLabel}
+            </p>
+            <p className="mt-2 max-w-xs text-sm text-pretty text-muted-foreground">{pageSummary}</p>
+            <p className="mt-5 max-w-xs text-sm text-pretty text-muted-foreground">
+              Questions use the data on this page. Use + to attach specific context.
+            </p>
           </div>
         ) : (
           <DashboardAssistantChatUI.Provider chat={chat}>
@@ -170,6 +137,16 @@ export function DashboardAssistantConversation({
       </div>
 
       <div className="flex shrink-0 flex-col gap-1.5 border-t border-border/60 p-3">
+        {!canSend ? (
+          <button
+            type="button"
+            onClick={onOpenSettings}
+            className="rounded-xl border border-primary/30 bg-primary/8 px-3 py-2 text-left text-xs text-base-content"
+            data-test="dashboard-assistant-setup"
+          >
+            Add an OpenRouter key to send.
+          </button>
+        ) : null}
         {errorMessage && !isBusy ? (
           <ChatErrorNotice
             message={errorMessage}
@@ -192,7 +169,7 @@ export function DashboardAssistantConversation({
             onSubmit={handleSend}
             onEscape={onEscape}
             placeholder={placeholder}
-            disabled={isBusy}
+            disabled={isBusy || !canSend}
             markdown
             normalizeBullets={false}
             minHeight={24}
@@ -202,18 +179,31 @@ export function DashboardAssistantConversation({
             data-test-id="dashboard-assistant-input"
           />
           <div className="flex items-center justify-between gap-2 px-1.5 pb-1.5">
-            <button
-              type="button"
-              onClick={onOpenSettings}
-              title="Change model"
-              className="flex min-w-0 items-center gap-1.5 rounded-md px-2 py-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
-              data-test="dashboard-assistant-model-selector"
-            >
-              <span className="truncate font-medium">{activeModelLabel ?? "Default model"}</span>
-              {activeRoutingLabel ? (
-                <span className="truncate opacity-70">· {activeRoutingLabel}</span>
-              ) : null}
-            </button>
+            <div className="flex min-w-0 items-center gap-1">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                className="shrink-0 text-muted-foreground"
+                aria-label="Attach context"
+                onClick={() => setAttachOpen(true)}
+                data-test="dashboard-assistant-attach"
+              >
+                <Plus className="size-4" />
+              </Button>
+              <button
+                type="button"
+                onClick={onOpenSettings}
+                title="Change model"
+                className="flex min-w-0 items-center gap-1.5 rounded-md px-2 py-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
+                data-test="dashboard-assistant-model-selector"
+              >
+                <span className="truncate font-medium">{activeModelLabel ?? "Default model"}</span>
+                {activeRoutingLabel ? (
+                  <span className="truncate opacity-70">· {activeRoutingLabel}</span>
+                ) : null}
+              </button>
+            </div>
             <div className="flex shrink-0 items-center gap-1">
               {isBusy ? (
                 <Button
@@ -232,7 +222,7 @@ export function DashboardAssistantConversation({
                 type="submit"
                 size="icon-sm"
                 aria-label="Send message"
-                disabled={!hasText(segments) || isBusy}
+                disabled={!canSend || !hasText(segments) || isBusy}
                 data-test="dashboard-assistant-send"
               >
                 <ArrowUp className="size-4" />
@@ -255,6 +245,16 @@ export function DashboardAssistantConversation({
           </div>
         ) : null}
       </div>
+      <ResumeAiAttachSheet
+        open={attachOpen}
+        onOpenChange={setAttachOpen}
+        activeResumeId={null}
+        attachedIds={attachedIds}
+        onAttach={(item) => {
+          composerRef.current?.insertChip(attachChip(item));
+          composerRef.current?.focus();
+        }}
+      />
     </div>
   );
 }

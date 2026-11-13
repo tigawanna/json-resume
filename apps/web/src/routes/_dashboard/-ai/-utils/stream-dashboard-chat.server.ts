@@ -2,8 +2,9 @@ import "@tanstack/react-start/server-only";
 
 import type { StreamChunk } from "@tanstack/ai";
 import { clearToolResults, composeStrategies, evictOldest } from "@tanstack/ai-compaction";
-import { dashboardChatToolDefinitions } from "@/features/agentic-tools/definitions/dashboard-tool-definitions";
-import { buildDashboardSystemPrompt } from "./dashboard-system-prompt";
+import type { PageToolPack } from "@/features/agentic-tools/definitions/tool-context";
+import { toolsForPack } from "@/features/agentic-tools/page-assistant-packs";
+import { buildDashboardSystemPrompt, type DashboardPagePrompt } from "./dashboard-system-prompt";
 import {
   streamAgentChat,
   type AgentModelSettings,
@@ -25,6 +26,7 @@ export async function streamDashboardAgentChat(
       slopGuard?: boolean;
       today: string;
       skillInstructions?: string;
+      page: DashboardPagePrompt & { toolPack: PageToolPack };
     },
 ): Promise<AsyncIterable<StreamChunk>> {
   return streamAgentChat({
@@ -34,8 +36,9 @@ export async function streamDashboardAgentChat(
       slopGuard: input.slopGuard,
       today: input.today,
       skillInstructions: input.skillInstructions,
+      page: input.page,
     }),
-    tools: dashboardChatToolDefinitions,
+    tools: toolsForPack(input.page.toolPack),
     maxIterations: MAX_AGENT_ITERATIONS,
     compaction: {
       maxTokens: CONTEXT_BUDGET_TOKENS,

@@ -14,6 +14,7 @@ export type LocalChatPersistence<TTools extends ReadonlyArray<AnyClientTool>> =
 /** A chat kept in this browser's localStorage, typed by its tools so `useChat` still infers them. */
 export function createLocalChatPersistence<TTools extends ReadonlyArray<AnyClientTool>>(
   getKey: () => string,
+  options?: { keyForThread?: (threadId: string) => string },
 ): LocalChatPersistence<TTools> {
   let pending: { key: string; state: ChatPersistedState<TTools> } | null = null;
 
@@ -33,29 +34,35 @@ export function createLocalChatPersistence<TTools extends ReadonlyArray<AnyClien
     key: "dashboard-assistant-persistence",
   });
 
+  function keyFor(threadId: string) {
+    return options?.keyForThread ? options.keyForThread(threadId) : getKey();
+  }
+
   return {
     flush() {
       debouncer.cancel();
       writePending();
     },
-    getItem() {
-      if (pending !== null && pending.key === getKey()) return pending.state;
+    getItem(threadId) {
+      const key = keyFor(threadId);
+      if (pending !== null && pending.key === key) return pending.state;
       try {
-        const raw = localStorage.getItem(getKey());
+        const raw = localStorage.getItem(key);
         return raw ? parseStoredMessages<TTools>(raw) : null;
       } catch {
         return null;
       }
     },
-    setItem(_id, state) {
-      pending = { key: getKey(), state };
+    setItem(threadId, state) {
+      pending = { key: keyFor(threadId), state };
       debouncer.maybeExecute();
     },
-    removeItem() {
+    removeItem(threadId) {
+      const key = keyFor(threadId);
       debouncer.cancel();
-      pending = null;
+      if (pending?.key === key) pending = null;
       try {
-        localStorage.removeItem(getKey());
+        localStorage.removeItem(key);
       } catch {
         // Nothing stored to remove.
       }

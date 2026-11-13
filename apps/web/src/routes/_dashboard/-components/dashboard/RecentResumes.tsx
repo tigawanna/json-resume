@@ -3,7 +3,7 @@ import { getResumeCardDisplayName } from "@/utils/resume-display-name";
 import { formatLocaleDate } from "@/utils/date-helpers";
 import { ResourceCard } from "@/components/resource-card";
 import { Link } from "@tanstack/react-router";
-import { FileText, Plus, Sparkle } from "lucide-react";
+import { FileText, Plus, Sparkles } from "lucide-react";
 import { useLiveQuery } from "@tanstack/react-db";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -21,55 +21,61 @@ export function RecentResumes({ onStartFromJob }: { onStartFromJob: () => void }
 
   if (isLoading || !resumes) return null;
 
-  if (resumes.length === 0) {
-    return (
-      <div
-        className="w-full flex flex-col items-center gap-4 py-8 text-center "
-        data-test="dashboard-empty"
-      >
-        <div className="flex flex-col gap-1">
-          <p className="text-base font-medium">Nothing here yet</p>
-          <p className="text-sm text-muted-foreground">
-            Start from a job description, or from scratch.
+  const startCard = (
+    <ResourceCard
+      dataTest="dashboard-open-assistant"
+      className="h-full border-4 border-primary/80 bg-primary/15 hover:border-primary/80 hover:bg-primary/20"
+      onClick={onStartFromJob}
+    >
+      <div className="flex h-full items-start gap-3 px-4 py-4">
+        <span className="bg-primary/12 text-primary grid size-9 shrink-0 place-items-center rounded-lg">
+          <Sparkles className="size-4" aria-hidden />
+        </span>
+        <div className="min-w-0 space-y-0.5">
+          <p className="text-sm font-medium leading-tight">Let's get started</p>
+          <p className="text-muted-foreground text-xs">
+            Post a job description to get a tailored résumé
           </p>
         </div>
-        <div className="flex flex-wrap items-center justify-center gap-2">
-          <Button
-            variant="outline"
-            type="button"
-            onClick={onStartFromJob}
-            data-test="dashboard-start-from-job"
-          >
-            Start from a job description
-            <Sparkle className="size-4" />
-          </Button>
-          <Button
-            variant="outline"
-            type="button"
-            onClick={() => setCreateOpen(true)}
-            data-test="dashboard-create-resume"
-          >
-            From scratch
-            <Plus className="size-4" />
-          </Button>
-        </div>
-        <ResumeCreateFormDialog open={createOpen} setOpen={setCreateOpen} />
       </div>
-    );
-  }
+    </ResourceCard>
+  );
 
   return (
-    <section className="flex w-full flex-col gap-3" data-test="recent-resumes">
-      <div className="flex items-center justify-between gap-2">
-        <h2 className="text-base font-semibold tracking-tight">Recent résumés</h2>
-        <Button asChild variant="outline" size="sm">
-          <Link to="/resumes">
-            <FileText className="mr-1 size-4" />
-            See all
-          </Link>
-        </Button>
-      </div>
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+    <section
+      className="flex w-full flex-col gap-3"
+      data-test={resumes.length === 0 ? "dashboard-empty" : "recent-resumes"}
+    >
+      {resumes.length > 0 ? (
+        <div className="flex items-center justify-between gap-2">
+          <h2 className="text-base font-semibold tracking-tight">Recent résumés</h2>
+          <Button asChild variant="outline" size="sm">
+            <Link to="/resumes">
+              <FileText className="mr-1 size-4" />
+              See all
+            </Link>
+          </Button>
+        </div>
+      ) : null}
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        {startCard}
+        {resumes.length === 0 ? (
+          <ResourceCard
+            dataTest="dashboard-create-resume"
+            className="h-full"
+            onClick={() => setCreateOpen(true)}
+          >
+            <div className="flex h-full items-start gap-3 px-4 py-4">
+              <span className="bg-primary/12 text-primary grid size-9 shrink-0 place-items-center rounded-lg">
+                <Plus className="size-4" aria-hidden />
+              </span>
+              <div className="min-w-0 space-y-0.5">
+                <p className="text-sm font-medium leading-tight">From scratch</p>
+                <p className="text-muted-foreground text-xs">Start a blank résumé</p>
+              </div>
+            </div>
+          </ResourceCard>
+        ) : null}
         {resumes.map((resume) => (
           <ResourceCard
             key={resume.id}
@@ -106,6 +112,7 @@ export function RecentResumes({ onStartFromJob }: { onStartFromJob: () => void }
           </ResourceCard>
         ))}
       </div>
+      <ResumeCreateFormDialog open={createOpen} setOpen={setCreateOpen} />
     </section>
   );
 }

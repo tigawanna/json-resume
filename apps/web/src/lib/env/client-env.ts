@@ -2,6 +2,8 @@ import z from "zod";
 
 const envSchema = z.object({
   VITE_API_URL: z.url().optional(),
+  /** Public origin of `apps/api` (Hono). */
+  VITE_HONO_API_URL: z.url().default("http://localhost:3100"),
   VITE_SENTRY_DSN: z.url().optional(),
 });
 
@@ -10,6 +12,7 @@ const envSchema = z.object({
 // drops the values.
 const raw = {
   VITE_API_URL: import.meta.env.VITE_API_URL,
+  VITE_HONO_API_URL: import.meta.env.VITE_HONO_API_URL,
   VITE_SENTRY_DSN: import.meta.env.VITE_SENTRY_DSN,
 };
 

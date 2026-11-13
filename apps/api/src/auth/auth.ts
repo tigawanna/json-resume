@@ -1,0 +1,68 @@
+import { apiKey } from "@better-auth/api-key";
+import { organizationAc, organizationRoles } from "@repo/isomorphic/auth-roles";
+import { betterAuth } from "better-auth";
+import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import type { AccessControl } from "better-auth/plugins/access";
+import { admin } from "better-auth/plugins/admin";
+import { multiSession } from "better-auth/plugins/multi-session";
+import { organization } from "better-auth/plugins/organization";
+import * as authSchema from "@repo/db/schema/auth-schema";
+import { env } from "@api/env";
+import { db } from "@api/db/client";
+
+/**
+ * Better Auth instance owned by the API. Mirrors the transitional instance in
+ * `apps/web/src/lib/auth.ts` (same tables, same secret) minus the TanStack Start
+ * cookie plugin, which only exists to forward Set-Cookie headers in Start.
+ *
+ * Desktop clients are not wired yet. When they are, add the `electron`/`bearer`
+ * plugins here and register the desktop origin in `TRUSTED_ORIGINS`.
+ */
+export const auth = betterAuth({
+  baseURL: env.BETTER_AUTH_URL,
+  basePath: "/api/auth",
+  secret: env.BETTER_AUTH_SECRET,
+  trustedOrigins: env.TRUSTED_ORIGINS,
+  database: drizzleAdapter(db, {
+    provider: "sqlite",
+    schema: authSchema,
+  }),
+  advanced: {
+    database: {
+      joins: true,
+    },
+    // Set the cookie on the parent domain when the API lives on `api.example.com`
+    // and the web app on `www.example.com`, so both hosts see the session.
+    // crossSubDomainCookies: { enabled: true, domain: ".example.com" },
+  },
+  emailAndPassword: {
+    enabled: true,
+  },
+  socialProviders: {
+    github: {
+      clientId: env.GITHUB_CLIENT_ID,
+      clientSecret: env.GITHUB_CLIENT_SECRET,
+    },
+  },
+  plugins: [
+    admin(),
+    organization({
+      ac: organizationAc as AccessControl,
+      roles: organizationRoles,
+    }),
+    multiSession(),
+    apiKey({
+      defaultPrefix: "ajr",
+      rateLimit: {
+        enabled: true,
+        timeWindow: 60 * 1000,
+        maxRequests: 120,
+      },
+    }),
+  ],
+});
+
+export type Auth = typeof auth;
+
+/** Session with the user row, as returned by `auth.api.getSession`. */
+export type AuthSession = NonNullable<Awaited<ReturnType<typeof auth.api.getSession>>>;

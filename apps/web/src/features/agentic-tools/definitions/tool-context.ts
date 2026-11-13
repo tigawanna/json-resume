@@ -41,10 +41,24 @@ export type ResumeHandoff = {
   suggestedPrompt: string;
 };
 
+/** Which page pack is live. Tools outside it are not sent to the model. */
+export type PageToolPack =
+  | "library"
+  | "experience"
+  | "job"
+  | "resume-list"
+  | "cover-letter"
+  | "none";
+
 /** The dashboard assistant has no active résumé; it opens one through `handOff`. */
 export type DashboardToolContext = LocalToolContext & {
   /** Queues the handoff until the current reply finishes, so the run is not cut off. */
   handOff: (handoff: ResumeHandoff) => void;
+  /** Title ids in the open experience group. Empty off that page. */
+  getGroupTitleIds: () => string[];
+  /** The conversation currently on screen. History search skips it. */
+  getActiveConversationId: () => string;
+  getToolPack: () => PageToolPack;
 };
 
 /** Request context for remote (Drizzle-backed) tool implementations. */

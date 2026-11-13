@@ -19,12 +19,18 @@ import { listLocalResumes } from "@/routes/_dashboard/-ai/-utils/local-resume-to
 import { keepPreviousData, useInfiniteQuery } from "@tanstack/react-query";
 import {
   AlignLeft,
+  Award,
   Briefcase,
+  Building2,
   ChevronLeft,
   ChevronRight,
+  Contact,
   FileText,
   FolderGit2,
   GraduationCap,
+  HeartHandshake,
+  Languages,
+  Link2,
   List,
   Loader2,
   Mail,
@@ -33,6 +39,7 @@ import {
   BookOpen,
   Search,
   Sparkles,
+  StickyNote,
   X,
   type LucideIcon,
 } from "lucide-react";
@@ -53,6 +60,13 @@ const KIND_ICONS = {
   cover_letter: Mail,
   application_answer: MessageSquareText,
   assistant_skill: BookOpen,
+  job: Building2,
+  note: StickyNote,
+  contact: Contact,
+  link: Link2,
+  language: Languages,
+  certification: Award,
+  volunteer: HeartHandshake,
 } satisfies Record<AttachKind, LucideIcon>;
 
 interface AttachRow {
@@ -62,6 +76,23 @@ interface AttachRow {
   onResume: boolean;
   body?: string;
   isDefault?: boolean;
+}
+
+function pageRows<T>(
+  rows: T[],
+  keyword: string,
+  offset: number,
+  haystack: (row: T) => string,
+  toRow: (row: T) => AttachRow,
+) {
+  const term = keyword.trim().toLowerCase();
+  const matches = term ? rows.filter((row) => haystack(row).toLowerCase().includes(term)) : rows;
+  const page = matches.slice(offset, offset + PAGE_SIZE);
+  return {
+    rows: page.map(toRow),
+    total: matches.length,
+    nextOffset: offset + PAGE_SIZE < matches.length ? offset + PAGE_SIZE : null,
+  };
 }
 
 async function fetchAttachPage(
@@ -116,6 +147,89 @@ async function fetchAttachPage(
       total: matches.length,
       nextOffset: offset + PAGE_SIZE < matches.length ? offset + PAGE_SIZE : null,
     };
+  }
+  if (kind === "job") {
+    return pageRows(
+      db.collections.job.toArray,
+      keyword,
+      offset,
+      (row) => `${row.company} ${row.title} ${row.description}`,
+      (row) => ({
+        id: row.id,
+        title: [row.company, row.title].filter(Boolean).join(" · ") || "Job",
+        detail: row.location || row.status,
+        onResume: false,
+      }),
+    );
+  }
+  if (kind === "note") {
+    return pageRows(
+      db.collections.resumeNote.toArray,
+      keyword,
+      offset,
+      (row) => `${row.label} ${row.text}`,
+      (row) => ({
+        id: row.id,
+        title: row.label || row.text.slice(0, 80),
+        detail: row.text.slice(0, 120),
+        onResume: false,
+      }),
+    );
+  }
+  if (kind === "contact") {
+    return pageRows(
+      db.collections.resumeContact.toArray,
+      keyword,
+      offset,
+      (row) => `${row.label} ${row.type} ${row.value}`,
+      (row) => ({
+        id: row.id,
+        title: row.value,
+        detail: row.label || row.type,
+        onResume: false,
+      }),
+    );
+  }
+  if (kind === "link") {
+    return pageRows(
+      db.collections.resumeLink.toArray,
+      keyword,
+      offset,
+      (row) => `${row.label} ${row.url}`,
+      (row) => ({ id: row.id, title: row.label || row.url, detail: row.url, onResume: false }),
+    );
+  }
+  if (kind === "language") {
+    return pageRows(
+      db.collections.resumeLanguage.toArray,
+      keyword,
+      offset,
+      (row) => `${row.name} ${row.proficiency}`,
+      (row) => ({ id: row.id, title: row.name, detail: row.proficiency, onResume: false }),
+    );
+  }
+  if (kind === "certification") {
+    return pageRows(
+      db.collections.resumeCertification.toArray,
+      keyword,
+      offset,
+      (row) => `${row.name} ${row.issuer}`,
+      (row) => ({ id: row.id, title: row.name, detail: row.issuer, onResume: false }),
+    );
+  }
+  if (kind === "volunteer") {
+    return pageRows(
+      db.collections.resumeVolunteer.toArray,
+      keyword,
+      offset,
+      (row) => `${row.organization} ${row.role} ${row.description}`,
+      (row) => ({
+        id: row.id,
+        title: [row.role, row.organization].filter(Boolean).join(" · ") || "Volunteering",
+        detail: row.description.slice(0, 120),
+        onResume: false,
+      }),
+    );
   }
   if (kind === "application_answer") {
     const page = await searchLocalApplicationAnswers({ db }, { keyword, offset, limit: PAGE_SIZE });

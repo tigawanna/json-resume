@@ -11,7 +11,7 @@ import {
 export const startResumeForJobToolDefinition = toolDefinition({
   name: "start_resume_for_job",
   description:
-    "Propose the résumé to work on for a job and, once the user approves, reuse it as it is or copy it into a new draft for the job, then open it in the editor's assistant with your suggested first prompt. Call it once, last, after save_job and rank_resumes_for_job.",
+    "Choose the résumé to start from. On approval, clone it (mode copy), rename the copy for the job, attach the saved job, then open the copy on its AI tab and hand the editor your suggestedPrompt. Call it once, last, after save_job and rank_resumes_for_job.",
   inputSchema: startResumeForJobToolInputSchema,
   outputSchema: startResumeForJobToolOutputSchema,
   needsApproval: true,

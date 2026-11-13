@@ -212,13 +212,16 @@ test("groups titles by company and period with all bullets visible to prune", as
   await detail.getByTestId("experience-view-titles").click();
   await expect(detail.getByTestId("experience-bullets")).toHaveCount(2);
 
-  // Docs-style sparkle entry: expands into the composer (setup state without a key).
-  await expect(detail.getByTestId("experience-ai-panel")).toHaveCount(0);
-  await detail.getByTestId("experience-ai-open").click();
-  const aiPanel = detail.getByTestId("experience-ai-panel");
+  // The page assistant is the sparkles bubble. The old experience dock is gone.
+  await expect(detail.getByTestId("experience-ai-open")).toHaveCount(0);
+  await page.getByTestId("dashboard-assistant-fab").click();
+  const aiPanel = page.getByTestId("dashboard-assistant-panel");
   await expect(aiPanel).toBeVisible();
-  await expect(aiPanel.getByTestId("experience-ai-setup")).toBeVisible();
-  await aiPanel.getByTestId("experience-ai-close").click();
+  await expect(
+    aiPanel
+      .getByTestId("dashboard-assistant-setup")
+      .or(aiPanel.getByTestId("dashboard-assistant-suggestion").first()),
+  ).toBeVisible();
+  await aiPanel.getByTestId("dashboard-assistant-close").click();
   await expect(aiPanel).toHaveCount(0);
-  await expect(detail.getByTestId("experience-ai-open")).toBeVisible();
 });

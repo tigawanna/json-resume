@@ -8,6 +8,13 @@ export type AttachKind =
   | "cover_letter"
   | "application_answer"
   | "assistant_skill"
+  | "job"
+  | "note"
+  | "contact"
+  | "link"
+  | "language"
+  | "certification"
+  | "volunteer"
   | LibrarySection;
 
 /** What the `+` sheet can attach, in picker order. `section` is the tool section name. */
@@ -31,6 +38,13 @@ export const ATTACH_KINDS = [
     label: "Assistant skills",
     heading: "Referenced assistant skills",
   },
+  { kind: "job", label: "Jobs", heading: "Referenced jobs" },
+  { kind: "note", label: "Notes", heading: "Referenced notes" },
+  { kind: "contact", label: "Contacts", heading: "Referenced contacts" },
+  { kind: "link", label: "Links", heading: "Referenced links" },
+  { kind: "language", label: "Languages", heading: "Referenced languages" },
+  { kind: "certification", label: "Certifications", heading: "Referenced certifications" },
+  { kind: "volunteer", label: "Volunteering", heading: "Referenced volunteering" },
 ] as const satisfies ReadonlyArray<{ kind: AttachKind; label: string; heading: string }>;
 
 const attachKindSchema = z.enum(ATTACH_KINDS.map((entry) => entry.kind));
@@ -115,6 +129,14 @@ export function serializeSegments(segments: Segment[]) {
       if (kind === "resume") return [`- "${item.name}" (id: ${item.id})`];
       if (kind === "cover_letter") return [`- "${item.name}" (cover letter id: ${item.id})`];
       if (kind === "application_answer") return [`- "${item.name}" (answer id: ${item.id})`];
+      if (kind === "job") return [`- "${item.name}" (job id: ${item.id})`];
+      if (kind === "note") return [`- "${item.name}" (resumeNote id: ${item.id})`];
+      if (kind === "contact") return [`- "${item.name}" (resumeContact id: ${item.id})`];
+      if (kind === "link") return [`- "${item.name}" (resumeLink id: ${item.id})`];
+      if (kind === "language") return [`- "${item.name}" (resumeLanguage id: ${item.id})`];
+      if (kind === "certification")
+        return [`- "${item.name}" (resumeCertification id: ${item.id})`];
+      if (kind === "volunteer") return [`- "${item.name}" (resumeVolunteer id: ${item.id})`];
       return [`- "${item.name}" (section: ${kind}, id: ${item.id})`];
     });
     if (lines.length > 0) parts.push(`${heading}:\n${lines.join("\n")}`);

@@ -37,7 +37,6 @@ import { formatLibraryDateRange } from "../../../-components/LibraryEntityCard";
 import { joinSearchable, libraryRowBase, touchUpdatedAt } from "../../../-utils/row-helpers";
 import { companyGroupKey, splitCompanyHint } from "../../-utils/split-company";
 import { ExperienceTitleEditor } from "../../-components/ExperienceTitleEditor";
-import { ExperienceAiPanel } from "./ExperienceAiPanel";
 import { ExperienceUniqueBullets } from "./ExperienceUniqueBullets";
 
 interface ExperienceDetailPageProps {
@@ -422,8 +421,6 @@ export function ExperienceDetailPage({ experienceId }: ExperienceDetailPageProps
           </Button>
         </div>
       </section>
-
-      <ExperienceAiPanel titles={groupTitles} groupKey={anchorKey} />
     </div>
   );
 }
