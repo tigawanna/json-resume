@@ -142,5 +142,21 @@ export function serializeSegments(segments: Segment[]) {
     if (lines.length > 0) parts.push(`${heading}:\n${lines.join("\n")}`);
   }
 
+  const skillAttachments = attached.filter((item) => item.kind === "assistant_skill");
+  const skillLines: string[] = [];
+  const seenSkills = new Set<string>();
+  for (const item of skillAttachments) {
+    if (seenSkills.has(item.id)) continue;
+    seenSkills.add(item.id);
+    if (item.isDefault) {
+      skillLines.push(`- "${item.name}": already loaded`);
+    } else if (item.body) {
+      skillLines.push(`- "${item.name}": ${item.body}`);
+    }
+  }
+  if (skillLines.length > 0) {
+    parts.push(`Assistant skill instructions:\n${skillLines.join("\n")}`);
+  }
+
   return parts.join("\n\n");
 }

@@ -182,18 +182,18 @@ export function PlacementBriefFields({
   }, [onBriefChange, preview]);
 
   return (
-    <details
-      open={open}
-      className="border-b border-base-content/10 px-3 py-2"
+    <div
+      className="mx-auto flex w-full max-w-3xl flex-col gap-3 rounded-2xl border border-base-content/15 bg-base-200/40 px-3 py-3"
       data-test="resume-ai-placement-brief"
+      data-open={open ? "true" : "false"}
     >
-      <summary className="cursor-pointer text-xs font-medium text-base-content/80">
-        Placement brief
-        <span className="ml-2 font-normal text-muted-foreground">
+      <div>
+        <p className="text-xs font-medium text-base-content">Placement brief</p>
+        <p className="text-xs text-muted-foreground">
           How far to tailor, which skill, and where it goes
-        </span>
-      </summary>
-      <div className="mt-2 flex flex-col gap-3">
+        </p>
+      </div>
+      <div className="flex flex-col gap-3">
         <ChoiceRow
           legend="How far should this go?"
           choices={depthChoices}
@@ -239,7 +239,43 @@ export function PlacementBriefFields({
           testId="placement-insertion"
         />
       </div>
-    </details>
+    </div>
+  );
+}
+
+const BRIEF_LINE_LABELS: Record<string, string> = {
+  skill: "Skill",
+  experience_id: "Experience",
+  insertion_note: "How to write it",
+  source_evidence: "Evidence",
+  depth: "How far",
+};
+
+/** Answered brief, left in the transcript so later messages push it upward. */
+export function PlacementBriefCard({ text }: { text: string }) {
+  const lines = text.split("\n").flatMap((line) => {
+    const match = line.match(/^- ([a-z_]+): (.*)$/);
+    if (!match) return [];
+    const label = BRIEF_LINE_LABELS[match[1]];
+    if (!label) return [];
+    return [{ label, value: match[2] }];
+  });
+
+  return (
+    <div
+      className="mx-auto w-full max-w-3xl rounded-2xl border border-base-content/15 bg-base-200/40 px-3 py-3"
+      data-test="resume-ai-placement-brief-card"
+    >
+      <p className="text-xs font-medium text-base-content">Placement brief</p>
+      <dl className="mt-2 flex flex-col gap-1.5">
+        {lines.map((line) => (
+          <div key={line.label} className="grid grid-cols-[7.5rem_1fr] gap-2 text-xs">
+            <dt className="text-muted-foreground">{line.label}</dt>
+            <dd className="text-base-content/90">{line.value}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
   );
 }
 

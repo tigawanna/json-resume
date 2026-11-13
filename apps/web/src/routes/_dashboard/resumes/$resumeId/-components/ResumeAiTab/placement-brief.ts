@@ -99,3 +99,19 @@ export function formatPlacementBrief(brief: PlacementBrief) {
     `- depth: ${depthLine}`,
   ].join("\n");
 }
+
+const BRIEF_HEADING = "Placement brief:";
+
+/** Pulls a brief off the end of a user message so the transcript can show it once. */
+export function splitPlacementBrief(text: string) {
+  const marker = `\n\n${BRIEF_HEADING}`;
+  const index = text.lastIndexOf(marker);
+  if (index === -1) {
+    if (text.startsWith(BRIEF_HEADING)) return { prompt: "", brief: text };
+    return { prompt: text, brief: null as string | null };
+  }
+  return {
+    prompt: text.slice(0, index).trim(),
+    brief: text.slice(index + 2).trim(),
+  };
+}

@@ -57,7 +57,7 @@ async function addAndRemoveLink(page: Page) {
   const row = links.locator("div.flex.items-end.gap-2").last();
   await row.locator("input").nth(0).fill("E2E Link");
   await row.locator("input").nth(1).fill(addedUrl);
-  await row.locator("input").nth(2).fill("globe");
+  await row.locator("input").nth(2).fill("FaGlobe");
   await links.getByRole("button", { name: "Save Links" }).click();
 
   await expectToast(page, "Links saved");

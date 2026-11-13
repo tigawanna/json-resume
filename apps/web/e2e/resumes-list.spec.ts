@@ -48,6 +48,6 @@ async function openResumeList(page: Page) {
 }
 
 function resumeCard(page: Page, name: string): Locator {
-  const title = page.locator("[data-slot='card-title']").and(page.getByText(name, { exact: true }));
+  const title = page.locator("[data-slot='card-title']").filter({ hasText: name });
   return page.getByTestId("resumes-table").locator(ROW_SELECTOR).filter({ has: title });
 }

@@ -17,7 +17,6 @@ import {
   useResumeWorkbenchActions,
 } from "../resume-workbench/ResumeWorkbenchProvider";
 import { ResumeAiAttachSheet } from "./ResumeAiAttachSheet";
-import { PlacementBriefFields } from "./PlacementBrief";
 import { CreditsDisplay } from "./ResumeAiCredits";
 import { DIRECTIVES, SECTION_TAGS } from "./resume-ai-directives";
 import {
@@ -50,6 +49,8 @@ export interface ResumeAiPromptComposerProps {
   /** Re-runs the failed request: resends the prompt, or asks to continue a partial run. */
   onRetry: () => void | Promise<void>;
   onStop: () => void;
+  /** Included on this send only. Null once the brief is already in the transcript. */
+  placementBrief: string | null;
   promptAreaRef: RefObject<PromptAreaHandle | null>;
   sessionChars: number;
   sessionGenerating: boolean;
@@ -74,6 +75,7 @@ export function ResumeAiPromptComposer({
   onSend,
   onRetry,
   onStop,
+  placementBrief,
   promptAreaRef,
   sessionChars,
   sessionGenerating,
@@ -81,7 +83,6 @@ export function ResumeAiPromptComposer({
 }: ResumeAiPromptComposerProps) {
   const [segments, setSegments] = useState<Segment[]>([]);
   const [attachOpen, setAttachOpen] = useState(false);
-  const [briefText, setBriefText] = useState("");
   const db = useEventSourcedDb();
   const currentResumeId = useResumeWorkbench((state) => state.resumeId);
   const { openDialog, resetActiveResume, detachActiveResume } = useResumeWorkbenchActions();
@@ -109,7 +110,7 @@ export function ResumeAiPromptComposer({
 
   async function handleSend(nextSegments: Segment[]) {
     if (!hasText(nextSegments) || !isReady) return;
-    const message = [serializeSegments(nextSegments), briefText.trim()]
+    const message = [serializeSegments(nextSegments), placementBrief?.trim() ?? ""]
       .filter(Boolean)
       .join("\n\n");
     if (!message) return;
@@ -150,11 +151,6 @@ export function ResumeAiPromptComposer({
           data-test="resume-ai-input-shell"
         >
           <div className="min-h-0 flex-1 overflow-y-auto">
-            <PlacementBriefFields
-              resumeId={activeResume?.id ?? currentResumeId}
-              open={!hasMessages}
-              onBriefChange={setBriefText}
-            />
             <PromptArea
               ref={promptAreaRef}
               value={segments}

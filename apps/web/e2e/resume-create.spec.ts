@@ -12,9 +12,6 @@ test("creates a resume through the authenticated UI", async ({ page }) => {
   await page.goto("/resumes");
   await waitForLocalDb(page);
   await expect(
-    page
-      .getByTestId("resumes-table")
-      .locator("[data-slot='card-title']")
-      .and(page.getByText(name, { exact: true })),
+    page.getByTestId("resumes-table").locator("[data-slot='card-title']").filter({ hasText: name }),
   ).toBeVisible();
 });

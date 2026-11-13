@@ -115,7 +115,10 @@ export const Loader: React.FC<LoaderProps> = ({ variant, size = "md", className 
   const primaryBgClass = "bg-zinc-900 dark:bg-zinc-50";
   const primaryBorderClass = "border-zinc-900 dark:border-zinc-50";
   const keyframes = variantKeyframes[variant];
-  const hourglassBorder = size === "sm" ? 8 : size === "md" ? 12 : size === "lg" ? 16 : 20;
+  let hourglassBorder = 20;
+  if (size === "sm") hourglassBorder = 8;
+  else if (size === "md") hourglassBorder = 12;
+  else if (size === "lg") hourglassBorder = 16;
 
   let content: React.ReactNode = null;
 
@@ -1107,12 +1110,11 @@ export const Loader: React.FC<LoaderProps> = ({ variant, size = "md", className 
                 className="relative flex h-full flex-1 flex-col items-center"
                 style={{
                   transformOrigin: "top center",
-                  animation:
-                    i === 0
-                      ? "loader-cradle-left 1.8s linear infinite"
-                      : i === 4
-                        ? "loader-cradle-right 1.8s linear infinite"
-                        : undefined,
+                  animation: (() => {
+                    if (i === 0) return "loader-cradle-left 1.8s linear infinite";
+                    if (i === 4) return "loader-cradle-right 1.8s linear infinite";
+                    return undefined;
+                  })(),
                 }}
               >
                 <div className="w-px flex-1 bg-current opacity-40" />

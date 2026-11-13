@@ -6,10 +6,19 @@ import type { WorkbenchTab } from "../resume-tool-schemas";
  * `localSeq` in `[fromSeq, toSeq)`. That first seq is allocated synchronously
  * on write; later events of the same transaction may land after `toSeq`.
  */
+export type AiChangeRow = {
+  collectionId: string;
+  key: string;
+  before: Record<string, unknown> | null;
+  after: Record<string, unknown> | null;
+};
+
 export type AiChange = {
   tool: string;
   fromSeq: number;
   toSeq: number;
+  /** Rows whose state changed during this tool call, for compaction-safe undo. */
+  touched: AiChangeRow[];
 };
 
 /**

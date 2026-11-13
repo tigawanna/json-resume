@@ -101,7 +101,11 @@ Classify each matched requirement before editing:
 - **Unsupported** — no evidence. No edit. Gap list.
 
 # Placement brief
-Structured placement instruction. Fields:
+The chat shows the guiding questions as a Placement brief card before the first edit: how far, which skill, which experience, and how the line should be written in. That card is the structured input. Do not ask those four questions in the reply, and do not call a tool to collect them.
+
+A brief already in the conversation covers later messages. Follow it and start the work. Do not ask for a new one.
+
+Fields:
 - \`skill\`
 - \`experience_id\` (IDs, not names, when available)
 - \`insertion_note\` — how the line should read
@@ -113,11 +117,13 @@ When present:
 - A brief authorizes placement, not fabrication. If the named experience has no supporting evidence, stop, flag the conflict, and ask before editing.
 
 # No Placement brief
+Stop before any write tool. Tell the user to answer the Placement brief card, then wait. Do not offer your own experience list. The card already lists the résumé's skills and experiences.
+
+# After the brief
 - Edit where evidence is Direct.
 - Propose, clearly labeled, where evidence is Adjacent.
 - Do not edit Unsupported requirements; list them.
-- Ask only when placement is genuinely ambiguous: two or more plausible homes, or a high-impact requirement with no clear evidence.
-- When asking, offer ranked candidate experiences plus Other. Never a bare "which experience?"
+- Ask again only when the brief conflicts with the evidence, or a later change needs a home the brief did not name. Offer ranked experiences from the résumé plus Other. Never a bare "which experience?", and never the four brief questions again.
 
 # Multiple homes
 Prefer, in order: most recent → most relevant to the target role → strongest direct evidence. State the choice in the change log.
@@ -131,7 +137,7 @@ Means: denser keyword alignment, leading with the most relevant evidence, more a
 1. **Edits** — revised bullets or fields with experience IDs.
 2. **Change log** — requirement → experience → evidence level → what changed.
 3. **Gaps** — unsupported requirements, left out, with a one-line suggestion each ("add only if true", "omit", "cover in cover letter").
-4. **Questions** — only for ambiguous placement or a brief conflict.
+4. **Questions** — only for a brief conflict or a home the brief did not name.
 
 Every requirement lands in edits, proposals, or gaps. Never silently drop one.
 
@@ -345,6 +351,68 @@ function sameDocument(left: string, right: string) {
   return left.trim() === right.trim();
 }
 
+const PREVIOUS_CARD_PRAGMATIC_BODY = `# Rule
+A requirement may be woven in only where the résumé already supports it. If nothing supports it, leave it out and report it as a gap.
+
+# Boundary with Developer bullets
+This skill decides what to weave and where. Developer bullets decides how the line reads and what counts as a fact, including the generative-AI cutoff. On any conflict about tense, stack-in-role, metrics, or verbs, Developer bullets wins. "Go all in" relaxes emphasis, never facts.
+
+# Evidence levels
+Classify each matched requirement before editing:
+- **Direct** — the same skill, tool, domain, or responsibility already appears on the named experience. Adjust wording so the match is obvious.
+- **Adjacent** — transferable evidence only (related tool, analogous responsibility, same domain). Propose the line, label it Adjacent, keep the claim modest. Don't upgrade to Direct by wording.
+- **Unsupported** — no evidence. No edit. Gap list.
+
+# Placement brief
+Structured placement instruction. Fields:
+- \`skill\`
+- \`experience_id\` (IDs, not names, when available)
+- \`insertion_note\` — how the line should read
+- \`source_evidence\` — optional supporting bullet or skill
+
+When present:
+- Put the named skill on the named experience. Do not shop around for a different home.
+- Use their note for how the line reads.
+- A brief authorizes placement, not fabrication. If the named experience has no supporting evidence, stop, flag the conflict, and ask before editing.
+
+# No Placement brief
+- Edit where evidence is Direct.
+- Propose, clearly labeled, where evidence is Adjacent.
+- Do not edit Unsupported requirements; list them.
+- Ask only when placement is genuinely ambiguous: two or more plausible homes, or a high-impact requirement with no clear evidence.
+- When asking, offer ranked candidate experiences plus Other. Never a bare "which experience?"
+
+# Multiple homes
+Prefer, in order: most recent → most relevant to the target role → strongest direct evidence. State the choice in the change log.
+
+# Go all in
+Only when the user explicitly says to tailor to the max and disregard realistic experience, or the brief says go all in.
+
+Means: denser keyword alignment, leading with the most relevant evidence, more aggressive framing. Does not permit new tools, metrics, dates, titles, scope, or backdated stacks.
+
+# Output
+1. **Edits** — revised bullets or fields with experience IDs.
+2. **Change log** — requirement → experience → evidence level → what changed.
+3. **Gaps** — unsupported requirements, left out, with a one-line suggestion each ("add only if true", "omit", "cover in cover letter").
+4. **Questions** — only for ambiguous placement or a brief conflict.
+
+Every requirement lands in edits, proposals, or gaps. Never silently drop one.
+
+# Do not
+- Stuff keywords or repeat a term unnaturally.
+- Claim proficiency from a single mention.
+- Strip useful general evidence to fit one posting.
+- Treat "go all in" as permission to fabricate.
+
+# Examples
+Direct: "stakeholder management" ↔ "led weekly reviews with finance and ops" → "Managed stakeholders across finance and ops through weekly reviews."
+
+Adjacent: "Kubernetes" ↔ "containerized services with Docker" → "Containerized services with Docker; working knowledge of orchestration." Label Adjacent.
+
+Unsupported: "Terraform", no IaC evidence → gap only.
+
+Brief conflict: brief puts "RAG" on a role that ended in 2016 with no generative-AI evidence → no edit; flag and ask. A "machine learning" line the user already wrote on that role stays.`;
+
 function previousDocuments(skill: BuiltinAssistantSkill) {
   if (skill.key === "dev-bullets") {
     return [
@@ -372,6 +440,11 @@ function previousDocuments(skill: BuiltinAssistantSkill) {
       name: "Pragmatic tailoring",
       description: PRAGMATIC_TAILORING_DESCRIPTION,
       body: PREVIOUS_GENAI_PRAGMATIC_BODY,
+    }),
+    composeSkillMarkdown({
+      name: "Pragmatic tailoring",
+      description: PRAGMATIC_TAILORING_DESCRIPTION,
+      body: PREVIOUS_CARD_PRAGMATIC_BODY,
     }),
   ];
 }

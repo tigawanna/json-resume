@@ -42,7 +42,7 @@ test("saves edited and newly added resume parts across the whole editor flow", a
   const linkInputCount = await linkInputs.count();
   await linkInputs.nth(linkInputCount - 3).fill("Portfolio");
   await linkInputs.nth(linkInputCount - 2).fill("https://example.com/alex");
-  await linkInputs.nth(linkInputCount - 1).fill("globe");
+  await linkInputs.nth(linkInputCount - 1).fill("FaGlobe");
   await links.getByRole("button", { name: "Save Links" }).click();
   await expect(page.getByText("Links saved")).toBeVisible();
 

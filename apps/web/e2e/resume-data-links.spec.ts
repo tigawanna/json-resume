@@ -16,7 +16,7 @@ test("creates, edits, and deletes a link from the standalone route", async ({ pa
     fillCreate: async (dialog) => {
       const inputs = dialog.locator("input");
       await inputs.nth(0).fill(label);
-      await inputs.nth(1).fill("globe");
+      await inputs.nth(1).fill("FaGlobe");
       await inputs.nth(2).fill(`https://example.com/${uniqueId}`);
     },
     fillEdit: async (dialog) => {

@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vite-plus/test";
-import { DEFAULT_PLACEMENT_BRIEF, formatPlacementBrief } from "./placement-brief";
+import {
+  DEFAULT_PLACEMENT_BRIEF,
+  formatPlacementBrief,
+  splitPlacementBrief,
+} from "./placement-brief";
 
 describe("formatPlacementBrief", () => {
   it("stays honest and does not invent a home when the defaults are left as they are", () => {
@@ -24,5 +28,13 @@ describe("formatPlacementBrief", () => {
     expect(text).toContain("experience_id: Only the platform role");
     expect(text).toContain("insertion_note: One clause inside the existing on-call bullet");
     expect(text).toContain("depth: go all in");
+  });
+
+  it("splits a sent brief off the user's words", () => {
+    const brief = formatPlacementBrief(DEFAULT_PLACEMENT_BRIEF);
+    const split = splitPlacementBrief(`Tighten the summary.\n\n${brief}`);
+    expect(split.prompt).toBe("Tighten the summary.");
+    expect(split.brief).toBe(brief);
+    expect(splitPlacementBrief("Tighten the summary.").brief).toBeNull();
   });
 });

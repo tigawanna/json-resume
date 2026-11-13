@@ -84,7 +84,9 @@ export function ResourceCardHeader({ title, meta, actions, className }: Resource
   return (
     <div className={cn("flex items-start justify-between gap-3 px-4 pt-4", className)}>
       <div className="min-w-0 flex-1 space-y-1.5">
-        <h3 className="truncate text-sm leading-tight font-medium">{title}</h3>
+        <h3 data-slot="card-title" className="truncate text-sm leading-tight font-medium">
+          {title}
+        </h3>
         {meta ? <ResourceCardMeta>{meta}</ResourceCardMeta> : null}
       </div>
       {actions ? (

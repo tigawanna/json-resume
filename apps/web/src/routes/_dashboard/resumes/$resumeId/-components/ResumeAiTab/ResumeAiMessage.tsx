@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { isHandoffMessage } from "@/routes/_dashboard/-ai/-utils/resume-handoff";
 import { ResumeAiHandoffDivider } from "./ResumeAiHandoffDivider";
 import { useResumeAiChatActions } from "./resume-ai-chat-actions";
+import { splitPlacementBrief } from "./placement-brief";
 import { getMessageText } from "./resume-ai-message-utils";
 import type { ResumeAiChatOptions } from "./resume-ai-chat-options";
 
@@ -20,7 +21,8 @@ export function ResumeAiMessage({ message, Parts }: MessageProps<ResumeAiChatOpt
     return <ResumeAiHandoffDivider context={getMessageText(message)} />;
   }
 
-  const text = getMessageText(message);
+  const rawText = getMessageText(message);
+  const text = isUser ? splitPlacementBrief(rawText).prompt || rawText : rawText;
   const isSystem = message.role === "system";
   const hasTool = message.parts.some(
     (part) => part.type === "tool-call" || part.type === "tool-result",

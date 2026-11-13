@@ -11,6 +11,7 @@ const PLAYBOOKS: Record<PlaybookName, Playbook> = {
   edit_resume: {
     when: "Any change request that does not ask for a new copy, version or variant.",
     steps: [
+      "Before any write tool, check the thread for a Placement brief. The chat shows that brief as structured choices (how far, which skill, which experience, how to write it in). That card is the input. Do not ask those questions in prose, and do not call a tool to collect them. If the thread has no brief yet, ask the user to answer the card and stop. A brief earlier in the thread still applies to later messages; do not ask again.",
       "get_resume with only the sections you need, to get item and bullet ids.",
       "Change the active résumé with the granular tools: update_resume_details, set_summary, set_experience_bullets, set_skills, upsert_experience / upsert_project / upsert_education / upsert_talk, remove_from_resume, reorder_section, set_contacts, set_links, set_notes.",
       "When changing bullets or tailoring wording, follow the assistant skills. Weave a posting requirement in only when an existing role already supports it, unless the Placement brief says to go all in. Do not suggest generative AI (LLMs, RAG, prompt engineering, AI agents, Copilot) on a role whose end date is before 2023. Keep traditional ML and any AI the user already wrote.",
