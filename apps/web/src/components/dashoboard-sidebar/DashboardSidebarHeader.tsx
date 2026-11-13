@@ -1,9 +1,4 @@
-import {
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  useSidebar,
-} from "@/components/ui/sidebar";
+import { SidebarMenu, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import { AppConfig } from "@/utils/system";
 import { Link } from "@tanstack/react-router";
@@ -13,22 +8,26 @@ export function DashboardSidebarHeader() {
 
   return (
     <div className="flex flex-col gap-3">
-      <SidebarMenu>
-        <SidebarMenuItem>
-          <SidebarMenuButton size="lg" asChild onClick={() => setOpenMobile(false)}>
+      <SidebarMenu className="">
+        <SidebarMenuItem className="">
+          <Link
+            to="/"
+            onClick={() => setOpenMobile(false)}
+            className="hover:text-primary/5 cursor-pointer rounded-sm flex justify-center items-center"
+          >
+            <AppConfig.icon className={cn("text-primary", open ? "h-20 w-full" : "size-8")} />
+          </Link>
+          {/* <SidebarMenuButton
+            className="w-full h-full"
+            size="lg"
+            asChild
+            onClick={() => setOpenMobile(false)}>
             <Link
               to="/"
-              className="hover:text-primary/5 cursor-pointer rounded-sm flex justify-center items-center"
-            >
-              <AppConfig.icon className={cn("text-primary size-40", open ? "size-40" : "size-8")} />
-              {/* {state === "expanded" || isMobile ? (
-                <span className="font-serif text-xl tracking-tight">
-                  {AppConfig.wordmark}
-                  <span className="text-primary">.</span>
-                </span>
-              ) : null} */}
+              className="hover:text-primary/5 cursor-pointer rounded-sm flex justify-center items-center">
+              <AppConfig.icon className={cn("text-primary", open ? "size-140" : "size-80")} />
             </Link>
-          </SidebarMenuButton>
+          </SidebarMenuButton> */}
         </SidebarMenuItem>
       </SidebarMenu>
     </div>
