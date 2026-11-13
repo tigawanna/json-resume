@@ -1,4 +1,4 @@
-import { publicResume } from "@/lib/drizzle/scheam/resume/public-resume";
+import { publicResume } from "@repo/db/schema/resume/public-resume";
 import { db } from "@/lib/drizzle/client";
 import type { ResumeDocumentV1 } from "@/features/resume/resume-schema";
 import { and, count, desc, eq, like, or, sql } from "drizzle-orm";
@@ -19,7 +19,7 @@ function toDto(row: typeof publicResume.$inferSelect): PublicResumeDTO {
     id: row.id,
     sourceResumeId: row.sourceResumeId,
     title: row.title,
-    document: row.document,
+    document: row.document as ResumeDocumentV1,
     publishedAt: row.createdAt,
     updatedAt: row.updatedAt,
   };

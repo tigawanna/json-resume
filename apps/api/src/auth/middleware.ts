@@ -22,7 +22,8 @@ export const requireSession = createMiddleware<AppEnv>(async (c, next) => {
 
 /** Signed-in user with the `admin` role. Includes the session check. */
 export const requireAdmin = createMiddleware<AppEnv>(async (c, next) => {
-  const session = await readSession(c.req.raw.headers);
+  const existing = c.get("session");
+  const session = existing ?? (await readSession(c.req.raw.headers));
   if (!session) {
     return c.json(errorBody({ message: "Unauthorized", code: "UNAUTHORIZED" }), 401);
   }

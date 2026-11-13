@@ -72,6 +72,8 @@ TanStack Start's import protection (Vite, on by default) keeps client and server
 
 All backend logic lives in `apps/api/` (Hono on Node, Better Auth, Drizzle/libsql). The web app is UI only and talks to it through a typed `hc<AppType>` client. **Do not add new `createServerFn` handlers, `src/routes/api/*` route files, or `*.server.ts` data-access code.** When a task touches legacy server code, migrate that piece into `apps/api` (see the checklist at the end of this section) instead of extending it.
 
+**Reference implementation (when in doubt):** `/home/dennis/Desktop/code/fullstack/tangerine` — a working monorepo with the exact same Hono + Better Auth + Drizzle + evlog setup, including web + desktop (Electron/Deno) auth. Mirror its `apps/api` (Hono app, auth, routes, evlog), `packages/auth` (shared GitHub/auth pieces), and `docs/auth.md` / `docs/vercel-deploy.md`. Prefer copying patterns from there over inventing new ones.
+
 ### Package layout
 
 ```
@@ -232,6 +234,19 @@ const mutation = useMutation({
 - Dev: API on `:3100`, web on `:3040`. Same host (`localhost`) so the session cookie is shared; CORS is configured with `credentials: true`.
 - Prod: put the API on a subdomain (`api.example.com`) of the same registrable domain as the web app, enable `advanced.crossSubDomainCookies: { enabled: true, domain: ".example.com" }`, and set `VITE_HONO_API_URL` to the API origin.
 - Do **not** add a blanket `/api/*` proxy in `apps/web` while legacy `/api/*` TanStack routes still exist; that would shadow them. A same-origin proxy is the end state once all routes have migrated.
+
+### Desktop auth (future — keep the door open)
+
+Desktop (Electron / Tauri / Deno) is **not wired yet**, but the API is already shaped so it can be added without rework. Follow the tangerine example (`apps/electron`, `apps/desktop`, `packages/auth`, `docs/auth.md`):
+
+- Add `@better-auth/electron` (or the platform's deep-link plugin) and `bearer()` to the plugin list in `apps/api/src/auth/auth.ts`. The bearer plugin lets desktop clients send `Authorization: Bearer <token>` instead of cookies.
+- Register the desktop origin in `TRUSTED_ORIGINS` (tangerine uses `ELECTRON_TRUSTED_ORIGIN` / `com.tigawanna.tangerine:/`). Merge it into `AUTHORIZED_ORIGINS` in `env.ts` rather than hard-coding.
+- Keep `BETTER_AUTH_URL` as the public origin the desktop flow redirects back to; the OAuth callback stays `{BETTER_AUTH_URL}/api/auth/callback/github`.
+- Desktop clients do **not** use cookies; they exchange a PKCE code via the loopback/deep-link and store the resulting bearer token locally. The web client keeps using cookies via `credentials: "include"`.
+- Keep `advanced.crossSubDomainCookies` optional and gated on a real parent domain; desktop never needs it.
+- Do not branch the auth instance per platform — one `auth` instance with all plugins is fine; plugins are additive.
+
+Until desktop is in scope, leave these plugins out (they change the session/cookie behavior and add surface area).
 
 ### Migration checklist (legacy → `apps/api`)
 

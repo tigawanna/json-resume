@@ -4,13 +4,16 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./schema/*": "./src/schema/*.ts"
+    "./schema/*": "./src/schema/*.ts",
+    "./schema/resume": "./src/schema/resume/index.ts",
+    "./schema/resume/*": "./src/schema/resume/*.ts"
   },
   "scripts": {
     "check-types": "tsgo --noEmit"
   },
   "dependencies": {
-    "drizzle-orm": "^0.45.2"
+    "drizzle-orm": "^0.45.2",
+    "uuidv7": "^1.2.1"
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",

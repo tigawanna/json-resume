@@ -1,7 +1,7 @@
 import { relations } from "drizzle-orm";
 import { index, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { user } from "@repo/db/schema/auth-schema";
-import { embeddable, timestamps } from "./resume/shared-columns";
+import { embeddable, timestamps } from "@repo/db/schema/resume/shared-columns";
 
 export const coverLetter = sqliteTable(
   "cover_letter",

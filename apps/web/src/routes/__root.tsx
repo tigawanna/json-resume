@@ -50,13 +50,13 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         og: {
           title: AppConfig.name,
           description: AppConfig.description,
-          image: clientEnv.VITE_API_URL + "/og.png",
-          url: clientEnv.VITE_API_URL,
+          image: (clientEnv.VITE_API_URL ?? "") + "/og.png",
+          url: clientEnv.VITE_API_URL ?? "",
           type: "website",
         },
         twitter: {
           card: "summary_large_image",
-          image: clientEnv.VITE_API_URL + "/og.png",
+          image: (clientEnv.VITE_API_URL ?? "") + "/og.png",
         },
       },
     ],

@@ -41,7 +41,10 @@ export const meRoute = new Hono<AppEnv>()
       await auth.api.updateUser({ body: { name }, headers });
       const updated = await auth.api.getSession({ headers });
       if (!updated) {
-        return c.json(errorBody({ message: "Unauthorized", code: "UNAUTHORIZED" }), 401);
+        return c.json(
+          errorBody({ message: "Failed to reload session", code: "INTERNAL_ERROR" }),
+          500,
+        );
       }
 
       return c.json({ user: updated.user });

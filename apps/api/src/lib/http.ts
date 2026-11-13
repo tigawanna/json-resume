@@ -34,10 +34,11 @@ export function errorResponse({
   isProduction: boolean;
 }) {
   if (error instanceof HTTPException) {
-    const body = errorBody({
-      message: error.message,
-      code: error.status === 401 ? "UNAUTHORIZED" : undefined,
-    });
+    let code: string | undefined;
+    if (error.status === 401) code = "UNAUTHORIZED";
+    else if (error.status === 403) code = "FORBIDDEN";
+    else if (error.status === 404) code = "NOT_FOUND";
+    const body = errorBody({ message: error.message, code });
     return c.json(body, error.status);
   }
 

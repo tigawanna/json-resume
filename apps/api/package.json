@@ -10,6 +10,7 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "start": "tsx src/index.ts",
+    "test": "vitest run",
     "check-types": "tsgo --noEmit"
   },
   "dependencies": {
@@ -30,6 +31,7 @@
     "@repo/typescript-config": "workspace:*",
     "@types/node": "^25.2.0",
     "tsx": "^4.23.13",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vitest": "^5.1.0"
   }
 }
