@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -115,6 +116,18 @@ export function ReposFilters() {
       </div>
 
       <div className="flex shrink-0 items-center gap-2">
+        <div className="flex h-9 items-center gap-2 rounded-md border px-2.5">
+          <Switch
+            id="repo-include-forks"
+            size="sm"
+            data-test="repo-include-forks"
+            checked={filters.fork !== "source"}
+            onCheckedChange={(checked) => patchFilters({ fork: checked ? "all" : "source" })}
+          />
+          <Label htmlFor="repo-include-forks" className="text-sm font-normal">
+            Include forks
+          </Label>
+        </div>
         <Select
           value={filters.sort}
           onValueChange={(value) => patchFilters({ sort: value as RepoSearchFilters["sort"] })}
