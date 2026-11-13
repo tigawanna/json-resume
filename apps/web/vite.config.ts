@@ -7,6 +7,19 @@ import { nitro } from "nitro/vite";
 
 import tailwindcss from "@tailwindcss/vite";
 
+const PRERENDER_PATHS = new Set([
+  "/",
+  "/search",
+  "/privacy",
+  "/privacy/",
+  "/terms",
+  "/terms/",
+  "/auth",
+  "/auth/",
+  "/auth/github",
+  "/auth/signup",
+]);
+
 const config = defineConfig({
   staged: { "*": "vp check --fix" },
   server: {
@@ -52,9 +65,12 @@ const config = defineConfig({
       },
       prerender: {
         enabled: true,
-        // Follow links from the landing page (privacy, terms). Skip the client-only app.
+        // Crawl public links, then keep only pages that render without a session.
+        // Dashboard, admin, and dev routes live on a pathless layout, so a
+        // `/dashboard` prefix check never matches them. Query variants such as
+        // `/auth?returnTo=` are the same screen crawled from links.
         crawlLinks: true,
-        filter: (page) => page.path !== "/dashboard" && !page.path.startsWith("/dashboard/"),
+        filter: (page) => PRERENDER_PATHS.has(page.path),
       },
     }),
     viteReact({
