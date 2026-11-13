@@ -90,7 +90,7 @@ export function ResumeAiConversationCard({
             ))}
           </div>
         </div>
-        <div className="shrink-0 border-t border-border/60 px-2 py-2">
+        <div className="min-h-0 shrink-0 border-t border-border/60 px-2 py-2">
           <ResumeAiPromptComposer {...composerProps} isReady={isReady} hasMessages={false} />
         </div>
       </div>
@@ -136,7 +136,7 @@ export function ResumeAiConversationCard({
         ) : null}
         <div ref={endOfMessagesRef} />
       </div>
-      <div className="shrink-0 border-t border-border/60 px-2 py-2">
+      <div className="min-h-0 shrink-0 border-t border-border/60 px-2 py-2">
         <ResumeAiPromptComposer {...composerProps} isReady={isReady} hasMessages={!isEmpty} />
       </div>
     </div>

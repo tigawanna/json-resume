@@ -18,7 +18,7 @@ const MAX_AGENT_ITERATIONS = 10;
  * The dashboard chat never ends, so the history sent to the model is capped.
  * Old tool output (job lists, stats) goes first; the oldest turns only drop if that is not enough.
  */
-const CONTEXT_BUDGET_TOKENS = 5_000;
+const CONTEXT_BUDGET_TOKENS = 100_000;
 
 export async function streamDashboardAgentChat(
   input: ChatRunParams &

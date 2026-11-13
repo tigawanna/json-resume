@@ -146,68 +146,70 @@ export function ResumeAiPromptComposer({
         data-test="resume-ai-composer-form"
       >
         <div
-          className="overflow-hidden rounded-2xl border border-base-content/15 bg-primary/10 text-base-content shadow-sm"
+          className="flex max-h-[min(50vh,28rem)] min-h-0 flex-col overflow-hidden rounded-2xl border border-base-content/15 bg-primary/10 text-base-content shadow-sm"
           data-test="resume-ai-input-shell"
         >
-          <PlacementBriefFields
-            resumeId={activeResume?.id ?? currentResumeId}
-            open={!hasMessages}
-            onBriefChange={setBriefText}
-          />
-          <PromptArea
-            ref={promptAreaRef}
-            value={segments}
-            onChange={setSegments}
-            onSubmit={handleSend}
-            placeholder={placeholder}
-            disabled={!isReady}
-            markdown
-            normalizeBullets={false}
-            triggers={[
-              commandTrigger({
-                position: "start",
-                emptyMessage: "No matching directive",
-                chipClassName: "rounded-md bg-primary/15 px-1 font-medium text-primary",
-                resolveOnSpace: true,
-                onSelect: (suggestion) => suggestion.value.replace(/^\//, ""),
-                onSearch: (query) =>
-                  DIRECTIVES.filter(
-                    (directive) =>
-                      directive.command.includes(query.toLowerCase()) ||
-                      directive.label.toLowerCase().includes(query.toLowerCase()),
-                  ).map((directive) => ({
-                    value: directive.command,
-                    label: directive.command,
-                    description: directive.label,
-                  })),
-              }),
-              mentionTrigger({
-                emptyMessage: "No other resumes",
-                searchDebounceMs: 150,
-                chipClassName: "rounded-md bg-primary/15 px-1 font-medium text-primary",
-                onSearch: searchResumeMentions,
-              }),
-              hashtagTrigger({
-                resolveOnSpace: false,
-                emptyMessage: "No matching section",
-                onSelect: (suggestion) => suggestion.value,
-                onSearch: (query) =>
-                  SECTION_TAGS.filter((tag) => tag.value.includes(query.toLowerCase())).map(
-                    (tag) => ({
-                      value: tag.value,
-                      label: `#${tag.value}`,
-                      description: tag.description,
-                    }),
-                  ),
-              }),
-            ]}
-            minHeight={26}
-            maxHeight={240}
-            className="px-4 pt-3 pb-1 text-base [--prompt-area-placeholder:color-mix(in_oklch,var(--color-base-content)_35%,transparent)]"
-            aria-label="Ask the resume AI"
-            data-test-id="resume-ai-input"
-          />
-          <div className="flex items-center justify-between px-2 pb-2">
+          <div className="min-h-0 flex-1 overflow-y-auto">
+            <PlacementBriefFields
+              resumeId={activeResume?.id ?? currentResumeId}
+              open={!hasMessages}
+              onBriefChange={setBriefText}
+            />
+            <PromptArea
+              ref={promptAreaRef}
+              value={segments}
+              onChange={setSegments}
+              onSubmit={handleSend}
+              placeholder={placeholder}
+              disabled={!isReady}
+              markdown
+              normalizeBullets={false}
+              triggers={[
+                commandTrigger({
+                  position: "start",
+                  emptyMessage: "No matching directive",
+                  chipClassName: "rounded-md bg-primary/15 px-1 font-medium text-primary",
+                  resolveOnSpace: true,
+                  onSelect: (suggestion) => suggestion.value.replace(/^\//, ""),
+                  onSearch: (query) =>
+                    DIRECTIVES.filter(
+                      (directive) =>
+                        directive.command.includes(query.toLowerCase()) ||
+                        directive.label.toLowerCase().includes(query.toLowerCase()),
+                    ).map((directive) => ({
+                      value: directive.command,
+                      label: directive.command,
+                      description: directive.label,
+                    })),
+                }),
+                mentionTrigger({
+                  emptyMessage: "No other resumes",
+                  searchDebounceMs: 150,
+                  chipClassName: "rounded-md bg-primary/15 px-1 font-medium text-primary",
+                  onSearch: searchResumeMentions,
+                }),
+                hashtagTrigger({
+                  resolveOnSpace: false,
+                  emptyMessage: "No matching section",
+                  onSelect: (suggestion) => suggestion.value,
+                  onSearch: (query) =>
+                    SECTION_TAGS.filter((tag) => tag.value.includes(query.toLowerCase())).map(
+                      (tag) => ({
+                        value: tag.value,
+                        label: `#${tag.value}`,
+                        description: tag.description,
+                      }),
+                    ),
+                }),
+              ]}
+              minHeight={26}
+              maxHeight={240}
+              className="px-4 pt-3 pb-1 text-base [--prompt-area-placeholder:color-mix(in_oklch,var(--color-base-content)_35%,transparent)]"
+              aria-label="Ask the resume AI"
+              data-test-id="resume-ai-input"
+            />
+          </div>
+          <div className="flex shrink-0 items-center justify-between px-2 pb-2">
             <div className="flex min-w-0 items-center gap-1">
               <Button
                 type="button"

@@ -5,15 +5,21 @@ export type PlacementInsertion = "weave" | "new-bullet" | "skills-list" | "other
 export interface PlacementBrief {
   depth: PlacementDepth;
   depthNote: string;
-  /** "none", "other", or a résumé skill id. */
-  skillChoice: string;
+  /**
+   * "none", "other", and résumé skill ids. "none" is exclusive.
+   * "other" can sit alongside specific skills.
+   */
+  skillChoices: string[];
   skillNote: string;
-  /** Label for a chosen résumé skill. Ignored for "none" and "other". */
+  /** Labels for the chosen résumé skills. Ignored for "none" and "other". */
   skillLabel: string;
-  /** "auto", "other", or an experience id. */
-  experienceChoice: string;
+  /**
+   * "auto", "other", and experience ids. "auto" is exclusive.
+   * "other" can sit alongside specific experiences.
+   */
+  experienceChoices: string[];
   experienceNote: string;
-  /** Label for a chosen experience, including its id when one is selected. */
+  /** Labels for the chosen experiences, including their ids. */
   experienceLabel: string;
   insertion: PlacementInsertion;
   insertionNote: string;
@@ -22,10 +28,10 @@ export interface PlacementBrief {
 export const DEFAULT_PLACEMENT_BRIEF: PlacementBrief = {
   depth: "honest",
   depthNote: "",
-  skillChoice: "none",
+  skillChoices: ["none"],
   skillNote: "",
   skillLabel: "",
-  experienceChoice: "auto",
+  experienceChoices: ["auto"],
   experienceNote: "",
   experienceLabel: "",
   insertion: "weave",
@@ -57,19 +63,27 @@ function noted(choice: string, note: string, fallback: string) {
 export function formatPlacementBrief(brief: PlacementBrief) {
   const depth =
     brief.depth === "other" ? noted("other", brief.depthNote, "") : DEPTH_TEXT[brief.depth];
-  let skill = "No specific skill to place. Improve what is already true.";
-  if (brief.skillChoice === "other") skill = noted("other", brief.skillNote, "");
-  else if (brief.skillChoice !== "none") {
-    skill = brief.skillLabel.trim() || "The selected skill";
-  }
-  let experienceId = "";
-  let experienceText = "Choose the experience that already supports it. Do not force a home.";
-  if (brief.experienceChoice === "other") {
-    experienceText = noted("other", brief.experienceNote, "");
-  } else if (brief.experienceChoice !== "auto") {
-    experienceId = brief.experienceChoice;
-    experienceText = brief.experienceLabel.trim() || brief.experienceChoice;
-  }
+  const skillIds = brief.skillChoices.filter((choice) => choice !== "none" && choice !== "other");
+  const skillParts = [
+    skillIds.length > 0 ? brief.skillLabel.trim() || "The selected skills" : "",
+    brief.skillChoices.includes("other") ? noted("other", brief.skillNote, "") : "",
+  ].filter(Boolean);
+  const skill =
+    skillParts.length > 0
+      ? skillParts.join("; ")
+      : "No specific skill to place. Improve what is already true.";
+  const experienceIds = brief.experienceChoices.filter(
+    (choice) => choice !== "auto" && choice !== "other",
+  );
+  const experienceParts = [
+    experienceIds.length > 0 ? brief.experienceLabel.trim() || experienceIds.join(", ") : "",
+    brief.experienceChoices.includes("other") ? noted("other", brief.experienceNote, "") : "",
+  ].filter(Boolean);
+  const experienceId = experienceIds.join(", ");
+  const experienceText =
+    experienceParts.length > 0
+      ? experienceParts.join("; ")
+      : "Choose the experience that already supports it. Do not force a home.";
   const insertion =
     brief.insertion === "other"
       ? noted("other", brief.insertionNote, "")

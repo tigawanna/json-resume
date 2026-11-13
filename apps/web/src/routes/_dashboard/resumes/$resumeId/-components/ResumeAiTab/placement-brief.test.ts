@@ -13,9 +13,9 @@ describe("formatPlacementBrief", () => {
     const text = formatPlacementBrief({
       ...DEFAULT_PLACEMENT_BRIEF,
       depth: "all-in",
-      skillChoice: "other",
+      skillChoices: ["other"],
       skillNote: "Kubernetes",
-      experienceChoice: "other",
+      experienceChoices: ["other"],
       experienceNote: "Only the platform role, I ran the cluster, I did not design it",
       insertion: "other",
       insertionNote: "One clause inside the existing on-call bullet",

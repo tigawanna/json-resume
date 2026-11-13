@@ -22,6 +22,7 @@ function ChoiceRow({
   choices,
   value,
   onChange,
+  multiple = false,
   otherValue,
   onOtherChange,
   otherPlaceholder,
@@ -29,19 +30,22 @@ function ChoiceRow({
 }: {
   legend: string;
   choices: Choice[];
-  value: string;
+  value: string | string[];
   onChange: (id: string) => void;
+  /** Several concrete choices can stay selected. The first choice clears the rest. */
+  multiple?: boolean;
   otherValue: string;
   onOtherChange: (value: string) => void;
   otherPlaceholder: string;
   testId: string;
 }) {
+  const selectedIds = Array.isArray(value) ? value : [value];
   return (
     <fieldset className="flex flex-col gap-1.5" data-test={testId}>
       <legend className="text-xs font-medium text-base-content">{legend}</legend>
-      <div className="flex flex-wrap gap-1.5">
+      <div className="flex flex-wrap gap-1.5" role={multiple ? "group" : undefined}>
         {choices.map((choice) => {
-          const selected = value === choice.id;
+          const selected = selectedIds.includes(choice.id);
           return (
             <button
               key={choice.id}
@@ -60,7 +64,7 @@ function ChoiceRow({
           );
         })}
       </div>
-      {value === "other" ? (
+      {selectedIds.includes("other") ? (
         <Input
           value={otherValue}
           onChange={(event) => onOtherChange(event.target.value)}
@@ -162,6 +166,15 @@ export function PlacementBriefFields({
     setBrief((current) => ({ ...current, ...next }));
   }
 
+  function toggleMany(current: string[], id: string, clearId: string) {
+    if (id === clearId) return [clearId];
+    const withoutClear = current.filter((choice) => choice !== clearId);
+    const next = withoutClear.includes(id)
+      ? withoutClear.filter((choice) => choice !== id)
+      : [...withoutClear, id];
+    return next.length > 0 ? next : [clearId];
+  }
+
   const preview = formatPlacementBrief(resolvedBrief(brief, experienceById, skillById));
 
   useEffect(() => {
@@ -194,8 +207,9 @@ export function PlacementBriefFields({
         <ChoiceRow
           legend="Which skill should be placed?"
           choices={skillChoices}
-          value={brief.skillChoice}
-          onChange={(skillChoice) => patch({ skillChoice })}
+          multiple
+          value={brief.skillChoices}
+          onChange={(id) => patch({ skillChoices: toggleMany(brief.skillChoices, id, "none") })}
           otherValue={brief.skillNote}
           onOtherChange={(skillNote) => patch({ skillNote })}
           otherPlaceholder="Name the skill"
@@ -204,8 +218,11 @@ export function PlacementBriefFields({
         <ChoiceRow
           legend="Which experience should it land on?"
           choices={experienceChoices}
-          value={brief.experienceChoice}
-          onChange={(experienceChoice) => patch({ experienceChoice })}
+          multiple
+          value={brief.experienceChoices}
+          onChange={(id) =>
+            patch({ experienceChoices: toggleMany(brief.experienceChoices, id, "auto") })
+          }
           otherValue={brief.experienceNote}
           onOtherChange={(experienceNote) => patch({ experienceNote })}
           otherPlaceholder="Name the role or company"
@@ -231,13 +248,23 @@ function resolvedBrief(
   experiences: Map<string, { company: string; role: string }>,
   skills: Map<string, { name: string }>,
 ): PlacementBrief {
-  const experience = experiences.get(brief.experienceChoice);
-  const skill = skills.get(brief.skillChoice);
+  const skillLabel = brief.skillChoices
+    .flatMap((id) => {
+      const skill = skills.get(id);
+      return skill?.name ? [skill.name] : [];
+    })
+    .join(", ");
+  const experienceLabel = brief.experienceChoices
+    .flatMap((id) => {
+      const experience = experiences.get(id);
+      if (!experience) return [];
+      const label = [experience.role, experience.company].filter(Boolean).join(" at ");
+      return [`${label} (id: ${id})`];
+    })
+    .join("; ");
   return {
     ...brief,
-    skillLabel: skill?.name ?? brief.skillLabel,
-    experienceLabel: experience
-      ? `${[experience.role, experience.company].filter(Boolean).join(" at ")} (id: ${brief.experienceChoice})`
-      : brief.experienceLabel,
+    skillLabel: skillLabel || brief.skillLabel,
+    experienceLabel: experienceLabel || brief.experienceLabel,
   };
 }
