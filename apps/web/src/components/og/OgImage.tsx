@@ -62,7 +62,7 @@ export function OgImage({ title, description, siteLabel = "Crafted", iconDataUrl
             color: "#d8deca",
           }}
         >
-          JSON Resume
+          A personal Resume builder
         </div>
       </div>
 

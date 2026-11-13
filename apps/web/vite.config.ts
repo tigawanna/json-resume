@@ -7,20 +7,24 @@ import { nitro } from "nitro/vite";
 
 import tailwindcss from "@tailwindcss/vite";
 
-const PRERENDER_PATHS = new Set([
-  "/",
-  "/search",
-  "/privacy",
-  "/privacy/",
-  "/terms",
-  "/terms/",
-  "/auth",
-  "/auth/",
-  "/auth/github",
-  "/auth/signup",
-]);
+const PRERENDER_PATHS = new Set(["/", "/privacy", "/privacy/", "/terms", "/terms/"]);
+
+const vercelHost =
+  process.env.VITE_VERCEL_PROJECT_PRODUCTION_URL ||
+  process.env.VERCEL_PROJECT_PRODUCTION_URL ||
+  process.env.VITE_VERCEL_URL ||
+  process.env.VERCEL_URL ||
+  process.env.VITE_SITE_URL;
+const siteUrl = vercelHost
+  ? vercelHost.startsWith("http")
+    ? vercelHost
+    : `https://${vercelHost}`
+  : "https://getcrafted.vercel.app";
 
 const config = defineConfig({
+  define: {
+    __SITE_URL__: JSON.stringify(siteUrl),
+  },
   staged: { "*": "vp check --fix" },
   server: {
     host: "::",
@@ -69,7 +73,7 @@ const config = defineConfig({
         // Dashboard, admin, and dev routes live on a pathless layout, so a
         // `/dashboard` prefix check never matches them. Query variants such as
         // `/auth?returnTo=` are the same screen crawled from links.
-        crawlLinks: true,
+        crawlLinks: false,
         filter: (page) => PRERENDER_PATHS.has(page.path),
       },
     }),

@@ -7,7 +7,6 @@ import appCss from "../styles.css?url";
 
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { clientEnv } from "@/lib/env/client-env";
 import { TanstackDevtools } from "@/lib/tanstack/devtools/devtools";
 import { SentryErrorBoundary, SentryRouterErrorComponent } from "@/lib/sentry/error-boundary";
 import { ThemeProvider } from "@/lib/tanstack/router/theme-provider";
@@ -36,6 +35,9 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
   head: () => ({
     meta: [
       {
+        title: AppConfig.name,
+      },
+      {
         charSet: "utf-8",
       },
       {
@@ -43,21 +45,20 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         content: "width=device-width, initial-scale=1",
       },
       {
-        title: AppConfig.name,
-        description: AppConfig.description,
-        keywords:
-          "free resume builder for developers, ATS friendly PDF, JSON resume, software engineer resume, tailored resume",
-        og: {
-          title: AppConfig.name,
-          description: AppConfig.description,
-          image: clientEnv.VITE_API_URL + "/og.png",
-          url: clientEnv.VITE_API_URL,
-          type: "website",
-        },
-        twitter: {
-          card: "summary_large_image",
-          image: clientEnv.VITE_API_URL + "/og.png",
-        },
+        name: "theme-color",
+        content: "#267d42",
+      },
+      {
+        property: "og:site_name",
+        content: AppConfig.name,
+      },
+      {
+        property: "og:locale",
+        content: "en_US",
+      },
+      {
+        name: "twitter:site",
+        content: "@tigawanna",
       },
     ],
     links: [

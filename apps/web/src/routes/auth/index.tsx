@@ -41,6 +41,7 @@ const searchparams = z.object({
   useAnotherAccount: z.boolean().default(false).optional(),
 });
 export const Route = createFileRoute("/auth/")({
+  ssr: false,
   component: SigninPage,
   validateSearch: (search) => searchparams.parse(search),
   async beforeLoad(ctx) {
