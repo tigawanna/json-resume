@@ -94,7 +94,7 @@ export function EventSourcedResumeAiTab(props?: {
                 isReady={chat.isReady}
                 onEditPastPrompt={chat.editPastPrompt}
                 onResendPastPrompt={(message) => void chat.resendPastPrompt(message)}
-                onSend={(message) => void chat.sendText(message)}
+                onSend={(message) => chat.sendText(message)}
                 onRetry={chat.retryLastRun}
                 onStop={chat.stop}
               />

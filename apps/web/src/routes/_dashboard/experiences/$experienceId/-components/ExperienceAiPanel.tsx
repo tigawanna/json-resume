@@ -70,11 +70,12 @@ export function ExperienceAiPanel({ titles, groupKey }: ExperienceAiPanelProps) 
   const isWorking = ai.isLoading || ai.sessionGenerating;
   const hasMessages = ai.messages.length > 0;
 
-  function handleSend(nextSegments: Segment[]) {
+  async function handleSend(nextSegments: Segment[]) {
     const message = serializeSegments(nextSegments);
     if (!message || !ai.isReady || ai.isLoading) return;
+    const sent = await ai.sendText(message);
+    if (sent === false) return;
     setSegments([]);
-    void ai.sendText(message);
     ai.composerRef.current?.focus();
   }
 
@@ -205,7 +206,7 @@ export function ExperienceAiPanel({ titles, groupKey }: ExperienceAiPanelProps) 
             <form
               onSubmit={(event) => {
                 event.preventDefault();
-                handleSend(segments);
+                void handleSend(segments);
               }}
               className="shrink-0 overflow-hidden rounded-2xl border border-base-content/15 bg-primary/5"
               data-test="experience-ai-composer"

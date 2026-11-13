@@ -11,7 +11,7 @@ export type ChatErrorKind =
 const DAILY_LIMIT_PATTERN = /per[- ]day|daily/i;
 const RATE_LIMIT_PATTERN = /rate.?limit|\b429\b|too many requests|free-models-per/i;
 const TIMEOUT_PATTERN =
-  /time(d)?[ -]?out|\b(408|502|503|504)\b|ETIMEDOUT|ECONNRESET|socket hang up|fetch failed|network ?error|terminated|overloaded|stream (ended|closed)/i;
+  /time(d)?[ -]?out|\b(408|502|503|504)\b|ETIMEDOUT|ECONNRESET|socket hang up|fetch failed|network ?error|connection dropped|terminated|overloaded|stream (ended|closed)|pending interrupts exist/i;
 
 export function classifyChatError(message: string): ChatErrorKind {
   if (isAppSignedOutMessage(message)) return "signed-out";
@@ -33,6 +33,10 @@ export const CHAT_ERROR_HINTS: Record<ChatErrorKind, string> = {
   timeout: "The model took too long to answer or the connection dropped.",
   other: "The last run failed.",
 };
+
+/** Shown when a dropped stream left an interrupt that blocks every later send. */
+export const STALLED_INTERRUPT_MESSAGE =
+  "The connection dropped mid tool call, so the chat is stuck. Retry to clear that and continue.";
 
 export const CONTINUE_AFTER_ERROR_PROMPT =
   "The last run stopped with an error partway through. Continue from where you stopped.";

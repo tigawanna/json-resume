@@ -9,7 +9,11 @@ import { getSessionChars } from "@/routes/_dashboard/resumes/$resumeId/-componen
 import { fetchServerSentEvents, useChat } from "@tanstack/ai-react";
 import { useRouter } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { CONTINUE_AFTER_ERROR_PROMPT, failedRunHasReply } from "@/lib/openrouter/chat-error";
+import {
+  CONTINUE_AFTER_ERROR_PROMPT,
+  STALLED_INTERRUPT_MESSAGE,
+  failedRunHasReply,
+} from "@/lib/openrouter/chat-error";
 import { isApiKeyErrorMessage } from "@/lib/openrouter/is-api-key-error";
 import { aiModelLabels } from "@/lib/openrouter/model-labels";
 import { INITIAL_CONTEXT_COMPACTION, reduceContextCompaction } from "../-utils/context-compaction";
@@ -120,18 +124,19 @@ export function useDashboardAssistantChat(options: { onHandedOff: () => void }) 
     endOfMessagesRef.current?.scrollIntoView({ block: "end" });
   }, [messages.length, isLoading, status]);
 
-  const { awaitingApproval, send } = useSendPastApprovals(chat);
+  const { awaitingApproval, releaseStuckRun, send, stalled } = useSendPastApprovals(chat);
 
   async function sendText(text: string) {
     const trimmed = text.trim();
-    if (!trimmed || isLoading || !isReady) return;
+    if (!trimmed || isLoading || !isReady) return false;
     setTurn((value) => value + 1);
-    await send(trimmed);
+    return send(trimmed);
   }
 
   async function retryLastRun() {
     if (isLoading || !isReady) return;
     setTurn((value) => value + 1);
+    releaseStuckRun();
     if (failedRunHasReply(messages)) await send(CONTINUE_AFTER_ERROR_PROMPT);
     else await chat.reload();
   }
@@ -141,7 +146,7 @@ export function useDashboardAssistantChat(options: { onHandedOff: () => void }) 
     chat.clear();
   }
 
-  const errorMessage = chat.error?.message ?? null;
+  const errorMessage = stalled ? STALLED_INTERRUPT_MESSAGE : (chat.error?.message ?? null);
   const { modelLabel, routingLabel } = aiModelLabels(settings);
 
   return {

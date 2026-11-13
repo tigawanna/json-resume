@@ -45,7 +45,7 @@ export interface ResumeAiPromptComposerProps {
   hasMessages: boolean;
   isBusy: boolean;
   isReady: boolean;
-  onSend: (message: string) => void | Promise<void>;
+  onSend: (message: string) => void | Promise<boolean | void>;
   /** Re-runs the failed request: resends the prompt, or asks to continue a partial run. */
   onRetry: () => void | Promise<void>;
   onStop: () => void;
@@ -105,13 +105,13 @@ export function ResumeAiPromptComposer({
       });
   }
 
-  function handleSend(nextSegments: Segment[]) {
+  async function handleSend(nextSegments: Segment[]) {
     const message = serializeSegments(nextSegments);
     if (!message || !isReady) return;
-    const result = onSend(message);
+    const sent = await onSend(message);
+    if (sent === false) return;
     setSegments([]);
     promptAreaRef.current?.focus();
-    return result;
   }
 
   let placeholder: string | string[] = emptyChatPlaceholders;

@@ -62,7 +62,7 @@ interface DashboardAssistantConversationProps {
   isBusy: boolean;
   sessionChars: number;
   sessionGenerating: boolean;
-  onSend: (text: string) => void | Promise<void>;
+  onSend: (text: string) => void | Promise<boolean | void>;
   onRetry: () => void | Promise<void>;
   onStop: () => void;
   onEscape: () => void;
@@ -94,11 +94,12 @@ export function DashboardAssistantConversation({
   const isEmpty = chat.messages.length === 0;
   const isWorking = isBusy || sessionGenerating;
 
-  function handleSend(nextSegments: Segment[]) {
+  async function handleSend(nextSegments: Segment[]) {
     const message = serializeSegments(nextSegments);
     if (!message || isBusy) return;
+    const sent = await onSend(message);
+    if (sent === false) return;
     setSegments([]);
-    void onSend(message);
   }
 
   function pickSuggestion(suggestion: Suggestion) {
@@ -179,7 +180,7 @@ export function DashboardAssistantConversation({
         <form
           onSubmit={(event) => {
             event.preventDefault();
-            handleSend(segments);
+            void handleSend(segments);
           }}
           className="overflow-hidden rounded-2xl border border-base-content/15 bg-primary/5"
           data-test="dashboard-assistant-composer"

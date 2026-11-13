@@ -6,7 +6,11 @@ import { fetchServerSentEvents, useChat, type UIMessage } from "@tanstack/ai-rea
 import { eq, useLiveQuery } from "@tanstack/react-db";
 import { useRouter } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { CONTINUE_AFTER_ERROR_PROMPT, failedRunHasReply } from "@/lib/openrouter/chat-error";
+import {
+  CONTINUE_AFTER_ERROR_PROMPT,
+  STALLED_INTERRUPT_MESSAGE,
+  failedRunHasReply,
+} from "@/lib/openrouter/chat-error";
 import { aiModelLabels } from "@/lib/openrouter/model-labels";
 import { eventSourcedResumeAiClientTools } from "../-utils/client-tools";
 import {
@@ -185,16 +189,17 @@ export function useEventSourcedResumeAiChat(options?: {
     return () => window.clearTimeout(timer);
   }, [resumeId]);
 
-  const { awaitingApproval, send } = useSendPastApprovals(chat);
+  const { awaitingApproval, releaseStuckRun, send, stalled } = useSendPastApprovals(chat);
 
   async function sendText(text: string) {
     const trimmed = text.trim();
-    if (!trimmed || !isReady) return;
-    await send(trimmed);
+    if (!trimmed || !isReady) return false;
+    return send(trimmed);
   }
 
   async function retryLastRun() {
     if (isLoading || !isReady) return;
+    releaseStuckRun();
     if (failedRunHasReply(messages)) await send(CONTINUE_AFTER_ERROR_PROMPT);
     else await chat.reload();
   }
@@ -226,7 +231,7 @@ export function useEventSourcedResumeAiChat(options?: {
     activeRoutingLabel,
     awaitingApproval,
     chat,
-    chatErrorMessage: chat.error?.message ?? null,
+    chatErrorMessage: stalled ? STALLED_INTERRUPT_MESSAGE : (chat.error?.message ?? null),
     clearLocalConversation,
     composerRef,
     editPastPrompt,
