@@ -74,8 +74,11 @@ export function EventSourcedResumeAiTab(props?: {
           minSize={split ? "30%" : undefined}
           onResize={() => setChatCollapsed(chatPanelRef.current?.isCollapsed() ?? false)}
         >
-          <div className={cn("h-full", split && "px-3")}>
-            {signedIn ? (
+          <div className={cn("relative h-full", split && "px-3")}>
+            <div
+              className={cn("h-full", !signedIn && "pointer-events-none select-none")}
+              aria-hidden={!signedIn}
+            >
               <ResumeAiConversationCard
                 chat={chat.chat}
                 activeModelLabel={chat.activeModelLabel}
@@ -91,16 +94,21 @@ export function EventSourcedResumeAiTab(props?: {
                 errorMessage={labError}
                 historyPending={false}
                 isBusy={chat.isLoading}
-                isReady={chat.isReady}
+                isReady={signedIn && chat.isReady}
                 onEditPastPrompt={chat.editPastPrompt}
                 onResendPastPrompt={(message) => void chat.resendPastPrompt(message)}
-                onSend={(message) => chat.sendText(message)}
+                onSend={(message) => {
+                  if (signedIn) void chat.sendText(message);
+                }}
                 onRetry={chat.retryLastRun}
                 onStop={chat.stop}
               />
-            ) : (
-              <HostedAiSignIn className="flex h-full flex-col items-center justify-center gap-3 px-5 text-center" />
-            )}
+            </div>
+            {!signedIn ? (
+              <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/55 px-5 backdrop-blur-[1px]">
+                <HostedAiSignIn className="flex max-w-sm flex-col items-center gap-3 rounded-xl border border-border/70 bg-background/85 px-5 py-6 text-center shadow-lg" />
+              </div>
+            ) : null}
           </div>
         </ResizablePanel>
         {split ? (
