@@ -22,13 +22,13 @@ export const DIRECTIVES: ResumeAiDirective[] = [
     command: "/improve-bullets",
     label: "Improve bullets",
     instruction:
-      "Improve the bullet points in my most recent role with stronger action verbs and quantified achievements.",
+      "Improve the bullet points in my most recent role using the Developer bullets skill: one shipped change per line, only facts and tools that role already had, and no invented metrics. Follow my Placement brief.",
   },
   {
     command: "/tailor",
     label: "Tailor resume",
     instruction:
-      "Tailor this resume for the specific role I describe, aligning wording and emphasis with the job description.",
+      "Tailor this resume for the specific role I describe. Follow the Pragmatic tailoring skill and my Placement brief: weave a requirement in only when my experience already supports it, unless the brief says to go all in.",
   },
   {
     command: "/cover-letter",

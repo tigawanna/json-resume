@@ -14,6 +14,7 @@ import {
   Link,
   Mail,
   MessageSquareText,
+  Sparkles,
   Mic,
   Notebook,
   Settings,
@@ -40,6 +41,7 @@ export function getDashboardPrimaryRoutes(): SidebarItem[] {
     { title: "Jobs", href: "/jobs", icon: Briefcase },
     { title: "Cover letters", href: "/cover-letters", icon: Mail },
     { title: "Application answers", href: "/application-answers", icon: MessageSquareText },
+    { title: "Assistant skills", href: "/assistant-skills", icon: Sparkles },
     {
       title: "Resume Data",
       href: "/experiences",

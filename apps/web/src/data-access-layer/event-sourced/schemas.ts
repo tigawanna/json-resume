@@ -374,6 +374,26 @@ export const applicationAnswerSchema = z.object({
 });
 export type ApplicationAnswer = z.infer<typeof applicationAnswerSchema>;
 
+// --- assistant skills (instructions the résumé assistants follow) ---
+
+export const assistantSkillScopeSchema = z.enum(["resume", "experience", "dashboard"]);
+export type AssistantSkillScope = z.infer<typeof assistantSkillScopeSchema>;
+
+export const assistantSkillSchema = z.object({
+  id: z.string(),
+  userId: z.string().nullable().optional(),
+  name: z.string(),
+  body: z.string(),
+  /** Chats that load this skill when it is a default. */
+  scopes: z.array(assistantSkillScopeSchema),
+  isDefault: z.boolean(),
+  /** Stable key for a skill that ships with the app. Null when the user wrote it. */
+  builtinKey: z.string().nullable().optional(),
+  ...embeddableSchema.shape,
+  ...timestampsSchema.shape,
+});
+export type AssistantSkill = z.infer<typeof assistantSkillSchema>;
+
 // --- saved project ---
 
 export const savedProjectSchema = z.object({

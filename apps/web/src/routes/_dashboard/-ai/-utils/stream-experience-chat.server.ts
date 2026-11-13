@@ -17,12 +17,16 @@ export async function streamExperienceAgentChat(
   input: ChatRunParams &
     AgentModelSettings & {
       snapshot: ExperienceGroupSnapshot;
+      skillInstructions?: string;
     },
 ): Promise<AsyncIterable<StreamChunk>> {
   return streamAgentChat({
     ...input,
     agent: "experiences",
-    systemPrompt: buildExperienceSystemPrompt({ snapshot: input.snapshot }),
+    systemPrompt: buildExperienceSystemPrompt({
+      snapshot: input.snapshot,
+      skillInstructions: input.skillInstructions,
+    }),
     tools: experienceToolDefinitions,
     maxIterations: MAX_AGENT_ITERATIONS,
   });

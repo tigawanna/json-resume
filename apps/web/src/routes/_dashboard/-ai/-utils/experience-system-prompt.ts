@@ -14,12 +14,20 @@ const EXPERIENCE_AGENT_RULES = [
   "- Reuse beats duplication: one well-formatted bullet can appear under every title it honestly describes. Rewrite with update_experience_bullet (keeps the id), reassign with move_experience_bullet, remove with delete_experience_bullet.",
   "- Edits show up in the UI immediately and each tool returns what it stored, so do not re-read after every change.",
   "- Keep the user's language and facts. Do not use em dashes.",
+  "- When suggesting bullets, do not add generative AI (LLMs, RAG, prompt engineering, AI agents, Copilot) to a role whose end date is before 2023. Traditional ML (machine learning, NLP, predictive modeling) stays only when the user already wrote it. Judge the role by its end date, not its start. Do not delete AI the user typed themselves.",
+  "- Assistant skills are appended after these rules. Follow them when rewriting bullets.",
   "- Reply briefly with what you changed and what to check.",
 ].join("\n\n");
 
-export function buildExperienceSystemPrompt(input: { snapshot: ExperienceGroupSnapshot }): string {
+export function buildExperienceSystemPrompt(input: {
+  snapshot: ExperienceGroupSnapshot;
+  skillInstructions?: string;
+}): string {
   return [
     EXPERIENCE_AGENT_RULES,
+    input.skillInstructions?.trim() ?? "",
     `Current group snapshot:\n${formatExperienceSnapshot(input.snapshot)}`,
-  ].join("\n\n");
+  ]
+    .filter(Boolean)
+    .join("\n\n");
 }

@@ -22,6 +22,7 @@ import type { WorkbenchTab } from "@/features/agentic-tools/resume-tool-schemas"
 import { takeHandoffPrompt } from "../-utils/resume-handoff";
 import { snapshotResumeJson } from "../-utils/resume-json-diff";
 import { useEventSourcedAiSettings } from "./use-event-sourced-ai-settings";
+import { useAssistantSkillInstructions } from "./use-assistant-skill-instructions";
 import { useSendPastApprovals } from "./use-send-past-approvals";
 import {
   getMessageText,
@@ -38,6 +39,7 @@ export function useEventSourcedResumeAiChat(options?: {
   labPreset?: string;
 }) {
   const { settings, systemPrompt, slopGuard } = useEventSourcedAiSettings();
+  const skillInstructions = useAssistantSkillInstructions("resume");
   const resumeId = useResumeWorkbench((state) => state.resumeId);
   const activeResumeId = useResumeWorkbench((state) => state.ai.activeResumeId);
   const workbench = useResumeWorkbenchActions();
@@ -128,6 +130,7 @@ export function useEventSourcedResumeAiChat(options?: {
       activeJobId: activeJob?.id,
       activeJobLabel: activeJob ? jobListLabel(activeJob) : undefined,
       systemPrompt,
+      skillInstructions,
       slopGuard,
       apiKey: settings?.apiKey,
       model: settings?.model,

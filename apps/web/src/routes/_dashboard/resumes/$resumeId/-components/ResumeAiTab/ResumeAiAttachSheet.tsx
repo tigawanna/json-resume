@@ -30,6 +30,7 @@ import {
   Mail,
   MessageSquareText,
   Mic,
+  BookOpen,
   Search,
   Sparkles,
   X,
@@ -51,6 +52,7 @@ const KIND_ICONS = {
   summary: AlignLeft,
   cover_letter: Mail,
   application_answer: MessageSquareText,
+  assistant_skill: BookOpen,
 } satisfies Record<AttachKind, LucideIcon>;
 
 interface AttachRow {
@@ -58,6 +60,8 @@ interface AttachRow {
   title: string;
   detail: string;
   onResume: boolean;
+  body?: string;
+  isDefault?: boolean;
 }
 
 async function fetchAttachPage(
@@ -91,6 +95,26 @@ async function fetchAttachPage(
       })),
       total: page.total,
       nextOffset: page.nextOffset,
+    };
+  }
+  if (kind === "assistant_skill") {
+    const keywordLower = keyword.trim().toLowerCase();
+    const matches = db.collections.assistantSkill.toArray.filter((skill) => {
+      if (!keywordLower) return true;
+      return `${skill.name} ${skill.body}`.toLowerCase().includes(keywordLower);
+    });
+    const pageRows = matches.slice(offset, offset + PAGE_SIZE);
+    return {
+      rows: pageRows.map((skill): AttachRow => ({
+        id: skill.id,
+        title: skill.name,
+        detail: skill.isDefault ? "Loaded by default" : skill.body.slice(0, 120),
+        onResume: false,
+        body: skill.body,
+        isDefault: skill.isDefault,
+      })),
+      total: matches.length,
+      nextOffset: offset + PAGE_SIZE < matches.length ? offset + PAGE_SIZE : null,
     };
   }
   if (kind === "application_answer") {
@@ -311,7 +335,15 @@ function AttachList({ kind, label, activeResumeId, attachedIds, onAttach }: Atta
                       "flex w-full items-start gap-3 rounded-lg px-2 py-2.5 text-left transition-colors hover:bg-base-content/5 disabled:cursor-default disabled:opacity-60 disabled:hover:bg-transparent",
                       isAttached && "bg-primary/10",
                     )}
-                    onClick={() => onAttach({ kind, id: row.id, name: row.title })}
+                    onClick={() =>
+                      onAttach({
+                        kind,
+                        id: row.id,
+                        name: row.title,
+                        body: row.body,
+                        isDefault: row.isDefault,
+                      })
+                    }
                     data-test={`resume-ai-attach-option-${row.id}`}
                   >
                     <span

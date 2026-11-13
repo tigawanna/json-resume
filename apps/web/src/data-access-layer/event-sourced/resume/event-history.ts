@@ -204,6 +204,7 @@ function rowWriters(db: AppDb) {
     job: rowWriter(c.job, s.jobSchema),
     coverLetter: rowWriter(c.coverLetter, s.coverLetterSchema),
     applicationAnswer: rowWriter(c.applicationAnswer, s.applicationAnswerSchema),
+    assistantSkill: rowWriter(c.assistantSkill, s.assistantSkillSchema),
   } satisfies Record<Exclude<keyof AppCollectionDefs, "settings">, RowWriter>;
 }
 

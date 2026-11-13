@@ -4,6 +4,7 @@ import { db } from "@/lib/drizzle/client";
 import { unwrapUnknownError } from "@/utils/errors";
 import {
   applicationAnswer,
+  assistantSkill,
   coverLetter,
   resume,
   resumeAiChat,
@@ -109,6 +110,7 @@ export const tablesByCollection = {
   job,
   coverLetter,
   applicationAnswer,
+  assistantSkill,
 } satisfies Record<string, SQLiteTable>;
 
 export type ProjectableCollectionId = keyof typeof tablesByCollection;

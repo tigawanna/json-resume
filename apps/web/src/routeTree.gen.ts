@@ -24,6 +24,7 @@ import { Route as TestIndexRouteImport } from './routes/test/index'
 import { Route as DashboardAdminIndexRouteImport } from './routes/_dashboard/admin/index'
 import { Route as DashboardAdminRouteRouteImport } from './routes/_dashboard/admin/route'
 import { Route as DashboardApplicationAnswersIndexRouteImport } from './routes/_dashboard/application-answers/index'
+import { Route as DashboardAssistantSkillsIndexRouteImport } from './routes/_dashboard/assistant-skills/index'
 import { Route as DashboardCertificationsIndexRouteImport } from './routes/_dashboard/certifications/index'
 import { Route as DashboardContactsIndexRouteImport } from './routes/_dashboard/contacts/index'
 import { Route as DashboardCoverLettersIndexRouteImport } from './routes/_dashboard/cover-letters/index'
@@ -63,6 +64,7 @@ import { Route as RPublicIdIndexRouteImport } from './routes/r/$publicId/index'
 import { Route as DashboardAdminDataIndexRouteImport } from './routes/_dashboard/admin/data/index'
 import { Route as DashboardAdminTablesIndexRouteImport } from './routes/_dashboard/admin/tables/index'
 import { Route as DashboardAdminUsersIndexRouteImport } from './routes/_dashboard/admin/users/index'
+import { Route as DashboardAssistantSkillsSkillIdIndexRouteImport } from './routes/_dashboard/assistant-skills/$skillId/index'
 import { Route as DashboardCoverLettersCoverLetterIdIndexRouteImport } from './routes/_dashboard/cover-letters/$coverLetterId/index'
 import { Route as DashboardDevChatLabIndexRouteImport } from './routes/_dashboard/dev/chat-lab/index'
 import { Route as DashboardDevChatStressIndexRouteImport } from './routes/_dashboard/dev/chat-stress/index'
@@ -148,6 +150,12 @@ const DashboardApplicationAnswersIndexRoute =
   DashboardApplicationAnswersIndexRouteImport.update({
     id: '/application-answers/',
     path: '/application-answers/',
+    getParentRoute: () => DashboardLayoutRoute,
+  } as any)
+const DashboardAssistantSkillsIndexRoute =
+  DashboardAssistantSkillsIndexRouteImport.update({
+    id: '/assistant-skills/',
+    path: '/assistant-skills/',
     getParentRoute: () => DashboardLayoutRoute,
   } as any)
 const DashboardCertificationsIndexRoute =
@@ -357,6 +365,12 @@ const DashboardAdminUsersIndexRoute =
     path: '/admin/users/',
     getParentRoute: () => DashboardLayoutRoute,
   } as any)
+const DashboardAssistantSkillsSkillIdIndexRoute =
+  DashboardAssistantSkillsSkillIdIndexRouteImport.update({
+    id: '/assistant-skills/$skillId/',
+    path: '/assistant-skills/$skillId/',
+    getParentRoute: () => DashboardLayoutRoute,
+  } as any)
 const DashboardCoverLettersCoverLetterIdIndexRoute =
   DashboardCoverLettersCoverLetterIdIndexRouteImport.update({
     id: '/cover-letters/$coverLetterId/',
@@ -448,6 +462,7 @@ export interface FileRoutesByFullPath {
   '/api/sync/events': typeof ApiSyncEventsRoute
   '/admin/': typeof DashboardAdminIndexRoute
   '/application-answers/': typeof DashboardApplicationAnswersIndexRoute
+  '/assistant-skills/': typeof DashboardAssistantSkillsIndexRoute
   '/certifications/': typeof DashboardCertificationsIndexRoute
   '/contacts/': typeof DashboardContactsIndexRoute
   '/cover-letters/': typeof DashboardCoverLettersIndexRoute
@@ -477,6 +492,7 @@ export interface FileRoutesByFullPath {
   '/admin/data/': typeof DashboardAdminDataIndexRoute
   '/admin/tables/': typeof DashboardAdminTablesIndexRoute
   '/admin/users/': typeof DashboardAdminUsersIndexRoute
+  '/assistant-skills/$skillId/': typeof DashboardAssistantSkillsSkillIdIndexRoute
   '/cover-letters/$coverLetterId/': typeof DashboardCoverLettersCoverLetterIdIndexRoute
   '/dev/chat-lab/': typeof DashboardDevChatLabIndexRoute
   '/dev/chat-stress/': typeof DashboardDevChatStressIndexRoute
@@ -513,6 +529,7 @@ export interface FileRoutesByTo {
   '/api/sync/events': typeof ApiSyncEventsRoute
   '/admin': typeof DashboardAdminIndexRoute
   '/application-answers': typeof DashboardApplicationAnswersIndexRoute
+  '/assistant-skills': typeof DashboardAssistantSkillsIndexRoute
   '/certifications': typeof DashboardCertificationsIndexRoute
   '/contacts': typeof DashboardContactsIndexRoute
   '/cover-letters': typeof DashboardCoverLettersIndexRoute
@@ -542,6 +559,7 @@ export interface FileRoutesByTo {
   '/admin/data': typeof DashboardAdminDataIndexRoute
   '/admin/tables': typeof DashboardAdminTablesIndexRoute
   '/admin/users': typeof DashboardAdminUsersIndexRoute
+  '/assistant-skills/$skillId': typeof DashboardAssistantSkillsSkillIdIndexRoute
   '/cover-letters/$coverLetterId': typeof DashboardCoverLettersCoverLetterIdIndexRoute
   '/dev/chat-lab': typeof DashboardDevChatLabIndexRoute
   '/dev/chat-stress': typeof DashboardDevChatStressIndexRoute
@@ -581,6 +599,7 @@ export interface FileRoutesById {
   '/api/sync/events': typeof ApiSyncEventsRoute
   '/_dashboard/admin/': typeof DashboardAdminIndexRoute
   '/_dashboard/application-answers/': typeof DashboardApplicationAnswersIndexRoute
+  '/_dashboard/assistant-skills/': typeof DashboardAssistantSkillsIndexRoute
   '/_dashboard/certifications/': typeof DashboardCertificationsIndexRoute
   '/_dashboard/contacts/': typeof DashboardContactsIndexRoute
   '/_dashboard/cover-letters/': typeof DashboardCoverLettersIndexRoute
@@ -610,6 +629,7 @@ export interface FileRoutesById {
   '/_dashboard/admin/data/': typeof DashboardAdminDataIndexRoute
   '/_dashboard/admin/tables/': typeof DashboardAdminTablesIndexRoute
   '/_dashboard/admin/users/': typeof DashboardAdminUsersIndexRoute
+  '/_dashboard/assistant-skills/$skillId/': typeof DashboardAssistantSkillsSkillIdIndexRoute
   '/_dashboard/cover-letters/$coverLetterId/': typeof DashboardCoverLettersCoverLetterIdIndexRoute
   '/_dashboard/dev/chat-lab/': typeof DashboardDevChatLabIndexRoute
   '/_dashboard/dev/chat-stress/': typeof DashboardDevChatStressIndexRoute
@@ -649,6 +669,7 @@ export interface FileRouteTypes {
     | '/api/sync/events'
     | '/admin/'
     | '/application-answers/'
+    | '/assistant-skills/'
     | '/certifications/'
     | '/contacts/'
     | '/cover-letters/'
@@ -678,6 +699,7 @@ export interface FileRouteTypes {
     | '/admin/data/'
     | '/admin/tables/'
     | '/admin/users/'
+    | '/assistant-skills/$skillId/'
     | '/cover-letters/$coverLetterId/'
     | '/dev/chat-lab/'
     | '/dev/chat-stress/'
@@ -714,6 +736,7 @@ export interface FileRouteTypes {
     | '/api/sync/events'
     | '/admin'
     | '/application-answers'
+    | '/assistant-skills'
     | '/certifications'
     | '/contacts'
     | '/cover-letters'
@@ -743,6 +766,7 @@ export interface FileRouteTypes {
     | '/admin/data'
     | '/admin/tables'
     | '/admin/users'
+    | '/assistant-skills/$skillId'
     | '/cover-letters/$coverLetterId'
     | '/dev/chat-lab'
     | '/dev/chat-stress'
@@ -781,6 +805,7 @@ export interface FileRouteTypes {
     | '/api/sync/events'
     | '/_dashboard/admin/'
     | '/_dashboard/application-answers/'
+    | '/_dashboard/assistant-skills/'
     | '/_dashboard/certifications/'
     | '/_dashboard/contacts/'
     | '/_dashboard/cover-letters/'
@@ -810,6 +835,7 @@ export interface FileRouteTypes {
     | '/_dashboard/admin/data/'
     | '/_dashboard/admin/tables/'
     | '/_dashboard/admin/users/'
+    | '/_dashboard/assistant-skills/$skillId/'
     | '/_dashboard/cover-letters/$coverLetterId/'
     | '/_dashboard/dev/chat-lab/'
     | '/_dashboard/dev/chat-stress/'
@@ -951,6 +977,13 @@ declare module '@tanstack/react-router' {
       path: '/application-answers'
       fullPath: '/application-answers/'
       preLoaderRoute: typeof DashboardApplicationAnswersIndexRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
+    '/_dashboard/assistant-skills/': {
+      id: '/_dashboard/assistant-skills/'
+      path: '/assistant-skills'
+      fullPath: '/assistant-skills/'
+      preLoaderRoute: typeof DashboardAssistantSkillsIndexRouteImport
       parentRoute: typeof DashboardLayoutRoute
     }
     '/_dashboard/certifications/': {
@@ -1226,6 +1259,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardAdminUsersIndexRouteImport
       parentRoute: typeof DashboardLayoutRoute
     }
+    '/_dashboard/assistant-skills/$skillId/': {
+      id: '/_dashboard/assistant-skills/$skillId/'
+      path: '/assistant-skills/$skillId'
+      fullPath: '/assistant-skills/$skillId/'
+      preLoaderRoute: typeof DashboardAssistantSkillsSkillIdIndexRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
     '/_dashboard/cover-letters/$coverLetterId/': {
       id: '/_dashboard/cover-letters/$coverLetterId/'
       path: '/cover-letters/$coverLetterId'
@@ -1311,6 +1351,7 @@ interface DashboardLayoutRouteChildren {
   DashboardAdminRouteRoute: typeof DashboardAdminRouteRoute
   DashboardAdminIndexRoute: typeof DashboardAdminIndexRoute
   DashboardApplicationAnswersIndexRoute: typeof DashboardApplicationAnswersIndexRoute
+  DashboardAssistantSkillsIndexRoute: typeof DashboardAssistantSkillsIndexRoute
   DashboardCertificationsIndexRoute: typeof DashboardCertificationsIndexRoute
   DashboardContactsIndexRoute: typeof DashboardContactsIndexRoute
   DashboardCoverLettersIndexRoute: typeof DashboardCoverLettersIndexRoute
@@ -1337,6 +1378,7 @@ interface DashboardLayoutRouteChildren {
   DashboardAdminDataIndexRoute: typeof DashboardAdminDataIndexRoute
   DashboardAdminTablesIndexRoute: typeof DashboardAdminTablesIndexRoute
   DashboardAdminUsersIndexRoute: typeof DashboardAdminUsersIndexRoute
+  DashboardAssistantSkillsSkillIdIndexRoute: typeof DashboardAssistantSkillsSkillIdIndexRoute
   DashboardCoverLettersCoverLetterIdIndexRoute: typeof DashboardCoverLettersCoverLetterIdIndexRoute
   DashboardDevChatLabIndexRoute: typeof DashboardDevChatLabIndexRoute
   DashboardDevChatStressIndexRoute: typeof DashboardDevChatStressIndexRoute
@@ -1353,6 +1395,7 @@ const DashboardLayoutRouteChildren: DashboardLayoutRouteChildren = {
   DashboardAdminRouteRoute: DashboardAdminRouteRoute,
   DashboardAdminIndexRoute: DashboardAdminIndexRoute,
   DashboardApplicationAnswersIndexRoute: DashboardApplicationAnswersIndexRoute,
+  DashboardAssistantSkillsIndexRoute: DashboardAssistantSkillsIndexRoute,
   DashboardCertificationsIndexRoute: DashboardCertificationsIndexRoute,
   DashboardContactsIndexRoute: DashboardContactsIndexRoute,
   DashboardCoverLettersIndexRoute: DashboardCoverLettersIndexRoute,
@@ -1379,6 +1422,8 @@ const DashboardLayoutRouteChildren: DashboardLayoutRouteChildren = {
   DashboardAdminDataIndexRoute: DashboardAdminDataIndexRoute,
   DashboardAdminTablesIndexRoute: DashboardAdminTablesIndexRoute,
   DashboardAdminUsersIndexRoute: DashboardAdminUsersIndexRoute,
+  DashboardAssistantSkillsSkillIdIndexRoute:
+    DashboardAssistantSkillsSkillIdIndexRoute,
   DashboardCoverLettersCoverLetterIdIndexRoute:
     DashboardCoverLettersCoverLetterIdIndexRoute,
   DashboardDevChatLabIndexRoute: DashboardDevChatLabIndexRoute,

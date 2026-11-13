@@ -15,6 +15,7 @@ import { isApiKeyErrorMessage } from "@/lib/openrouter/is-api-key-error";
 import { aiModelLabels } from "@/lib/openrouter/model-labels";
 import { createLocalChatPersistence } from "@/routes/_dashboard/-ai/-utils/local-chat-persistence";
 import { useEventSourcedAiSettings } from "@/routes/_dashboard/-ai/-hooks/use-event-sourced-ai-settings";
+import { useAssistantSkillInstructions } from "@/routes/_dashboard/-ai/-hooks/use-assistant-skill-instructions";
 import { useSendPastApprovals } from "@/routes/_dashboard/-ai/-hooks/use-send-past-approvals";
 import { getSessionChars } from "@/routes/_dashboard/resumes/$resumeId/-components/ResumeAiTab/resume-ai-message-utils";
 import { fetchServerSentEvents, useChat } from "@tanstack/ai-react";
@@ -36,6 +37,7 @@ interface UseExperienceAiOptions {
  */
 export function useExperienceAi({ titles, groupKey }: UseExperienceAiOptions) {
   const { settings } = useEventSourcedAiSettings();
+  const skillInstructions = useAssistantSkillInstructions("experience");
   const db = useEventSourcedDb();
   const { viewer } = useViewer();
   const composerRef = useRef<PromptAreaHandle>(null);
@@ -101,6 +103,7 @@ export function useExperienceAi({ titles, groupKey }: UseExperienceAiOptions) {
     devtools: { name: "Experience assistant" },
     forwardedProps: {
       snapshot: limitExperienceSnapshot(snapshot),
+      skillInstructions,
       apiKey: settings?.apiKey,
       model: settings?.model,
       routing: settings?.routing,

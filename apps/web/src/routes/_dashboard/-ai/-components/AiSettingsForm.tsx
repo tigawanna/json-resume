@@ -22,6 +22,7 @@ import {
 } from "@/lib/openrouter/routing";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
 import { AlertTriangle, Check, Eye, EyeOff, Info, KeyRound, X } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useEventSourcedAiSettings } from "../-hooks/use-event-sourced-ai-settings";
@@ -309,6 +310,18 @@ export function AiSettingsForm({
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
+
+            <p className="text-muted-foreground text-xs">
+              Bullet formulas, tailoring limits, and any skill you write live on{" "}
+              <Link
+                to="/assistant-skills"
+                className="text-primary underline-offset-2 hover:underline"
+              >
+                Assistant skills
+              </Link>
+              . Defaults load into every matching chat. Attach another skill from the composer when
+              you want it once.
+            </p>
 
             <div className="flex items-start justify-between gap-4">
               <div className="grid gap-1">

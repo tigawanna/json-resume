@@ -44,6 +44,7 @@ export function openTestAppDb() {
       job: byId,
       coverLetter: byId,
       applicationAnswer: byId,
+      assistantSkill: byId,
       settings: { ...byId, localOnly: true },
     },
     modules: {

@@ -27,6 +27,7 @@ import {
   queueHandoffPrompt,
 } from "../-utils/resume-handoff";
 import { useEventSourcedAiSettings } from "./use-event-sourced-ai-settings";
+import { useAssistantSkillInstructions } from "./use-assistant-skill-instructions";
 import { useSendPastApprovals } from "./use-send-past-approvals";
 
 function localDate(date = new Date()) {
@@ -38,6 +39,7 @@ function localDate(date = new Date()) {
 /** The dashboard assistant's chat. Lives in the dashboard layout, so it survives navigation. */
 export function useDashboardAssistantChat(options: { onHandedOff: () => void }) {
   const { settings, slopGuard } = useEventSourcedAiSettings();
+  const skillInstructions = useAssistantSkillInstructions("dashboard");
   const db = useEventSourcedDb();
   const { viewer } = useViewer();
   const router = useRouter();
@@ -83,6 +85,7 @@ export function useDashboardAssistantChat(options: { onHandedOff: () => void }) 
     forwardedProps: {
       today: localDate(),
       slopGuard,
+      skillInstructions,
       apiKey: settings?.apiKey,
       model: settings?.model,
       routing: settings?.routing,

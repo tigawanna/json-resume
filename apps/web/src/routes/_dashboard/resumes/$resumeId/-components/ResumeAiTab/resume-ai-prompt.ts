@@ -3,7 +3,12 @@ import type { LibrarySection } from "@/features/agentic-tools/resume-tool-schema
 import { z } from "zod";
 import { directiveByCommand } from "./resume-ai-directives";
 
-export type AttachKind = "resume" | "cover_letter" | "application_answer" | LibrarySection;
+export type AttachKind =
+  | "resume"
+  | "cover_letter"
+  | "application_answer"
+  | "assistant_skill"
+  | LibrarySection;
 
 /** What the `+` sheet can attach, in picker order. `section` is the tool section name. */
 export const ATTACH_KINDS = [
@@ -21,6 +26,11 @@ export const ATTACH_KINDS = [
     label: "Application answers",
     heading: "Referenced application answers",
   },
+  {
+    kind: "assistant_skill",
+    label: "Assistant skills",
+    heading: "Referenced assistant skills",
+  },
 ] as const satisfies ReadonlyArray<{ kind: AttachKind; label: string; heading: string }>;
 
 const attachKindSchema = z.enum(ATTACH_KINDS.map((entry) => entry.kind));
@@ -30,6 +40,9 @@ const attachChipDataSchema = z.object({
   kind: attachKindSchema.default("resume"),
   id: z.string(),
   name: z.string(),
+  /** Full instructions, sent with the message when this skill is not already a default. */
+  body: z.string().optional(),
+  isDefault: z.boolean().optional(),
 });
 
 export type AttachChipData = z.infer<typeof attachChipDataSchema>;

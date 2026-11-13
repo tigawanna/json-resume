@@ -20,4 +20,13 @@ describe("buildEventSourcedSystemPrompt", () => {
     });
     expect(prompt.startsWith(`Be brief.\n\n${SLOP_GUARD_INSTRUCTIONS}`)).toBe(true);
   });
+
+  it("places assistant skills after the base rules", () => {
+    const prompt = buildEventSourcedSystemPrompt({
+      instructions: "Be brief.",
+      resumeId: "cv",
+      skillInstructions: "## Developer bullets\nOne change per line.",
+    });
+    expect(prompt).toContain("Be brief.\n\n## Developer bullets\nOne change per line.");
+  });
 });

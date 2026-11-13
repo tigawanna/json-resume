@@ -24,12 +24,17 @@ export async function streamDashboardAgentChat(
     AgentModelSettings & {
       slopGuard?: boolean;
       today: string;
+      skillInstructions?: string;
     },
 ): Promise<AsyncIterable<StreamChunk>> {
   return streamAgentChat({
     ...input,
     agent: "dashboard",
-    systemPrompt: buildDashboardSystemPrompt({ slopGuard: input.slopGuard, today: input.today }),
+    systemPrompt: buildDashboardSystemPrompt({
+      slopGuard: input.slopGuard,
+      today: input.today,
+      skillInstructions: input.skillInstructions,
+    }),
     tools: dashboardChatToolDefinitions,
     maxIterations: MAX_AGENT_ITERATIONS,
     compaction: {

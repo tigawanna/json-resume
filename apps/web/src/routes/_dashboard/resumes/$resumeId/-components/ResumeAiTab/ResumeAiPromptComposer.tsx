@@ -17,6 +17,7 @@ import {
   useResumeWorkbenchActions,
 } from "../resume-workbench/ResumeWorkbenchProvider";
 import { ResumeAiAttachSheet } from "./ResumeAiAttachSheet";
+import { PlacementBriefFields } from "./PlacementBrief";
 import { CreditsDisplay } from "./ResumeAiCredits";
 import { DIRECTIVES, SECTION_TAGS } from "./resume-ai-directives";
 import {
@@ -80,6 +81,7 @@ export function ResumeAiPromptComposer({
 }: ResumeAiPromptComposerProps) {
   const [segments, setSegments] = useState<Segment[]>([]);
   const [attachOpen, setAttachOpen] = useState(false);
+  const [briefText, setBriefText] = useState("");
   const db = useEventSourcedDb();
   const currentResumeId = useResumeWorkbench((state) => state.resumeId);
   const { openDialog, resetActiveResume, detachActiveResume } = useResumeWorkbenchActions();
@@ -106,8 +108,11 @@ export function ResumeAiPromptComposer({
   }
 
   async function handleSend(nextSegments: Segment[]) {
-    const message = serializeSegments(nextSegments);
-    if (!message || !isReady) return;
+    if (!hasText(nextSegments) || !isReady) return;
+    const message = [serializeSegments(nextSegments), briefText.trim()]
+      .filter(Boolean)
+      .join("\n\n");
+    if (!message) return;
     const sent = await onSend(message);
     if (sent === false) return;
     setSegments([]);
@@ -144,6 +149,11 @@ export function ResumeAiPromptComposer({
           className="overflow-hidden rounded-2xl border border-base-content/15 bg-primary/10 text-base-content shadow-sm"
           data-test="resume-ai-input-shell"
         >
+          <PlacementBriefFields
+            resumeId={activeResume?.id ?? currentResumeId}
+            open={!hasMessages}
+            onBriefChange={setBriefText}
+          />
           <PromptArea
             ref={promptAreaRef}
             value={segments}

@@ -60,6 +60,31 @@ describe("serializeSegments", () => {
     expect(message.match(/b1/g)).toHaveLength(1);
   });
 
+  it("includes a one-off assistant skill's instructions and skips the body of a default", () => {
+    const custom = attachChip({
+      kind: "assistant_skill",
+      id: "s1",
+      name: "Voice",
+      body: "Write the way I talk.",
+    });
+    const loaded = attachChip({
+      kind: "assistant_skill",
+      id: "s2",
+      name: "Developer bullets",
+      body: "should not be repeated",
+      isDefault: true,
+    });
+    const message = serializeSegments([
+      text("use "),
+      chip(custom.trigger, custom.value, custom.displayText, custom.data),
+      chip(loaded.trigger, loaded.value, loaded.displayText, loaded.data),
+    ]);
+    expect(message).toContain('Referenced assistant skills:\n- "Voice"');
+    expect(message).toContain("Write the way I talk.");
+    expect(message).toContain("already loaded");
+    expect(message).not.toContain("should not be repeated");
+  });
+
   it("treats a typed @mention without kind as a résumé", () => {
     const message = serializeSegments([
       chip("@", "r2", "Frontend", { id: "r2", name: "Frontend" }),

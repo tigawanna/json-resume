@@ -3,6 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { streamEventSourcedResumeAgentChat } from "@/routes/_dashboard/-ai/-utils/stream-resume-chat.server";
 import { EVENT_SOURCED_SYSTEM_PROMPT_MAX_CHARS } from "@/routes/_dashboard/-ai/-utils/system-prompt";
+import { ASSISTANT_SKILL_INSTRUCTIONS_MAX } from "@/data-access-layer/event-sourced/rows/assistant-skill-rows";
 import { aiRoutingSchema } from "@/lib/openrouter/routing";
 import { resolveHostedAiUserId } from "./-utils/hosted-ai-session";
 import { isAllowedOrigin, jsonError, preflightResponse, withCors } from "./-utils/same-origin-cors";
@@ -14,6 +15,7 @@ const forwardedSchema = z.object({
   activeJobId: z.string().trim().min(1).optional(),
   activeJobLabel: z.string().trim().max(400).optional(),
   systemPrompt: z.string().max(EVENT_SOURCED_SYSTEM_PROMPT_MAX_CHARS).optional(),
+  skillInstructions: z.string().max(ASSISTANT_SKILL_INSTRUCTIONS_MAX).optional(),
   slopGuard: z.boolean().optional(),
   apiKey: z.string().trim().optional(),
   model: z.string().trim().optional(),
@@ -41,6 +43,7 @@ export const Route = createFileRoute("/api/ai/event-sourced-resume-tailor")({
               ? { id: data.activeJobId, label: data.activeJobLabel ?? "" }
               : undefined,
             systemPrompt: data.systemPrompt,
+            skillInstructions: data.skillInstructions,
             slopGuard: data.slopGuard,
             messages: params.messages,
             threadId: params.threadId,

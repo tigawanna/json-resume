@@ -20,6 +20,7 @@ export async function streamEventSourcedResumeAgentChat(
       activeJob?: ActiveJobContext;
       systemPrompt?: string;
       slopGuard?: boolean;
+      skillInstructions?: string;
     },
 ): Promise<AsyncIterable<StreamChunk>> {
   return streamAgentChat({
@@ -31,6 +32,7 @@ export async function streamEventSourcedResumeAgentChat(
       activeResumeId: input.activeResumeId,
       activeJob: input.activeJob,
       slopGuard: input.slopGuard,
+      skillInstructions: input.skillInstructions,
     }),
     tools: chatToolDefinitions,
     maxIterations: MAX_AGENT_ITERATIONS,

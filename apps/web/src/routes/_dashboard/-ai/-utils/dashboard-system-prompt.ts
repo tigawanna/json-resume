@@ -19,12 +19,19 @@ export const DASHBOARD_SYSTEM_PROMPT = [
   "- Lead with the answer. Use concrete numbers, short lists, and a small markdown table when comparing. Point out one or two useful observations or next steps, without lecturing.",
   "- Rarely used tools are only listed in __lazy__tool__discovery__. Discover a tool there before calling it.",
   "- Do not use em dashes. Prefer commas and similar punctuation.",
+  "- Assistant skills are appended after these rules. When suggesting what the editor should tailor, stay inside those skills: weave a requirement in only when a résumé already supports it, unless the user said to go all in.",
+  "- Do not ask the editor to add generative AI (LLMs, RAG, prompt engineering, AI agents, Copilot) to a role whose end date is before 2023. Traditional ML the user already wrote can stay. Judge the role by its end date, not its start. Do not suggest deleting AI the user typed themselves.",
 ].join("\n\n");
 
-export function buildDashboardSystemPrompt(input: { slopGuard?: boolean; today: string }) {
+export function buildDashboardSystemPrompt(input: {
+  slopGuard?: boolean;
+  today: string;
+  skillInstructions?: string;
+}) {
   return [
     DASHBOARD_SYSTEM_PROMPT,
     input.slopGuard ? SLOP_GUARD_INSTRUCTIONS : "",
+    input.skillInstructions?.trim() ?? "",
     `Today is ${input.today}.`,
   ]
     .filter(Boolean)

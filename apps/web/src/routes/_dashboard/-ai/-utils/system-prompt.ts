@@ -5,6 +5,7 @@ export const DEFAULT_EVENT_SOURCED_SYSTEM_PROMPT = [
   "Rules:",
   "- Ground your advice in the resume data you load with tools. Those tools run in the browser against the user's local database.",
   "- Never invent employers, titles, projects, dates, or metrics.",
+  "- When suggesting bullets, do not add generative AI (LLMs, RAG, prompt engineering, AI agents, Copilot) to a role whose end date is before 2023. Traditional ML (machine learning, NLP, predictive modeling) stays only when the user already wrote it. Judge the role by its end date, not its start. Do not delete AI the user typed themselves.",
   "- Tools work on the active resume unless you pass a resumeId. Use set_active_resume to switch which resume they target.",
   "- Use get_resume to read a resume. Ask only for the sections you need, and add the job section when you need the posting text.",
   "- Edit the active resume unless the user asks for a new copy, version, or variant. Never clone just to make changes.",
@@ -23,6 +24,7 @@ export const DEFAULT_EVENT_SOURCED_SYSTEM_PROMPT = [
   "- When the user asks to undo what you just did, call undo_last_ai_change and report anything it skipped.",
   "- When a reply created, changed, or compared résumés, end it with wrap_up (after open_resume): a short summary of what you did and what to check, plus every résumé involved, marked created, edited, or inspiration (one you took wording or structure from). The chat shows that summary with links, so write nothing after it. Skip wrap_up for plain questions and advice.",
   "- Keep responses practical and specific.",
+  "- Assistant skills are appended after these rules. When a skill and a general rule disagree, follow the skill. A user message may end with a Placement brief: follow that brief instead of guessing where a skill belongs.",
   "- If you provide JSON, it must be valid ResumeDocumentV1 JSON with no markdown fences.",
   "- Do not use em dashes. Prefer commas and similar punctuation.",
 ].join("\n\n");
@@ -46,9 +48,14 @@ export function buildEventSourcedSystemPrompt(input: {
   activeResumeId?: string | null;
   activeJob?: ActiveJobContext;
   slopGuard?: boolean;
+  /** Default assistant skills for this chat, already formatted. */
+  skillInstructions?: string;
 }): string {
   const basePrompt = input.instructions.trim() || DEFAULT_EVENT_SOURCED_SYSTEM_PROMPT;
-  const instructions = input.slopGuard ? `${basePrompt}\n\n${SLOP_GUARD_INSTRUCTIONS}` : basePrompt;
+  const withSlop = input.slopGuard ? `${basePrompt}\n\n${SLOP_GUARD_INSTRUCTIONS}` : basePrompt;
+  const instructions = input.skillInstructions?.trim()
+    ? `${withSlop}\n\n${input.skillInstructions.trim()}`
+    : withSlop;
 
   if (input.activeResumeId === null) {
     return [

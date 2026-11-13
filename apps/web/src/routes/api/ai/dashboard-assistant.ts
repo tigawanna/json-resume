@@ -3,6 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { streamDashboardAgentChat } from "@/routes/_dashboard/-ai/-utils/stream-dashboard-chat.server";
 import { aiRoutingSchema } from "@/lib/openrouter/routing";
+import { ASSISTANT_SKILL_INSTRUCTIONS_MAX } from "@/data-access-layer/event-sourced/rows/assistant-skill-rows";
 import { resolveHostedAiUserId } from "./-utils/hosted-ai-session";
 import { isAllowedOrigin, jsonError, preflightResponse, withCors } from "./-utils/same-origin-cors";
 
@@ -10,6 +11,7 @@ const forwardedSchema = z.object({
   /** The user's local date, so "this month" matches their calendar. */
   today: z.iso.date(),
   slopGuard: z.boolean().optional(),
+  skillInstructions: z.string().max(ASSISTANT_SKILL_INSTRUCTIONS_MAX).optional(),
   apiKey: z.string().trim().optional(),
   model: z.string().trim().optional(),
   routing: aiRoutingSchema.optional(),
@@ -32,6 +34,7 @@ export const Route = createFileRoute("/api/ai/dashboard-assistant")({
           const stream = await streamDashboardAgentChat({
             today: data.today,
             slopGuard: data.slopGuard,
+            skillInstructions: data.skillInstructions,
             messages: params.messages,
             threadId: params.threadId,
             runId: params.runId,

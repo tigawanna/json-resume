@@ -2,6 +2,7 @@ import { chatParamsFromRequestBody, toServerSentEventsResponse } from "@tanstack
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { experienceGroupSnapshotSchema } from "@/features/agentic-tools/experience-snapshot";
+import { ASSISTANT_SKILL_INSTRUCTIONS_MAX } from "@/data-access-layer/event-sourced/rows/assistant-skill-rows";
 import { streamExperienceAgentChat } from "@/routes/_dashboard/-ai/-utils/stream-experience-chat.server";
 import { aiRoutingSchema } from "@/lib/openrouter/routing";
 import { resolveHostedAiUserId } from "./-utils/hosted-ai-session";
@@ -10,6 +11,7 @@ import { isAllowedOrigin, jsonError, preflightResponse, withCors } from "./-util
 const forwardedSchema = z.object({
   /** Titles and bullets of the open company + period group, capped by the client. */
   snapshot: experienceGroupSnapshotSchema,
+  skillInstructions: z.string().max(ASSISTANT_SKILL_INSTRUCTIONS_MAX).optional(),
   apiKey: z.string().trim().optional(),
   model: z.string().trim().optional(),
   routing: aiRoutingSchema.optional(),
@@ -31,6 +33,7 @@ export const Route = createFileRoute("/api/ai/experience-agent")({
 
           const stream = await streamExperienceAgentChat({
             snapshot: data.snapshot,
+            skillInstructions: data.skillInstructions,
             messages: params.messages,
             threadId: params.threadId,
             runId: params.runId,

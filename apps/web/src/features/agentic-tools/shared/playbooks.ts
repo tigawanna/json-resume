@@ -13,6 +13,7 @@ const PLAYBOOKS: Record<PlaybookName, Playbook> = {
     steps: [
       "get_resume with only the sections you need, to get item and bullet ids.",
       "Change the active résumé with the granular tools: update_resume_details, set_summary, set_experience_bullets, set_skills, upsert_experience / upsert_project / upsert_education / upsert_talk, remove_from_resume, reorder_section, set_contacts, set_links, set_notes.",
+      "When changing bullets or tailoring wording, follow the assistant skills. Weave a posting requirement in only when an existing role already supports it, unless the Placement brief says to go all in. Do not suggest generative AI (LLMs, RAG, prompt engineering, AI agents, Copilot) on a role whose end date is before 2023. Keep traditional ML and any AI the user already wrote.",
       "An upsert with an id edits that library item on every résumé that shows it. To reword one résumé only, use set_experience_bullets or create a new item without an id.",
       "Each tool returns what it stored; do not re-read the résumé after every change, and never clone.",
       "Finish with wrap_up, listing the résumé as edited.",

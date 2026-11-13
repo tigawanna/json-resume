@@ -36,6 +36,7 @@ import type {
   Job,
   CoverLetter,
   ApplicationAnswer,
+  AssistantSkill,
 } from "./schemas";
 
 /**
@@ -72,6 +73,7 @@ export type AppCollectionDefs = {
   job: CollectionDef<Job, string>;
   coverLetter: CollectionDef<CoverLetter, string>;
   applicationAnswer: CollectionDef<ApplicationAnswer, string>;
+  assistantSkill: CollectionDef<AssistantSkill, string>;
   settings: CollectionDef<AppSettings, string>;
 };
 
@@ -276,6 +278,11 @@ const {
         { select: (r) => r.resumeId, indexType: BasicIndex, name: "by-resume" },
         byUpdatedAt<ApplicationAnswer>(),
       ],
+    },
+
+    assistantSkill: {
+      getKey: (row) => row.id,
+      indexes: [byId<AssistantSkill>(), byUserId<AssistantSkill>(), byUpdatedAt<AssistantSkill>()],
     },
 
     settings: {

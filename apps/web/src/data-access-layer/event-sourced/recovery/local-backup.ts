@@ -5,6 +5,7 @@ import type { AppCollectionDefs, AppDb } from "../collection";
 import {
   applicationAnswerSchema,
   appSettingsSchema,
+  assistantSkillSchema,
   coverLetterSchema,
   jobSchema,
   resumeAiChatSchema,
@@ -57,6 +58,7 @@ const rowSchemaByCollection = {
   job: jobSchema,
   coverLetter: coverLetterSchema,
   applicationAnswer: applicationAnswerSchema,
+  assistantSkill: assistantSkillSchema,
   settings: appSettingsSchema,
 } satisfies Record<keyof AppCollectionDefs, z.ZodType>;
 
