@@ -23,6 +23,7 @@ import {
   FileDown,
   FileText,
   GitCompareArrows,
+  History,
   Loader2,
   Mail,
   Maximize2,
@@ -36,6 +37,7 @@ import { toast } from "sonner";
 import { diffResumeJson, resumeDetailJson } from "../-utils/resume-json-diff";
 import { ResumeAiAnswersPreview } from "./ResumeAiAnswersPreview";
 import { ResumeAiCoverLetterPreview } from "./ResumeAiCoverLetterPreview";
+import { ResumeAiEventsPreview } from "./ResumeAiEventsPreview";
 
 type ResumeDetail = NonNullable<ReturnType<typeof useEventSourcedResumeDetail>["detail"]>;
 
@@ -43,7 +45,11 @@ export type LivePreviewLayout = "panel" | "maximized" | "rail" | "sheet";
 
 function isLivePreviewView(value: string): value is AiPreviewView {
   return (
-    value === "preview" || value === "changes" || value === "cover-letter" || value === "answers"
+    value === "preview" ||
+    value === "changes" ||
+    value === "events" ||
+    value === "cover-letter" ||
+    value === "answers"
   );
 }
 
@@ -124,6 +130,9 @@ export function ResumeAiLivePreview({
           <TabsContent value="changes" className="mt-0 min-h-0 flex-1">
             <LivePreviewChanges diff={diff} />
           </TabsContent>
+          <TabsContent value="events" className="mt-0 min-h-0 flex-1">
+            <ResumeAiEventsPreview resumeId={resumeId} />
+          </TabsContent>
         </>
       );
     }
@@ -173,6 +182,10 @@ export function ResumeAiLivePreview({
                 <span className="text-error">−{diff.removed}</span>
               </span>
             ) : null}
+          </TabsTrigger>
+          <TabsTrigger value="events" className="gap-1.5 text-xs" data-test="resume-ai-events-tab">
+            <History className="size-3.5" />
+            Events
           </TabsTrigger>
           <TabsTrigger
             value="cover-letter"
