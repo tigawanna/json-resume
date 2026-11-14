@@ -1,8 +1,7 @@
 import { DotsPulse } from "@/components/loaders/DotsPulse";
-import { useResumeWorkbench } from "../resume-workbench/ResumeWorkbenchProvider";
 import { isHandoffMessage } from "@/routes/_dashboard/-ai/-utils/resume-handoff";
 import { ResumeAiHandoffDivider } from "./ResumeAiHandoffDivider";
-import { PlacementBriefCard, PlacementBriefFields } from "./PlacementBrief";
+import { PlacementBriefCard } from "./PlacementBrief";
 import { splitPlacementBrief } from "./placement-brief";
 import { ResumeAiPromptComposer } from "./ResumeAiPromptComposer";
 import { ResumeAiVirtualMessages } from "./ResumeAiVirtualMessages";
@@ -12,11 +11,11 @@ import { ResumeAiChatUI } from "./resume-ai-chat-ui";
 import type { ResumeAiMessageAction } from "./resume-ai-types";
 import { DIRECTIVES } from "./resume-ai-directives";
 import { getMessageText } from "./resume-ai-message-utils";
-import { useRef, useState, type ComponentProps, type RefObject } from "react";
+import { useRef, type ComponentProps, type RefObject } from "react";
 
 interface ResumeAiConversationCardProps extends Omit<
   ComponentProps<typeof ResumeAiPromptComposer>,
-  "hasMessages" | "placementBrief"
+  "hasMessages"
 > {
   chat: ResumeAiChat;
   endOfMessagesRef: RefObject<HTMLDivElement | null>;
@@ -37,14 +36,11 @@ export function ResumeAiConversationCard({
   ...composerProps
 }: ResumeAiConversationCardProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const currentResumeId = useResumeWorkbench((state) => state.resumeId);
-  const [briefText, setBriefText] = useState("");
-  const [sentBrief, setSentBrief] = useState<string | null>(null);
   const historyBrief = chat.messages
     .filter((message) => message.role === "user")
     .map((message) => splitPlacementBrief(getMessageText(message)).brief)
     .find((brief) => brief);
-  const answeredBrief = sentBrief ?? historyBrief ?? null;
+  const answeredBrief = historyBrief ?? null;
   /** A chat holding only a handoff marker still greets the user like a new one. */
   const isEmpty = chat.messages.every(isHandoffMessage) && chat.queue.length === 0;
   const handoff = chat.messages.filter(isHandoffMessage).at(-1);
@@ -62,20 +58,8 @@ export function ResumeAiConversationCard({
     composerProps.promptAreaRef.current?.focus();
   }
 
-  async function sendWithBrief(message: string) {
-    const sent = await composerProps.onSend(message);
-    if (sent !== false && briefText.trim()) setSentBrief(briefText.trim());
-    return sent;
-  }
-
   const composer = (
-    <ResumeAiPromptComposer
-      {...composerProps}
-      onSend={sendWithBrief}
-      placementBrief={answeredBrief ? null : briefText}
-      isReady={isReady}
-      hasMessages={!isEmpty}
-    />
+    <ResumeAiPromptComposer {...composerProps} isReady={isReady} hasMessages={!isEmpty} />
   );
 
   if (isEmpty && !historyPending) {
@@ -116,11 +100,6 @@ export function ResumeAiConversationCard({
               </button>
             ))}
           </div>
-          <PlacementBriefFields
-            resumeId={composerProps.activeResume?.id ?? currentResumeId}
-            open
-            onBriefChange={setBriefText}
-          />
         </div>
         <div className="min-h-0 shrink-0 border-t border-border/60 px-2 py-2">{composer}</div>
       </div>

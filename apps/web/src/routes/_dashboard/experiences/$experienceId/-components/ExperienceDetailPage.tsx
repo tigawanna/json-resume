@@ -12,6 +12,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import {
   Empty,
@@ -26,11 +27,10 @@ import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
 import { deleteWithReferences } from "@/data-access-layer/event-sourced/rows/library-resolve";
 import type { ResumeExperience } from "@/data-access-layer/event-sourced/schemas";
 import { RouterPendingComponent } from "@/lib/tanstack/router/RouterPendingComponent";
-import { cn } from "@/lib/utils";
 import { unwrapUnknownError } from "@/utils/errors";
 import { eq, useLiveQuery } from "@tanstack/react-db";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, Briefcase, Plus, Trash2 } from "lucide-react";
+import { ArrowLeft, Briefcase, List, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { formatLibraryDateRange } from "../../../-components/LibraryEntityCard";
@@ -335,43 +335,25 @@ export function ExperienceDetailPage({ experienceId }: ExperienceDetailPageProps
         </Button>
       </section>
 
-      <div
-        className="flex w-fit items-center gap-1 rounded-lg border border-border/60 bg-base-200/40 p-1"
-        role="tablist"
-        aria-label="Experience detail view"
+      <Tabs
+        value={view}
+        onValueChange={(value) => {
+          if (value === "titles" || value === "unique") setView(value);
+        }}
+        className="w-fit gap-0"
         data-test="experience-view-toggle"
       >
-        <button
-          type="button"
-          role="tab"
-          aria-selected={view === "titles"}
-          onClick={() => setView("titles")}
-          className={cn(
-            "rounded-md px-3 py-1 text-xs font-medium transition-colors",
-            view === "titles"
-              ? "bg-base-100 text-base-content shadow-sm"
-              : "text-muted-foreground hover:text-foreground",
-          )}
-          data-test="experience-view-titles"
-        >
-          Titles
-        </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={view === "unique"}
-          onClick={() => setView("unique")}
-          className={cn(
-            "rounded-md px-3 py-1 text-xs font-medium transition-colors",
-            view === "unique"
-              ? "bg-base-100 text-base-content shadow-sm"
-              : "text-muted-foreground hover:text-foreground",
-          )}
-          data-test="experience-view-unique"
-        >
-          Unique bullets
-        </button>
-      </div>
+        <TabsList aria-label="Experience detail view">
+          <TabsTrigger value="titles" data-test="experience-view-titles">
+            <Briefcase />
+            Titles
+          </TabsTrigger>
+          <TabsTrigger value="unique" data-test="experience-view-unique">
+            <List />
+            Unique bullets
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
 
       {view === "titles" ? (
         <section className="flex flex-col gap-3" aria-label="Titles and bullets for this period">

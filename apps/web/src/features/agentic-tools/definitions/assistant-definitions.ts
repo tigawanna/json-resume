@@ -1,5 +1,7 @@
 import { toolDefinition } from "@tanstack/ai";
 import {
+  askUserToolInputSchema,
+  askUserToolOutputSchema,
   getPlaybookToolInputSchema,
   getPlaybookToolOutputSchema,
   undoLastAiChangeToolInputSchema,
@@ -24,6 +26,16 @@ export const undoLastAiChangeToolDefinition = toolDefinition({
   inputSchema: undoLastAiChangeToolInputSchema,
   outputSchema: undoLastAiChangeToolOutputSchema,
   lazy: true,
+});
+
+export const askUserToolDefinition = toolDefinition({
+  name: "ask_user",
+  description:
+    "Ask the user one question and wait. Pass 2 to 8 short choices. Set allowMultiple when several can apply, and allowOther when they may type their own. The chat shows one card. Call this again for the next question only after it returns. Use it for a decision you cannot read from the résumé, such as how far to tailor, which skill, which experience, or how a line should read. Do not ask the same question in your reply.",
+  inputSchema: askUserToolInputSchema,
+  outputSchema: askUserToolOutputSchema,
+  replay: "never",
+  metadata: { title: "Ask", annotations: { readOnlyHint: true } },
 });
 
 export const wrapUpToolDefinition = toolDefinition({

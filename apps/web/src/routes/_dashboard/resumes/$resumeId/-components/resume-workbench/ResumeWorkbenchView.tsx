@@ -156,7 +156,12 @@ export function ResumeWorkbenchView({
           <div className="mb-4">
             <TemplatePicker selected={templateId} onSelect={pickTemplate} />
           </div>
-          <ResumePreviewView resumeName={resume.name} selectedTemplate={templateId} doc={doc} />
+          <ResumePreviewView
+            resumeName={resume.name}
+            selectedTemplate={templateId}
+            doc={doc}
+            resumeId={resume.id}
+          />
         </TabsContent>
 
         <TabsContent

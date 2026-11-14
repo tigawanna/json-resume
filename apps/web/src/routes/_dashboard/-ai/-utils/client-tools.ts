@@ -1,4 +1,5 @@
 import {
+  askUserToolDefinition,
   getPlaybookToolDefinition,
   undoLastAiChangeToolDefinition,
   wrapUpToolDefinition,
@@ -52,7 +53,10 @@ import {
   upsertTalkToolDefinition,
 } from "@/features/agentic-tools/definitions/resume-edit-definitions";
 import type { LocalToolContext } from "@/features/agentic-tools/definitions/tool-context";
-import { quotePayRateToolInputSchema } from "@/features/agentic-tools/resume-tool-schemas";
+import {
+  quotePayRateToolInputSchema,
+  type AskUserToolOutput,
+} from "@/features/agentic-tools/resume-tool-schemas";
 import { quotePayRate } from "@/data-access-layer/event-sourced/rows/pay-quote";
 import {
   removeLocalFromResume,
@@ -258,6 +262,37 @@ export const searchApplicationAnswersClientTool = searchApplicationAnswersToolDe
   (input, ctx: ClientToolCtx) => searchLocalApplicationAnswers(ctx.context, input),
 );
 
+const askUserWaiters = new Map<string, (answer: AskUserToolOutput) => void>();
+
+/** The question card calls this when the user picks an answer. */
+export function answerAskUser(toolCallId: string, answer: AskUserToolOutput) {
+  const resolve = askUserWaiters.get(toolCallId);
+  if (!resolve) return false;
+  askUserWaiters.delete(toolCallId);
+  resolve(answer);
+  return true;
+}
+
+export const askUserClientTool = askUserToolDefinition.client((input, ctx) => {
+  const toolCallId = ctx?.toolCallId;
+  if (!toolCallId) {
+    const first = input.options[0];
+    return { selected: first ? [{ id: first.id, label: first.label }] : [] };
+  }
+  return new Promise<AskUserToolOutput>((resolve, reject) => {
+    askUserWaiters.set(toolCallId, resolve);
+    ctx?.abortSignal?.addEventListener(
+      "abort",
+      () => {
+        if (!askUserWaiters.has(toolCallId)) return;
+        askUserWaiters.delete(toolCallId);
+        reject(new Error("The question was cancelled."));
+      },
+      { once: true },
+    );
+  });
+});
+
 export const getPlaybookClientTool = getPlaybookToolDefinition.client((input) =>
   getPlaybook(input),
 );
@@ -307,6 +342,7 @@ export const eventSourcedResumeAiClientTools = [
   listCoverLettersClientTool,
   saveApplicationAnswersClientTool,
   searchApplicationAnswersClientTool,
+  askUserClientTool,
   getPlaybookClientTool,
   undoLastAiChangeClientTool,
   wrapUpClientTool,

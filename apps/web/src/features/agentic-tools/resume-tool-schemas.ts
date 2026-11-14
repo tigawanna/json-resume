@@ -838,6 +838,32 @@ export const wrapUpToolInputSchema = z.object({
     .default([]),
 });
 
+export const askUserToolInputSchema = z.object({
+  question: z.string().trim().min(1).max(240).describe("One question, in the user's words."),
+  options: z
+    .array(
+      z.object({
+        id: z.string().trim().min(1).max(80),
+        label: z.string().trim().min(1).max(120).describe("Short label shown on the choice."),
+      }),
+    )
+    .min(2)
+    .max(8),
+  allowMultiple: z
+    .boolean()
+    .optional()
+    .describe("The user may pick more than one choice. Default is one."),
+  allowOther: z
+    .boolean()
+    .optional()
+    .describe("Adds an Other choice the user can type. Default is off."),
+});
+
+export const askUserToolOutputSchema = z.object({
+  selected: z.array(z.object({ id: z.string(), label: z.string() })),
+  other: z.string().optional().describe("What the user typed for Other, when they chose it."),
+});
+
 export const wrapUpToolOutputSchema = z.object({
   resumes: z.array(
     z.object({
@@ -933,3 +959,5 @@ export type UndoLastAiChangeToolOutput = z.infer<typeof undoLastAiChangeToolOutp
 export type WrapUpResumeRole = z.infer<typeof wrapUpResumeRoleSchema>;
 export type WrapUpToolInput = z.input<typeof wrapUpToolInputSchema>;
 export type WrapUpToolOutput = z.infer<typeof wrapUpToolOutputSchema>;
+export type AskUserToolInput = z.input<typeof askUserToolInputSchema>;
+export type AskUserToolOutput = z.infer<typeof askUserToolOutputSchema>;

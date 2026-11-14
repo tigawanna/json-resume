@@ -63,8 +63,10 @@ function stringParams(params: Record<string, unknown>) {
 
 export const OPEN_ASSISTANT_EVENT = "dashboard-assistant-open";
 
-export function openDashboardAssistant() {
-  window.dispatchEvent(new Event(OPEN_ASSISTANT_EVENT));
+export function openDashboardAssistant(options?: { fresh?: boolean }) {
+  window.dispatchEvent(
+    new CustomEvent(OPEN_ASSISTANT_EVENT, { detail: { fresh: options?.fresh === true } }),
+  );
 }
 
 /** The dashboard assistant's chat. Lives in the dashboard layout, so it survives navigation. */

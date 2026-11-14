@@ -1,4 +1,5 @@
 import {
+  askUserToolDefinition,
   getPlaybookToolDefinition,
   undoLastAiChangeToolDefinition,
   wrapUpToolDefinition,
@@ -94,6 +95,7 @@ export const chatToolDefinitions = [
   listCoverLettersToolDefinition,
   saveApplicationAnswersToolDefinition,
   searchApplicationAnswersToolDefinition,
+  askUserToolDefinition,
   getPlaybookToolDefinition,
   undoLastAiChangeToolDefinition,
   wrapUpToolDefinition,

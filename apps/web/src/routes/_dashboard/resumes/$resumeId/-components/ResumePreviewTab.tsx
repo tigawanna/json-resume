@@ -7,9 +7,10 @@ import { resumeDocumentToSpec } from "@/features/resume/resume-to-spec";
 import { useResumePdf } from "@/features/resume/use-resume-pdf";
 import { useThemeContext } from "@/lib/tanstack/router/theme-provider";
 import type { Spec } from "@json-render/core";
-import { Download, FileText, Loader2, Moon, RefreshCw, Sun } from "lucide-react";
+import { Download, FileDown, FileText, Loader2, Moon, RefreshCw, Sun } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { PublishResumeButton } from "./PublishResumeButton";
 
 type PreviewPane = "component" | "pdf";
 type PreviewTheme = "light" | "dark";
@@ -55,9 +56,16 @@ interface ResumePreviewViewProps {
   resumeName: string;
   selectedTemplate: TemplateId;
   doc: ResumeDocumentV1;
+  /** Set on the editor so Download and Make public sit above the preview. */
+  resumeId?: string;
 }
 
-export function ResumePreviewView({ resumeName, selectedTemplate, doc }: ResumePreviewViewProps) {
+export function ResumePreviewView({
+  resumeName,
+  selectedTemplate,
+  doc,
+  resumeId,
+}: ResumePreviewViewProps) {
   const { resolvedTheme } = useThemeContext();
 
   const spec = resumeDocumentToSpec(doc, selectedTemplate);
@@ -120,28 +128,28 @@ export function ResumePreviewView({ resumeName, selectedTemplate, doc }: ResumeP
             </TabsTrigger>
           </TabsList>
 
-          {previewPane === "component" ? (
-            <ToggleGroup
-              type="single"
-              value={previewTheme}
-              onValueChange={(value) => {
-                if (value === "light" || value === "dark") setPreviewTheme(value);
-              }}
-              variant="outline"
-              size="sm"
-              data-test="resume-preview-theme-toggle"
-            >
-              <ToggleGroupItem value="light" aria-label="Show light component preview">
-                <Sun className="size-4" />
-                Light
-              </ToggleGroupItem>
-              <ToggleGroupItem value="dark" aria-label="Show dark component preview">
-                <Moon className="size-4" />
-                Dark
-              </ToggleGroupItem>
-            </ToggleGroup>
-          ) : (
-            <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            {previewPane === "component" ? (
+              <ToggleGroup
+                type="single"
+                value={previewTheme}
+                onValueChange={(value) => {
+                  if (value === "light" || value === "dark") setPreviewTheme(value);
+                }}
+                variant="outline"
+                size="sm"
+                data-test="resume-preview-theme-toggle"
+              >
+                <ToggleGroupItem value="light" aria-label="Show light component preview">
+                  <Sun className="size-4" />
+                  Light
+                </ToggleGroupItem>
+                <ToggleGroupItem value="dark" aria-label="Show dark component preview">
+                  <Moon className="size-4" />
+                  Dark
+                </ToggleGroupItem>
+              </ToggleGroup>
+            ) : (
               <Button
                 variant="outline"
                 size="sm"
@@ -157,23 +165,31 @@ export function ResumePreviewView({ resumeName, selectedTemplate, doc }: ResumeP
                 )}
                 Regenerate PDF
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-2"
-                disabled={downloading || generating || !blobUrl}
-                onClick={handleDownload}
-                data-test="resume-download-pdf-btn"
-              >
-                {downloading ? (
-                  <Loader2 className="size-4 animate-spin" />
-                ) : (
-                  <Download className="size-4" />
-                )}
-                Download PDF
-              </Button>
-            </div>
-          )}
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              disabled={downloading || generating || !blobUrl}
+              onClick={handleDownload}
+              data-test="resume-download-pdf-btn"
+            >
+              {downloading ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <FileDown className="size-4" />
+              )}
+              Download
+            </Button>
+            {resumeId ? (
+              <PublishResumeButton
+                sourceResumeId={resumeId}
+                title={resumeName}
+                document={doc}
+                className="h-8"
+              />
+            ) : null}
+          </div>
         </div>
 
         <TabsContent value="component" className="mt-0">

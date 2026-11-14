@@ -49,8 +49,6 @@ export interface ResumeAiPromptComposerProps {
   /** Re-runs the failed request: resends the prompt, or asks to continue a partial run. */
   onRetry: () => void | Promise<void>;
   onStop: () => void;
-  /** Included on this send only. Null once the brief is already in the transcript. */
-  placementBrief: string | null;
   promptAreaRef: RefObject<PromptAreaHandle | null>;
   sessionChars: number;
   sessionGenerating: boolean;
@@ -75,7 +73,6 @@ export function ResumeAiPromptComposer({
   onSend,
   onRetry,
   onStop,
-  placementBrief,
   promptAreaRef,
   sessionChars,
   sessionGenerating,
@@ -110,9 +107,7 @@ export function ResumeAiPromptComposer({
 
   async function handleSend(nextSegments: Segment[]) {
     if (!hasText(nextSegments) || !isReady) return;
-    const message = [serializeSegments(nextSegments), placementBrief?.trim() ?? ""]
-      .filter(Boolean)
-      .join("\n\n");
+    const message = serializeSegments(nextSegments);
     if (!message) return;
     const sent = await onSend(message);
     if (sent === false) return;

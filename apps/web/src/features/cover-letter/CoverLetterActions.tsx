@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { unwrapUnknownError } from "@/utils/errors";
-import { Check, ClipboardCopy, FileDown, Loader2 } from "lucide-react";
+import { Check, Copy, Download, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { copyCoverLetter } from "./cover-letter-format";
@@ -52,12 +52,12 @@ export function CoverLetterActions({ title, body, compact = false }: CoverLetter
         size={compact ? "icon-sm" : "sm"}
         disabled={empty}
         onClick={() => void handleCopy()}
-        aria-label="Copy for Google Docs"
+        aria-label="Copy cover letter"
         title="Copy with formatting, for Google Docs or Word"
         data-test="cover-letter-copy"
       >
-        {copied ? <Check className="size-4" /> : <ClipboardCopy className="size-4" />}
-        {compact ? null : "Copy for Docs"}
+        {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
+        {compact ? null : "Copy"}
       </Button>
       <Button
         type="button"
@@ -72,7 +72,7 @@ export function CoverLetterActions({ title, body, compact = false }: CoverLetter
         {downloading ? (
           <Loader2 className="size-4 animate-spin" />
         ) : (
-          <FileDown className="size-4" />
+          <Download className="size-4" />
         )}
         {compact ? null : "PDF"}
       </Button>
