@@ -4,11 +4,11 @@ export const privacyPolicy = {
   title: "Privacy Policy",
   lastUpdated: "November 12, 2026",
   intro:
-    "Crafted is local-first. Your résumé library lives in your browser until you choose to sync or to send a prompt to a model. This policy explains what that means for the website, the editor, and the PDFs you export.",
+    "CraVfted is local-first. Your résumé library lives in your browser until you choose to sync or to send a prompt to a model. This policy explains what that means for the website, the editor, and the PDFs you export.",
   sections: [
     {
       heading: "Who we are",
-      body: `Crafted (“we”, “us”) is a structured résumé workspace. You keep roles, bullets, skills and related records as data, tailor them with a language model you connect, and export a PDF. Contact: ${AppConfig.email}.`,
+      body: `CraVfted (“we”, “us”) is a structured résumé workspace. You keep roles, bullets, skills and related records as data, tailor them with a language model you connect, and export a PDF. Contact: ${AppConfig.email}.`,
     },
     {
       heading: "Data that stays on your device",

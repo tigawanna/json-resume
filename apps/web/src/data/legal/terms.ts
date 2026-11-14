@@ -4,11 +4,11 @@ export const termsOfService = {
   title: "Terms of Service",
   lastUpdated: "November 12, 2026",
   intro:
-    "These terms cover the Crafted website and editor. The software is provided so you can keep a résumé library, tailor it, and export a PDF. You are responsible for what you submit to employers and to model providers.",
+    "These terms cover the CraVfted website and editor. The software is provided so you can keep a résumé library, tailor it, and export a PDF. You are responsible for what you submit to employers and to model providers.",
   sections: [
     {
       heading: "The product",
-      body: "Crafted stores your career history as structured data and can tailor a résumé, cover letter or application answer from a job description you provide. You may self-host the MIT-licensed app or use a hosted workspace when one is offered.",
+      body: "CraVfted stores your career history as structured data and can tailor a résumé, cover letter or application answer from a job description you provide. You may self-host the MIT-licensed app or use a hosted workspace when one is offered.",
     },
     {
       heading: "Your content",

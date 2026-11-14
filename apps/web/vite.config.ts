@@ -15,11 +15,13 @@ const vercelHost =
   process.env.VITE_VERCEL_URL ||
   process.env.VERCEL_URL ||
   process.env.VITE_SITE_URL;
-const siteUrl = vercelHost
-  ? vercelHost.startsWith("http")
-    ? vercelHost
-    : `https://${vercelHost}`
-  : "https://getcrafted.vercel.app";
+function resolveSiteUrl({ host }: { host: string | undefined }) {
+  if (!host) return "https://cravfted.vercel.app";
+  if (host.startsWith("http")) return host;
+  return `https://${host}`;
+}
+
+const siteUrl = resolveSiteUrl({ host: vercelHost });
 
 const config = defineConfig({
   define: {

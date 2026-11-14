@@ -5,7 +5,7 @@ import { LandingPage } from "./-components/landing/LandingPage";
 
 const siteUrl = AppConfig.url;
 const ogImage = `${siteUrl}/og.png`;
-const title = "Crafted: a free résumé builder for developers";
+const title = "CraVfted: a free résumé builder for developers";
 const description =
   "A free résumé builder for developers. Keep your history as structured JSON, tailor it to a posting, and export an ATS-friendly PDF.";
 
@@ -29,7 +29,7 @@ export const Route = createFileRoute("/")({
       {
         property: "og:image:alt",
         content:
-          "Crafted, a personal résumé builder. Turn your résumé into JSON, tailor it with an LLM using a job description, and export a clean PDF.",
+          "CraVfted, a personal résumé builder. Turn your résumé into JSON, tailor it with an LLM using a job description, and export a clean PDF.",
       },
       { property: "og:url", content: siteUrl },
       { property: "og:site_name", content: AppConfig.name },

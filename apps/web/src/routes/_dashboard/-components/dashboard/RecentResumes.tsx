@@ -57,7 +57,13 @@ export function RecentResumes({ onStartFromJob }: { onStartFromJob: () => void }
           </Button>
         </div>
       ) : null}
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <div
+        className={
+          resumes.length === 0
+            ? "mx-auto grid w-full max-w-2xl grid-cols-1 gap-3 sm:grid-cols-2"
+            : "grid gap-3 sm:grid-cols-2 xl:grid-cols-4"
+        }
+      >
         {startCard}
         {resumes.length === 0 ? (
           <ResourceCard

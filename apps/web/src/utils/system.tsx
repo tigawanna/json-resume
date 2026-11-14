@@ -5,8 +5,8 @@ const contactEmail = "denniskinuthiawaweru@gmail.com";
 declare const __SITE_URL__: string;
 
 export const AppConfig = {
-  name: "Crafted",
-  wordmark: "Crafted",
+  name: "CraVfted",
+  wordmark: "CraVfted",
   url: __SITE_URL__,
   brief:
     "Turn your résumé into JSON, tailor it with any LLM using a job description, and export a clean PDF—without pasting prose back into a doc.",
@@ -14,15 +14,15 @@ export const AppConfig = {
     "A free résumé builder for developers. Keep your history as structured JSON, tailor it to a posting, and export an ATS-friendly PDF.",
   logo: {
     src: "/logo.png",
-    alt: "Crafted",
+    alt: "CraVfted",
     href: "/",
   },
   icon: WhiskersIcon,
-  themeStorageKey: "crafted.theme",
+  themeStorageKey: "cravfted.theme",
   email: contactEmail,
   links: {
     mail: `mailto:${contactEmail}`,
-    github: "https://github.com/tigawanna/crafted",
+    github: "https://github.com/tigawanna/cravfted",
     twitter: "https://twitter.com/tigawanna",
   },
 };

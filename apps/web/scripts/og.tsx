@@ -15,9 +15,9 @@ const fonts = await googleFonts([{ name: "Inter", weight: [400, 600, 700] }]);
 
 const buf = await render(
   <OgImage
-    title="Crafted"
+    title="CraVfted"
     description="Turn your résumé into JSON, tailor it with any LLM using a job description, and export a clean PDF."
-    siteLabel="Crafted"
+    siteLabel="CraVfted"
     iconDataUrl={iconDataUrl}
   />,
   { width: 1200, height: 630, fonts },
