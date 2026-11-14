@@ -378,11 +378,17 @@ function ExperienceCard({ experience, onMoveUp, onMoveDown }: ExperienceCardProp
             open={bulletPickOpen}
             onOpenChange={setBulletPickOpen}
             title="Pick Experience Bullets"
-            description="Copy bullet points from any experience into this one."
+            description={`Bullets previously written for ${role.trim() || "this role"}.`}
             searchPlaceholder="Search bullet text…"
             multi
-            getSearchQueryKey={(q) => [queryKeyPrefixes.resumes, "search", "experience-bullets", q]}
-            getSearchQueryFn={(q) => () => searchExperienceBullets(q)}
+            getSearchQueryKey={(q) => [
+              queryKeyPrefixes.resumes,
+              "search",
+              "experience-bullets",
+              role,
+              q,
+            ]}
+            getSearchQueryFn={(q) => () => searchExperienceBullets(q, { role })}
             getItem={(b) => ({ id: b.id, primary: b.text })}
             onPick={(rows) => {
               setBullets((prev) => [...prev, ...rows.map((b) => b.text)]);

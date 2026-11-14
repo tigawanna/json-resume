@@ -274,10 +274,23 @@ export function createEventSourcedResumeWorkspace(
             startDate: row.startDate,
             endDate: row.endDate,
           })),
-      experienceBullets: async (query) =>
-        snapshots.experienceBullets
-          .filter((row) => matchQuery(query, row.text))
-          .map((row) => ({ id: row.id, text: row.text })),
+      experienceBullets: async (query, scope) => {
+        const role = scope.role.trim().toLowerCase();
+        if (!role) return [];
+        const experienceIds = new Set(
+          snapshots.experiences
+            .filter((row) => row.role.trim().toLowerCase() === role)
+            .map((row) => row.id),
+        );
+        const seen = new Set<string>();
+        return snapshots.experienceBullets.flatMap((row) => {
+          const text = row.text.trim();
+          if (!experienceIds.has(row.experienceId) || !text || seen.has(text)) return [];
+          if (!matchQuery(query, row.text)) return [];
+          seen.add(text);
+          return [{ id: row.id, text: row.text }];
+        });
+      },
       education: async (query) =>
         snapshots.education
           .filter((row) => matchQuery(query, row.school, row.degree, row.field))

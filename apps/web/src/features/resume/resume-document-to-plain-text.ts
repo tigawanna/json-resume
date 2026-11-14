@@ -35,6 +35,7 @@ export function resumeDocumentToPlainText(doc: ResumeDocumentV1): string {
     lines.push("Education");
     for (const ed of doc.education.items) {
       lines.push(`${ed.degree}, ${ed.school} (${ed.year})`);
+      if (ed.description?.trim()) lines.push(ed.description.trim());
     }
     lines.push("");
   }

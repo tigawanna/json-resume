@@ -17,14 +17,16 @@ async function expectToast(page: Page, message: string) {
   await expect(page.getByText(message).last()).toBeVisible();
 }
 
+async function expectAutosaved(section: ReturnType<Page["getByTestId"]>) {
+  await expect(section.getByTestId("autosave-status")).toHaveText("Saved");
+}
+
 async function updateSummaryItem(page: Page) {
   const summary = await openEditorSection(page, "Summary", "summary-form");
   const updatedSummary = "E2E summary update visible in the editor.";
 
   await summary.getByLabel("Professional Summary").fill(updatedSummary);
-  await summary.getByRole("button", { name: "Save Summary" }).click();
-
-  await expectToast(page, "Summary saved");
+  await expectAutosaved(summary);
   await expect(summary.getByLabel("Professional Summary")).toHaveValue(updatedSummary);
 }
 
@@ -37,15 +39,11 @@ async function addAndRemoveContact(page: Page) {
   await row.locator("input").nth(0).fill("phone");
   await row.locator("input").nth(1).fill(addedValue);
   await row.locator("input").nth(2).fill("Phone");
-  await contacts.getByRole("button", { name: "Save Contacts" }).click();
-
-  await expectToast(page, "Contacts saved");
+  await expectAutosaved(contacts);
   await expectInputValue(contacts, addedValue);
 
   await row.getByRole("button").click();
-  await contacts.getByRole("button", { name: "Save Contacts" }).click();
-
-  await expectToast(page, "Contacts saved");
+  await expectAutosaved(contacts);
   await expectNoInputValue(contacts, addedValue);
 }
 
@@ -58,15 +56,11 @@ async function addAndRemoveLink(page: Page) {
   await row.locator("input").nth(0).fill("E2E Link");
   await row.locator("input").nth(1).fill(addedUrl);
   await row.locator("input").nth(2).fill("FaGlobe");
-  await links.getByRole("button", { name: "Save Links" }).click();
-
-  await expectToast(page, "Links saved");
+  await expectAutosaved(links);
   await expectInputValue(links, addedUrl);
 
   await row.getByRole("button").click();
-  await links.getByRole("button", { name: "Save Links" }).click();
-
-  await expectToast(page, "Links saved");
+  await expectAutosaved(links);
   await expectNoInputValue(links, addedUrl);
 }
 

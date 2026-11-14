@@ -69,6 +69,7 @@ const educationItem = z.object({
   degree: z.string(),
   field: z.string().optional(),
   year: z.string(),
+  description: z.string().optional(),
   bullets: z.array(z.string()).optional(),
 });
 
@@ -275,6 +276,7 @@ export function migrateResumeDocumentV1(parsed: unknown): unknown {
               degree: asStr(row.degree),
               ...(row.field == null || asStr(row.field) === "" ? {} : { field: asStr(row.field) }),
               year: asStr(row.year),
+              ...(asStr(row.description) === "" ? {} : { description: asStr(row.description) }),
               ...(bullets.length > 0 ? { bullets } : {}),
             },
           ];

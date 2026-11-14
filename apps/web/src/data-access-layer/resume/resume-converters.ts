@@ -87,6 +87,7 @@ export function resumeDetailToDocument(detail: ResumeDetailDTO): ResumeDocumentV
           degree: ed.degree,
           field: ed.field || undefined,
           year: ed.endDate || ed.startDate,
+          description: ed.description || undefined,
           bullets:
             ed.bullets.length > 0
               ? ed.bullets.sort((a, b) => a.sortOrder - b.sortOrder).map((b) => b.text)

@@ -17,13 +17,11 @@ test("saves edited and newly added resume parts across the whole editor flow", a
   await metadata
     .getByLabel("Description", { exact: true })
     .fill("Internal targeting notes for the e2e flow.");
-  await metadata.getByRole("button", { name: "Save details" }).click();
-  await expect(page.getByText("Details saved")).toBeVisible();
+  await expect(metadata.getByTestId("autosave-status")).toHaveText("Saved");
 
   const targetJob = page.getByTestId("target-job-form");
   await targetJob.getByLabel("Job description").fill("Build reliable full-stack product systems.");
-  await targetJob.getByRole("button", { name: "Save & link job" }).click();
-  await expect(page.getByText("Job saved and linked")).toBeVisible();
+  await expect(targetJob.getByTestId("autosave-status")).toHaveText("Saved");
   await expect(page.getByTestId("target-job-section")).toContainText("Build reliable full-stack");
 
   const contacts = page.getByTestId("contacts-form");
@@ -33,8 +31,7 @@ test("saves edited and newly added resume parts across the whole editor flow", a
   await contactInputs.nth(contactInputCount - 3).fill("phone");
   await contactInputs.nth(contactInputCount - 2).fill("+1 555 0100");
   await contactInputs.nth(contactInputCount - 1).fill("Phone");
-  await contacts.getByRole("button", { name: "Save Contacts" }).click();
-  await expect(page.getByText("Contacts saved")).toBeVisible();
+  await expect(contacts.getByTestId("autosave-status")).toHaveText("Saved");
 
   const links = await openEditorSection(page, "Links", "links-form");
   await links.getByRole("button", { name: "Add Link" }).click();
@@ -43,15 +40,13 @@ test("saves edited and newly added resume parts across the whole editor flow", a
   await linkInputs.nth(linkInputCount - 3).fill("Portfolio");
   await linkInputs.nth(linkInputCount - 2).fill("https://example.com/alex");
   await linkInputs.nth(linkInputCount - 1).fill("FaGlobe");
-  await links.getByRole("button", { name: "Save Links" }).click();
-  await expect(page.getByText("Links saved")).toBeVisible();
+  await expect(links.getByTestId("autosave-status")).toHaveText("Saved");
 
   const summaryText =
     "Product-minded full-stack engineer who turns ambiguous ideas into durable shipped systems.";
   const summary = page.getByTestId("summary-form");
   await summary.getByLabel("Professional Summary").fill(summaryText);
-  await summary.getByRole("button", { name: "Save Summary" }).click();
-  await expect(page.getByText("Summary saved")).toBeVisible();
+  await expect(summary.getByTestId("autosave-status")).toHaveText("Saved");
 
   await page.getByRole("button", { name: "Add Experience" }).click();
   const experience = page.getByTestId("add-experience-form");

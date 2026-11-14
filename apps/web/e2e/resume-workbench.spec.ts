@@ -53,13 +53,11 @@ test(
     const metadata = page.getByTestId("metadata-form");
     await metadata.getByLabel("Full Name").fill(fullName);
     await metadata.getByLabel("Headline").fill(headline);
-    await metadata.getByRole("button", { name: "Save details" }).click();
-    await expectToast(page, "Details saved");
+    await expect(metadata.getByTestId("autosave-status")).toHaveText("Saved");
 
     const summaryForm = page.getByTestId("summary-form");
     await summaryForm.getByLabel("Professional Summary").fill(summary);
-    await summaryForm.getByRole("button", { name: "Save Summary" }).click();
-    await expectToast(page, "Summary saved");
+    await expect(summaryForm.getByTestId("autosave-status")).toHaveText("Saved");
 
     await page.getByRole("button", { name: "Add Experience" }).click();
     const experience = page.getByTestId("add-experience-form");

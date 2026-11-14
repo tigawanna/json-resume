@@ -8,6 +8,7 @@ import { useAppForm } from "@/lib/tanstack/form";
 import { unwrapUnknownError } from "@/utils/errors";
 import { formOptions } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
+import { DraftAutosave } from "./use-resume-autosave";
 import { Link } from "@tanstack/react-router";
 import { Library, Pencil, Unlink } from "lucide-react";
 import { useState } from "react";
@@ -19,14 +20,14 @@ export function TargetJobSection() {
   const { resume, searches, attachJob } = useResumeWorkspace();
   const searchJobs = searches?.jobs;
   const job = resume.job;
-  const [editing, setEditing] = useState(false);
+  const [draftOpen, setDraftOpen] = useState(!job);
   const [pickOpen, setPickOpen] = useState(false);
 
   const attachMutation = useMutation({
     mutationFn: async (jobId: string | null) => attachJob(jobId),
     onSuccess(_, jobId) {
       toast.success(jobId ? "Job linked" : "Job detached");
-      setEditing(false);
+      setDraftOpen(false);
     },
     onError(err: unknown) {
       toast.error("Failed to update the target job", {
@@ -62,7 +63,7 @@ export function TargetJobSection() {
         </div>
       </div>
 
-      {job && !editing ? (
+      {job && !draftOpen ? (
         <JobPreviewCard
           job={job}
           actions={
@@ -72,7 +73,7 @@ export function TargetJobSection() {
                 variant="ghost"
                 size="icon"
                 className="size-7"
-                onClick={() => setEditing(true)}
+                onClick={() => setDraftOpen(true)}
                 aria-label="Edit job"
                 title="Edit job"
               >
@@ -95,11 +96,10 @@ export function TargetJobSection() {
         />
       ) : (
         <TargetJobForm
-          key={job?.id ?? "new"}
+          key="target-job-editor"
           job={job}
           legacyDescription={job ? "" : resume.jobDescription}
-          onSaved={() => setEditing(false)}
-          onCancel={job ? () => setEditing(false) : undefined}
+          onCancel={job ? () => setDraftOpen(false) : undefined}
         />
       )}
 
@@ -130,39 +130,22 @@ interface TargetJobFormProps {
   job: ResumeJobDTO | null;
   /** Posting text saved on the résumé before jobs were tracked separately. */
   legacyDescription: string;
-  onSaved: () => void;
   onCancel?: () => void;
 }
 
-function TargetJobForm({ job, legacyDescription, onSaved, onCancel }: TargetJobFormProps) {
+function TargetJobForm({ job, legacyDescription, onCancel }: TargetJobFormProps) {
   const { saveTargetJob } = useResumeWorkspace();
-
-  const mutation = useMutation({
-    mutationFn: async (values: TargetJobDraft) => saveTargetJob(values),
-    onSuccess() {
-      toast.success(job ? "Job saved" : "Job saved and linked");
-      onSaved();
-    },
-    onError(err: unknown) {
-      toast.error("Failed to save job", {
-        description: unwrapUnknownError(err).message,
-      });
-    },
-    meta: { invalidates: [["resumes"], ["jobs"]] },
-  });
+  const saved = {
+    description: job?.description ?? legacyDescription,
+    company: job?.company ?? "",
+    title: job?.title ?? "",
+    location: job?.location ?? "",
+    url: job?.url ?? "",
+  };
 
   const form = useAppForm({
     ...targetJobOpts,
-    defaultValues: {
-      description: job?.description ?? legacyDescription,
-      company: job?.company ?? "",
-      title: job?.title ?? "",
-      location: job?.location ?? "",
-      url: job?.url ?? "",
-    },
-    onSubmit: async ({ value }) => {
-      await mutation.mutateAsync(value);
-    },
+    defaultValues: saved,
   });
 
   return (
@@ -170,7 +153,6 @@ function TargetJobForm({ job, legacyDescription, onSaved, onCancel }: TargetJobF
       onSubmit={(e) => {
         e.preventDefault();
         e.stopPropagation();
-        void form.handleSubmit();
       }}
       className="flex flex-col gap-4"
       data-test="target-job-form"
@@ -225,12 +207,25 @@ function TargetJobForm({ job, legacyDescription, onSaved, onCancel }: TargetJobF
         ) : null}
         {onCancel ? (
           <Button type="button" variant="ghost" size="sm" onClick={onCancel}>
-            Cancel
+            Done
           </Button>
         ) : null}
-        <form.AppForm>
-          <form.SubmitButton label={job ? "Save job" : "Save & link job"} />
-        </form.AppForm>
+        <form.Subscribe selector={(state) => state.values}>
+          {(values) => {
+            const url = values.url.trim();
+            const urlOk = url === "" || z.url().safeParse(url).success;
+            const descriptionOk = values.description.trim().length > 0;
+            return (
+              <DraftAutosave
+                value={values}
+                saved={saved}
+                canSave={descriptionOk && urlOk}
+                blocked={descriptionOk ? "Enter a full posting URL" : "Paste the job description"}
+                save={(next) => saveTargetJob(next)}
+              />
+            );
+          }}
+        </form.Subscribe>
       </div>
     </form>
   );
