@@ -5,7 +5,6 @@ import { toast } from "sonner";
 const SAVE_DELAY_MS = 2000;
 
 export type ResumeAutosaveStatus = "saved" | "pending" | "saving" | "error";
-
 /**
  * Saves a section shortly after its snapshot changes.
  * `save` is read from a ref so a new function each render does not retrigger the timer.
@@ -26,29 +25,35 @@ export function useResumeAutosave({
   const [error, setError] = useState(false);
   const saveRef = useRef(save);
   saveRef.current = save;
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (!dirty || !canSave) return;
-    let cancelled = false;
     const timer = window.setTimeout(() => {
       setSaving(true);
       setError(false);
       void saveRef
         .current()
         .then(() => {
-          if (!cancelled) setError(false);
+          if (mountedRef.current) setError(false);
         })
         .catch((err: unknown) => {
-          if (cancelled) return;
+          if (!mountedRef.current) return;
           setError(true);
           toast.error("Failed to save", { description: unwrapUnknownError(err).message });
         })
         .finally(() => {
-          if (!cancelled) setSaving(false);
+          if (mountedRef.current) setSaving(false);
         });
     }, SAVE_DELAY_MS);
     return () => {
-      cancelled = true;
       window.clearTimeout(timer);
     };
   }, [canSave, dirty, fingerprint]);

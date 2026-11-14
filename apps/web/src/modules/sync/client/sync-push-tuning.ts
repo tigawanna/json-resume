@@ -108,10 +108,18 @@ export function eventsThatFit(maxPushBytes: number | null, stats: SyncPushStats 
   return Math.max(1, Math.floor(maxPushBytes / stats.avgEventBytes));
 }
 
+function browserStorage(): Storage | null {
+  if (typeof window === "undefined") return null;
+  const storage = window.localStorage;
+  if (typeof storage?.getItem !== "function") return null;
+  return storage;
+}
+
 function readStored(): SyncPushTuning {
-  if (typeof localStorage === "undefined") return {};
+  const storage = browserStorage();
+  if (!storage) return {};
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = storage.getItem(STORAGE_KEY);
     if (!raw) return {};
     const parsed = syncPushTuningSchema.safeParse(JSON.parse(raw));
     return parsed.success ? parsed.data : {};
@@ -126,8 +134,9 @@ const listeners = new Set<() => void>();
 
 function writeTuning(next: SyncPushTuning) {
   tuning = next;
-  if (typeof localStorage !== "undefined") {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+  const storage = browserStorage();
+  if (storage) {
+    storage.setItem(STORAGE_KEY, JSON.stringify(next));
   }
   for (const listener of listeners) listener();
 }

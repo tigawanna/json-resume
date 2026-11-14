@@ -24,6 +24,13 @@ export const Route = createFileRoute("/")({
       { property: "og:title", content: title },
       { property: "og:description", content: description },
       { property: "og:image", content: ogImage },
+      { property: "og:image:width", content: "1200" },
+      { property: "og:image:height", content: "630" },
+      {
+        property: "og:image:alt",
+        content:
+          "Crafted, a personal résumé builder. Turn your résumé into JSON, tailor it with an LLM using a job description, and export a clean PDF.",
+      },
       { property: "og:url", content: siteUrl },
       { property: "og:site_name", content: AppConfig.name },
       { property: "og:locale", content: "en_US" },

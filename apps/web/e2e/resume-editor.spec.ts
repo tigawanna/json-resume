@@ -67,7 +67,7 @@ test("saves edited and newly added resume parts across the whole editor flow", a
     .filter({ has: page.getByRole("button", { name: "Add Bullet" }) });
   await editingExperienceCard.getByRole("button", { name: "Add Bullet" }).click();
   await editingExperienceCard
-    .locator("input")
+    .locator("textarea")
     .last()
     .fill("Launched a typed resume workflow with reliable persistence checks.");
   await editingExperienceCard.getByRole("button", { name: "Save" }).click();

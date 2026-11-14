@@ -11,7 +11,7 @@ pnpm dev
 
 # Building For Production
 
-To build this application for production:
+`pnpm dev` is `vp dev`. `pnpm build` is `vp build`. Library packages use the same two commands. The API uses `vp pack` instead.
 
 ```bash
 pnpm build

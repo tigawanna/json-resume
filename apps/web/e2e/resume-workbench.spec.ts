@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { signUp } from "./support/auth";
 import {
+  clickTableRowAction,
   educationSeedRows,
   experienceSeedRows,
   expectToast,
@@ -43,10 +44,7 @@ test(
       .evaluate((el: HTMLButtonElement) => el.click());
     await expectToast(page, "Résumé created");
 
-    await page
-      .getByTestId("resumes-table")
-      .getByTestId("row-details-btn")
-      .evaluate((el: HTMLButtonElement) => el.click());
+    await clickTableRowAction(page, "resumes-table", "details", `${prefix} Target Resume`);
     await expect(page.getByTestId("resume-workbench")).toBeVisible();
     await expect(page.getByTestId("resume-edit-tab")).toBeVisible();
 
@@ -77,7 +75,7 @@ test(
       .locator("[data-test^='experience-card-']")
       .filter({ has: page.getByRole("button", { name: "Add Bullet" }) });
     await editingCard.getByRole("button", { name: "Add Bullet" }).click();
-    await editingCard.locator("input").last().fill(editedBullet);
+    await editingCard.locator("textarea").last().fill(editedBullet);
     await editingCard.getByRole("button", { name: "Save", exact: true }).click();
     await expectToast(page, "Experience saved");
     await expect(addedCard).toContainText(editedBullet);

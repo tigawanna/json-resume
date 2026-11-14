@@ -30,7 +30,7 @@ export default defineConfig({
     {
       command: `pnpm exec node ./scripts/mock-github-api.mjs`,
       url: githubMockURL,
-      reuseExistingServer: false,
+      reuseExistingServer: true,
       timeout: 30_000,
       env: {
         PLAYWRIGHT_GITHUB_MOCK_PORT: String(githubMockPort),
@@ -39,7 +39,7 @@ export default defineConfig({
     {
       command: `pnpm exec node ./scripts/setup-test-db.mjs && pnpm exec vp dev --port ${port}`,
       url: baseURL,
-      reuseExistingServer: false,
+      reuseExistingServer: true,
       timeout: 120_000,
       env: {
         DATABASE_URL: databaseUrl,

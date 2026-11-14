@@ -9,8 +9,9 @@
   },
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "start": "tsx src/index.ts",
-    "check-types": "tsgo --noEmit"
+    "build": "vp pack src/index.ts --platform node --out-dir dist",
+    "start": "node dist/index.mjs",
+    "check-types": "tsc --noEmit"
   },
   "dependencies": {
     "@better-auth/api-key": "^1.7.18",
@@ -30,6 +31,7 @@
     "@repo/typescript-config": "workspace:*",
     "@types/node": "^25.2.0",
     "tsx": "^4.23.13",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vite": "catalog:"
   }
 }

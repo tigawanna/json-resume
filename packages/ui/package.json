@@ -6,6 +6,8 @@
     "./*": "./src/*.tsx"
   },
   "scripts": {
+    "dev": "vp build --watch",
+    "build": "vp build",
     "generate:component": "turbo gen react-component",
     "check-types": "tsgo --noEmit"
   },
@@ -18,6 +20,7 @@
     "@types/node": "^22.15.3",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vite": "catalog:"
   }
 }

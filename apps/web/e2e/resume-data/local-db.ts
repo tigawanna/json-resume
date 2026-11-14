@@ -186,14 +186,23 @@ export async function expectDesktopRowCount(page: Page, tableTestId: string, cou
   await expect(page.getByTestId(tableTestId).locator(ROW_SELECTOR)).toHaveCount(count);
 }
 
+export type RowAction = "edit" | "delete" | "clone" | "details";
+
+const ROW_ACTION_TEST_IDS: Record<RowAction, string> = {
+  edit: "row-edit-btn",
+  delete: "row-delete-btn",
+  clone: "row-clone-btn",
+  details: "row-details-btn",
+};
+
 /** Clicks the action on the row containing `rowText`, so stale search results can't be hit. */
 export async function clickTableRowAction(
   page: Page,
   tableTestId: string,
-  action: "edit" | "delete",
+  action: RowAction,
   rowText: string,
 ) {
-  const testId = action === "edit" ? "row-edit-btn" : "row-delete-btn";
+  const testId = ROW_ACTION_TEST_IDS[action];
   const row = page.getByTestId(tableTestId).locator(ROW_SELECTOR).filter({ hasText: rowText });
   await expect(row).toHaveCount(1);
   const direct = row.getByTestId(testId);
