@@ -21,6 +21,13 @@ const envSchema = z.object({
   GITHUB_API_BASE_URL: z.url().optional(),
   FRONTEND_URL: z.url(),
   CRON_SECRET: z.string().optional(),
+  /** Master switch for résumé credits. Off until enforcement ships. */
+  CREDITS_ENABLED: z.enum(["true"]).optional(),
+  /**
+   * ISO timestamp before which résumé creation is grandfathered (free). Existing
+   * résumés and legacy imports stay free on rebuilds too, via this cutoff.
+   */
+  CREDITS_START_AT: z.iso.datetime().optional(),
 });
 
 // Validate client environment

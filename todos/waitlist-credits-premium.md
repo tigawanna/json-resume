@@ -316,8 +316,8 @@ Conventions: shadcn UI, DaisyUI only for theme/buttons, `ring-1` surfaces, `data
 
 **Phase 0: schema and config**
 
-- [ ] `credits-schema.ts` (wallet, ledger, waitlist), `db:generate`, review, `db:migrate`.
-- [ ] `config/credits.ts`, env flags, and `CREDITS_START_AT`.
+- [x] `credits-schema.ts` (wallet, ledger, waitlist), `db:generate`, review, `db:migrate`.
+- [x] `config/credits.ts`, env flags, and `CREDITS_START_AT`.
 
 **Phase 1: waitlist (shippable alone, credits flag off)**
 

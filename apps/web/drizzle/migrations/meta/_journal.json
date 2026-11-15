@@ -127,6 +127,13 @@
       "when": 1794552600522,
       "tag": "0017_kind_mandarin",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "6",
+      "when": 1794756906668,
+      "tag": "0018_mean_tinkerer",
+      "breakpoints": true
     }
   ]
 }

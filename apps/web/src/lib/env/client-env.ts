@@ -5,6 +5,8 @@ const envSchema = z.object({
   /** Public origin of `apps/api` (Hono). */
   VITE_HONO_API_URL: z.url().default("http://localhost:3100"),
   VITE_SENTRY_DSN: z.url().optional(),
+  /** Master switch for résumé credits, mirrored client-side. */
+  VITE_CREDITS_ENABLED: z.enum(["true"]).optional(),
 });
 
 // Each key must be a direct `import.meta.env.VITE_*` read. Vite only inlines
@@ -14,6 +16,7 @@ const raw = {
   VITE_API_URL: import.meta.env.VITE_API_URL,
   VITE_HONO_API_URL: import.meta.env.VITE_HONO_API_URL,
   VITE_SENTRY_DSN: import.meta.env.VITE_SENTRY_DSN,
+  VITE_CREDITS_ENABLED: import.meta.env.VITE_CREDITS_ENABLED,
 };
 
 const { success, error, data } = envSchema.safeParse(raw);
