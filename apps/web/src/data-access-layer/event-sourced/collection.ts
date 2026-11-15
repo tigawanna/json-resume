@@ -104,6 +104,13 @@ const byUpdatedAt = <T extends { updatedAt: number }>(name = "by-updated") => ({
   name,
 });
 
+/** Dashboard recent résumés: `orderBy(createdAt).limit(n)`. */
+const byCreatedAt = <T extends { createdAt: number }>(name = "by-created") => ({
+  select: (row: T) => row.createdAt,
+  indexType: BasicIndex,
+  name,
+});
+
 const libraryIndexes = <T extends { id: string; userId?: string | null; updatedAt: number }>() => [
   byId<T>(),
   byUserId<T>(),
@@ -118,7 +125,7 @@ const libraryIndexes = <T extends { id: string; userId?: string | null; updatedA
 export const appCollectionConfigs: AppCollectionDefs = {
     resume: {
       getKey: (row) => row.id,
-      indexes: libraryIndexes<Resume>(),
+      indexes: [...libraryIndexes<Resume>(), byCreatedAt<Resume>()],
     },
 
     resumeExperience: {
