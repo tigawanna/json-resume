@@ -13,7 +13,7 @@
 
 export type WorkbenchPhase = "typing" | "thinking" | "text" | "tool" | "done";
 
-export const WORKBENCH_VIEWS = ["preview", "changes", "letter", "answers"] as const;
+export const WORKBENCH_VIEWS = ["preview", "changes", "events", "letter", "answers"] as const;
 
 export type WorkbenchView = (typeof WORKBENCH_VIEWS)[number];
 
@@ -28,6 +28,12 @@ export interface WorkbenchToolFixture {
   diff: { added: number; removed: number } | null;
   /** Tab the preview opens once this result lands. */
   view: WorkbenchView;
+  /** When set, the chat renders a question card instead of a tool chip. */
+  ask?: {
+    question: string;
+    options: readonly string[];
+    selected: string;
+  };
 }
 
 export interface WorkbenchToolRun {
@@ -37,6 +43,7 @@ export interface WorkbenchToolRun {
   result: string | null;
   summary: string;
   diff: { added: number; removed: number } | null;
+  ask: WorkbenchToolFixture["ask"] | null;
 }
 
 export type WorkbenchPart =
@@ -52,17 +59,19 @@ export type WorkbenchStep =
   | { kind: "text"; id: string; delta: string }
   | { kind: "toolStart"; id: string; tool: WorkbenchToolFixture }
   | { kind: "toolArgs"; delta: string }
+  | { kind: "pause" }
   | { kind: "toolResult"; content: string; view: WorkbenchView };
 
 export const WORKBENCH_PROMPT =
   "Tailor this résumé to the Northwind posting, write the cover letter, and answer their questions.";
 
 export const WORKBENCH_THINKING =
-  "Northwind wants a staff frontend owner for their design system. Capture the posting first so the letter and the answers have a job to attach to, then the résumé edits, then the writing. Every employer and every date stays as it is. ";
+  "Northwind wants a staff frontend owner for their design system. Capture the posting, ask how far to tailor, then edit. Every employer and every date stays as it is, and each edit lands on Events so it can be undone. ";
 
 export const WORKBENCH_INTRO =
   "## Plan — one pass\n\n" +
   "- Capture the posting and keep the source text.\n" +
+  "- Ask how far to tailor before rewriting anything.\n" +
   "- Re-rank the library parts against it.\n" +
   "- Rewrite the summary, the first bullet and the skill order.\n" +
   "- Draft the letter and the three application answers.\n\n";
@@ -76,7 +85,7 @@ export const WORKBENCH_BEFORE_WRITING =
 export const WORKBENCH_DONE =
   "## Done\n\n" +
   "Résumé re-ranked, posting attached, a 104-word letter and three answers saved.\n\n" +
-  "> Every employer and every date is unchanged. One undo step reverts the whole pass. ";
+  "> Every employer and every date is unchanged. Open Events to undo any edit you did not want. ";
 
 export const WORKBENCH_TOOLS = {
   captureJob: {
@@ -87,6 +96,19 @@ export const WORKBENCH_TOOLS = {
     summary: "Posting captured",
     diff: null,
     view: "preview",
+  },
+  askScope: {
+    name: "ask_user",
+    args: '{"question":"How far should I tailor this résumé?","options":[{"id":"summary","label":"Summary only"},{"id":"bullets","label":"Summary and bullets"},{"id":"full","label":"Full pass"}],"allowMultiple":false}',
+    result: '{"selected":[{"id":"full","label":"Full pass"}]}',
+    summary: "Full pass",
+    diff: null,
+    view: "preview",
+    ask: {
+      question: "How far should I tailor this résumé?",
+      options: ["Summary only", "Summary and bullets", "Full pass"],
+      selected: "Full pass",
+    },
   },
   setSummary: {
     name: "set_summary",
@@ -111,7 +133,7 @@ export const WORKBENCH_TOOLS = {
     result: '{"ok":true,"changed":["skills"]}',
     summary: "Skills re-ranked",
     diff: { added: 1, removed: 1 },
-    view: "preview",
+    view: "events",
   },
   saveLetter: {
     name: "save_cover_letter",
@@ -136,6 +158,7 @@ export const WORKBENCH_TOOLS = {
 /** Ordered tool run: capture → résumé → letter → answers. */
 export const WORKBENCH_TOOL_ORDER = [
   WORKBENCH_TOOLS.captureJob,
+  WORKBENCH_TOOLS.askScope,
   WORKBENCH_TOOLS.setSummary,
   WORKBENCH_TOOLS.setBullets,
   WORKBENCH_TOOLS.setSkills,
@@ -209,6 +232,13 @@ export const WORKBENCH_CHANGES = [
     removed: RESUME_CONTENT.baseSkills.join(" · "),
     added: RESUME_CONTENT.tailoredSkills.join(" · "),
   },
+] as const;
+
+/** Rows on the Events tab, newest first, revealed as the matching tool lands. */
+export const WORKBENCH_EVENTS = [
+  { tool: "set_skills", label: "Skills", detail: "Reordered to match the posting" },
+  { tool: "set_experience_bullets", label: "Experience", detail: "Kept 3 bullets, dropped 2" },
+  { tool: "set_summary", label: "Summary", detail: "Rewritten for the staff role" },
 ] as const;
 
 export const COVER_LETTER_CONTENT = {
@@ -314,6 +344,7 @@ function toolSteps(fixture: WorkbenchToolFixture, id: string): WorkbenchStep[] {
   for (const delta of chunk(fixture.args, 4)) {
     steps.push({ kind: "toolArgs", delta });
   }
+  if (fixture.ask) steps.push({ kind: "pause" });
   steps.push({ kind: "toolResult", content: fixture.result, view: fixture.view });
   return steps;
 }
@@ -335,6 +366,7 @@ export function buildWorkbenchSteps(): WorkbenchStep[] {
 
   steps.push({ kind: "phase", phase: "tool" });
   steps.push(...toolSteps(WORKBENCH_TOOLS.captureJob, nextPartId()));
+  steps.push(...toolSteps(WORKBENCH_TOOLS.askScope, nextPartId()));
 
   steps.push({ kind: "phase", phase: "text" });
   steps.push(...streamText(WORKBENCH_AFTER_CAPTURE, nextPartId()));
@@ -415,10 +447,13 @@ export function applyWorkbenchStep(
               result: null,
               summary: step.tool.summary,
               diff: step.tool.diff,
+              ask: step.tool.ask ?? null,
             },
           },
         ],
       };
+    case "pause":
+      return state;
     case "toolArgs": {
       const last = state.parts[state.parts.length - 1];
       if (last?.kind !== "tool" || last.tool.result !== null) return state;

@@ -27,6 +27,8 @@ function delayFor(step: WorkbenchStep) {
       return 14;
     case "toolStart":
       return 140;
+    case "pause":
+      return 1400;
     case "toolResult":
       return 320;
     case "phase":
