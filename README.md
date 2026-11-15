@@ -16,33 +16,86 @@ No vendor lock-in, no waiting for some background service, no proprietary format
 
 ---
 
-![json tab](https://github.com/tigawanna/json-resume/blob/dc7044922577fd5e0e125241885c476f7f3692e3/apps/web/docs/json_tab.png)
+![json tab](apps/web/docs/json_tab.png)
 
-![Ai chatbot tab](https://github.com/tigawanna/json-resume/raw/dc7044922577fd5e0e125241885c476f7f3692e3/apps/web/docs/ai_tab.png)
+![Ai chatbot tab](apps/web/docs/ai_tab.png)
+
+## What's in the app
+
+- **Résumé builder** — sections (experience, education, skills, certifications, projects, talks, volunteering, languages, links) stored as individual records and assembled into a typed JSON document.
+- **PDF export** — client-side rendering with `@react-pdf/renderer`; the layout is code, so exports are deterministic.
+- **AI assistant** — job-fit analysis, summary rewrites, tailored drafts (see [AI Assistant](#ai-assistant)).
+- **Job tracking** — save job postings, rank résumés and library sections against them by keyword coverage.
+- **Cover letters & application answers** — first-class sections with their own AI tools.
+- **Public résumés** — share a read-only view at `/r/{publicId}`.
+- **GitHub integration** — pull your repos in as source material for projects.
 
 ## Stack
 
-| Layer         | Choice                             |
-| ------------- | ---------------------------------- |
-| Monorepo      | pnpm workspaces + Turbo            |
-| App framework | TanStack Start (SSR-capable React) |
-| Routing       | TanStack Router (file-based)       |
-| Data fetching | TanStack Query                     |
-| Styling       | Tailwind CSS v4 + DaisyUI tokens   |
-| Auth          | Better Auth                        |
-| Tooling       | Vite+ (`vp` CLI)                   |
+| Layer         | Choice                                            |
+| ------------- | ------------------------------------------------- |
+| Monorepo      | pnpm workspaces + Turbo                           |
+| App framework | TanStack Start (SSR-capable React 19 + compiler)  |
+| Routing       | TanStack Router (file-based)                      |
+| Data fetching | TanStack Query + TanStack DB (local collections)  |
+| API           | Hono (`apps/api`) with oRPC + OpenAPI for tools   |
+| Database      | Drizzle ORM on libSQL (Turso or local file)       |
+| Auth          | Better Auth (GitHub OAuth)                        |
+| AI            | TanStack AI + OpenRouter (BYO key)                |
+| PDF           | `@react-pdf/renderer`                             |
+| Styling       | Tailwind CSS v4 + DaisyUI tokens + shadcn/ui      |
+| Testing       | Vitest (unit) + Playwright (e2e)                  |
+| Tooling       | Vite+ (`vp` CLI)                                  |
 
-- **Package name:** `agentic-json-resume` (root `package.json`)
-- **App branding:** `apps/site/src/utils/system.tsx` (`AppConfig`)
+## Repo layout
 
-## Scripts
+| Path            | Role                                                              |
+| --------------- | ----------------------------------------------------------------- |
+| `apps/web`      | TanStack Start app: UI, routes, local collections, PDF pipeline   |
+| `apps/api`      | Hono API: auth, Drizzle queries, AI/agent tools (oRPC, MCP, SSE)  |
+| `packages/db`   | Drizzle schema shared by both apps                                |
+| `packages/isomorphic` | Shared types and auth config                                |
+| `packages/ui`   | Shared React components                                           |
+| `packages/typescript-config` | Shared tsconfig presets                              |
+
+Data flow: the browser keeps sections in local TanStack DB collections and syncs them to the server as events; the API exposes read-only, Drizzle-backed tools for AI agents through oRPC, MCP, and OpenAPI-compatible routes (see `apps/web/src/features/agentic-tools/README.md`).
+
+## Getting started
 
 ```bash
 pnpm install
-pnpm dev
+pnpm dev        # web on :3040, api on :3100 (turbo)
 ```
 
-Use **`vp`** from the repo root for lint/format/test per `CLAUDE.md` (e.g. `vp check`).
+Environment lives in `apps/web/.env` — the API falls back to it in dev so one file drives the whole workspace:
+
+```bash
+DATABASE_URL=libsql://...          # or file:local.db
+DATABASE_AUTH_TOKEN=...            # only for remote Turso
+BETTER_AUTH_SECRET=...
+GITHUB_CLIENT_ID=...
+GITHUB_CLIENT_SECRET=...
+FRONTEND_URL=http://localhost:3040
+VITE_HONO_API_URL=http://localhost:3100
+VITE_SENTRY_DSN=...                # optional; enables the local Urgentry error store
+```
+
+Database schema changes go through Drizzle (`pnpm --dir apps/web db:generate` then `db:migrate`).
+
+## Scripts
+
+| Command          | What it does                        |
+| ---------------- | ----------------------------------- |
+| `pnpm dev`       | Turbo dev (web + api)               |
+| `pnpm build`     | Build all packages and apps         |
+| `pnpm lint`      | `vp lint` (deny warnings)           |
+| `pnpm format`    | `vp fmt`                            |
+| `pnpm test`      | Vitest unit tests                   |
+| `pnpm test:e2e`  | Playwright e2e                      |
+| `pnpm check-types` | Typecheck all packages            |
+| `pnpm quality`   | Lint + format check                 |
+
+Use **`vp`** from the repo root for per-task lint/format/test (e.g. `vp check`).
 
 ## AI Assistant
 
@@ -59,8 +112,11 @@ See `apps/web/src/features/agentic-tools/README.md` for the full AI layer refere
 
 ## Docs
 
-- `VISION.md` — product problem, JSON+LLM loop, future “agentic” direction.
-- `ARCHITECTURE.md` — how the repo is organized and where the builder will plug in.
+- `VISION.md` — product problem, JSON+LLM loop, future "agentic" direction.
+- `ARCHITECTURE.md` — how the repo is organized.
+- `CLAUDE.md` — agent guide: stack rules, code conventions, tooling.
+- `apps/web/docs/testing-strategy.md` — unit and e2e testing approach.
+- `apps/web/src/features/agentic-tools/README.md` — AI tool layer (oRPC, MCP, tool schemas).
 
 ## License
 
