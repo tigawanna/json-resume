@@ -1,10 +1,10 @@
-import { zValidator } from "@hono/zod-validator";
-import { Hono } from "hono";
-import { z } from "zod";
 import { auth } from "@api/auth/auth";
 import { requireSession } from "@api/auth/middleware";
 import { errorBody } from "@api/lib/http";
 import type { AppEnv } from "@api/types";
+import { zValidator } from "@hono/zod-validator";
+import { Hono } from "hono";
+import { z } from "zod";
 
 export const updateMeInput = z.object({
   name: z.string().trim().min(1).max(120),
@@ -18,6 +18,15 @@ export const meRoute = new Hono<AppEnv>()
   .get("/", requireSession, (c) => {
     const session = c.get("session");
     return c.json({ user: session.user });
+  })
+  .delete("/", requireSession, async (c) => {
+    const session = c.get("session");
+    // Delete the session's own account. The client never supplies the id.
+    await auth.api.removeUser({
+      body: { userId: session.user.id },
+      headers: c.req.raw.headers,
+    });
+    return c.json({ success: true });
   })
   .patch(
     "/",

@@ -1,6 +1,6 @@
 import { getSessionSafely } from "@/lib/better-auth/auth-session";
-import { getSession } from "@/lib/better-auth/auth.functions";
 import { authClient, BetterAuthSession } from "@/lib/better-auth/client";
+import { honoClient } from "@/lib/api/client";
 import { safeStringToUrl } from "@/utils/url";
 import { queryOptions, useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { redirect } from "@tanstack/react-router";
@@ -23,10 +23,11 @@ export const viewerqueryOptions = queryOptions({
   retry: false,
   queryFn: async () => {
     try {
-      const session = await getSession();
-      if (!session) {
+      const response = await honoClient.api.viewer.$get();
+      if (!response.ok) {
         return loggedOutViewer;
       }
+      const session = await response.json();
       return {
         data: { user: session.user, session: session.session },
         error: null,

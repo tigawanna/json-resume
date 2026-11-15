@@ -11,7 +11,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { useViewer } from "@/data-access-layer/auth/viewer";
-import { deleteAccount } from "@/lib/better-auth/auth.functions";
+import { honoClient } from "@/lib/api/client";
+import { parseApiError } from "@/lib/api/parse-api-error";
 import { unwrapUnknownError } from "@/utils/errors";
 import { useMutation } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
@@ -36,7 +37,10 @@ function SettingsPage() {
   const deleteAccountMutation = useMutation({
     mutationFn: async () => {
       if (!viewer.user?.id) throw new Error("User ID not found");
-      await deleteAccount({ data: { userId: viewer.user.id } });
+      const response = await honoClient.api.me.$delete();
+      if (!response.ok) {
+        throw await parseApiError(response, "Failed to delete account");
+      }
     },
     onSuccess() {
       toast.success("Account deleted successfully");
