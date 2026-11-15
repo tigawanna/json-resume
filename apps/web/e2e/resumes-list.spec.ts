@@ -1,5 +1,6 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import {
+  clickTableRowAction,
   expectToast,
   reloadAfterLocalWrites,
   ROW_SELECTOR,
@@ -20,7 +21,7 @@ test("manages resumes from the list route", { tag: "@smoke" }, async ({ page }) 
   const original = resumeCard(page, name);
   await expect(original).toBeVisible();
 
-  await original.getByTestId("row-clone-btn").click();
+  await clickTableRowAction(page, "resumes-table", "clone", name);
   await expectToast(page, "Résumé cloned");
   await expect(page.getByTestId("resume-workbench")).toBeVisible();
   await expect(page.getByTestId("metadata-form").getByLabel("Resume Name")).toHaveValue(copyName);
@@ -30,7 +31,7 @@ test("manages resumes from the list route", { tag: "@smoke" }, async ({ page }) 
   const clone = resumeCard(page, copyName);
   await expect(clone).toBeVisible();
 
-  await clone.getByTestId("row-delete-btn").click();
+  await clickTableRowAction(page, "resumes-table", "delete", copyName);
   await expectToast(page, "Résumé deleted");
   await expect(clone).toBeHidden();
 
@@ -48,6 +49,6 @@ async function openResumeList(page: Page) {
 }
 
 function resumeCard(page: Page, name: string): Locator {
-  const title = page.locator("[data-slot='card-title']").filter({ hasText: name });
+  const title = page.locator("[data-slot='card-title']").filter({ hasText: new RegExp(`^\\s*${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*$`) });
   return page.getByTestId("resumes-table").locator(ROW_SELECTOR).filter({ has: title });
 }

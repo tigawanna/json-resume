@@ -9,7 +9,7 @@ export interface OgImageProps {
  * Reusable OG image template (1200x630).
  * Render with Takumi (`takumi-js`) to produce a PNG.
  */
-export function OgImage({ title, description, siteLabel = "Crafted", iconDataUrl }: OgImageProps) {
+export function OgImage({ title, description, siteLabel = "CraVfted", iconDataUrl }: OgImageProps) {
   return (
     <div
       style={{
@@ -62,7 +62,7 @@ export function OgImage({ title, description, siteLabel = "Crafted", iconDataUrl
             color: "#d8deca",
           }}
         >
-          JSON Resume
+          A personal Resume builder
         </div>
       </div>
 
@@ -110,8 +110,8 @@ export function OgImage({ title, description, siteLabel = "Crafted", iconDataUrl
           color: "#cfd3c8",
         }}
       >
-        <span>crafted.app</span>
-        <span>Crafted</span>
+        <span>cravfted.app</span>
+        <span>CraVfted</span>
       </div>
     </div>
   );

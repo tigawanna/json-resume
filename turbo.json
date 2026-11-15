@@ -5,7 +5,18 @@
     "build": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": [".next/**", "!.next/cache/**", ".output/**", "dist/**"]
+      "outputs": [".next/**", "!.next/cache/**", ".output/**", "dist/**"],
+      "env": [
+        "DATABASE_URL",
+        "DATABASE_AUTH_TOKEN",
+        "BETTER_AUTH_SECRET",
+        "FRONTEND_URL",
+        "GITHUB_CLIENT_ID",
+        "GITHUB_CLIENT_SECRET",
+        "VITE_API_URL",
+        "LOG_DEBUG",
+        "CRON_SECRET"
+      ]
     },
     "//#lint": {},
     "//#lint:fix": {
@@ -30,6 +41,10 @@
       "outputs": ["coverage/**"]
     },
     "test:e2e": {
+      "dependsOn": ["^build"],
+      "cache": false
+    },
+    "test:e2e:smoke": {
       "dependsOn": ["^build"],
       "cache": false
     },

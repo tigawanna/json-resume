@@ -9,7 +9,8 @@
   },
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "start": "tsx src/index.ts",
+    "build": "vp pack src/index.ts --platform node --out-dir dist",
+    "start": "node dist/index.mjs",
     "test": "vitest run",
     "check-types": "tsgo --noEmit"
   },
@@ -32,6 +33,7 @@
     "@types/node": "^25.2.0",
     "tsx": "^4.23.13",
     "typescript": "catalog:",
+    "vite": "catalog:",
     "vitest": "^5.1.0"
   }
 }

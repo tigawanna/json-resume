@@ -8,16 +8,16 @@ import { OgImage } from "../src/components/og/OgImage";
 const root = join(process.cwd());
 const out = join(root, "public", "og.png");
 
-const iconSvg = readFileSync(join(root, "public", "icon.svg"), "utf8");
+const iconSvg = readFileSync(join(root, "public", "logo.svg"), "utf8");
 const iconDataUrl = `data:image/svg+xml;utf8,${encodeURIComponent(iconSvg)}`;
 
 const fonts = await googleFonts([{ name: "Inter", weight: [400, 600, 700] }]);
 
 const buf = await render(
   <OgImage
-    title="Crafted"
+    title="CraVfted"
     description="Turn your résumé into JSON, tailor it with any LLM using a job description, and export a clean PDF."
-    siteLabel="Crafted"
+    siteLabel="CraVfted"
     iconDataUrl={iconDataUrl}
   />,
   { width: 1200, height: 630, fonts },

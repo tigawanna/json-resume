@@ -11,10 +11,11 @@
     "test": "turbo run test",
     "test:e2e": "turbo run test:e2e",
     "test:all": "turbo run test test:e2e",
+    "test:sanity": "turbo run test && turbo run test:e2e:smoke",
     "check-types": "turbo run check-types",
     "quality": "turbo run //#lint //#format",
     "quality:fix": "turbo run //#lint:fix //#format:fix",
-    "prepare": "vp config"
+    "prepare": "vp config && git config core.hooksPath .githooks"
   },
   "devDependencies": {
     "@shadcn/lint": "^0.2.0",

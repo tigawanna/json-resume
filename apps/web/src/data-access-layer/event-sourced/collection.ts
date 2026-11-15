@@ -115,26 +115,7 @@ const libraryIndexes = <T extends { id: string; userId?: string | null; updatedA
  * Sync transport is wired but starts disabled. Call `applyManagedSyncGate`
  * after `ensureDb()` once the user session and local settings are known.
  */
-const {
-  ensureDb: ensureDbInner,
-  db,
-  close: closeInner,
-} = createBrowserEventSourcedDB<AppCollectionDefs>({
-  databaseName: "agentic-json-resume.sqlite",
-  // debug: import.meta.env.DEV,
-  debug: false,
-  schemaVersion: 1,
-  eventSchemaVersion: 1,
-  syncEnabled: true,
-  recordLocalEchoes: false,
-  sync: createCookieSyncTransport(),
-  syncPreset: "vercel",
-  // A rebuilt server log has no delete events for rows it dropped, so a device
-  // must start from an empty database rather than requeue its old outbox.
-  // `runManagedSync` wipes and reloads on BackendMismatchError.
-  backendMismatch: "fail",
-
-  collections: {
+export const appCollectionConfigs: AppCollectionDefs = {
     resume: {
       getKey: (row) => row.id,
       indexes: libraryIndexes<Resume>(),
@@ -149,6 +130,7 @@ const {
       indexes: [
         byId<ResumeExperienceBullet>(),
         { select: (r) => r.experienceId, indexType: BasicIndex, name: "by-experience" },
+        byUpdatedAt<ResumeExperienceBullet>(),
       ],
     },
 
@@ -161,6 +143,7 @@ const {
       indexes: [
         byId<ResumeEducationBullet>(),
         { select: (r) => r.educationId, indexType: BasicIndex, name: "by-education" },
+        byUpdatedAt<ResumeEducationBullet>(),
       ],
     },
 
@@ -289,7 +272,27 @@ const {
       getKey: (row) => row.id,
       localOnly: true,
     },
-  },
+};
+
+const {
+  ensureDb: ensureDbInner,
+  db,
+  close: closeInner,
+} = createBrowserEventSourcedDB<AppCollectionDefs>({
+  databaseName: "agentic-json-resume.sqlite",
+  // debug: import.meta.env.DEV,
+  debug: false,
+  schemaVersion: 1,
+  eventSchemaVersion: 1,
+  syncEnabled: true,
+  recordLocalEchoes: false,
+  sync: createCookieSyncTransport(),
+  syncPreset: "vercel",
+  // A rebuilt server log has no delete events for rows it dropped, so a device
+  // must start from an empty database rather than requeue its old outbox.
+  // `runManagedSync` wipes and reloads on BackendMismatchError.
+  backendMismatch: "fail",
+  collections: appCollectionConfigs,
 
   modules: async () => {
     const { createCollection } = await import("@tanstack/db");
@@ -323,13 +326,20 @@ const {
  * registry `indexes` option. Register the fields used by Events page
  * `orderBy` + `limit` queries, and re-apply after SQLite hydration.
  */
-function applyIndexes<T extends object>(
+function ensureNamedIndexes<T extends object>(
   collection: Collection<T, string>,
-  registerIndexes: (collection: Collection<T, string>) => void,
+  indexes: Array<{
+    name: string;
+    select: Parameters<Collection<T, string>["createIndex"]>[0];
+  }>,
 ) {
   const register = () => {
-    if (collection.getIndexMetadata().length > 0) return;
-    registerIndexes(collection);
+    const names = new Set(collection.getIndexMetadata().map((meta) => meta.name));
+    for (const index of indexes) {
+      if (names.has(index.name)) continue;
+      collection.createIndex(index.select, { name: index.name, indexType: BasicIndex });
+      names.add(index.name);
+    }
   };
   register();
   collection.on("status:ready", register);
@@ -341,28 +351,28 @@ function ensureMetaQueueIndexes(database: AppDb) {
   if (metaQueueIndexesApplied) return;
   metaQueueIndexesApplied = true;
 
-  applyIndexes(database.collections.outbox, (collection) => {
-    collection.createIndex((r) => r.localSeq, { name: "by-local-seq", indexType: BasicIndex });
-    collection.createIndex((r) => r.timestamp, { name: "by-timestamp", indexType: BasicIndex });
-    collection.createIndex((r) => r.type, { name: "by-type", indexType: BasicIndex });
-    collection.createIndex((r) => r.collectionId, { name: "by-collection", indexType: BasicIndex });
-    collection.createIndex((r) => r.sync, { name: "by-sync", indexType: BasicIndex });
-  });
+  ensureNamedIndexes(database.collections.outbox, [
+    { name: "by-local-seq", select: (row) => row.localSeq },
+    { name: "by-timestamp", select: (row) => row.timestamp },
+    { name: "by-type", select: (row) => row.type },
+    { name: "by-collection", select: (row) => row.collectionId },
+    { name: "by-sync", select: (row) => row.sync },
+  ]);
 
-  applyIndexes(database.collections.inbox, (collection) => {
-    collection.createIndex((r) => r.globalSeq, { name: "by-global-seq", indexType: BasicIndex });
-    collection.createIndex((r) => r.timestamp, { name: "by-timestamp", indexType: BasicIndex });
-    collection.createIndex((r) => r.type, { name: "by-type", indexType: BasicIndex });
-    collection.createIndex((r) => r.collectionId, { name: "by-collection", indexType: BasicIndex });
-    collection.createIndex((r) => r.sync, { name: "by-sync", indexType: BasicIndex });
-  });
+  ensureNamedIndexes(database.collections.inbox, [
+    { name: "by-global-seq", select: (row) => row.globalSeq },
+    { name: "by-timestamp", select: (row) => row.timestamp },
+    { name: "by-type", select: (row) => row.type },
+    { name: "by-collection", select: (row) => row.collectionId },
+    { name: "by-sync", select: (row) => row.sync },
+  ]);
 
-  applyIndexes(database.collections.deadletter, (collection) => {
-    collection.createIndex((r) => r.failedAt, { name: "by-failed-at", indexType: BasicIndex });
-    collection.createIndex((r) => r.collectionId, { name: "by-collection", indexType: BasicIndex });
-    collection.createIndex((r) => r.type, { name: "by-type", indexType: BasicIndex });
-    collection.createIndex((r) => r.reason, { name: "by-reason", indexType: BasicIndex });
-  });
+  ensureNamedIndexes(database.collections.deadletter, [
+    { name: "by-failed-at", select: (row) => row.failedAt },
+    { name: "by-collection", select: (row) => row.collectionId },
+    { name: "by-type", select: (row) => row.type },
+    { name: "by-reason", select: (row) => row.reason },
+  ]);
 }
 
 async function ensureDb() {

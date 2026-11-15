@@ -88,7 +88,7 @@ Source: the user wrote "LLM evaluation" on a 2021 research role.
 const PRAGMATIC_TAILORING_DESCRIPTION =
   "Weave a posting requirement into a role only when the résumé already supports it. Returns edits, a change log, and a gap list. Never invents experience.";
 
-const PRAGMATIC_TAILORING_BODY = `# Rule
+const PREVIOUS_PLASTERED_PRAGMATIC_BODY = `# Rule
 A requirement may be woven in only where the résumé already supports it. If nothing supports it, leave it out and report it as a gap.
 
 # Boundary with Developer bullets
@@ -124,6 +124,68 @@ Stop before any write tool. Tell the user to answer the Placement brief card, th
 - Propose, clearly labeled, where evidence is Adjacent.
 - Do not edit Unsupported requirements; list them.
 - Ask again only when the brief conflicts with the evidence, or a later change needs a home the brief did not name. Offer ranked experiences from the résumé plus Other. Never a bare "which experience?", and never the four brief questions again.
+
+# Multiple homes
+Prefer, in order: most recent → most relevant to the target role → strongest direct evidence. State the choice in the change log.
+
+# Go all in
+Only when the user explicitly says to tailor to the max and disregard realistic experience, or the brief says go all in.
+
+Means: denser keyword alignment, leading with the most relevant evidence, more aggressive framing. Does not permit new tools, metrics, dates, titles, scope, or backdated stacks.
+
+# Output
+1. **Edits** — revised bullets or fields with experience IDs.
+2. **Change log** — requirement → experience → evidence level → what changed.
+3. **Gaps** — unsupported requirements, left out, with a one-line suggestion each ("add only if true", "omit", "cover in cover letter").
+4. **Questions** — only for a brief conflict or a home the brief did not name.
+
+Every requirement lands in edits, proposals, or gaps. Never silently drop one.
+
+# Do not
+- Stuff keywords or repeat a term unnaturally.
+- Claim proficiency from a single mention.
+- Strip useful general evidence to fit one posting.
+- Treat "go all in" as permission to fabricate.
+
+# Examples
+Direct: "stakeholder management" ↔ "led weekly reviews with finance and ops" → "Managed stakeholders across finance and ops through weekly reviews."
+
+Adjacent: "Kubernetes" ↔ "containerized services with Docker" → "Containerized services with Docker; working knowledge of orchestration." Label Adjacent.
+
+Unsupported: "Terraform", no IaC evidence → gap only.
+
+Brief conflict: brief puts "RAG" on a role that ended in 2016 with no generative-AI evidence → no edit; flag and ask. A "machine learning" line the user already wrote on that role stays.`;
+
+const PRAGMATIC_TAILORING_BODY = `# Rule
+A requirement may be woven in only where the résumé already supports it. If nothing supports it, leave it out and report it as a gap.
+
+# Boundary with Developer bullets
+This skill decides what to weave and where. Developer bullets decides how the line reads and what counts as a fact, including the generative-AI cutoff. On any conflict about tense, stack-in-role, metrics, or verbs, Developer bullets wins. "Go all in" relaxes emphasis, never facts.
+
+# Evidence levels
+Classify each matched requirement before editing:
+- **Direct** — the same skill, tool, domain, or responsibility already appears on the named experience. Adjust wording so the match is obvious.
+- **Adjacent** — transferable evidence only (related tool, analogous responsibility, same domain). Propose the line, label it Adjacent, keep the claim modest. Don't upgrade to Direct by wording.
+- **Unsupported** — no evidence. No edit. Gap list.
+
+# Placement questions
+When you have the ask_user tool and a placement decision is not already answered in this thread, call it once per question and wait. Ask only what you cannot tell from the résumé. Typical questions, in order, and only the ones you still need: how far (keep it honest, or go all in), which skill, which experience (ids from get_resume, plus Other), how the line should be written in. Pass short choices. Do not ask those questions in prose, and do not ask several in one call.
+
+An answer already in the thread covers later messages. Follow it and start the work. Do not ask again.
+
+When an answer names a skill and an experience:
+- Put the named skill on the named experience. Do not shop around for a different home.
+- Use their note for how the line reads.
+- An answer authorizes placement, not fabrication. If the named experience has no supporting evidence, stop, flag the conflict, and ask before editing.
+
+# No answer yet
+Stop before any write tool. Call ask_user for the first unanswered question, then wait. Do not list the choices in the reply. The card shows them.
+
+# After the answers
+- Edit where evidence is Direct.
+- Propose, clearly labeled, where evidence is Adjacent.
+- Do not edit Unsupported requirements; list them.
+- Ask again only when an answer conflicts with the evidence, or a later change needs a home that was not named. One ask_user call, with ranked experiences from the résumé plus Other.
 
 # Multiple homes
 Prefer, in order: most recent → most relevant to the target role → strongest direct evidence. State the choice in the change log.
@@ -445,6 +507,11 @@ function previousDocuments(skill: BuiltinAssistantSkill) {
       name: "Pragmatic tailoring",
       description: PRAGMATIC_TAILORING_DESCRIPTION,
       body: PREVIOUS_CARD_PRAGMATIC_BODY,
+    }),
+    composeSkillMarkdown({
+      name: "Pragmatic tailoring",
+      description: PRAGMATIC_TAILORING_DESCRIPTION,
+      body: PREVIOUS_PLASTERED_PRAGMATIC_BODY,
     }),
   ];
 }

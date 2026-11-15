@@ -1,11 +1,9 @@
 import { useResumeWorkspace } from "@/components/resume/resume-workspace/ResumeWorkspaceContext";
 import { TEMPLATE_IDS } from "@/features/resume/resume-schema";
 import { useAppForm } from "@/lib/tanstack/form";
-import { unwrapUnknownError } from "@/utils/errors";
 import { formOptions } from "@tanstack/react-form";
-import { useMutation } from "@tanstack/react-query";
-import { toast } from "sonner";
 import { z } from "zod";
+import { DraftAutosave } from "./use-resume-autosave";
 
 const formOpts = formOptions({
   defaultValues: {
@@ -20,36 +18,17 @@ const formOpts = formOptions({
 /** Résumé-level details: internal name, the name and headline it prints, and private notes. */
 export function MetadataForm() {
   const { resume, updateMetadata } = useResumeWorkspace();
-
-  const mutation = useMutation({
-    mutationFn: async (values: typeof formOpts.defaultValues) =>
-      updateMetadata({
-        ...values,
-        templateId: z.enum(TEMPLATE_IDS).parse(values.templateId),
-      }),
-    onSuccess() {
-      toast.success("Details saved");
-    },
-    onError(err: unknown) {
-      toast.error("Failed to save details", {
-        description: unwrapUnknownError(err).message,
-      });
-    },
-    meta: { invalidates: [["resumes"]] },
-  });
+  const saved = {
+    name: resume?.name ?? "",
+    fullName: resume?.fullName ?? "",
+    headline: resume?.headline ?? "",
+    description: resume?.description ?? "",
+    templateId: resume?.templateId ?? "classic",
+  };
 
   const form = useAppForm({
     ...formOpts,
-    defaultValues: {
-      name: resume?.name ?? "",
-      fullName: resume?.fullName ?? "",
-      headline: resume?.headline ?? "",
-      description: resume?.description ?? "",
-      templateId: resume?.templateId ?? "classic",
-    },
-    onSubmit: async ({ value }) => {
-      await mutation.mutateAsync(value);
-    },
+    defaultValues: saved,
   });
 
   if (!resume) return null;
@@ -59,8 +38,6 @@ export function MetadataForm() {
       onSubmit={(e) => {
         e.preventDefault();
         e.stopPropagation();
-
-        void form.handleSubmit();
       }}
       className="flex flex-col gap-4"
       data-test="metadata-form"
@@ -93,11 +70,22 @@ export function MetadataForm() {
         )}
       </form.AppField>
 
-      <div className="flex justify-end">
-        <form.AppForm>
-          <form.SubmitButton label="Save details" />
-        </form.AppForm>
-      </div>
+      <form.Subscribe selector={(state) => state.values}>
+        {(values) => (
+          <DraftAutosave
+            value={values}
+            saved={saved}
+            canSave={values.name.trim().length > 0}
+            blocked="Name is required"
+            save={(next) =>
+              updateMetadata({
+                ...next,
+                templateId: z.enum(TEMPLATE_IDS).parse(next.templateId),
+              })
+            }
+          />
+        )}
+      </form.Subscribe>
     </form>
   );
 }

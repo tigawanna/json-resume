@@ -100,9 +100,12 @@ function Education({ doc }: { doc: ResumeDocumentV1 }) {
     <View>
       <Text style={base.h2}>Education</Text>
       {doc.education.items.map((ed) => (
-        <Text key={ed.school} style={base.body}>
-          {ed.degree} — {ed.school} ({ed.year})
-        </Text>
+        <View key={`${ed.school}-${ed.degree}`} wrap={false}>
+          <Text style={base.body}>
+            {ed.degree} — {ed.school} ({ed.year})
+          </Text>
+          {ed.description ? <Text style={base.body}>{ed.description}</Text> : null}
+        </View>
       ))}
     </View>
   );
@@ -346,9 +349,12 @@ function AccentPdf({ doc }: { doc: ResumeDocumentV1 }) {
       <View>
         <Text style={accentStyles.h2}>Education</Text>
         {doc.education.items.map((ed) => (
-          <Text key={ed.school} style={base.body}>
-            {ed.degree} — {ed.school} ({ed.year})
-          </Text>
+          <View key={`${ed.school}-${ed.degree}`} wrap={false}>
+            <Text style={base.body}>
+              {ed.degree} — {ed.school} ({ed.year})
+            </Text>
+            {ed.description ? <Text style={base.body}>{ed.description}</Text> : null}
+          </View>
         ))}
       </View>
     ) : null,
@@ -439,9 +445,12 @@ function ModernPdf({ doc }: { doc: ResumeDocumentV1 }) {
           <View>
             <Text style={modernStyles.h2}>Education</Text>
             {doc.education.items.map((ed) => (
-              <Text key={ed.school} style={base.body}>
-                {ed.degree} — {ed.school} ({ed.year})
-              </Text>
+              <View key={`${ed.school}-${ed.degree}`} wrap={false}>
+                <Text style={base.body}>
+                  {ed.degree} — {ed.school} ({ed.year})
+                </Text>
+                {ed.description ? <Text style={base.body}>{ed.description}</Text> : null}
+              </View>
             ))}
           </View>
         );

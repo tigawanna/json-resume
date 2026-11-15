@@ -2,7 +2,13 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { resumeDetailToDocument } from "@/data-access-layer/resume/resume-converters";
 import { RESUME_PAPER_WIDTH, ResumeComponentPaper } from "@/features/resume/ResumeComponentPaper";
+import { ResumePdfDocument } from "@/features/resume/resume-pdf";
+import { resumePdfFileStem } from "@/features/resume/resume-pdf-filename";
 import { resumeDocumentToSpec } from "@/features/resume/resume-to-spec";
+import type { ResumeDocumentV1, TemplateId } from "@/features/resume/resume-schema";
+import { unwrapUnknownError } from "@/utils/errors";
+import { PublishResumeButton } from "@/routes/_dashboard/resumes/$resumeId/-components/PublishResumeButton";
+import { pdf } from "@react-pdf/renderer";
 import { useThemeContext } from "@/lib/tanstack/router/theme-provider";
 import { cn } from "@/lib/utils";
 import {
@@ -14,8 +20,10 @@ import type { AiPreviewView } from "@/routes/_dashboard/resumes/$resumeId/-compo
 import { useEventSourcedResumeDetail } from "@/routes/_dashboard/resumes/$resumeId/-hooks/use-event-sourced-resume-detail";
 import {
   Eye,
+  FileDown,
   FileText,
   GitCompareArrows,
+  History,
   Loader2,
   Mail,
   Maximize2,
@@ -25,9 +33,11 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { diffResumeJson, resumeDetailJson } from "../-utils/resume-json-diff";
 import { ResumeAiAnswersPreview } from "./ResumeAiAnswersPreview";
 import { ResumeAiCoverLetterPreview } from "./ResumeAiCoverLetterPreview";
+import { ResumeAiEventsPreview } from "./ResumeAiEventsPreview";
 
 type ResumeDetail = NonNullable<ReturnType<typeof useEventSourcedResumeDetail>["detail"]>;
 
@@ -35,7 +45,11 @@ export type LivePreviewLayout = "panel" | "maximized" | "rail" | "sheet";
 
 function isLivePreviewView(value: string): value is AiPreviewView {
   return (
-    value === "preview" || value === "changes" || value === "cover-letter" || value === "answers"
+    value === "preview" ||
+    value === "changes" ||
+    value === "events" ||
+    value === "cover-letter" ||
+    value === "answers"
   );
 }
 
@@ -116,6 +130,9 @@ export function ResumeAiLivePreview({
           <TabsContent value="changes" className="mt-0 min-h-0 flex-1">
             <LivePreviewChanges diff={diff} />
           </TabsContent>
+          <TabsContent value="events" className="mt-0 min-h-0 flex-1">
+            <ResumeAiEventsPreview resumeId={resumeId} />
+          </TabsContent>
         </>
       );
     }
@@ -165,6 +182,10 @@ export function ResumeAiLivePreview({
                 <span className="text-error">−{diff.removed}</span>
               </span>
             ) : null}
+          </TabsTrigger>
+          <TabsTrigger value="events" className="gap-1.5 text-xs" data-test="resume-ai-events-tab">
+            <History className="size-3.5" />
+            Events
           </TabsTrigger>
           <TabsTrigger
             value="cover-letter"
@@ -232,8 +253,79 @@ export function ResumeAiLivePreview({
           </Button>
         </div>
       </header>
+      {view === "preview" && detail && templateId ? (
+        <div
+          className="flex items-center justify-end gap-1 border-b border-border/60 px-3 py-1.5"
+          data-test="resume-ai-preview-actions"
+        >
+          <PreviewFileActions
+            resumeId={resumeId}
+            title={detail.name}
+            resumeDocument={resumeDetailToDocument(detail)}
+            templateId={templateId}
+          />
+        </div>
+      ) : null}
       {previewBody()}
     </Tabs>
+  );
+}
+
+function PreviewFileActions({
+  resumeId,
+  title,
+  resumeDocument,
+  templateId,
+}: {
+  resumeId: string;
+  title: string;
+  resumeDocument: ResumeDocumentV1;
+  templateId: TemplateId;
+}) {
+  const [savingPdf, setSavingPdf] = useState(false);
+
+  async function handleDownload() {
+    setSavingPdf(true);
+    try {
+      const fileStem = resumePdfFileStem(title, resumeDocument);
+      const blob = await pdf(
+        <ResumePdfDocument doc={resumeDocument} templateId={templateId} pdfTitle={fileStem} />,
+      ).toBlob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${fileStem}.pdf`;
+      link.click();
+      URL.revokeObjectURL(url);
+      toast.success("PDF downloaded");
+    } catch (err: unknown) {
+      toast.error("Failed to save PDF", { description: unwrapUnknownError(err).message });
+    } finally {
+      setSavingPdf(false);
+    }
+  }
+
+  return (
+    <div className="flex items-center gap-1">
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        className="h-7 gap-1.5 px-2 text-muted-foreground"
+        disabled={savingPdf}
+        onClick={() => void handleDownload()}
+        data-test="resume-ai-preview-download"
+      >
+        {savingPdf ? <Loader2 className="size-3.5 animate-spin" /> : <FileDown className="size-3.5" />}
+        Download
+      </Button>
+      <PublishResumeButton
+        sourceResumeId={resumeId}
+        title={title}
+        document={resumeDocument}
+        className="h-7 border-transparent bg-transparent px-2 text-muted-foreground shadow-none hover:bg-muted"
+      />
+    </div>
   );
 }
 

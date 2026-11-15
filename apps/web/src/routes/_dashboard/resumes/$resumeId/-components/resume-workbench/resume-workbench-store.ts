@@ -5,7 +5,7 @@ import { Store } from "@tanstack/react-store";
 /** Modals the workbench opens from more than one place; only one is open at a time. */
 export type WorkbenchDialog = "actions" | "import-json" | "ai-settings";
 
-export type AiPreviewView = "preview" | "changes" | "cover-letter" | "answers";
+export type AiPreviewView = "preview" | "changes" | "events" | "cover-letter" | "answers";
 
 export interface WorkbenchImportReview {
   plan: ResumeImportPlan;

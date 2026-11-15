@@ -1,4 +1,4 @@
-export const BRAND = "Crafted";
+export const BRAND = "CraVfted";
 
 export const NAV_LINKS = [
   { label: "Workbench", href: "#workbench" },

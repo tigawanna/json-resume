@@ -31,7 +31,7 @@ function RouteComponent() {
           </div>
         </div>
         <div className="w-full max-w-[90%] md:max-w-[70%]">
-          <RecentResumes onStartFromJob={openDashboardAssistant} />
+          <RecentResumes onStartFromJob={() => openDashboardAssistant({ fresh: true })} />
         </div>
       </div>
     </div>

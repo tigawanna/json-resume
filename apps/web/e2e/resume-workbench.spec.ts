@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { signUp } from "./support/auth";
 import {
+  clickTableRowAction,
   educationSeedRows,
   experienceSeedRows,
   expectToast,
@@ -43,23 +44,18 @@ test(
       .evaluate((el: HTMLButtonElement) => el.click());
     await expectToast(page, "Résumé created");
 
-    await page
-      .getByTestId("resumes-table")
-      .getByTestId("row-details-btn")
-      .evaluate((el: HTMLButtonElement) => el.click());
+    await clickTableRowAction(page, "resumes-table", "details", `${prefix} Target Resume`);
     await expect(page.getByTestId("resume-workbench")).toBeVisible();
     await expect(page.getByTestId("resume-edit-tab")).toBeVisible();
 
     const metadata = page.getByTestId("metadata-form");
     await metadata.getByLabel("Full Name").fill(fullName);
     await metadata.getByLabel("Headline").fill(headline);
-    await metadata.getByRole("button", { name: "Save details" }).click();
-    await expectToast(page, "Details saved");
+    await expect(metadata.getByTestId("autosave-status")).toHaveText("Saved");
 
     const summaryForm = page.getByTestId("summary-form");
     await summaryForm.getByLabel("Professional Summary").fill(summary);
-    await summaryForm.getByRole("button", { name: "Save Summary" }).click();
-    await expectToast(page, "Summary saved");
+    await expect(summaryForm.getByTestId("autosave-status")).toHaveText("Saved");
 
     await page.getByRole("button", { name: "Add Experience" }).click();
     const experience = page.getByTestId("add-experience-form");
@@ -79,7 +75,7 @@ test(
       .locator("[data-test^='experience-card-']")
       .filter({ has: page.getByRole("button", { name: "Add Bullet" }) });
     await editingCard.getByRole("button", { name: "Add Bullet" }).click();
-    await editingCard.locator("input").last().fill(editedBullet);
+    await editingCard.locator("textarea").last().fill(editedBullet);
     await editingCard.getByRole("button", { name: "Save", exact: true }).click();
     await expectToast(page, "Experience saved");
     await expect(addedCard).toContainText(editedBullet);

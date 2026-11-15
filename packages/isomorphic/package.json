@@ -7,10 +7,9 @@
     "./*": "./src/*.ts"
   },
   "scripts": {
-    "dev": "tsc --watch",
-    "build": "tsc",
-    "check-types": "tsgo --noEmit",
-    "test": "echo 'Add test script here'"
+    "dev": "vp build --watch",
+    "build": "vp build",
+    "check-types": "tsc --noEmit"
   },
   "dependencies": {
     "better-auth": "^1.7.18"

@@ -14,11 +14,10 @@ import {
   normalizeLinkIcon,
   normalizeLinkUrl,
 } from "@/modules/links/link-form";
-import { unwrapUnknownError } from "@/utils/errors";
-import { useMutation } from "@tanstack/react-query";
 import { Library, Plus, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { AutosaveStatus, useResumeAutosave } from "./use-resume-autosave";
 
 interface LinkRow {
   /** Library row id when the link exists, "" for a row not saved yet. */
@@ -30,64 +29,59 @@ interface LinkRow {
 
 type LinkPickerRow = { id: string; label: string; url: string; icon?: string | null };
 
+function linkContent(rows: LinkRow[]) {
+  return rows.map(({ label, url, icon }) => ({ label, url, icon: icon ?? "" }));
+}
+
+function linkDrafts(rows: LinkRow[]): { ok: true; drafts: LinkDraft[] } | { ok: false } {
+  const drafts: LinkDraft[] = [];
+  for (const link of rows) {
+    const url = normalizeLinkUrl(link.url);
+    if (!url.ok) return { ok: false };
+    const icon = normalizeLinkIcon(link.icon ?? "");
+    if (!icon.ok) return { ok: false };
+    drafts.push({
+      label: link.label,
+      url: url.url,
+      icon: icon.icon || defaultLinkIconForUrl(url.url),
+    });
+  }
+  return { ok: true, drafts };
+}
+
 export function LinksForm() {
   const { resume, updateLinks, searches } = useResumeWorkspace();
   const searchLinks = searches?.links;
-
-  const [links, setLinks] = useState<LinkRow[]>(
+  const saved =
     resume?.links.map((l) => ({
       id: l.id,
       label: l.label,
       url: l.url,
       icon: l.icon ?? undefined,
-    })) ?? [],
-  );
+    })) ?? [];
+  const savedKey = JSON.stringify(saved);
 
+  const [links, setLinks] = useState<LinkRow[]>(saved);
   const [pickOpen, setPickOpen] = useState(false);
+  const drafts = linkDrafts(links);
+  const savedDrafts = linkContent(saved);
+  const savedDraftsKey = JSON.stringify(savedDrafts);
+  const draftKey = drafts.ok ? JSON.stringify(drafts.drafts) : JSON.stringify(linkContent(links));
 
-  function savePromise(rows: LinkRow[]) {
-    const drafts: LinkDraft[] = [];
-    for (const { id: _id, ...link } of rows) {
-      const url = normalizeLinkUrl(link.url);
-      if (!url.ok) throw new Error(`${link.label || link.url || "Link"}: ${url.error}`);
-      const icon = normalizeLinkIcon(link.icon ?? "");
-      if (!icon.ok) throw new Error(`${link.label || url.url}: ${icon.error}`);
-      drafts.push({
-        label: link.label,
-        url: url.url,
-        icon: icon.icon || defaultLinkIconForUrl(url.url),
-      });
-    }
-    return updateLinks(drafts);
-  }
+  useEffect(() => {
+    if (!drafts.ok || draftKey !== savedDraftsKey) return;
+    if (JSON.stringify(links) !== savedKey) setLinks(saved);
+  }, [savedKey, savedDraftsKey, draftKey, drafts.ok, links, saved]);
 
-  const saveMutation = useMutation({
-    mutationFn: async (rows: LinkRow[]) => savePromise(rows),
-    onSuccess() {
-      toast.success("Links saved");
+  const status = useResumeAutosave({
+    fingerprint: draftKey,
+    savedFingerprint: savedDraftsKey,
+    canSave: drafts.ok,
+    save: () => {
+      const next = linkDrafts(links);
+      if (!next.ok) return Promise.resolve();
+      return updateLinks(next.drafts);
     },
-    onError(err: unknown) {
-      toast.error("Failed to save links", {
-        description: unwrapUnknownError(err).message,
-      });
-    },
-    meta: { invalidates: [["resumes"]] },
-  });
-
-  const pickMutation = useMutation({
-    mutationFn: async ({ next, added }: { next: LinkRow[]; added: number }) => {
-      await savePromise(next);
-      return { added };
-    },
-    onSuccess({ added }) {
-      toast.success(`Added ${added} link(s)`);
-    },
-    onError(err: unknown) {
-      toast.error("Failed to add links", {
-        description: unwrapUnknownError(err).message,
-      });
-    },
-    meta: { invalidates: [["resumes"]] },
   });
 
   if (!resume) return null;
@@ -122,7 +116,7 @@ export function LinksForm() {
       icon: row.icon ?? undefined,
     }));
     setLinks((prev) => [...prev, ...picked]);
-    pickMutation.mutate({ next: [...links, ...picked], added: picked.length });
+    toast.success(`Added ${picked.length} link(s)`);
   }
 
   return (
@@ -172,14 +166,8 @@ export function LinksForm() {
             <Library className="mr-1 size-3" /> Pick from Existing
           </Button>
         )}
-        <Button
-          size="sm"
-          onClick={() => saveMutation.mutate(links)}
-          disabled={saveMutation.isPending}
-        >
-          Save Links
-        </Button>
       </div>
+      <AutosaveStatus status={status} blocked={drafts.ok ? undefined : "Add a valid URL to save"} />
       <p className="text-muted-foreground text-[11px]">
         {LINK_URL_HINT} Icon: {LINK_ICON_HINT}
       </p>

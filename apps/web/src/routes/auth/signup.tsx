@@ -10,6 +10,7 @@ const searchparams = z.object({
   callbackURL: z.string().optional(),
 });
 export const Route = createFileRoute("/auth/signup")({
+  ssr: false,
   component: SignupPage,
   validateSearch: (search) => searchparams.parse(search),
   head: () => ({

@@ -23,7 +23,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   OPEN_ASSISTANT_EVENT,
   useDashboardAssistantChat,
@@ -52,6 +52,14 @@ export function DashboardAssistant() {
   const isWorking = assistant.isLoading || assistant.sessionGenerating;
   const { composerRef } = assistant;
   const sheet = open && presentation === "sheet";
+  const startFreshRef = useRef(assistant.startNew);
+  startFreshRef.current = () => {
+    const current = assistant.conversations.find(
+      (conversation) => conversation.id === assistant.activeConversationId,
+    );
+    if (current && current.messageCount === 0) return;
+    assistant.startNew();
+  };
 
   useEffect(() => {
     if (!open || !assistant.isReady) return;
@@ -60,7 +68,9 @@ export function DashboardAssistant() {
   }, [open, assistant.isReady, composerRef]);
 
   useEffect(() => {
-    function openFromPage() {
+    function openFromPage(event: Event) {
+      const fresh = event instanceof CustomEvent && event.detail?.fresh === true;
+      if (fresh) startFreshRef.current();
       setOpen(true);
     }
     window.addEventListener(OPEN_ASSISTANT_EVENT, openFromPage);

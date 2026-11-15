@@ -4,11 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
-import { unwrapUnknownError } from "@/utils/errors";
-import { useMutation } from "@tanstack/react-query";
 import { Library, Plus, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { AutosaveStatus, useResumeAutosave } from "./use-resume-autosave";
 
 interface ContactRow {
   /** Library row id when the contact exists, "" for a row not saved yet. */
@@ -20,47 +19,30 @@ interface ContactRow {
 
 type ContactPickerRow = { id: string; type: string; value: string; label: string };
 
+function contactContent(rows: ContactRow[]) {
+  return rows.map(({ type, value, label }) => ({ type, value, label }));
+}
+
 export function ContactsForm() {
   const { resume, updateContacts, searches } = useResumeWorkspace();
   const searchContacts = searches?.contacts;
+  const saved =
+    resume?.contacts.map((c) => ({ id: c.id, type: c.type, value: c.value, label: c.label })) ?? [];
+  const savedKey = JSON.stringify(saved);
 
-  const [contacts, setContacts] = useState<ContactRow[]>(
-    resume?.contacts.map((c) => ({ id: c.id, type: c.type, value: c.value, label: c.label })) ?? [],
-  );
-
+  const [contacts, setContacts] = useState<ContactRow[]>(saved);
   const [pickOpen, setPickOpen] = useState(false);
 
-  function savePromise(rows: ContactRow[]) {
-    return updateContacts(rows.map(({ id: _id, ...contact }) => contact));
-  }
+  useEffect(() => {
+    if (JSON.stringify(contactContent(contacts)) !== JSON.stringify(contactContent(saved))) return;
+    if (JSON.stringify(contacts) !== savedKey) setContacts(saved);
+  }, [savedKey, contacts, saved]);
 
-  const saveMutation = useMutation({
-    mutationFn: async (rows: ContactRow[]) => savePromise(rows),
-    onSuccess() {
-      toast.success("Contacts saved");
-    },
-    onError(err: unknown) {
-      toast.error("Failed to save contacts", {
-        description: unwrapUnknownError(err).message,
-      });
-    },
-    meta: { invalidates: [["resumes"]] },
-  });
-
-  const pickMutation = useMutation({
-    mutationFn: async ({ next, added }: { next: ContactRow[]; added: number }) => {
-      await savePromise(next);
-      return { added };
-    },
-    onSuccess({ added }) {
-      toast.success(`Added ${added} contact(s)`);
-    },
-    onError(err: unknown) {
-      toast.error("Failed to add contacts", {
-        description: unwrapUnknownError(err).message,
-      });
-    },
-    meta: { invalidates: [["resumes"]] },
+  const status = useResumeAutosave({
+    fingerprint: JSON.stringify(contactContent(contacts)),
+    savedFingerprint: JSON.stringify(contactContent(saved)),
+    canSave: true,
+    save: () => updateContacts(contactContent(contacts)),
   });
 
   if (!resume) return null;
@@ -85,7 +67,7 @@ export function ContactsForm() {
       label: row.label,
     }));
     setContacts((prev) => [...prev, ...picked]);
-    pickMutation.mutate({ next: [...contacts, ...picked], added: picked.length });
+    toast.success(`Added ${picked.length} contact(s)`);
   }
 
   return (
@@ -135,14 +117,8 @@ export function ContactsForm() {
             <Library className="mr-1 size-3" /> Pick from Existing
           </Button>
         )}
-        <Button
-          size="sm"
-          onClick={() => saveMutation.mutate(contacts)}
-          disabled={saveMutation.isPending}
-        >
-          Save Contacts
-        </Button>
       </div>
+      <AutosaveStatus status={status} />
 
       {searchContacts && (
         <EntityPickerSheet<ContactPickerRow>

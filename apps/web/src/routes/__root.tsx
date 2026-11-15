@@ -36,6 +36,9 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
   head: () => ({
     meta: [
       {
+        title: AppConfig.name,
+      },
+      {
         charSet: "utf-8",
       },
       {

@@ -1,4 +1,4 @@
-# Agentic JSON Resume
+# CraVfted
 
 Résumé as typed JSON. Tweak it with any LLM, edit it by hand. Export a clean PDF, same result every time. Store sections individually so you can reuse and remix them later, reassemble everything back into a polished PDF whenever you need.
 

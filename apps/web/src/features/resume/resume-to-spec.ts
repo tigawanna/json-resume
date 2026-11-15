@@ -95,6 +95,7 @@ function buildEducationChildren(ctx: SpecCtx, doc: ResumeDocumentV1): string[] {
   if (!doc.education.enabled) return c;
   for (const ed of doc.education.items) {
     pushText(ctx, c, `${ed.degree} — ${ed.school} (${ed.year})`);
+    if (ed.description?.trim()) pushText(ctx, c, ed.description.trim());
   }
   return c;
 }

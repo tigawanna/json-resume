@@ -1,0 +1,2 @@
+echo "pre-push: running sanity tests (unit + @smoke e2e)..."
+pnpm test:sanity

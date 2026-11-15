@@ -90,7 +90,10 @@ export interface ResumeSearchAdapter {
   experiences?: (
     query: string,
   ) => Promise<{ id: string; company: string; role: string; startDate: string; endDate: string }[]>;
-  experienceBullets?: (query: string) => Promise<{ id: string; text: string }[]>;
+  experienceBullets?: (
+    query: string,
+    scope: { role: string },
+  ) => Promise<{ id: string; text: string }[]>;
   education?: (
     query: string,
   ) => Promise<{ id: string; school: string; degree: string; field: string }[]>;

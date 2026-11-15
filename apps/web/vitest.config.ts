@@ -8,7 +8,8 @@ export default defineConfig({
     },
   },
   test: {
-    environment: "jsdom",
+    // jsdom boots a DOM per file. Almost every test is Node; the few that render opt in.
+    environment: "node",
     exclude: ["**/node_modules/**", "**/dist/**", "**/e2e/**", "**/playwright-report/**"],
     globals: false,
     restoreMocks: true,

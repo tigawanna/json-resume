@@ -13,6 +13,7 @@ const searchparams = z.object({
 });
 
 export const Route = createFileRoute("/auth/github")({
+  ssr: false,
   component: RouteComponent,
   validateSearch: (search) => searchparams.parse(search),
   async beforeLoad(ctx) {

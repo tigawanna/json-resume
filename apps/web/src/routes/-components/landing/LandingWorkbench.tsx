@@ -7,6 +7,7 @@ import {
   Eye,
   FileText,
   GitCompareArrows,
+  History,
   LoaderCircle,
   Mail,
   MessageSquareText,
@@ -23,12 +24,14 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
 
+import { Section, SectionIntro } from "./primitives";
 import { useWorkbenchStream } from "./use-workbench-stream";
 import {
   APPLICATION_ANSWERS_CONTENT,
   COVER_LETTER_CONTENT,
   RESUME_CONTENT,
   WORKBENCH_CHANGES,
+  WORKBENCH_EVENTS,
   WORKBENCH_TOOL_ORDER,
   WORKBENCH_VIEWS,
   type WorkbenchPart,
@@ -37,7 +40,6 @@ import {
   type WorkbenchToolRun,
   type WorkbenchView,
 } from "./workbench-script";
-import { Section, SectionIntro } from "./primitives";
 
 const ATTACHED = ["job-description.md", "library/bullets.json", "library/skills.json"] as const;
 
@@ -58,6 +60,7 @@ const SUGGESTED_PROMPTS = [
 const VIEW_META = {
   preview: { label: "Preview", icon: Eye },
   changes: { label: "Changes", icon: GitCompareArrows },
+  events: { label: "Events", icon: History },
   letter: { label: "Letter", icon: Mail },
   answers: { label: "Q&A", icon: MessageSquareText },
 } as const;
@@ -65,41 +68,25 @@ const VIEW_META = {
 export function LandingWorkbench() {
   return (
     <Section id="workbench" dataTest="landing-workbench">
-      <div className="grid grid-cols-1 gap-6 border-b border-border/50 px-6 py-14 md:px-12 md:py-20 lg:grid-cols-12 lg:items-end">
-        <div className="lg:col-span-7">
-          <SectionIntro
-            title={
-              <>
-                One prompt. <span className="text-primary">A whole application.</span>
-              </>
-            }
-          >
-            <p>
-              A scripted run of the real AI tab: the prompt types itself, captures the posting,
-              rewrites the résumé, drafts the cover letter and answers the application questions.
-              The panel beside it follows along. The only thing missing is your résumé.
-            </p>
-          </SectionIntro>
-        </div>
-        <div className="lg:col-span-5 lg:pl-12">
-          <p className="max-w-[38ch] font-mono text-[11px] leading-relaxed text-muted-foreground">
-            Scripted demo · no API calls · loops while it is on screen.{" "}
-            <a href="#control" className="text-primary underline-offset-4 hover:underline">
-              How the real one is governed
-            </a>
-            .
-          </p>
-        </div>
+      <div className="px-6 pt-14 pb-4 md:px-12 md:pt-20">
+        <SectionIntro
+          title={
+            <>
+              An ergonomic iteration <span className="text-primary">workbench</span>
+            </>
+          }
+        />
+        <p className="mt-4 font-mono text-[11px] text-muted-foreground">
+          Rough demo. Scripted, no API calls.
+        </p>
       </div>
-
-      <div className="px-3 py-10 md:px-10 md:py-14">
+      <div className="px-3 pb-10 md:px-10 md:pb-14">
         <WorkbenchFrame />
         <div className="mx-auto mt-4 flex max-w-5xl flex-wrap items-center justify-between gap-3 font-mono text-[11px] text-muted-foreground">
           <span>Same loop, your data. Local-first and reversible.</span>
           <Link
             to="/dashboard"
-            className="flex items-center gap-1 text-primary transition-opacity hover:opacity-80"
-          >
+            className="flex items-center gap-1 text-primary transition-opacity hover:opacity-80">
             Open the editor
             <ArrowRight className="size-3" />
           </Link>
@@ -146,8 +133,7 @@ function WorkbenchFrame() {
     <div
       ref={frameRef}
       data-test="landing-workbench-frame"
-      className="mx-auto max-w-5xl overflow-hidden border border-border/60 bg-base-100 shadow-sm"
-    >
+      className="mx-auto max-w-5xl overflow-hidden border border-border/60 bg-base-100 shadow-sm">
       <WindowBar />
 
       <AiChrome />
@@ -156,9 +142,8 @@ function WorkbenchFrame() {
         <div className="flex min-h-0 flex-col border-b border-border/60 md:order-1 md:border-b-0">
           <div
             ref={scrollRef}
-            className="flex h-[18rem] flex-col gap-3 overflow-y-auto px-3 py-4 md:h-[22rem] md:px-4"
-            data-test="landing-workbench-chat"
-          >
+            className="flex h-72 flex-col gap-3 overflow-y-auto px-3 py-4 md:h-88 md:px-4"
+            data-test="landing-workbench-chat">
             {state.prompt ? (
               <>
                 <div className="flex justify-end">
@@ -217,8 +202,7 @@ function WorkbenchFrame() {
           type="button"
           onClick={restart}
           className="flex items-center gap-1 transition-colors hover:text-base-content"
-          data-test="landing-workbench-replay"
-        >
+          data-test="landing-workbench-replay">
           <RotateCcw className="size-3" />
           replay
         </button>
@@ -258,8 +242,7 @@ function AiChrome() {
     <div
       aria-hidden
       className="flex h-9 shrink-0 items-center justify-end gap-1 border-b border-border/60 px-2"
-      data-test="landing-workbench-ai-chrome"
-    >
+      data-test="landing-workbench-ai-chrome">
       <span className="flex items-center gap-1.5 rounded-md bg-secondary px-2 py-1 text-[11px] text-secondary-content">
         <FileText className="size-3.5" />
         Preview
@@ -285,14 +268,14 @@ function Composer({ state }: { state: WorkbenchStreamState }) {
   return (
     <div className="border-t border-border/60 px-3 py-3" data-test="landing-workbench-composer">
       <div className="overflow-hidden rounded-2xl border border-base-content/15 bg-primary/10 text-base-content shadow-sm">
-        <div className="min-h-[52px] px-4 pt-3 pb-1 text-[13px] leading-relaxed">
+        <div className="min-h-13 px-4 pt-3 pb-1 text-[13px] leading-relaxed">
           {state.draft ? (
             <>
               {state.draft}
               {state.phase === "typing" ? (
                 <span
                   aria-hidden
-                  className="ml-0.5 inline-block h-3.5 w-[2px] animate-pulse bg-primary align-middle"
+                  className="ml-0.5 inline-block h-3.5 w-0.5 animate-pulse bg-primary align-middle"
                 />
               ) : null}
             </>
@@ -305,8 +288,7 @@ function Composer({ state }: { state: WorkbenchStreamState }) {
           <div className="flex min-w-0 items-center gap-1">
             <span
               aria-hidden
-              className="flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground"
-            >
+              className="flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground">
               <Plus className="size-4" />
             </span>
             <span className="hidden min-w-0 items-center gap-1.5 px-1 text-[11px] sm:flex">
@@ -332,8 +314,7 @@ function Composer({ state }: { state: WorkbenchStreamState }) {
               className={cn(
                 "flex size-7 items-center justify-center rounded-md bg-primary text-primary-content transition-opacity",
                 !canSend && "opacity-50",
-              )}
-            >
+              )}>
               <ArrowUp className="size-4" />
             </span>
           </div>
@@ -376,15 +357,53 @@ function ChatStream({
               <ThinkingBlock text={part.text} streaming={streaming && state.phase === "thinking"} />
             ) : null}
             {part.kind === "text" ? <ScriptText text={part.text} /> : null}
-            {part.kind === "tool" ? (
-              <>
-                <ToolChip tool={part.tool} />
-                {part.tool.result ? <ToolSuccess tool={part.tool} onOpenView={onOpenView} /> : null}
-              </>
-            ) : null}
+            {part.kind === "tool" ? <ToolPart tool={part.tool} onOpenView={onOpenView} /> : null}
           </div>
         );
       })}
+    </div>
+  );
+}
+
+function ToolPart({
+  tool,
+  onOpenView,
+}: {
+  tool: WorkbenchToolRun;
+  onOpenView: (view: WorkbenchView) => void;
+}) {
+  if (tool.ask) return <AskCard tool={tool} />;
+  return (
+    <>
+      <ToolChip tool={tool} />
+      {tool.result ? <ToolSuccess tool={tool} onOpenView={onOpenView} /> : null}
+    </>
+  );
+}
+
+function AskCard({ tool }: { tool: WorkbenchToolRun }) {
+  const ask = tool.ask;
+  if (!ask) return null;
+  const answered = tool.result !== null;
+
+  return (
+    <div
+      className="flex flex-col gap-2 rounded-xl bg-base-200/40 px-3 py-3 ring-1 ring-primary/25"
+      data-test="landing-workbench-ask">
+      <p className="text-[11px] font-medium text-base-content">{ask.question}</p>
+      {answered ? (
+        <p className="text-[11px] text-muted-foreground">{ask.selected}</p>
+      ) : (
+        <div className="flex flex-col gap-1.5">
+          {ask.options.map((option) => (
+            <span
+              key={option}
+              className="rounded-lg border border-primary/15 bg-primary/10 px-2.5 py-2 text-left text-[11px] text-base-content/90">
+              {option}
+            </span>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -441,8 +460,7 @@ function ToolSuccess({
   return (
     <div
       className="mt-1.5 flex items-center gap-2 rounded-lg bg-[color-mix(in_oklch,var(--color-success)_9%,var(--color-base-100))] px-2.5 py-2 ring-1 ring-[color-mix(in_oklch,var(--color-success)_25%,transparent)]"
-      data-test={`landing-workbench-${view}-card`}
-    >
+      data-test={`landing-workbench-${view}-card`}>
       <span className="flex size-7 shrink-0 items-center justify-center rounded-md bg-success/15 text-success">
         {icon}
       </span>
@@ -453,8 +471,7 @@ function ToolSuccess({
       <button
         type="button"
         onClick={() => onOpenView(view)}
-        className="flex shrink-0 items-center gap-1 text-[10px] font-medium text-success transition-opacity hover:opacity-75"
-      >
+        className="flex shrink-0 items-center gap-1 text-[10px] font-medium text-success transition-opacity hover:opacity-75">
         <Eye className="size-3" />
         Preview
       </button>
@@ -485,14 +502,12 @@ function PreviewPanel({
   return (
     <div
       className={cn("flex min-h-0 flex-col bg-base-100", className)}
-      data-test="landing-workbench-preview"
-    >
+      data-test="landing-workbench-preview">
       <header className="flex flex-wrap items-center gap-2 border-b border-border/60 px-3 py-2">
         <span className="min-w-0 flex-1 truncate text-xs font-medium">{RESUME_CONTENT.name}</span>
         <div
-          className="flex w-full items-center gap-0.5 overflow-x-auto rounded-lg bg-base-200 p-0.5 [scrollbar-width:none] lg:w-auto [&::-webkit-scrollbar]:hidden"
-          data-test="landing-workbench-tabs"
-        >
+          className="flex w-full items-center gap-0.5 overflow-x-auto rounded-lg bg-base-200 p-0.5 scrollbar-none lg:w-auto [&::-webkit-scrollbar]:hidden"
+          data-test="landing-workbench-tabs">
           {WORKBENCH_VIEWS.map((value) => {
             const meta = VIEW_META[value];
             const Icon = meta.icon;
@@ -508,8 +523,7 @@ function PreviewPanel({
                   active
                     ? "bg-base-100 text-base-content shadow-sm"
                     : "text-muted-foreground hover:text-base-content",
-                )}
-              >
+                )}>
                 <Icon className="size-3" />
                 {meta.label}
                 {value === "changes" && hasDiff ? (
@@ -533,6 +547,7 @@ function PreviewPanel({
           />
         ) : null}
         {view === "changes" ? <ChangesView landed={landed} /> : null}
+        {view === "events" ? <EventsView landed={landed} /> : null}
         {view === "letter" ? <LetterView ready={landed.has("save_cover_letter")} /> : null}
         {view === "answers" ? <AnswersView ready={landed.has("save_application_answers")} /> : null}
       </div>
@@ -554,8 +569,7 @@ function ResumePaper({
   return (
     <div
       className="mx-auto flex max-w-sm flex-col gap-3 bg-base-100 p-3 ring-1 ring-border/60 md:p-4"
-      data-test="landing-workbench-resume"
-    >
+      data-test="landing-workbench-resume">
       <div>
         <p className="font-serif text-lg leading-tight tracking-tight text-base-content">
           {RESUME_CONTENT.name}
@@ -567,8 +581,7 @@ function ResumePaper({
         className={cn(
           "border-l-2 pl-3 transition-colors duration-500",
           summaryDone ? "border-primary" : "border-border",
-        )}
-      >
+        )}>
         <p className="font-mono text-[9px] tracking-[0.2em] text-muted-foreground uppercase">
           Summary
         </p>
@@ -594,8 +607,7 @@ function ResumePaper({
                   dropped
                     ? "text-muted-foreground/50 line-through decoration-border"
                     : "text-muted-foreground",
-                )}
-              >
+                )}>
                 <span aria-hidden className="mt-1.5 size-1 shrink-0 bg-primary/60" />
                 <span>{text}</span>
               </li>
@@ -613,8 +625,7 @@ function ResumePaper({
               skillsDone &&
                 (tag === "TypeScript" || tag === "React") &&
                 "border-primary/40 text-primary",
-            )}
-          >
+            )}>
             {tag}
           </span>
         ))}
@@ -666,6 +677,47 @@ function ChangesView({ landed }: { landed: ReadonlySet<string> }) {
   );
 }
 
+function EventsView({ landed }: { landed: ReadonlySet<string> }) {
+  const rows = WORKBENCH_EVENTS.filter((row) => landed.has(row.tool));
+
+  if (rows.length === 0) {
+    return (
+      <PanelEmpty
+        icon={<History className="size-4" />}
+        title="No events yet"
+        hint="Each edit lands here. Undo rolls that change and everything newer back."
+      />
+    );
+  }
+
+  return (
+    <div data-test="landing-workbench-events">
+      <p className="border-b border-border/60 px-1 pb-2 text-[10px] text-muted-foreground">
+        Newest first. Undo rolls that change and everything newer back.
+      </p>
+      <ol>
+        {rows.map((row, index) => (
+          <li
+            key={row.tool}
+            className="flex items-center gap-2 border-b border-border/40 px-1 py-2">
+            <div className="min-w-0 flex-1">
+              <p className="text-[11px] font-medium text-base-content">{row.label}</p>
+              <p className="truncate text-[10px] text-muted-foreground">{row.detail}</p>
+            </div>
+            {index < rows.length - 1 ? (
+              <span
+                className="flex size-6 shrink-0 items-center justify-center text-muted-foreground"
+                aria-label="Undo this and newer">
+                <History className="size-3.5" />
+              </span>
+            ) : null}
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+}
+
 function LetterView({ ready }: { ready: boolean }) {
   if (!ready) {
     return (
@@ -680,8 +732,7 @@ function LetterView({ ready }: { ready: boolean }) {
   return (
     <div
       className="mx-auto max-w-sm bg-base-100 p-4 ring-1 ring-border/60"
-      data-test="landing-workbench-letter"
-    >
+      data-test="landing-workbench-letter">
       <div className="flex items-start justify-between gap-2 border-b border-border/60 pb-2">
         <div className="min-w-0">
           <p className="truncate font-serif text-sm text-base-content">
@@ -763,8 +814,7 @@ function SuggestedPrompts() {
       {SUGGESTED_PROMPTS.map((prompt) => (
         <span
           key={prompt}
-          className="flex items-center gap-2 rounded-lg border border-border/60 px-3 py-2 text-[11px] text-muted-foreground"
-        >
+          className="flex items-center gap-2 rounded-lg border border-border/60 px-3 py-2 text-[11px] text-muted-foreground">
           <ArrowUp className="size-3 shrink-0 text-primary" />
           {prompt}
         </span>
@@ -788,8 +838,7 @@ function ThinkingBlock({ text, streaming }: { text: string; streaming: boolean }
         className={cn(
           "mt-1 border-l border-border/60 pl-3 text-[11px] leading-5 text-muted-foreground/70",
           streaming ? "line-clamp-3" : "line-clamp-2",
-        )}
-      >
+        )}>
         {text || "…"}
       </p>
     </details>
@@ -834,8 +883,7 @@ function ScriptBlock({ block }: { block: string }) {
         {lines.map((line, index) => (
           <li
             key={index}
-            className="flex gap-1.5 text-[11px] leading-relaxed text-muted-foreground"
-          >
+            className="flex gap-1.5 text-[11px] leading-relaxed text-muted-foreground">
             <span aria-hidden className="mt-1.5 size-1 shrink-0 bg-primary/60" />
             <span>
               <Inline text={line.slice(2)} />
