@@ -1,6 +1,6 @@
 import { getSessionSafely } from "@/lib/better-auth/auth-session";
 import { authClient, BetterAuthSession } from "@/lib/better-auth/client";
-import { honoClient } from "@/lib/api/client";
+import { honoClient } from "@/lib/hono/client";
 import { safeStringToUrl } from "@/utils/url";
 import { queryOptions, useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { redirect } from "@tanstack/react-router";

@@ -11,8 +11,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { useViewer } from "@/data-access-layer/auth/viewer";
-import { honoClient } from "@/lib/api/client";
-import { parseApiError } from "@/lib/api/parse-api-error";
+import { honoClient } from "@/lib/hono/client";
+import { parseApiError } from "@/lib/hono/parse-api-error";
 import { unwrapUnknownError } from "@/utils/errors";
 import { useMutation } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
@@ -68,13 +68,11 @@ function SettingsPage() {
             icon={Building2}
             title="Account"
             description="Name, plan, and this sign-in."
-            testId="settings-account-section"
-          >
+            testId="settings-account-section">
             <Link
               to="/profile"
               className="group flex items-center gap-4 rounded-lg bg-base-200/40 px-4 py-3 ring-1 ring-base-content/10 transition-colors hover:bg-base-200 focus-visible:ring-ring/50 outline-none focus-visible:ring-[3px]"
-              data-test="settings-account-link"
-            >
+              data-test="settings-account-link">
               {viewer.user?.image ? (
                 <img
                   src={viewer.user.image}
@@ -84,8 +82,7 @@ function SettingsPage() {
               ) : (
                 <div
                   aria-hidden
-                  className="bg-primary/10 text-primary flex size-12 shrink-0 items-center justify-center rounded-full text-base font-semibold"
-                >
+                  className="bg-primary/10 text-primary flex size-12 shrink-0 items-center justify-center rounded-full text-base font-semibold">
                   {(viewer.user?.name ?? viewer.user?.email ?? "?").slice(0, 1).toUpperCase()}
                 </div>
               )}
@@ -112,8 +109,7 @@ function SettingsPage() {
             icon={Building2}
             title="This computer"
             description="Work stays on this computer until you sign in."
-            testId="settings-signed-out"
-          >
+            testId="settings-signed-out">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="min-w-0">
                 <p className="text-sm font-medium">Not signed in</p>
@@ -140,8 +136,7 @@ function SettingsPage() {
             title="Delete account"
             description="Removes the account and every résumé stored with it. This cannot be undone."
             tone="destructive"
-            testId="settings-danger-section"
-          >
+            testId="settings-danger-section">
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button variant="destructive" size="sm" data-test="settings-delete-account-btn">
@@ -163,8 +158,7 @@ function SettingsPage() {
                     variant="destructive"
                     size="sm"
                     disabled={deleteAccountMutation.isPending}
-                    onClick={() => deleteAccountMutation.mutate()}
-                  >
+                    onClick={() => deleteAccountMutation.mutate()}>
                     {deleteAccountMutation.isPending ? "Deleting…" : "Yes, delete my account"}
                   </AlertDialogAction>
                 </AlertDialogFooter>
