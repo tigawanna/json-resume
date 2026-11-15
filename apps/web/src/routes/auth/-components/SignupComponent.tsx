@@ -1,5 +1,5 @@
 import { viewerqueryOptions } from "@/data-access-layer/auth/viewer";
-import { authClient } from "@/lib/better-auth/client";
+import { authClient, frontendCallbackUrl } from "@/lib/better-auth/client";
 import { useAppForm } from "@/lib/tanstack/form";
 import { formOptions } from "@tanstack/react-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -66,7 +66,7 @@ export function SignupComponent() {
     mutationFn: async () => {
       await authClient.signIn.social({
         provider: "github",
-        callbackURL: returnTo ?? "/dashboard",
+        callbackURL: frontendCallbackUrl({ callbackURL: returnTo ?? "/dashboard" }),
       });
     },
     onError: async (error: unknown) => {

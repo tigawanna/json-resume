@@ -5,6 +5,7 @@ import { safeStringToUrl } from "@/utils/url";
 import { queryOptions, useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { redirect } from "@tanstack/react-router";
 import { createMiddleware } from "@tanstack/react-start";
+import { getRequestHeaders } from "@tanstack/react-start/server";
 
 type ViewerUser = BetterAuthSession["user"];
 type ViewerSession = BetterAuthSession["session"];
@@ -18,12 +19,21 @@ export type TViewerLoginPayload = { email: string; password: string };
 
 const loggedOutViewer = { data: null, error: null } as const;
 
+function viewerRequestHeaders() {
+  if (typeof window !== "undefined") return undefined;
+  const cookie = getRequestHeaders().get("cookie");
+  if (!cookie) return undefined;
+  return { cookie };
+}
+
 export const viewerqueryOptions = queryOptions({
   queryKey: ["viewer"],
   retry: false,
   queryFn: async () => {
     try {
-      const response = await honoClient.api.viewer.$get();
+      const response = await honoClient.api.viewer.$get(undefined, {
+        headers: viewerRequestHeaders(),
+      });
       if (!response.ok) {
         return loggedOutViewer;
       }

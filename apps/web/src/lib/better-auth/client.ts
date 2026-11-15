@@ -14,3 +14,12 @@ export type BetterAuthSession = typeof authClient.$Infer.Session;
 export type BetterAuthUserRoles = keyof typeof organizationRoles;
 
 export const userRoles = Object.keys(organizationRoles);
+
+/**
+ * Better Auth resolves a relative callbackURL against its baseURL, which is the
+ * API origin. Absolute URLs stay on the frontend after OAuth.
+ */
+export function frontendCallbackUrl({ callbackURL }: { callbackURL: string }) {
+  if (/^https?:\/\//i.test(callbackURL)) return callbackURL;
+  return new URL(callbackURL, window.location.origin).toString();
+}

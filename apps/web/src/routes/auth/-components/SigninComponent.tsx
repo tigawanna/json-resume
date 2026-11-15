@@ -1,5 +1,5 @@
 import { TViewerLoginPayload, viewerqueryOptions } from "@/data-access-layer/auth/viewer";
-import { authClient } from "@/lib/better-auth/client";
+import { authClient, frontendCallbackUrl } from "@/lib/better-auth/client";
 import { useAppForm } from "@/lib/tanstack/form";
 import { formOptions } from "@tanstack/react-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -88,7 +88,9 @@ export function SigninComponent({ onBackToSessions }: SigninComponentProps) {
 
   const githubMutation = useMutation({
     mutationFn: async () => {
-      const socialCallbackURL = hasOAuthProviderQuery() ? undefined : postLoginDestination;
+      const socialCallbackURL = hasOAuthProviderQuery()
+        ? undefined
+        : frontendCallbackUrl({ callbackURL: postLoginDestination });
       await authClient.signIn.social({
         provider: "github",
         ...(socialCallbackURL ? { callbackURL: socialCallbackURL } : {}),

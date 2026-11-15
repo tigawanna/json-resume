@@ -31,9 +31,13 @@ export const auth = betterAuth({
     database: {
       joins: true,
     },
-    // Set the cookie on the parent domain when the API lives on `api.example.com`
-    // and the web app on `www.example.com`, so both hosts see the session.
-    // crossSubDomainCookies: { enabled: true, domain: ".example.com" },
+    // The web app and this API are different origins (different ports in dev,
+    // different hosts in prod). Lax cookies set on the API are not attached to
+    // later fetches from the frontend, so a reload looks logged out.
+    defaultCookieAttributes: {
+      sameSite: "none",
+      secure: true,
+    },
   },
   emailAndPassword: {
     enabled: true,
