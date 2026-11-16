@@ -7,8 +7,8 @@ import { admin } from "better-auth/plugins/admin";
 import { multiSession } from "better-auth/plugins/multi-session";
 import { organization } from "better-auth/plugins/organization";
 import * as authSchema from "@repo/db/schema/auth-schema";
+import { type AppDb, getDb } from "@api/db/client";
 import { env } from "@api/env";
-import { db } from "@api/db/client";
 
 /**
  * Better Auth instance owned by the API. Mirrors the transitional instance in
@@ -18,55 +18,79 @@ import { db } from "@api/db/client";
  * Desktop clients are not wired yet. When they are, add the `electron`/`bearer`
  * plugins here and register the desktop origin in `TRUSTED_ORIGINS`.
  */
-export const auth = betterAuth({
-  baseURL: env.BETTER_AUTH_URL,
-  basePath: "/api/auth",
-  secret: env.BETTER_AUTH_SECRET,
-  trustedOrigins: env.TRUSTED_ORIGINS,
-  database: drizzleAdapter(db, {
-    provider: "sqlite",
-    schema: authSchema,
-  }),
-  advanced: {
-    database: {
-      joins: true,
-    },
-    // The web app and this API are different origins (different ports in dev,
-    // different hosts in prod). Lax cookies set on the API are not attached to
-    // later fetches from the frontend, so a reload looks logged out.
-    defaultCookieAttributes: {
-      sameSite: "none",
-      secure: true,
-    },
-  },
-  emailAndPassword: {
-    enabled: true,
-  },
-  socialProviders: {
-    github: {
-      clientId: env.GITHUB_CLIENT_ID,
-      clientSecret: env.GITHUB_CLIENT_SECRET,
-    },
-  },
-  plugins: [
-    admin(),
-    organization({
-      ac: organizationAc as AccessControl,
-      roles: organizationRoles,
+export function createAuth({ db }: { db: AppDb }) {
+  return betterAuth({
+    baseURL: env.BETTER_AUTH_URL,
+    basePath: "/api/auth",
+    secret: env.BETTER_AUTH_SECRET,
+    trustedOrigins: env.TRUSTED_ORIGINS,
+    database: drizzleAdapter(db, {
+      provider: "sqlite",
+      schema: authSchema,
     }),
-    multiSession(),
-    apiKey({
-      defaultPrefix: "ajr",
-      rateLimit: {
-        enabled: true,
-        timeWindow: 60 * 1000,
-        maxRequests: 120,
+    advanced: {
+      database: {
+        joins: true,
       },
-    }),
-  ],
+      // The web app and this API are different origins (different ports in dev,
+      // different hosts in prod). Lax cookies set on the API are not attached to
+      // later fetches from the frontend, so a reload looks logged out.
+      defaultCookieAttributes: {
+        sameSite: "none",
+        secure: true,
+      },
+    },
+    emailAndPassword: {
+      enabled: true,
+    },
+    socialProviders: {
+      github: {
+        clientId: env.GITHUB_CLIENT_ID,
+        clientSecret: env.GITHUB_CLIENT_SECRET,
+      },
+    },
+    plugins: [
+      admin(),
+      organization({
+        ac: organizationAc as AccessControl,
+        roles: organizationRoles,
+      }),
+      multiSession(),
+      apiKey({
+        defaultPrefix: "ajr",
+        rateLimit: {
+          enabled: true,
+          timeWindow: 60 * 1000,
+          maxRequests: 120,
+        },
+      }),
+    ],
+  });
+}
+
+export type Auth = ReturnType<typeof createAuth>;
+
+let activeAuth: Auth | undefined;
+
+/** Replace the process-wide auth instance. `createApp` calls this at the root. */
+export function setAuth({ auth }: { auth: Auth }) {
+  activeAuth = auth;
+}
+
+/** Lazily build auth on the active db when nothing was injected. */
+export function getAuth(): Auth {
+  activeAuth ??= createAuth({ db: getDb() });
+  return activeAuth;
+}
+
+/** Proxy so route modules keep importing `auth` without knowing the instance. */
+export const auth: Auth = new Proxy({} as Auth, {
+  get(_target, property) {
+    const target = getAuth();
+    const value = Reflect.get(target, property, target);
+    return typeof value === "function" ? value.bind(target) : value;
+  },
 });
 
-export type Auth = typeof auth;
-
 /** Session with the user row, as returned by `auth.api.getSession`. */
-export type AuthSession = NonNullable<Awaited<ReturnType<typeof auth.api.getSession>>>;
+export type AuthSession = NonNullable<Awaited<ReturnType<Auth["api"]["getSession"]>>>;

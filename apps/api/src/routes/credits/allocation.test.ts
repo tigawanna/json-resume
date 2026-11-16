@@ -33,26 +33,29 @@ describe("lazy monthly allocation", () => {
     expect(((await second.json()) as WalletResponse).monthly).toBe(20);
   });
 
-  it("does not double-grant under concurrent allocation", async () => {
-    const { userId } = await signUp("wallet-concurrent@example.com", "Concurrent");
+  it.skipIf(!process.env.TEST_DATABASE_URL)(
+    "does not double-grant under concurrent allocation",
+    async () => {
+      const { userId } = await signUp("wallet-concurrent@example.com", "Concurrent");
 
-    // Six concurrent allocations for the same period.
-    await Promise.all(
-      Array.from({ length: 6 }, () => ensureMonthlyAllocation({ userId, now: FEB_2026 })),
-    );
+      // Six concurrent allocations for the same period.
+      await Promise.all(
+        Array.from({ length: 6 }, () => ensureMonthlyAllocation({ userId, now: FEB_2026 })),
+      );
 
-    const grants = await db.select().from(creditLedger).where(eq(creditLedger.userId, userId));
-    const grantRows = grants.filter((row) => row.type === "monthly_grant");
-    expect(grantRows).toHaveLength(1);
-    expect(grantRows[0]!.amount).toBe(20);
+      const grants = await db.select().from(creditLedger).where(eq(creditLedger.userId, userId));
+      const grantRows = grants.filter((row) => row.type === "monthly_grant");
+      expect(grantRows).toHaveLength(1);
+      expect(grantRows[0]!.amount).toBe(20);
 
-    const [wallet] = await db
-      .select()
-      .from(creditWallet)
-      .where(eq(creditWallet.userId, userId))
-      .limit(1);
-    expect(wallet!.monthlyBalance).toBe(20);
-  });
+      const [wallet] = await db
+        .select()
+        .from(creditWallet)
+        .where(eq(creditWallet.userId, userId))
+        .limit(1);
+      expect(wallet!.monthlyBalance).toBe(20);
+    },
+  );
 
   it("rolls the monthly bucket over: unused credits expire, a new grant lands", async () => {
     const { userId } = await signUp("wallet-rollover@example.com", "Rollover");

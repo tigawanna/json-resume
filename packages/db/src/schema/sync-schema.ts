@@ -1,4 +1,4 @@
-import { sql } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import { index, integer, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 import { user } from "./auth-schema";
 
@@ -41,6 +41,13 @@ export const syncEvent = sqliteTable(
     index("sync_event_projectedAt_idx").on(table.projectedAt),
   ],
 );
+
+export const syncEventRelations = relations(syncEvent, ({ one }) => ({
+  user: one(user, {
+    fields: [syncEvent.userId],
+    references: [user.id],
+  }),
+}));
 
 /**
  * How far the scheduled squash has walked each user's log. Every row touched at
