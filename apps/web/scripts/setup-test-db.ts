@@ -1,4 +1,5 @@
 import { createClient } from "@libsql/client";
+import { migrationsFolder } from "@repo/db";
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync } from "node:fs";
 import { dirname, isAbsolute, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -8,7 +9,7 @@ const defaultDatabasePath = join(appDir, ".test", "db", "e2e.sqlite");
 const databaseUrl = process.env.DATABASE_URL ?? `file:${defaultDatabasePath}`;
 const resetDatabase = process.env.TEST_DB_RESET !== "false";
 
-function toFilePath(url) {
+function toFilePath(url: string): string {
   if (!url.startsWith("file:")) {
     throw new Error(`setup-test-db only supports file: DATABASE_URL values. Received: ${url}`);
   }
@@ -17,10 +18,8 @@ function toFilePath(url) {
   return isAbsolute(rawPath) ? rawPath : join(appDir, rawPath);
 }
 
-async function readMigrationStatements() {
-  const dbPackageUrl = await import.meta.resolve("@repo/db/package.json");
-  const dbPackageDir = dirname(fileURLToPath(dbPackageUrl));
-  const migrationDir = join(dbPackageDir, "drizzle", "migrations");
+function readMigrationStatements(): string[] {
+  const migrationDir = migrationsFolder;
   return readdirSync(migrationDir)
     .filter((file) => file.endsWith(".sql"))
     .sort()
@@ -45,7 +44,7 @@ if (resetDatabase && existsSync(databasePath)) {
 const client = createClient({ url: databaseUrl, authToken: process.env.DATABASE_AUTH_TOKEN ?? "" });
 
 try {
-  for (const statement of await readMigrationStatements()) {
+  for (const statement of readMigrationStatements()) {
     await client.execute(statement);
   }
   console.log(`Prepared test database at ${databasePath}`);

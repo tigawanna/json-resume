@@ -28,7 +28,7 @@ export default defineConfig({
   },
   webServer: [
     {
-      command: `pnpm exec node ./scripts/mock-github-api.mjs`,
+      command: `pnpm exec tsx ./scripts/mock-github-api.ts`,
       url: githubMockURL,
       reuseExistingServer: true,
       timeout: 30_000,
@@ -37,7 +37,7 @@ export default defineConfig({
       },
     },
     {
-      command: `pnpm exec node ./scripts/setup-test-db.mjs && pnpm exec vp dev --port ${port}`,
+      command: `pnpm exec tsx ./scripts/setup-test-db.ts && pnpm exec vp dev --port ${port}`,
       url: baseURL,
       reuseExistingServer: true,
       timeout: 120_000,

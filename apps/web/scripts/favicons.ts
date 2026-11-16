@@ -1,17 +1,17 @@
-// node scripts/favicons.mjs
+// tsx scripts/favicons.ts
 // Builds the icon set in public/ from public/icon.png.
 import { writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import pngToIco from "png-to-ico";
-import sharp from "sharp";
+import sharp, { type Color } from "sharp";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const source = join(root, "public", "icon.png");
 const out = join(root, "public");
-const plate = { r: 15, g: 16, b: 15, alpha: 1 };
+const plate = { r: 15, g: 16, b: 15, alpha: 1 } satisfies Color;
 
-async function contain(size) {
+async function contain(size: number): Promise<Buffer> {
   return sharp(source)
     .resize(size, size, {
       fit: "contain",
@@ -21,7 +21,7 @@ async function contain(size) {
     .toBuffer();
 }
 
-async function plated(size, padding) {
+async function plated(size: number, padding: number): Promise<Buffer> {
   const inner = size - padding * 2;
   const logo = await sharp(source)
     .resize(inner, inner, {
@@ -39,7 +39,7 @@ async function plated(size, padding) {
     .toBuffer();
 }
 
-const transparent = {
+const transparent: Record<string, number> = {
   "favicon-32x32.png": 32,
   "favicon-96x96.png": 96,
 };
@@ -49,7 +49,7 @@ for (const [name, size] of Object.entries(transparent)) {
   console.log(`wrote public/${name}`);
 }
 
-const platedFiles = {
+const platedFiles: Record<string, [size: number, padding: number]> = {
   "apple-touch-icon.png": [180, 18],
   "web-app-manifest-192x192.png": [192, 22],
   "web-app-manifest-512x512.png": [512, 58],

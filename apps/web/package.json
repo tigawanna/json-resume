@@ -15,7 +15,7 @@
     "check-types": "tsc -b --noEmit",
     "auth:migrate": "npx auth@latest generate --output ../../packages/db/src/schema/auth-schema.ts",
     "urgentry": "node --experimental-strip-types scripts/urgentry.ts",
-    "gen:favicons": "node scripts/favicons.mjs",
+    "gen:favicons": "tsx scripts/favicons.ts",
     "gen:og": "tsx scripts/og.tsx"
   },
   "dependencies": {

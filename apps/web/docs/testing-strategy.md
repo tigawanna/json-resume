@@ -32,7 +32,7 @@ This project should treat data ownership as a first-class security invariant. Th
 - `pnpm --dir apps/web test:e2e` runs Playwright against a freshly migrated SQLite database at `apps/web/.test/db/e2e.sqlite`.
 - `pnpm --dir apps/web test:all` runs the web Vitest suite and then the Playwright suite.
 
-Playwright starts the app with `DATABASE_URL`, `FRONTEND_URL`, and `VITE_API_URL` pointed at the local test server. The database is rebuilt by `apps/web/scripts/setup-test-db.mjs` before the server starts, so e2e tests should create their own users and records through the UI or public app APIs.
+Playwright starts the app with `DATABASE_URL`, `FRONTEND_URL`, and `VITE_API_URL` pointed at the local test server. The database is rebuilt by `apps/web/scripts/setup-test-db.ts` before the server starts, so e2e tests should create their own users and records through the UI or public app APIs.
 
 ## Security Regression Checklist
 

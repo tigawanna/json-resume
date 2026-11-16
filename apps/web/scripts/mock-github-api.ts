@@ -1,8 +1,24 @@
-import { createServer } from "node:http";
+import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 
 const port = Number(process.env.PLAYWRIGHT_GITHUB_MOCK_PORT ?? 3052);
 
-const repos = [
+type Repo = {
+  id: number;
+  name: string;
+  full_name: string;
+  html_url: string;
+  homepage: string;
+  description: string;
+  private: boolean;
+  fork: boolean;
+  archived: boolean;
+  language: string;
+  stargazers_count: number;
+  topics: string[];
+  updated_at: string;
+};
+
+const repos: Repo[] = [
   {
     id: 101,
     name: "agentic-json-resume",
@@ -50,7 +66,13 @@ const repos = [
   },
 ];
 
-function sendJson(response, status, body) {
+type SearchResponse = {
+  total_count: number;
+  incomplete_results: boolean;
+  items: Repo[];
+};
+
+function sendJson(response: ServerResponse, status: number, body: unknown) {
   response.writeHead(status, {
     "content-type": "application/json",
     "access-control-allow-origin": "*",
@@ -58,7 +80,7 @@ function sendJson(response, status, body) {
   response.end(JSON.stringify(body));
 }
 
-function searchRepos(url) {
+function searchRepos(url: URL): SearchResponse {
   const q = (url.searchParams.get("q") ?? "").toLowerCase();
   const sort = url.searchParams.get("sort");
   const order = url.searchParams.get("order") ?? "desc";
@@ -125,7 +147,7 @@ function searchRepos(url) {
   };
 }
 
-const server = createServer((request, response) => {
+const server = createServer((request: IncomingMessage, response: ServerResponse) => {
   const url = new URL(request.url ?? "/", `http://${request.headers.host}`);
 
   if (request.method === "GET" && url.pathname === "/") {

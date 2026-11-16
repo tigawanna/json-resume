@@ -75,7 +75,7 @@ Created files in this pass:
 - `settings-api-keys.spec.ts`
 - `support/github.ts`
 - `repos.spec.ts`
-- `../scripts/mock-github-api.mjs`
+- `../scripts/mock-github-api.ts`
 
 Implementation fix in this pass:
 
@@ -112,7 +112,6 @@ Verification run in this pass:
 - `pnpm --dir apps/web exec playwright test e2e/resumes-list.spec.ts`
 - `pnpm --dir apps/web exec playwright test e2e/settings-api-keys.spec.ts`
 - `pnpm --dir apps/web check-types`
-- `node --check apps/web/scripts/mock-github-api.mjs`
 - `pnpm --dir apps/web exec playwright test e2e/repos.spec.ts`
 - `pnpm --dir apps/web check-types`
 
