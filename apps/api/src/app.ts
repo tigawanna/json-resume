@@ -9,6 +9,10 @@ import { env } from "@api/env";
 import { errorBody, errorResponse } from "@api/lib/http";
 import { healthRoute } from "@api/routes/health/route";
 import { meRoute } from "@api/routes/me/route";
+import { waitlistAdminRoute } from "@api/routes/admin/waitlist";
+import { creditsAdminRoute } from "@api/routes/admin/credits";
+import { creditsRoute } from "@api/routes/credits/route";
+import { waitlistRoute } from "@api/routes/waitlist/route";
 import { viewerRoute } from "@api/routes/viewer/route";
 
 const isProduction = env.NODE_ENV === "production";
@@ -50,6 +54,10 @@ export const app = new Hono<EvlogVariables>()
   .route("/health", healthRoute)
   .route("/viewer", viewerRoute)
   .route("/me", meRoute)
+  .route("/waitlist", waitlistRoute)
+  .route("/admin/waitlist", waitlistAdminRoute)
+  .route("/credits", creditsRoute)
+  .route("/admin/credits", creditsAdminRoute)
   .notFound((c) => c.json(errorBody({ message: "Not Found", code: "NOT_FOUND" }), 404))
   .onError((error, c) => errorResponse({ c, error, isProduction }));
 

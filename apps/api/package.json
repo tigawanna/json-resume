@@ -12,7 +12,7 @@
     "build": "vp pack src/index.ts --platform node --out-dir dist",
     "start": "node dist/index.mjs",
     "test": "vitest run",
-    "check-types": "tsgo --noEmit"
+    "check-types": "tsc -b --noEmit"
   },
   "dependencies": {
     "@better-auth/api-key": "^1.7.18",
