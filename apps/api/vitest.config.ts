@@ -9,7 +9,9 @@ export default defineConfig({
   },
   test: {
     environment: "node",
-    include: ["src/**/*.test.ts"],
+    setupFiles: ["tests/setup/db.ts"],
+    include: ["src/**/*.test.ts", "tests/**/*.test.ts"],
     testTimeout: 30000,
+    hookTimeout: 30000,
   },
 });

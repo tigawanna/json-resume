@@ -1,9 +1,8 @@
-import { afterAll, describe, expect, it } from "vitest";
-import { db } from "./db/client";
 import { user } from "@repo/db/schema/auth-schema";
 import { eq } from "drizzle-orm";
-import { app } from "./app";
-
+import { afterAll, describe, expect, it } from "vitest";
+import { app } from "@api/app";
+import { db } from "@api/db/client";
 const createdEmails: string[] = [];
 
 afterAll(async () => {

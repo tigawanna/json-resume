@@ -31,6 +31,7 @@ React 19 (compiler; no `useMemo` / `useCallback`), Tailwind CSS v4, TanStack Rou
 - One named object parameter for functions and components. Positional args only to match a required third-party signature.
 - One ternary for a yes/no choice. More than three outcomes, or any nested ternary, uses `if` / `else if` or `switch`.
 - Group related files in a named folder. Do not keep adding loose files to `utils/`, `hooks/`, `lib/`, or `modules/`.
+- Keep files under ~150 lines, with 200 as the hard ceiling. When a file outgrows that, split it by responsibility into a named folder (for example `route.ts`, `list.ts`, `schema.ts`, `helpers.ts`, `*.test.ts`) instead of growing one file or adding loose siblings.
 - New backend code goes in `apps/api`. Do not add `createServerFn`, `src/routes/api/*`, or `*.server.ts` data access. Migrate a legacy piece when you touch it (`hono-api`).
 - `import type` only for `@api/*`. No `any` and no casts that hide type errors. `catch` and `onError` use `unknown`.
 - Schema changes go through Drizzle. Do not hand-edit SQL migrations unless explicitly allowed. Do not edit `auth.schema`; `auth:migrate` generates it.
