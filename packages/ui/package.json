@@ -9,7 +9,7 @@
     "dev": "vp build --watch",
     "build": "vp build",
     "generate:component": "turbo gen react-component",
-    "check-types": "tsgo --noEmit"
+    "check-types": "tsc -b --noEmit"
   },
   "dependencies": {
     "react": "^19.2.4",

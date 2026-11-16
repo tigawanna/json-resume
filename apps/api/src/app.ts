@@ -14,6 +14,10 @@ import { creditsAdminRoute } from "@api/routes/admin/credits";
 import { creditsRoute } from "@api/routes/credits/route";
 import { waitlistRoute } from "@api/routes/waitlist/route";
 import { viewerRoute } from "@api/routes/viewer/route";
+import { syncEventsRoute } from "@api/routes/sync/events";
+import { syncCompactRoute } from "@api/routes/sync/compact";
+import { projectSyncEventsRoute } from "@api/routes/cron/project-sync-events";
+import { squashSyncEventsRoute } from "@api/routes/cron/squash-sync-events";
 
 const isProduction = env.NODE_ENV === "production";
 
@@ -54,6 +58,10 @@ export const app = new Hono<EvlogVariables>()
   .route("/health", healthRoute)
   .route("/viewer", viewerRoute)
   .route("/me", meRoute)
+  .route("/sync/events", syncEventsRoute)
+  .route("/sync/compact", syncCompactRoute)
+  .route("/cron/project-sync-events", projectSyncEventsRoute)
+  .route("/cron/squash-sync-events", squashSyncEventsRoute)
   .route("/waitlist", waitlistRoute)
   .route("/admin/waitlist", waitlistAdminRoute)
   .route("/credits", creditsRoute)

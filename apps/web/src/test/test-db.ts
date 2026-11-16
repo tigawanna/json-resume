@@ -3,6 +3,7 @@ import { readdirSync, readFileSync, rmSync } from "node:fs";
 import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { migrationsFolder as dbMigrationsFolder } from "@repo/db";
 import { vi } from "vite-plus/test";
 
 export type TestDatabase = {
@@ -13,13 +14,13 @@ export type TestDatabase = {
 };
 
 export async function runDrizzleMigrations(client: Client): Promise<void> {
-  const migrationDir = new URL("../../drizzle/migrations/", import.meta.url);
+  const migrationDir = dbMigrationsFolder;
   const migrationFiles = readdirSync(migrationDir)
     .filter((file) => file.endsWith(".sql"))
     .sort();
 
   for (const file of migrationFiles) {
-    const migration = readFileSync(new URL(file, migrationDir), "utf8");
+    const migration = readFileSync(join(migrationDir, file), "utf8");
     const statements = migration
       .split("--> statement-breakpoint")
       .map((statement) => statement.trim())

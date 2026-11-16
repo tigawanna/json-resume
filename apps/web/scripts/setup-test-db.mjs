@@ -17,8 +17,10 @@ function toFilePath(url) {
   return isAbsolute(rawPath) ? rawPath : join(appDir, rawPath);
 }
 
-function readMigrationStatements() {
-  const migrationDir = join(appDir, "drizzle", "migrations");
+async function readMigrationStatements() {
+  const dbPackageUrl = await import.meta.resolve("@repo/db/package.json");
+  const dbPackageDir = dirname(fileURLToPath(dbPackageUrl));
+  const migrationDir = join(dbPackageDir, "drizzle", "migrations");
   return readdirSync(migrationDir)
     .filter((file) => file.endsWith(".sql"))
     .sort()
@@ -43,7 +45,7 @@ if (resetDatabase && existsSync(databasePath)) {
 const client = createClient({ url: databaseUrl, authToken: process.env.DATABASE_AUTH_TOKEN ?? "" });
 
 try {
-  for (const statement of readMigrationStatements()) {
+  for (const statement of await readMigrationStatements()) {
     await client.execute(statement);
   }
   console.log(`Prepared test database at ${databasePath}`);

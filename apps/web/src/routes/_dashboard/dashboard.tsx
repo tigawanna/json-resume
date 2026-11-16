@@ -2,6 +2,7 @@ import { RouterPendingComponent } from "@/lib/tanstack/router/RouterPendingCompo
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { openDashboardAssistant } from "./-ai/-hooks/use-dashboard-assistant";
+import { CreditBalanceCard } from "./-components/credits/CreditBalanceCard";
 import { DashboardSearch } from "./-components/dashboard/DashboardSearch";
 import { RecentResumes } from "./-components/dashboard/RecentResumes";
 
@@ -23,6 +24,7 @@ export const Route = createFileRoute("/_dashboard/dashboard")({
 function RouteComponent() {
   return (
     <div className="relative flex h-full w-full flex-col gap-8" data-test="event-sourced-dashboard">
+      <CreditBalanceCard />
       <div className="flex h-full w-full flex-col items-center justify-center gap-8">
         <div className="flex flex-col items-center gap-4">
           <div className="flex items-center justify-center gap-3">

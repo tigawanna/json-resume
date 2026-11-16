@@ -28,4 +28,6 @@ export const queryKeyPrefixes = {
   openrouterModels: "openrouter-models",
   openrouterModelEndpoints: "openrouter-model-endpoints",
   openrouterCredits: "openrouter-credits",
+  waitlist: "waitlist",
+  credits: "credits",
 } as const;

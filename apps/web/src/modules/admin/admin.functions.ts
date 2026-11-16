@@ -1,8 +1,8 @@
 import { viewerMiddleware } from "@/data-access-layer/auth/viewer";
 import { createMiddleware, createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { compactOnServer } from "../sync/server/compaction/compaction.server";
-import { squashSyncEvents } from "../sync/server/squash.server";
+import { compactOnServer } from "@api/modules/sync/server/compaction/compaction.server";
+import { squashSyncEvents } from "@api/modules/sync/server/squash.server";
 import { auditAdminAction } from "./admin-audit.server";
 import { adminEventFilterSchema, adminEventListSchema } from "./admin-event-filters";
 import {

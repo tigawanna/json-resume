@@ -1,5 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { adminStatsQueryOptions } from "@/data-access-layer/admin/admin-query-options";
+import { adminWaitlistStatsQueryOptions } from "@/data-access-layer/waitlist/waitlist-query-options";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Link, linkOptions } from "@tanstack/react-router";
 import { ArrowRight, Database, Table2, Users } from "lucide-react";
@@ -28,6 +29,7 @@ const sections = [
 
 export function AdminHome() {
   const { data: stats } = useSuspenseQuery(adminStatsQueryOptions);
+  const { data: waitlistStats } = useSuspenseQuery(adminWaitlistStatsQueryOptions);
 
   const metrics = [
     {
@@ -35,6 +37,12 @@ export function AdminHome() {
       value: stats.users,
       hint: `${stats.admins} admin`,
       link: linkOptions({ to: "/admin/users" }),
+    },
+    {
+      label: "Waitlist",
+      value: waitlistStats.joined,
+      hint: `${waitlistStats.linked} linked`,
+      link: linkOptions({ to: "/admin/waitlist" }),
     },
     {
       label: "Résumés",

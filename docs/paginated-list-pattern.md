@@ -249,7 +249,7 @@ const { data: totals } = useLiveQuery(
 
 Canonical source of truth:
 
-- `apps/web/src/features/waitlist/components/AdminWaitlistList.tsx`
+- `apps/web/src/routes/_dashboard/admin/waitlist/-components/AdminWaitlistList.tsx`
 - Route: `apps/web/src/routes/_dashboard/admin/waitlist/index.tsx`
 
 Follow that shape for other admin lists.

@@ -2,39 +2,19 @@ import { requireAdmin } from "@api/auth/middleware";
 import { errorBody } from "@api/lib/http";
 import type { AppEnv } from "@api/types";
 import { zValidator } from "@hono/zod-validator";
-import type { Context } from "hono";
-import { eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { z } from "zod";
-import { db } from "../../db/client";
-import { user } from "@repo/db/schema/auth-schema";
 import {
-  AdjustmentBelowZeroError,
-  BannedUserError,
-  UnknownUserError,
   adminAdjustCredits,
   adminGrantCredits,
-  readLedger,
 } from "../credits/wallet";
-
-const grantInput = z.object({
-  userId: z.string().min(1).max(64),
-  amount: z.number().int().min(1).max(10_000),
-  reason: z.string().trim().min(1).max(500),
-});
-
-const adjustInput = z.object({
-  userId: z.string().min(1).max(64),
-  bucket: z.enum(["monthly", "bonus"]),
-  /** Signed: negative removes credits. */
-  amount: z.number().int().refine((value) => value !== 0, "Amount cannot be zero"),
-  reason: z.string().trim().min(1).max(500),
-});
-
-const userCreditsQuery = z.object({
-  page: z.coerce.number().int().min(1).default(1),
-  perPage: z.coerce.number().int().min(1).max(100).default(20),
-});
+import {
+  adjustInput,
+  grantInput,
+  handleWalletError,
+  readAdminUserCredits,
+  userCreditsQuery,
+} from "./credit-shared";
 
 export const creditsAdminRoute = new Hono<AppEnv>()
   .post(
@@ -158,52 +138,10 @@ export const creditsAdminRoute = new Hono<AppEnv>()
       const { userId } = c.req.valid("param");
       const { page, perPage } = c.req.valid("query");
 
-      const [account] = await db
-        .select({
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-          banned: user.banned,
-          createdAt: user.createdAt,
-        })
-        .from(user)
-        .where(eq(user.id, userId))
-        .limit(1);
-      if (!account) {
+      const page_ = await readAdminUserCredits({ userId, page, perPage });
+      if (!page_) {
         return c.json(errorBody({ message: "User not found", code: "NOT_FOUND" }), 404);
       }
-
-      const ledger = await readLedger({ userId, page, perPage });
-      return c.json({ user: account, ledger });
+      return c.json(page_);
     },
   );
-
-/** Typed wallet errors keep their codes; anything else bubbles to onError. */
-function handleWalletError(
-  c: Context<AppEnv>,
-  error: unknown,
-  action: string,
-  userId: string,
-) {
-  if (error instanceof UnknownUserError) {
-    return c.json(errorBody({ message: error.message, code: error.code }), 404);
-  }
-  if (error instanceof BannedUserError) {
-    const session = c.get("session");
-    const log = c.get("log");
-    log.audit.deny(error.message, {
-      action,
-      actor: { type: "user", id: session.user.id, email: session.user.email },
-      target: { type: "credit_wallet", id: userId },
-    });
-    return c.json(errorBody({ message: error.message, code: error.code }), 400);
-  }
-  if (error instanceof AdjustmentBelowZeroError) {
-    return c.json(
-      errorBody({ message: error.message, code: error.code, issues: { bucket: error.bucket } }),
-      400,
-    );
-  }
-  throw error;
-}

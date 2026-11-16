@@ -276,6 +276,12 @@ export const PAGE_CONTEXTS: Record<string, PageContext> = {
   "/_dashboard/events/": nonePage("/_dashboard/events/", "Events"),
   "/_dashboard/admin/": nonePage("/_dashboard/admin/", "Admin"),
   "/_dashboard/admin/users/": nonePage("/_dashboard/admin/users/", "Admin users"),
+  "/_dashboard/admin/users/$userId/": nonePage(
+    "/_dashboard/admin/users/$userId/",
+    "Admin user credits",
+  ),
+  "/_dashboard/admin/waitlist/": nonePage("/_dashboard/admin/waitlist/", "Admin waitlist"),
+  "/_dashboard/credits/": nonePage("/_dashboard/credits/", "Résumé credits"),
   "/_dashboard/admin/tables/": nonePage("/_dashboard/admin/tables/", "Admin tables"),
   "/_dashboard/admin/data/": nonePage("/_dashboard/admin/data/", "Admin data"),
   "/_dashboard/admin/tables/$table/": nonePage("/_dashboard/admin/tables/$table/", "Admin table"),

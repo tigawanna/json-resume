@@ -1,7 +1,7 @@
 import "@tanstack/react-start/server-only";
 
 import { db } from "@/lib/drizzle/client";
-import { savedProject } from "@/lib/drizzle/scheam/saved-project-schema";
+import { savedProject } from "@repo/db/schema/saved-project-schema";
 import { and, eq } from "drizzle-orm";
 
 export async function listSavedProjects(userId: string) {

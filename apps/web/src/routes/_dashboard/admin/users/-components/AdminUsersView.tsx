@@ -10,6 +10,8 @@ import {
 } from "@/components/ui/table";
 import { adminUsersQueryOptions } from "@/data-access-layer/admin/admin-query-options";
 import { useSuspenseQuery } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
+import { ArrowUpRight } from "lucide-react";
 import { useState } from "react";
 import { AdminPageHeader } from "../../-components/AdminPageHeader";
 
@@ -50,6 +52,7 @@ export function AdminUsersView() {
               <TableHead>Role</TableHead>
               <TableHead className="text-right">Résumés</TableHead>
               <TableHead className="text-right">Events</TableHead>
+              <TableHead>Credits</TableHead>
               <TableHead>Joined</TableHead>
             </TableRow>
           </TableHeader>
@@ -74,6 +77,16 @@ export function AdminUsersView() {
                 <TableCell className="text-right tabular-nums">{user.resumes}</TableCell>
                 <TableCell className="text-right tabular-nums">
                   {user.events.toLocaleString()}
+                </TableCell>
+                <TableCell>
+                  <Link
+                    to="/admin/users/$userId"
+                    params={{ userId: user.id }}
+                    className="inline-flex items-center gap-1 text-xs underline-offset-4 hover:underline"
+                    data-test="admin-user-credits-link"
+                  >
+                    View credits <ArrowUpRight className="size-3" />
+                  </Link>
                 </TableCell>
                 <TableCell className="whitespace-nowrap text-sm">
                   {new Date(user.createdAt).toLocaleDateString()}

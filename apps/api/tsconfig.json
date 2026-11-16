@@ -3,14 +3,23 @@
   "compilerOptions": {
     "module": "ESNext",
     "moduleResolution": "Bundler",
-    "types": ["node"],
+    "types": [
+      "node"
+    ],
     "noEmit": true,
     "declaration": false,
     "declarationMap": false,
     "verbatimModuleSyntax": false,
     "paths": {
-      "@api/*": ["./src/*"]
+      "@api/*": [
+        "./src/*"
+      ],
+      "@/*": [
+        "../../web/src/*"
+      ]
     }
   },
-  "include": ["src/**/*.ts"]
+  "include": [
+    "src/**/*.ts"
+  ]
 }

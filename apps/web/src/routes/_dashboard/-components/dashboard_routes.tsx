@@ -13,6 +13,7 @@ import {
   LayoutDashboard,
   Link,
   Mail,
+  Mailbox,
   MessageSquareText,
   Sparkles,
   Mic,
@@ -31,6 +32,7 @@ export const dashboard_account_routes = [
 
 export const dashboard_admin_routes = [
   { title: "Admin", href: "/admin", icon: Shield },
+  { title: "Waitlist", href: "/admin/waitlist", icon: Mailbox },
 ] satisfies SidebarItem[];
 
 export function getDashboardPrimaryRoutes(): SidebarItem[] {

@@ -4,6 +4,8 @@
   "private": true,
   "type": "module",
   "exports": {
+    ".": "./src/index.ts",
+    "./migrations": "./src/migrations.ts",
     "./schema/*": "./src/schema/*.ts",
     "./schema/resume": "./src/schema/resume/index.ts",
     "./schema/resume/*": "./src/schema/resume/*.ts"
@@ -11,7 +13,11 @@
   "scripts": {
     "dev": "vp build --watch",
     "build": "vp build",
-    "check-types": "tsc --noEmit"
+    "check-types": "tsc --noEmit",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
     "drizzle-orm": "^0.45.2",
@@ -19,6 +25,8 @@
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
+    "@types/node": "^26.6.6",
+    "drizzle-kit": "^0.31.9",
     "typescript": "catalog:",
     "vite": "catalog:"
   }

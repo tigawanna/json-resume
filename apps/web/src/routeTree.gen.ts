@@ -20,6 +20,7 @@ import { Route as AuthSignupRouteImport } from './routes/auth/signup'
 import { Route as PrivacyIndexRouteImport } from './routes/privacy/index'
 import { Route as TermsIndexRouteImport } from './routes/terms/index'
 import { Route as TestIndexRouteImport } from './routes/test/index'
+import { Route as WaitlistIndexRouteImport } from './routes/waitlist/index'
 import { Route as DashboardAdminIndexRouteImport } from './routes/_dashboard/admin/index'
 import { Route as DashboardAdminRouteRouteImport } from './routes/_dashboard/admin/route'
 import { Route as DashboardApplicationAnswersIndexRouteImport } from './routes/_dashboard/application-answers/index'
@@ -27,6 +28,7 @@ import { Route as DashboardAssistantSkillsIndexRouteImport } from './routes/_das
 import { Route as DashboardCertificationsIndexRouteImport } from './routes/_dashboard/certifications/index'
 import { Route as DashboardContactsIndexRouteImport } from './routes/_dashboard/contacts/index'
 import { Route as DashboardCoverLettersIndexRouteImport } from './routes/_dashboard/cover-letters/index'
+import { Route as DashboardCreditsIndexRouteImport } from './routes/_dashboard/credits/index'
 import { Route as DashboardDevIndexRouteImport } from './routes/_dashboard/dev/index'
 import { Route as DashboardEducationIndexRouteImport } from './routes/_dashboard/education/index'
 import { Route as DashboardEventsIndexRouteImport } from './routes/_dashboard/events/index'
@@ -53,14 +55,11 @@ import { Route as ApiAiChatLabRouteImport } from './routes/api/ai/chat-lab'
 import { Route as ApiAiDashboardAssistantRouteImport } from './routes/api/ai/dashboard-assistant'
 import { Route as ApiAiEventSourcedResumeTailorRouteImport } from './routes/api/ai/event-sourced-resume-tailor'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
-import { Route as ApiCronProjectSyncEventsRouteImport } from './routes/api/cron/project-sync-events'
-import { Route as ApiCronSquashSyncEventsRouteImport } from './routes/api/cron/squash-sync-events'
-import { Route as ApiSyncCompactRouteImport } from './routes/api/sync/compact'
-import { Route as ApiSyncEventsRouteImport } from './routes/api/sync/events'
 import { Route as RPublicIdIndexRouteImport } from './routes/r/$publicId/index'
 import { Route as DashboardAdminDataIndexRouteImport } from './routes/_dashboard/admin/data/index'
 import { Route as DashboardAdminTablesIndexRouteImport } from './routes/_dashboard/admin/tables/index'
 import { Route as DashboardAdminUsersIndexRouteImport } from './routes/_dashboard/admin/users/index'
+import { Route as DashboardAdminWaitlistIndexRouteImport } from './routes/_dashboard/admin/waitlist/index'
 import { Route as DashboardAssistantSkillsSkillIdIndexRouteImport } from './routes/_dashboard/assistant-skills/$skillId/index'
 import { Route as DashboardCoverLettersCoverLetterIdIndexRouteImport } from './routes/_dashboard/cover-letters/$coverLetterId/index'
 import { Route as DashboardDevChatLabIndexRouteImport } from './routes/_dashboard/dev/chat-lab/index'
@@ -72,6 +71,7 @@ import { Route as DashboardResumesResumeIdIndexRouteImport } from './routes/_das
 import { Route as ApiAgenticOpenapiJsonRouteImport } from './routes/api/agentic/openapi.json'
 import { Route as ApiAgenticRpcSplatRouteImport } from './routes/api/agentic/rpc/$'
 import { Route as DashboardAdminTablesTableIndexRouteImport } from './routes/_dashboard/admin/tables/$table/index'
+import { Route as DashboardAdminUsersUserIdIndexRouteImport } from './routes/_dashboard/admin/users/$userId/index'
 import { Route as DashboardResumesResumeIdEventsIndexRouteImport } from './routes/_dashboard/resumes/$resumeId/events/index'
 
 const IndexRoute = IndexRouteImport.update({
@@ -128,6 +128,11 @@ const TestIndexRoute = TestIndexRouteImport.update({
   path: '/test/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const WaitlistIndexRoute = WaitlistIndexRouteImport.update({
+  id: '/waitlist/',
+  path: '/waitlist/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardAdminIndexRoute = DashboardAdminIndexRouteImport.update({
   id: '/admin/',
   path: '/admin/',
@@ -167,6 +172,11 @@ const DashboardCoverLettersIndexRoute =
     path: '/cover-letters/',
     getParentRoute: () => DashboardLayoutRoute,
   } as any)
+const DashboardCreditsIndexRoute = DashboardCreditsIndexRouteImport.update({
+  id: '/credits/',
+  path: '/credits/',
+  getParentRoute: () => DashboardLayoutRoute,
+} as any)
 const DashboardDevIndexRoute = DashboardDevIndexRouteImport.update({
   id: '/dev/',
   path: '/dev/',
@@ -304,27 +314,6 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiCronProjectSyncEventsRoute =
-  ApiCronProjectSyncEventsRouteImport.update({
-    id: '/api/cron/project-sync-events',
-    path: '/api/cron/project-sync-events',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiCronSquashSyncEventsRoute = ApiCronSquashSyncEventsRouteImport.update({
-  id: '/api/cron/squash-sync-events',
-  path: '/api/cron/squash-sync-events',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiSyncCompactRoute = ApiSyncCompactRouteImport.update({
-  id: '/api/sync/compact',
-  path: '/api/sync/compact',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiSyncEventsRoute = ApiSyncEventsRouteImport.update({
-  id: '/api/sync/events',
-  path: '/api/sync/events',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const RPublicIdIndexRoute = RPublicIdIndexRouteImport.update({
   id: '/r/$publicId/',
   path: '/r/$publicId/',
@@ -345,6 +334,12 @@ const DashboardAdminUsersIndexRoute =
   DashboardAdminUsersIndexRouteImport.update({
     id: '/admin/users/',
     path: '/admin/users/',
+    getParentRoute: () => DashboardLayoutRoute,
+  } as any)
+const DashboardAdminWaitlistIndexRoute =
+  DashboardAdminWaitlistIndexRouteImport.update({
+    id: '/admin/waitlist/',
+    path: '/admin/waitlist/',
     getParentRoute: () => DashboardLayoutRoute,
   } as any)
 const DashboardAssistantSkillsSkillIdIndexRoute =
@@ -410,6 +405,12 @@ const DashboardAdminTablesTableIndexRoute =
     path: '/admin/tables/$table/',
     getParentRoute: () => DashboardLayoutRoute,
   } as any)
+const DashboardAdminUsersUserIdIndexRoute =
+  DashboardAdminUsersUserIdIndexRouteImport.update({
+    id: '/admin/users/$userId/',
+    path: '/admin/users/$userId/',
+    getParentRoute: () => DashboardLayoutRoute,
+  } as any)
 const DashboardResumesResumeIdEventsIndexRoute =
   DashboardResumesResumeIdEventsIndexRouteImport.update({
     id: '/resumes/$resumeId/events/',
@@ -428,6 +429,7 @@ export interface FileRoutesByFullPath {
   '/privacy/': typeof PrivacyIndexRoute
   '/terms/': typeof TermsIndexRoute
   '/test/': typeof TestIndexRoute
+  '/waitlist/': typeof WaitlistIndexRoute
   '/admin/route': typeof DashboardAdminRouteRoute
   '/api/agentic/$': typeof ApiAgenticSplatRoute
   '/api/agentic/openapi': typeof ApiAgenticOpenapiRouteWithChildren
@@ -435,16 +437,13 @@ export interface FileRoutesByFullPath {
   '/api/ai/dashboard-assistant': typeof ApiAiDashboardAssistantRoute
   '/api/ai/event-sourced-resume-tailor': typeof ApiAiEventSourcedResumeTailorRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/api/cron/project-sync-events': typeof ApiCronProjectSyncEventsRoute
-  '/api/cron/squash-sync-events': typeof ApiCronSquashSyncEventsRoute
-  '/api/sync/compact': typeof ApiSyncCompactRoute
-  '/api/sync/events': typeof ApiSyncEventsRoute
   '/admin/': typeof DashboardAdminIndexRoute
   '/application-answers/': typeof DashboardApplicationAnswersIndexRoute
   '/assistant-skills/': typeof DashboardAssistantSkillsIndexRoute
   '/certifications/': typeof DashboardCertificationsIndexRoute
   '/contacts/': typeof DashboardContactsIndexRoute
   '/cover-letters/': typeof DashboardCoverLettersIndexRoute
+  '/credits/': typeof DashboardCreditsIndexRoute
   '/dev/': typeof DashboardDevIndexRoute
   '/education/': typeof DashboardEducationIndexRoute
   '/events/': typeof DashboardEventsIndexRoute
@@ -471,6 +470,7 @@ export interface FileRoutesByFullPath {
   '/admin/data/': typeof DashboardAdminDataIndexRoute
   '/admin/tables/': typeof DashboardAdminTablesIndexRoute
   '/admin/users/': typeof DashboardAdminUsersIndexRoute
+  '/admin/waitlist/': typeof DashboardAdminWaitlistIndexRoute
   '/assistant-skills/$skillId/': typeof DashboardAssistantSkillsSkillIdIndexRoute
   '/cover-letters/$coverLetterId/': typeof DashboardCoverLettersCoverLetterIdIndexRoute
   '/dev/chat-lab/': typeof DashboardDevChatLabIndexRoute
@@ -480,6 +480,7 @@ export interface FileRoutesByFullPath {
   '/jobs/$jobId/': typeof DashboardJobsJobIdIndexRoute
   '/resumes/$resumeId/': typeof DashboardResumesResumeIdIndexRoute
   '/admin/tables/$table/': typeof DashboardAdminTablesTableIndexRoute
+  '/admin/users/$userId/': typeof DashboardAdminUsersUserIdIndexRoute
   '/resumes/$resumeId/events/': typeof DashboardResumesResumeIdEventsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -492,6 +493,7 @@ export interface FileRoutesByTo {
   '/privacy': typeof PrivacyIndexRoute
   '/terms': typeof TermsIndexRoute
   '/test': typeof TestIndexRoute
+  '/waitlist': typeof WaitlistIndexRoute
   '/admin/route': typeof DashboardAdminRouteRoute
   '/api/agentic/$': typeof ApiAgenticSplatRoute
   '/api/agentic/openapi': typeof ApiAgenticOpenapiRouteWithChildren
@@ -499,16 +501,13 @@ export interface FileRoutesByTo {
   '/api/ai/dashboard-assistant': typeof ApiAiDashboardAssistantRoute
   '/api/ai/event-sourced-resume-tailor': typeof ApiAiEventSourcedResumeTailorRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/api/cron/project-sync-events': typeof ApiCronProjectSyncEventsRoute
-  '/api/cron/squash-sync-events': typeof ApiCronSquashSyncEventsRoute
-  '/api/sync/compact': typeof ApiSyncCompactRoute
-  '/api/sync/events': typeof ApiSyncEventsRoute
   '/admin': typeof DashboardAdminIndexRoute
   '/application-answers': typeof DashboardApplicationAnswersIndexRoute
   '/assistant-skills': typeof DashboardAssistantSkillsIndexRoute
   '/certifications': typeof DashboardCertificationsIndexRoute
   '/contacts': typeof DashboardContactsIndexRoute
   '/cover-letters': typeof DashboardCoverLettersIndexRoute
+  '/credits': typeof DashboardCreditsIndexRoute
   '/dev': typeof DashboardDevIndexRoute
   '/education': typeof DashboardEducationIndexRoute
   '/events': typeof DashboardEventsIndexRoute
@@ -535,6 +534,7 @@ export interface FileRoutesByTo {
   '/admin/data': typeof DashboardAdminDataIndexRoute
   '/admin/tables': typeof DashboardAdminTablesIndexRoute
   '/admin/users': typeof DashboardAdminUsersIndexRoute
+  '/admin/waitlist': typeof DashboardAdminWaitlistIndexRoute
   '/assistant-skills/$skillId': typeof DashboardAssistantSkillsSkillIdIndexRoute
   '/cover-letters/$coverLetterId': typeof DashboardCoverLettersCoverLetterIdIndexRoute
   '/dev/chat-lab': typeof DashboardDevChatLabIndexRoute
@@ -544,6 +544,7 @@ export interface FileRoutesByTo {
   '/jobs/$jobId': typeof DashboardJobsJobIdIndexRoute
   '/resumes/$resumeId': typeof DashboardResumesResumeIdIndexRoute
   '/admin/tables/$table': typeof DashboardAdminTablesTableIndexRoute
+  '/admin/users/$userId': typeof DashboardAdminUsersUserIdIndexRoute
   '/resumes/$resumeId/events': typeof DashboardResumesResumeIdEventsIndexRoute
 }
 export interface FileRoutesById {
@@ -559,6 +560,7 @@ export interface FileRoutesById {
   '/privacy/': typeof PrivacyIndexRoute
   '/terms/': typeof TermsIndexRoute
   '/test/': typeof TestIndexRoute
+  '/waitlist/': typeof WaitlistIndexRoute
   '/_dashboard/admin/route': typeof DashboardAdminRouteRoute
   '/api/agentic/$': typeof ApiAgenticSplatRoute
   '/api/agentic/openapi': typeof ApiAgenticOpenapiRouteWithChildren
@@ -566,16 +568,13 @@ export interface FileRoutesById {
   '/api/ai/dashboard-assistant': typeof ApiAiDashboardAssistantRoute
   '/api/ai/event-sourced-resume-tailor': typeof ApiAiEventSourcedResumeTailorRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/api/cron/project-sync-events': typeof ApiCronProjectSyncEventsRoute
-  '/api/cron/squash-sync-events': typeof ApiCronSquashSyncEventsRoute
-  '/api/sync/compact': typeof ApiSyncCompactRoute
-  '/api/sync/events': typeof ApiSyncEventsRoute
   '/_dashboard/admin/': typeof DashboardAdminIndexRoute
   '/_dashboard/application-answers/': typeof DashboardApplicationAnswersIndexRoute
   '/_dashboard/assistant-skills/': typeof DashboardAssistantSkillsIndexRoute
   '/_dashboard/certifications/': typeof DashboardCertificationsIndexRoute
   '/_dashboard/contacts/': typeof DashboardContactsIndexRoute
   '/_dashboard/cover-letters/': typeof DashboardCoverLettersIndexRoute
+  '/_dashboard/credits/': typeof DashboardCreditsIndexRoute
   '/_dashboard/dev/': typeof DashboardDevIndexRoute
   '/_dashboard/education/': typeof DashboardEducationIndexRoute
   '/_dashboard/events/': typeof DashboardEventsIndexRoute
@@ -602,6 +601,7 @@ export interface FileRoutesById {
   '/_dashboard/admin/data/': typeof DashboardAdminDataIndexRoute
   '/_dashboard/admin/tables/': typeof DashboardAdminTablesIndexRoute
   '/_dashboard/admin/users/': typeof DashboardAdminUsersIndexRoute
+  '/_dashboard/admin/waitlist/': typeof DashboardAdminWaitlistIndexRoute
   '/_dashboard/assistant-skills/$skillId/': typeof DashboardAssistantSkillsSkillIdIndexRoute
   '/_dashboard/cover-letters/$coverLetterId/': typeof DashboardCoverLettersCoverLetterIdIndexRoute
   '/_dashboard/dev/chat-lab/': typeof DashboardDevChatLabIndexRoute
@@ -611,6 +611,7 @@ export interface FileRoutesById {
   '/_dashboard/jobs/$jobId/': typeof DashboardJobsJobIdIndexRoute
   '/_dashboard/resumes/$resumeId/': typeof DashboardResumesResumeIdIndexRoute
   '/_dashboard/admin/tables/$table/': typeof DashboardAdminTablesTableIndexRoute
+  '/_dashboard/admin/users/$userId/': typeof DashboardAdminUsersUserIdIndexRoute
   '/_dashboard/resumes/$resumeId/events/': typeof DashboardResumesResumeIdEventsIndexRoute
 }
 export interface FileRouteTypes {
@@ -626,6 +627,7 @@ export interface FileRouteTypes {
     | '/privacy/'
     | '/terms/'
     | '/test/'
+    | '/waitlist/'
     | '/admin/route'
     | '/api/agentic/$'
     | '/api/agentic/openapi'
@@ -633,16 +635,13 @@ export interface FileRouteTypes {
     | '/api/ai/dashboard-assistant'
     | '/api/ai/event-sourced-resume-tailor'
     | '/api/auth/$'
-    | '/api/cron/project-sync-events'
-    | '/api/cron/squash-sync-events'
-    | '/api/sync/compact'
-    | '/api/sync/events'
     | '/admin/'
     | '/application-answers/'
     | '/assistant-skills/'
     | '/certifications/'
     | '/contacts/'
     | '/cover-letters/'
+    | '/credits/'
     | '/dev/'
     | '/education/'
     | '/events/'
@@ -669,6 +668,7 @@ export interface FileRouteTypes {
     | '/admin/data/'
     | '/admin/tables/'
     | '/admin/users/'
+    | '/admin/waitlist/'
     | '/assistant-skills/$skillId/'
     | '/cover-letters/$coverLetterId/'
     | '/dev/chat-lab/'
@@ -678,6 +678,7 @@ export interface FileRouteTypes {
     | '/jobs/$jobId/'
     | '/resumes/$resumeId/'
     | '/admin/tables/$table/'
+    | '/admin/users/$userId/'
     | '/resumes/$resumeId/events/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -690,6 +691,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/terms'
     | '/test'
+    | '/waitlist'
     | '/admin/route'
     | '/api/agentic/$'
     | '/api/agentic/openapi'
@@ -697,16 +699,13 @@ export interface FileRouteTypes {
     | '/api/ai/dashboard-assistant'
     | '/api/ai/event-sourced-resume-tailor'
     | '/api/auth/$'
-    | '/api/cron/project-sync-events'
-    | '/api/cron/squash-sync-events'
-    | '/api/sync/compact'
-    | '/api/sync/events'
     | '/admin'
     | '/application-answers'
     | '/assistant-skills'
     | '/certifications'
     | '/contacts'
     | '/cover-letters'
+    | '/credits'
     | '/dev'
     | '/education'
     | '/events'
@@ -733,6 +732,7 @@ export interface FileRouteTypes {
     | '/admin/data'
     | '/admin/tables'
     | '/admin/users'
+    | '/admin/waitlist'
     | '/assistant-skills/$skillId'
     | '/cover-letters/$coverLetterId'
     | '/dev/chat-lab'
@@ -742,6 +742,7 @@ export interface FileRouteTypes {
     | '/jobs/$jobId'
     | '/resumes/$resumeId'
     | '/admin/tables/$table'
+    | '/admin/users/$userId'
     | '/resumes/$resumeId/events'
   id:
     | '__root__'
@@ -756,6 +757,7 @@ export interface FileRouteTypes {
     | '/privacy/'
     | '/terms/'
     | '/test/'
+    | '/waitlist/'
     | '/_dashboard/admin/route'
     | '/api/agentic/$'
     | '/api/agentic/openapi'
@@ -763,16 +765,13 @@ export interface FileRouteTypes {
     | '/api/ai/dashboard-assistant'
     | '/api/ai/event-sourced-resume-tailor'
     | '/api/auth/$'
-    | '/api/cron/project-sync-events'
-    | '/api/cron/squash-sync-events'
-    | '/api/sync/compact'
-    | '/api/sync/events'
     | '/_dashboard/admin/'
     | '/_dashboard/application-answers/'
     | '/_dashboard/assistant-skills/'
     | '/_dashboard/certifications/'
     | '/_dashboard/contacts/'
     | '/_dashboard/cover-letters/'
+    | '/_dashboard/credits/'
     | '/_dashboard/dev/'
     | '/_dashboard/education/'
     | '/_dashboard/events/'
@@ -799,6 +798,7 @@ export interface FileRouteTypes {
     | '/_dashboard/admin/data/'
     | '/_dashboard/admin/tables/'
     | '/_dashboard/admin/users/'
+    | '/_dashboard/admin/waitlist/'
     | '/_dashboard/assistant-skills/$skillId/'
     | '/_dashboard/cover-letters/$coverLetterId/'
     | '/_dashboard/dev/chat-lab/'
@@ -808,6 +808,7 @@ export interface FileRouteTypes {
     | '/_dashboard/jobs/$jobId/'
     | '/_dashboard/resumes/$resumeId/'
     | '/_dashboard/admin/tables/$table/'
+    | '/_dashboard/admin/users/$userId/'
     | '/_dashboard/resumes/$resumeId/events/'
   fileRoutesById: FileRoutesById
 }
@@ -819,16 +820,13 @@ export interface RootRouteChildren {
   PrivacyIndexRoute: typeof PrivacyIndexRoute
   TermsIndexRoute: typeof TermsIndexRoute
   TestIndexRoute: typeof TestIndexRoute
+  WaitlistIndexRoute: typeof WaitlistIndexRoute
   ApiAgenticSplatRoute: typeof ApiAgenticSplatRoute
   ApiAgenticOpenapiRoute: typeof ApiAgenticOpenapiRouteWithChildren
   ApiAiChatLabRoute: typeof ApiAiChatLabRoute
   ApiAiDashboardAssistantRoute: typeof ApiAiDashboardAssistantRoute
   ApiAiEventSourcedResumeTailorRoute: typeof ApiAiEventSourcedResumeTailorRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
-  ApiCronProjectSyncEventsRoute: typeof ApiCronProjectSyncEventsRoute
-  ApiCronSquashSyncEventsRoute: typeof ApiCronSquashSyncEventsRoute
-  ApiSyncCompactRoute: typeof ApiSyncCompactRoute
-  ApiSyncEventsRoute: typeof ApiSyncEventsRoute
   RPublicIdIndexRoute: typeof RPublicIdIndexRoute
   ApiAgenticRpcSplatRoute: typeof ApiAgenticRpcSplatRoute
 }
@@ -912,6 +910,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TestIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/waitlist/': {
+      id: '/waitlist/'
+      path: '/waitlist'
+      fullPath: '/waitlist/'
+      preLoaderRoute: typeof WaitlistIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_dashboard/admin/': {
       id: '/_dashboard/admin/'
       path: '/admin'
@@ -959,6 +964,13 @@ declare module '@tanstack/react-router' {
       path: '/cover-letters'
       fullPath: '/cover-letters/'
       preLoaderRoute: typeof DashboardCoverLettersIndexRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
+    '/_dashboard/credits/': {
+      id: '/_dashboard/credits/'
+      path: '/credits'
+      fullPath: '/credits/'
+      preLoaderRoute: typeof DashboardCreditsIndexRouteImport
       parentRoute: typeof DashboardLayoutRoute
     }
     '/_dashboard/dev/': {
@@ -1143,34 +1155,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/cron/project-sync-events': {
-      id: '/api/cron/project-sync-events'
-      path: '/api/cron/project-sync-events'
-      fullPath: '/api/cron/project-sync-events'
-      preLoaderRoute: typeof ApiCronProjectSyncEventsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/cron/squash-sync-events': {
-      id: '/api/cron/squash-sync-events'
-      path: '/api/cron/squash-sync-events'
-      fullPath: '/api/cron/squash-sync-events'
-      preLoaderRoute: typeof ApiCronSquashSyncEventsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/sync/compact': {
-      id: '/api/sync/compact'
-      path: '/api/sync/compact'
-      fullPath: '/api/sync/compact'
-      preLoaderRoute: typeof ApiSyncCompactRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/sync/events': {
-      id: '/api/sync/events'
-      path: '/api/sync/events'
-      fullPath: '/api/sync/events'
-      preLoaderRoute: typeof ApiSyncEventsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/r/$publicId/': {
       id: '/r/$publicId/'
       path: '/r/$publicId'
@@ -1197,6 +1181,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/users'
       fullPath: '/admin/users/'
       preLoaderRoute: typeof DashboardAdminUsersIndexRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
+    '/_dashboard/admin/waitlist/': {
+      id: '/_dashboard/admin/waitlist/'
+      path: '/admin/waitlist'
+      fullPath: '/admin/waitlist/'
+      preLoaderRoute: typeof DashboardAdminWaitlistIndexRouteImport
       parentRoute: typeof DashboardLayoutRoute
     }
     '/_dashboard/assistant-skills/$skillId/': {
@@ -1276,6 +1267,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardAdminTablesTableIndexRouteImport
       parentRoute: typeof DashboardLayoutRoute
     }
+    '/_dashboard/admin/users/$userId/': {
+      id: '/_dashboard/admin/users/$userId/'
+      path: '/admin/users/$userId'
+      fullPath: '/admin/users/$userId/'
+      preLoaderRoute: typeof DashboardAdminUsersUserIdIndexRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
     '/_dashboard/resumes/$resumeId/events/': {
       id: '/_dashboard/resumes/$resumeId/events/'
       path: '/resumes/$resumeId/events'
@@ -1295,6 +1293,7 @@ interface DashboardLayoutRouteChildren {
   DashboardCertificationsIndexRoute: typeof DashboardCertificationsIndexRoute
   DashboardContactsIndexRoute: typeof DashboardContactsIndexRoute
   DashboardCoverLettersIndexRoute: typeof DashboardCoverLettersIndexRoute
+  DashboardCreditsIndexRoute: typeof DashboardCreditsIndexRoute
   DashboardDevIndexRoute: typeof DashboardDevIndexRoute
   DashboardEducationIndexRoute: typeof DashboardEducationIndexRoute
   DashboardEventsIndexRoute: typeof DashboardEventsIndexRoute
@@ -1318,6 +1317,7 @@ interface DashboardLayoutRouteChildren {
   DashboardAdminDataIndexRoute: typeof DashboardAdminDataIndexRoute
   DashboardAdminTablesIndexRoute: typeof DashboardAdminTablesIndexRoute
   DashboardAdminUsersIndexRoute: typeof DashboardAdminUsersIndexRoute
+  DashboardAdminWaitlistIndexRoute: typeof DashboardAdminWaitlistIndexRoute
   DashboardAssistantSkillsSkillIdIndexRoute: typeof DashboardAssistantSkillsSkillIdIndexRoute
   DashboardCoverLettersCoverLetterIdIndexRoute: typeof DashboardCoverLettersCoverLetterIdIndexRoute
   DashboardDevChatLabIndexRoute: typeof DashboardDevChatLabIndexRoute
@@ -1327,6 +1327,7 @@ interface DashboardLayoutRouteChildren {
   DashboardJobsJobIdIndexRoute: typeof DashboardJobsJobIdIndexRoute
   DashboardResumesResumeIdIndexRoute: typeof DashboardResumesResumeIdIndexRoute
   DashboardAdminTablesTableIndexRoute: typeof DashboardAdminTablesTableIndexRoute
+  DashboardAdminUsersUserIdIndexRoute: typeof DashboardAdminUsersUserIdIndexRoute
   DashboardResumesResumeIdEventsIndexRoute: typeof DashboardResumesResumeIdEventsIndexRoute
 }
 
@@ -1339,6 +1340,7 @@ const DashboardLayoutRouteChildren: DashboardLayoutRouteChildren = {
   DashboardCertificationsIndexRoute: DashboardCertificationsIndexRoute,
   DashboardContactsIndexRoute: DashboardContactsIndexRoute,
   DashboardCoverLettersIndexRoute: DashboardCoverLettersIndexRoute,
+  DashboardCreditsIndexRoute: DashboardCreditsIndexRoute,
   DashboardDevIndexRoute: DashboardDevIndexRoute,
   DashboardEducationIndexRoute: DashboardEducationIndexRoute,
   DashboardEventsIndexRoute: DashboardEventsIndexRoute,
@@ -1362,6 +1364,7 @@ const DashboardLayoutRouteChildren: DashboardLayoutRouteChildren = {
   DashboardAdminDataIndexRoute: DashboardAdminDataIndexRoute,
   DashboardAdminTablesIndexRoute: DashboardAdminTablesIndexRoute,
   DashboardAdminUsersIndexRoute: DashboardAdminUsersIndexRoute,
+  DashboardAdminWaitlistIndexRoute: DashboardAdminWaitlistIndexRoute,
   DashboardAssistantSkillsSkillIdIndexRoute:
     DashboardAssistantSkillsSkillIdIndexRoute,
   DashboardCoverLettersCoverLetterIdIndexRoute:
@@ -1374,6 +1377,7 @@ const DashboardLayoutRouteChildren: DashboardLayoutRouteChildren = {
   DashboardJobsJobIdIndexRoute: DashboardJobsJobIdIndexRoute,
   DashboardResumesResumeIdIndexRoute: DashboardResumesResumeIdIndexRoute,
   DashboardAdminTablesTableIndexRoute: DashboardAdminTablesTableIndexRoute,
+  DashboardAdminUsersUserIdIndexRoute: DashboardAdminUsersUserIdIndexRoute,
   DashboardResumesResumeIdEventsIndexRoute:
     DashboardResumesResumeIdEventsIndexRoute,
 }
@@ -1417,16 +1421,13 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacyIndexRoute: PrivacyIndexRoute,
   TermsIndexRoute: TermsIndexRoute,
   TestIndexRoute: TestIndexRoute,
+  WaitlistIndexRoute: WaitlistIndexRoute,
   ApiAgenticSplatRoute: ApiAgenticSplatRoute,
   ApiAgenticOpenapiRoute: ApiAgenticOpenapiRouteWithChildren,
   ApiAiChatLabRoute: ApiAiChatLabRoute,
   ApiAiDashboardAssistantRoute: ApiAiDashboardAssistantRoute,
   ApiAiEventSourcedResumeTailorRoute: ApiAiEventSourcedResumeTailorRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
-  ApiCronProjectSyncEventsRoute: ApiCronProjectSyncEventsRoute,
-  ApiCronSquashSyncEventsRoute: ApiCronSquashSyncEventsRoute,
-  ApiSyncCompactRoute: ApiSyncCompactRoute,
-  ApiSyncEventsRoute: ApiSyncEventsRoute,
   RPublicIdIndexRoute: RPublicIdIndexRoute,
   ApiAgenticRpcSplatRoute: ApiAgenticRpcSplatRoute,
 }

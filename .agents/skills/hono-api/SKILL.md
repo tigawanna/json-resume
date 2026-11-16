@@ -40,6 +40,15 @@ export const app = new Hono<EvlogVariables>()
 
 Each resource file exports `const <name>Route = new Hono<AppEnv>().get(...).post(...)`.
 
+## File size
+
+Keep every file under `apps/api` at 150 lines or fewer. A file that would pass that limit is a signal to split it before finishing the change. Breaking a large file into smaller ones is the expected shape, not a later cleanup.
+
+- One route module owns one resource. When `routes/<resource>/route.ts` grows, move handlers into sibling files (`list.ts`, `update.ts`) and re-export a short chained route.
+- Put zod schemas next to the handler that uses them, or in `routes/<resource>/schema.ts` when more than one handler shares them.
+- Shared HTTP helpers stay in `lib/` as small named modules. Do not grow a single helpers file past the limit.
+- `app.ts` stays the mount list. New behavior goes in the resource folder, not into `app.ts`.
+
 ## Route rules
 
 - Validate with `zValidator("json" | "query" | "param", zodSchema)`. Zod v4: `z.email()`, `z.url()`, `z.string().trim()`.

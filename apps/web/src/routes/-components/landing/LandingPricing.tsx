@@ -1,11 +1,15 @@
 import { Check } from "lucide-react";
+import { useState } from "react";
 
 import { Stack } from "@/components/ui/hairline";
+import { WaitlistJoinDialog } from "@/routes/-components/waitlist/WaitlistJoinDialog";
 
 import { PRICING_TIERS } from "./content";
 import { FigurePanel, Section, SectionIntro } from "./primitives";
 
 export function LandingPricing() {
+  const [joinOpen, setJoinOpen] = useState(false);
+
   return (
     <Section id="pricing" tone="primary" dataTest="landing-pricing">
       <div className="flex flex-col gap-10 px-6 py-16 md:px-12 md:py-20 lg:flex-row lg:items-end lg:justify-between">
@@ -63,20 +67,32 @@ export function LandingPricing() {
                 </li>
               ))}
             </ul>
-            <a
-              href={tier.name === "Local" ? "#editor" : "#faq"}
-              className={
-                "px-4 py-2.5 text-center font-mono text-xs transition-colors " +
-                (tier.featured
-                  ? "bg-primary text-primary-content hover:opacity-90"
-                  : "border border-border/60 text-base-content hover:border-primary/40 hover:text-primary")
-              }
-            >
-              {tier.cta}
-            </a>
+            {tier.name === "Local" ? (
+              <a
+                href="#editor"
+                className="border border-border/60 text-base-content hover:border-primary/40 hover:text-primary px-4 py-2.5 text-center font-mono text-xs transition-colors"
+              >
+                {tier.cta}
+              </a>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setJoinOpen(true)}
+                className="bg-primary text-primary-content hover:opacity-90 px-4 py-2.5 text-center font-mono text-xs transition-colors"
+                data-test="landing-pricing-join"
+              >
+                {tier.cta}
+              </button>
+            )}
           </div>
         ))}
       </div>
+
+      <WaitlistJoinDialog
+        open={joinOpen}
+        onOpenChange={setJoinOpen}
+        source="landing"
+      />
     </Section>
   );
 }

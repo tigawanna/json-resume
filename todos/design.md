@@ -126,7 +126,7 @@ Companion doc: [`exp-landing.md`](./exp-landing.md) (the build plan and status).
 ## 8. Verification workflow (what actually caught issues)
 
 - `pnpm --dir apps/web build` regenerates `routeTree.gen.ts`; never hand-edit it.
-- `pnpm --dir apps/web check-types` (`tsgo`) and
+- `pnpm --dir apps/web check-types` (`tsc`) and
   `pnpm exec vp lint apps/web/src/routes/exp-landing` must pass.
 - The in-app browser screenshot can fail ("needs a visible tab"). Headless
   fallback that works here: launch `playwright-core@1.60.0` with the cached

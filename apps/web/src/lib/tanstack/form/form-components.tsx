@@ -1,13 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { useFormContext } from "./form-context";
 
-interface SubmitButtonProps {
+interface SubmitButtonProps extends React.ComponentProps<typeof Button> {
   label?: string;
   className?: string;
   children?: React.ReactNode;
 }
 
-export function SubmitButton({ label = "Submit", className, children }: SubmitButtonProps) {
+export function SubmitButton({ label = "Submit", className, children, ...props }: SubmitButtonProps) {
   const form = useFormContext();
 
   return (
@@ -17,7 +17,7 @@ export function SubmitButton({ label = "Submit", className, children }: SubmitBu
       })}
     >
       {({ isSubmitting }) => (
-        <Button type="submit" disabled={isSubmitting} className={className}>
+        <Button type="submit" disabled={isSubmitting} className={className} {...props}>
           {children || (isSubmitting ? "Submitting..." : label)}
         </Button>
       )}

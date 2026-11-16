@@ -1,5 +1,6 @@
+import { schema } from "@repo/db/schema/index";
 import { drizzle } from "drizzle-orm/libsql/node";
-import * as authSchema from "@repo/db/schema/auth-schema";
+
 import { env } from "@api/env";
 
 /**
@@ -11,5 +12,5 @@ export const db = drizzle({
     url: env.DATABASE_URL,
     authToken: env.DATABASE_AUTH_TOKEN,
   },
-  schema: authSchema,
+  schema,
 });

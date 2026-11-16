@@ -11,7 +11,7 @@ import {
   isProjectableCollectionId,
   tablesByCollection,
   type ProjectableCollectionId,
-} from "../sync/server/project-legacy.server";
+} from "@api/modules/sync/server/project-legacy.server";
 import {
   SET_NULL_ON_DELETE,
   rowModeFor,

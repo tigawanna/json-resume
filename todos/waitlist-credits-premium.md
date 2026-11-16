@@ -321,16 +321,16 @@ Conventions: shadcn UI, DaisyUI only for theme/buttons, `ring-1` surfaces, `data
 
 **Phase 1: waitlist (shippable alone, credits flag off)**
 
-- [ ] `joinWaitlist`, landing dialog, `/waitlist`.
-- [ ] `claimWaitlistForUser`.
-- [ ] Admin waitlist list, admin home card, link/remove/export actions.
-- [ ] Tests: normalization, duplicate joins, claim, list pagination.
+- [x] `joinWaitlist`, landing dialog, `/waitlist`.
+- [x] `claimWaitlistForUser`.
+- [x] Admin waitlist list, admin home card, link/remove/export actions.
+- [x] Tests: normalization, duplicate joins, claim, list pagination.
 
 **Phase 2: wallet and allocation (visible, not yet enforced)**
 
-- [ ] `ensureMonthlyAllocation`, `spendResumeCredit`, admin grant/adjust.
-- [ ] Dashboard card, `/credits` page, admin user detail.
-- [ ] Tests: one grant per month, expiry, bonus carryover, concurrent allocation, adjust bounds, banned users.
+- [x] `ensureMonthlyAllocation`, `spendResumeCredit`, admin grant/adjust.
+- [x] Dashboard card, `/credits` page, admin user detail.
+- [x] Tests: one grant per month, expiry, bonus carryover, concurrent allocation, adjust bounds, banned users.
 
 **Phase 3: enforcement**
 
