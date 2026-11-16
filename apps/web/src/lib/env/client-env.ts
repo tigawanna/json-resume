@@ -7,6 +7,8 @@ const envSchema = z.object({
   VITE_SENTRY_DSN: z.url().optional(),
   /** Master switch for résumé credits, mirrored client-side. */
   VITE_CREDITS_ENABLED: z.enum(["true"]).optional(),
+  /** Desktop builds keep local, un-metered use. */
+  VITE_DESKTOP: z.enum(["true"]).optional(),
 });
 
 // Each key must be a direct `import.meta.env.VITE_*` read. Vite only inlines
@@ -17,6 +19,7 @@ const raw = {
   VITE_HONO_API_URL: import.meta.env.VITE_HONO_API_URL,
   VITE_SENTRY_DSN: import.meta.env.VITE_SENTRY_DSN,
   VITE_CREDITS_ENABLED: import.meta.env.VITE_CREDITS_ENABLED,
+  VITE_DESKTOP: import.meta.env.VITE_DESKTOP,
 };
 
 const { success, error, data } = envSchema.safeParse(raw);

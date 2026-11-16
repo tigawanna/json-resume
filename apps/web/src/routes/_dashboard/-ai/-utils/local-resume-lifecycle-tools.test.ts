@@ -30,11 +30,11 @@ function seed() {
 }
 
 describe("clone_resume", () => {
-  it("copies the active résumé, shares its library items and makes the copy active", () => {
+  it("copies the active résumé, shares its library items and makes the copy active", async () => {
     seed();
     const ctx = context("cv");
 
-    const result = cloneLocalResume(ctx, { name: "CV copy", jobId: "go" });
+    const result = await cloneLocalResume(ctx, { name: "CV copy", jobId: "go" });
 
     expect(result).toMatchObject({
       sourceResumeId: "cv",
@@ -47,11 +47,11 @@ describe("clone_resume", () => {
     expect(copy.experience?.map((item) => item.id)).toEqual(["exp1"]);
   });
 
-  it("keeps the active résumé when makeActive is false", () => {
+  it("keeps the active résumé when makeActive is false", async () => {
     seed();
     const ctx = context("cv");
 
-    const result = cloneLocalResume(ctx, { sourceResumeId: "other", makeActive: false });
+    const result = await cloneLocalResume(ctx, { sourceResumeId: "other", makeActive: false });
 
     expect(result.active).toBe(false);
     expect(ctx.getActiveResumeId()).toBe("cv");
@@ -137,11 +137,11 @@ describe("rank_resumes_for_job", () => {
 });
 
 describe("tailor_resume_for_job", () => {
-  it("copies the best match, points it at the job and makes it active", () => {
+  it("copies the best match, points it at the job and makes it active", async () => {
     seed();
     const ctx = context("other");
 
-    const result = tailorLocalResumeForJob(ctx, { jobId: "go" });
+    const result = await tailorLocalResumeForJob(ctx, { jobId: "go" });
 
     expect(result).toMatchObject({ jobId: "go", baseResumeId: "cv" });
     expect(result.name).toContain("CV for");
@@ -151,10 +151,10 @@ describe("tailor_resume_for_job", () => {
     expect(fixture.db().collections.resume.get(result.resumeId)?.jobId).toBe("go");
   });
 
-  it("starts from the base résumé when one is given", () => {
+  it("starts from the base résumé when one is given", async () => {
     seed();
 
-    const result = tailorLocalResumeForJob(context("cv"), {
+    const result = await tailorLocalResumeForJob(context("cv"), {
       jobId: "go",
       baseResumeId: "other",
       name: "Other for Acme",

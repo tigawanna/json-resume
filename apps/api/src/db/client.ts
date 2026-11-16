@@ -1,6 +1,6 @@
 import { schema } from "@repo/db/schema/index";
 import { drizzle } from "drizzle-orm/libsql/node";
-
+import { EnhancedQueryLogger } from "drizzle-query-logger";
 import { env } from "@api/env";
 
 export type AppDb = ReturnType<typeof createDb>;
@@ -10,7 +10,7 @@ export function createDb({ url, authToken }: { url: string; authToken?: string }
   return drizzle({
     connection: { url, authToken },
     schema,
-    logger: true,
+    logger: new EnhancedQueryLogger(),
   });
 }
 

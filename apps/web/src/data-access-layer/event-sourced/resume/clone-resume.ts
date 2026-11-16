@@ -1,6 +1,7 @@
 /* Clones a résumé and the library rows its layout points at. */
 import { resumeLayoutSchema } from "@/features/resume/resume-layout";
 import { joinSearchable, newId, nowMs } from "@/routes/_dashboard/-utils/row-helpers";
+import { requireResumeCredit } from "./resume-credit-guard";
 import type { AppDb } from "../collection";
 import { attachJobDescription } from "../rows/job-rows";
 import { currentLayout } from "../rows/resume-layout-rows";
@@ -20,6 +21,8 @@ export type CloneResumeOverrides = {
   description?: string;
   /** Links the copy to a job with this posting instead of the source's job. */
   jobDescription?: string;
+  /** AI tools relay the denial in their tool result instead of opening the dialog. */
+  notifyOutOfCredits?: boolean;
 };
 
 /**
@@ -27,10 +30,16 @@ export type CloneResumeOverrides = {
  * carrying a copy of the source's layout. No experience, project, skill, … is
  * duplicated, so text edits show in both while inclusion and order stay per résumé.
  */
-export function cloneResume(db: AppDb, sourceId: string, overrides: CloneResumeOverrides = {}) {
+export async function cloneResume(
+  db: AppDb,
+  sourceId: string,
+  overrides: CloneResumeOverrides = {},
+) {
   const resumes = db.collections.resume.toArray;
   const source = resumes.find((row) => row.id === sourceId);
   if (!source) throw new Error(`Resume ${sourceId} was not found in the local database.`);
+
+  await requireResumeCredit({ action: "clone", notify: overrides.notifyOutOfCredits });
 
   const ts = nowMs();
   const id = newId();

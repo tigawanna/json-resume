@@ -1,9 +1,38 @@
 # Résumé Credits (grant-only) and Waitlist — Implementation Plan
 
-Status: draft for implementation (revised)
-Date: 2026-11-13
+Status: **Phases 0–3 complete** (verified 2026-11-16)
+Date: 2026-11-13 (plan), 2026-11-16 (Phase 3 shipped)
 Scope: hosted web app (`apps/web`): monthly résumé credits, admin grants, waitlist capture, admin visibility.
 Related: `todos/lanidng-page-mmesaging.md`, `docs/paginated-list-pattern.md`, `todos/sync-compaction.md` §5.
+
+---
+
+## Implementation status (2026-11-16)
+
+The codebase moved to a standalone Hono API after this plan was written, so the
+paths below supersede the ones in §2–§7. All of Phases 0–3 are implemented and
+verified (`check-types`, tests, lint green):
+
+- Backend is `apps/api/src/routes/credits/` (route + `wallet/*`), shared schema is
+  `packages/db/src/schema/credits-schema.ts`, policy is `packages/isomorphic/src/credits-policy.ts`.
+  The web app calls it via the typed `hc` client in `apps/web/src/lib/hono/client.ts`.
+- Client guard: `apps/web/src/data-access-layer/event-sourced/resume/resume-credit-guard.ts`.
+  It is called from the shared `cloneResume()` and `insertBlankResume()` choke
+  points, plus `ResumeCreateForm`, so all creation paths are covered. AI tools
+  pass `notifyOutOfCredits: false` and surface the denial as a tool error.
+- Global `OutOfCreditsDialog` (`apps/web/src/components/credits/`) is mounted in
+  the dashboard shell and opens via the `credits:out-of-credits` window event.
+- Server enforcement: `apps/api/src/modules/sync/server/resume-credit-charge.ts`
+  hooks the projector's `resume`/`insert` branch. It projects first, then charges
+  idempotently per `resumeId`, records a 0-amount `resume_overdraft` on denial, and
+  grandfathers rows created before `CREDITS_START_AT`. The web rebuild reuses the
+  same projector, so rebuilds never double-charge.
+- Flags are on in local env files: `VITE_CREDITS_ENABLED`, `CREDITS_ENABLED`, and
+  `CREDITS_START_AT` (set to `2026-11-16T00:00:00.000Z`). Desktop builds bypass
+  via `VITE_DESKTOP`.
+
+Removed from scope as decided: payments, plans, invites, purchase tables, and
+metering AI. The remaining open items are the §11 legal/terms copy pass (not code).
 
 ---
 
@@ -334,11 +363,11 @@ Conventions: shadcn UI, DaisyUI only for theme/buttons, `ring-1` surfaces, `data
 
 **Phase 3: enforcement**
 
-- [ ] Client guard at every creation entry point.
-- [ ] Projection charge plus overdraft recording, and `CREDITS_START_AT` grandfathering.
-- [ ] Out-of-credits dialog and AI tool error.
-- [ ] Tests: every entry point blocks at 0, edits are free at 0, child rows are never charged, rebuilds don't double-charge, overdrafts are recorded instead of dropped.
-- [ ] Turn on `CREDITS_ENABLED`.
+- [x] Client guard at every creation entry point.
+- [x] Projection charge plus overdraft recording, and `CREDITS_START_AT` grandfathering.
+- [x] Out-of-credits dialog and AI tool error.
+- [x] Tests: every entry point blocks at 0, edits are free at 0, child rows are never charged, rebuilds don't double-charge, overdrafts are recorded instead of dropped.
+- [x] Turn on `CREDITS_ENABLED`.
 
 ---
 
@@ -366,12 +395,12 @@ The ledger already has buckets and typed rows. Paid credits would add a `purchas
 
 ## 12. Acceptance criteria
 
-- [ ] Each eligible account gets exactly 20 monthly credits per UTC month, lazily and idempotently, and unused ones expire.
-- [ ] Creating, cloning, importing, or AI-creating a résumé costs exactly 1 credit, and the client blocks at 0.
-- [ ] Nothing under an existing `resumeId`, nothing in the library, and no job ever costs a credit.
-- [ ] The server never drops a synced résumé. It charges once per `resumeId` or records an overdraft, and rebuilds never double-charge.
-- [ ] Existing résumés (created before `CREDITS_START_AT`) and legacy imports are free.
-- [ ] Admins can grant and adjust bonus credits with a reason, and the action is audited.
-- [ ] Visitors can join the waitlist, and admins can list, search, link, remove, and export entries.
-- [ ] No payment, pricing, plan, or invite code or tables ship.
-- [ ] Typecheck, tests, and lint pass on touched files. No auth schema or migration SQL is hand-edited.
+- [x] Each eligible account gets exactly 20 monthly credits per UTC month, lazily and idempotently, and unused ones expire.
+- [x] Creating, cloning, importing, or AI-creating a résumé costs exactly 1 credit, and the client blocks at 0.
+- [x] Nothing under an existing `resumeId`, nothing in the library, and no job ever costs a credit.
+- [x] The server never drops a synced résumé. It charges once per `resumeId` or records an overdraft, and rebuilds never double-charge.
+- [x] Existing résumés (created before `CREDITS_START_AT`) and legacy imports are free.
+- [x] Admins can grant and adjust bonus credits with a reason, and the action is audited.
+- [x] Visitors can join the waitlist, and admins can list, search, link, remove, and export entries.
+- [x] No payment, pricing, plan, or invite code or tables ship.
+- [x] Typecheck, tests, and lint pass on touched files. No auth schema or migration SQL is hand-edited.

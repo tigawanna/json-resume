@@ -40,6 +40,7 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 import { cloneResume } from "@/data-access-layer/event-sourced/resume/clone-resume";
+import { isCreditDenial } from "@/data-access-layer/event-sourced/resume/resume-credit-guard";
 import { PublishResumeButton } from "./PublishResumeButton";
 import { ResumeHistory } from "./ResumeHistory";
 import {
@@ -61,14 +62,14 @@ export function ResumeActionsSheet() {
   const open = useResumeWorkbench((state) => state.dialog === "actions");
   const { openDialog, closeDialog, setDialogOpen } = useResumeWorkbenchActions();
 
-  function handleClone() {
+  async function handleClone() {
     const userId = viewer.user?.id;
     if (!userId) {
       toast.error("You must be signed in to clone a résumé");
       return;
     }
     try {
-      const result = cloneResume(db, resumeId);
+      const result = await cloneResume(db, resumeId);
       toast.success(`Cloned as “${result.name}”`);
       closeDialog();
       void navigate({
@@ -77,6 +78,8 @@ export function ResumeActionsSheet() {
         search: { tab: "edit" },
       });
     } catch (err: unknown) {
+      // The guard already opened the out-of-credits dialog.
+      if (isCreditDenial(err)) return;
       toast.error("Failed to clone résumé", { description: unwrapUnknownError(err).message });
     }
   }

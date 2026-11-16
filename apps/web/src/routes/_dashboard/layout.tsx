@@ -12,6 +12,7 @@ import {
 import { useMutation } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { FpsCounter } from "@/components/fps-counter/FpsCounter";
+import { OutOfCreditsDialog } from "@/components/credits/OutOfCreditsDialog";
 import { DashboardAssistant } from "./-ai/-components/dashboard-assistant/DashboardAssistant";
 import {
   dashboard_account_routes,
@@ -65,6 +66,7 @@ function DashboardShell() {
         adminLabel="Administration"
       />
       <DashboardAssistant />
+      <OutOfCreditsDialog />
       <FpsCounter label="dashboard" />
     </EventSourcedDbProvider>
   );

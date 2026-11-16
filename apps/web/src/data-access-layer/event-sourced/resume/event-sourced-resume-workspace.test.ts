@@ -204,7 +204,7 @@ describe("event-sourced résumé workspace (layout writes)", () => {
       endDate: "",
       location: "",
     });
-    cloneResume(db, "r1", { name: "copy" });
+    await cloneResume(db, "r1", { name: "copy" });
 
     deleteWithReferences(db, "resumeExperience", "e1");
 
@@ -257,7 +257,7 @@ describe("event-sourced résumé workspace (layout writes)", () => {
     insertResume("r1", { experiences: [{ id: "e1", bullets: ["b1"] }] });
     insertExperience("e1", ["b1"]);
 
-    const { resumeId } = cloneResume(db, "r1", { name: "copy" });
+    const { resumeId } = await cloneResume(db, "r1", { name: "copy" });
 
     expect(layoutOf(resumeId)?.experiences).toEqual([{ id: "e1", bullets: ["b1"] }]);
     expect(db.collections.resume.toArray).toHaveLength(2);

@@ -34,6 +34,10 @@ const EnvSchema = z
     GITHUB_CLIENT_ID: z.string().min(1),
     GITHUB_CLIENT_SECRET: z.string().min(1),
     CRON_SECRET: z.string().optional(),
+    /** Master switch for résumé credits. Enforcement is off until this is "true". */
+    CREDITS_ENABLED: z.enum(["true"]).optional(),
+    /** ISO instant: résumés created before it are grandfathered (free), even on rebuild. */
+    CREDITS_START_AT: z.iso.datetime().optional(),
     /** Directory for the dev NDJSON wide-event drain. */
     EVLOG_DIR: z.string().default(".evlog/logs"),
   })

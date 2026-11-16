@@ -3,7 +3,6 @@ import { errorBody } from "@api/lib/http";
 import type { AppEnv } from "@api/types";
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
-import { z } from "zod";
 import { compactOnServer } from "@api/modules/sync/server/compaction/compaction.server";
 import { compactionProposalSchema } from "@api/modules/sync/shared/compaction-protocol";
 

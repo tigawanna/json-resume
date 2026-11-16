@@ -38,11 +38,11 @@ function seed() {
 }
 
 describe("start_resume_for_job", () => {
-  it("copies the base résumé, points the copy at the job and hands it off", () => {
+  it("copies the base résumé, points the copy at the job and hands it off", async () => {
     seed();
     const ctx = dashboardContext();
 
-    const result = startLocalResumeForJob(ctx, { ...proposal, resumeId: "cv", mode: "copy" });
+    const result = await startLocalResumeForJob(ctx, { ...proposal, resumeId: "cv", mode: "copy" });
 
     expect(result).toMatchObject({
       mode: "copy",
@@ -64,34 +64,34 @@ describe("start_resume_for_job", () => {
     ]);
   });
 
-  it("reuses a résumé with no target job and attaches the job to it", () => {
+  it("reuses a résumé with no target job and attaches the job to it", async () => {
     seed();
     const ctx = dashboardContext();
 
-    const result = startLocalResumeForJob(ctx, { ...proposal, resumeId: "cv", mode: "reuse" });
+    const result = await startLocalResumeForJob(ctx, { ...proposal, resumeId: "cv", mode: "reuse" });
 
     expect(result).toMatchObject({ resumeId: "cv", mode: "reuse", jobAttached: true });
     expect(fixture.db().collections.resume.get("cv")?.jobId).toBe("go");
     expect(ctx.handoffs[0]?.resumeId).toBe("cv");
   });
 
-  it("leaves a reused résumé pointing at its other job", () => {
+  it("leaves a reused résumé pointing at its other job", async () => {
     seed();
     const ctx = dashboardContext();
 
-    const result = startLocalResumeForJob(ctx, { ...proposal, resumeId: "sre", mode: "reuse" });
+    const result = await startLocalResumeForJob(ctx, { ...proposal, resumeId: "sre", mode: "reuse" });
 
     expect(result).toMatchObject({ resumeId: "sre", jobAttached: false });
     expect(fixture.db().collections.resume.get("sre")?.jobId).toBe("old");
   });
 
-  it("rejects an unknown résumé without handing off", () => {
+  it("rejects an unknown résumé without handing off", async () => {
     seed();
     const ctx = dashboardContext();
 
-    expect(() =>
+    await expect(
       startLocalResumeForJob(ctx, { ...proposal, resumeId: "missing", mode: "copy" }),
-    ).toThrow(/was not found/);
+    ).rejects.toThrow(/was not found/);
     expect(ctx.handoffs).toEqual([]);
   });
 });

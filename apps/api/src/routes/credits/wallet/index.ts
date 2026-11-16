@@ -20,6 +20,10 @@ export { ensureWallet, readWallet, readWalletForUser, type CreditWallet, type Ex
 export { nextResetAt, periodKeyOf } from "./period";
 export { hasJoinedWaitlist, isEligibleForMonthly } from "./eligibility";
 export { ensureMonthlyAllocation } from "./allocation";
-export { spendResumeCredit, type SpendResult } from "./spend";
+export {
+  spendResumeCredit,
+  recordResumeOverdraft,
+  type SpendResult,
+} from "./spend";
 export { adminAdjustCredits, adminGrantCredits } from "./admin-ops";
 export { readLedger, type LedgerPage } from "./ledger";

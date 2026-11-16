@@ -23,6 +23,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { createSortableColumns } from "@/lib/tanstack/db/sortable-columns";
 import { cloneResume } from "@/data-access-layer/event-sourced/resume/clone-resume";
+import { isCreditDenial } from "@/data-access-layer/event-sourced/resume/resume-credit-guard";
 import { EntityViewToggle } from "../../-components/EntityViewToggle";
 import { EventSourcedListScaffold } from "../../-components/EventSourcedListScaffold";
 import { EventSourcedSortToolbar } from "../../-components/EventSourcedSortToolbar";
@@ -136,14 +137,14 @@ export function ResumeList() {
     }
   }
 
-  function handleClone(sourceId: string) {
+  async function handleClone(sourceId: string) {
     const userId = viewer.user?.id;
     if (!userId) {
       toast.error("You must be signed in to clone a résumé");
       return;
     }
     try {
-      const result = cloneResume(db, sourceId);
+      const result = await cloneResume(db, sourceId);
       toast.success("Résumé cloned");
       void navigate({
         to: "/resumes/$resumeId",
@@ -151,6 +152,8 @@ export function ResumeList() {
         search: { tab: "edit" },
       });
     } catch (err: unknown) {
+      // The guard already opened the out-of-credits dialog.
+      if (isCreditDenial(err)) return;
       toast.error("Failed to clone résumé", { description: unwrapUnknownError(err).message });
     }
   }

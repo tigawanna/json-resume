@@ -1,5 +1,6 @@
 import { asTemplateId } from "@/data-access-layer/event-sourced/resume/assemble-resume-detail";
 import { cloneResume } from "@/data-access-layer/event-sourced/resume/clone-resume";
+import { requireResumeCredit } from "@/data-access-layer/event-sourced/resume/resume-credit-guard";
 import type { AppDb } from "@/data-access-layer/event-sourced/collection";
 import { createEventSourcedResumeWorkspace } from "@/data-access-layer/event-sourced/resume/event-sourced-resume-workspace";
 import {
@@ -44,7 +45,7 @@ function requireResume(db: AppDb, resumeId: string) {
   return resume;
 }
 
-function insertBlankResume(
+async function insertBlankResume(
   ctx: Pick<LocalToolContext, "db" | "userId">,
   values: {
     name: string;
@@ -53,7 +54,10 @@ function insertBlankResume(
     headline: string;
     templateId: string;
   },
+  options: { action: "create" | "import"; notifyOutOfCredits?: boolean },
 ) {
+  await requireResumeCredit({ action: options.action, notify: options.notifyOutOfCredits });
+
   const base = libraryRowBase(ctx.userId);
   ctx.db.collections.resume.insert({
     id: base.id,
@@ -94,28 +98,29 @@ export async function createLocalResumeFromDocument(
     document: ResumeDocumentV1;
   },
 ): Promise<{ resumeId: string; name: string }> {
-  const resumeId = insertBlankResume(ctx, {
+  const resumeId = await insertBlankResume(ctx, {
     name: input.name,
     description: input.description ?? "",
     fullName: input.document.header.fullName || input.name,
     headline: input.document.header.headline ?? "",
     templateId: input.document.meta.templateId,
-  });
+  }, { action: "import" });
   attachJobDescription(ctx.db, ctx.userId, resumeId, input.jobDescription ?? "");
   await importDocument(ctx.db, resumeId, input.document);
   return { resumeId, name: input.name };
 }
 
-export function cloneLocalResume(
+export async function cloneLocalResume(
   ctx: LocalToolContext,
   input: CloneResumeToolInput,
-): CloneResumeToolOutput {
+): Promise<CloneResumeToolOutput> {
   const data = cloneResumeToolInputSchema.parse(input);
   const sourceResumeId = targetResumeId(ctx, data.sourceResumeId);
   const jobId = data.jobId ? requireJob(ctx.db, data.jobId).id : undefined;
-  const { resumeId, name } = cloneResume(ctx.db, sourceResumeId, {
+  const { resumeId, name } = await cloneResume(ctx.db, sourceResumeId, {
     name: data.name,
     description: data.description,
+    notifyOutOfCredits: false,
   });
   if (jobId) attachJobToResume(ctx.db, resumeId, jobId);
   if (data.makeActive) ctx.setActiveResumeId(resumeId);
@@ -135,13 +140,13 @@ export async function createLocalResume(
   const data = createResumeToolInputSchema.parse(input);
   const jobId = data.jobId ? requireJob(ctx.db, data.jobId).id : null;
   const header = data.document?.header;
-  const resumeId = insertBlankResume(ctx, {
+  const resumeId = await insertBlankResume(ctx, {
     name: data.name,
     description: data.description ?? "",
     fullName: header?.fullName || "",
     headline: header?.headline ?? "",
     templateId: data.document?.meta.templateId ?? "classic",
-  });
+  }, { action: "create", notifyOutOfCredits: false });
   if (jobId) attachJobToResume(ctx.db, resumeId, jobId);
   if (data.document) await importDocument(ctx.db, resumeId, data.document);
   if (data.makeActive) ctx.setActiveResumeId(resumeId);
@@ -179,10 +184,10 @@ export function rankLocalResumesForJob(
   };
 }
 
-export function tailorLocalResumeForJob(
+export async function tailorLocalResumeForJob(
   ctx: LocalToolContext,
   input: TailorResumeForJobToolInput,
-): TailorResumeForJobToolOutput {
+): Promise<TailorResumeForJobToolOutput> {
   const data = tailorResumeForJobToolInputSchema.parse(input);
   const job = requireJob(ctx.db, data.jobId);
   const keywords = jobKeywords(job);
@@ -196,8 +201,9 @@ export function tailorLocalResumeForJob(
     base = requireDetail(ctx.db, best.resumeId).detail;
   }
 
-  const { resumeId, name } = cloneResume(ctx.db, base.id, {
+  const { resumeId, name } = await cloneResume(ctx.db, base.id, {
     name: data.name ?? `${base.name} for ${jobListLabel(job)}`.slice(0, 120),
+    notifyOutOfCredits: false,
   });
   attachJobToResume(ctx.db, resumeId, job.id);
   ctx.setActiveResumeId(resumeId);

@@ -49,6 +49,7 @@ import {
   COMPACTION_COLLECTION,
   COMPACTION_REQUEST_COLLECTION,
 } from "../shared/compaction-protocol";
+import { chargeProjectedResume, isChargeableResumeInsert } from "./resume-credit-charge";
 
 const SKIP_COLLECTIONS = new Set([
   "settings",
@@ -237,7 +238,16 @@ async function applyEvent(row: typeof syncEvent.$inferSelect): Promise<void> {
   values.id = row.key;
 
   if (row.type === "insert") {
+    // Project first so a credit issue can never drop the user's résumé. The
+    // charge is idempotent per résumé id, so rebuilds replay safely (§6.3).
     await upsertById(table, idColumn, values);
+    if (isChargeableResumeInsert(row.collectionId, row.type)) {
+      await chargeProjectedResume({
+        userId: row.userId,
+        resumeId: row.key,
+        createdAt: values.createdAt instanceof Date ? values.createdAt : undefined,
+      });
+    }
     return;
   }
 

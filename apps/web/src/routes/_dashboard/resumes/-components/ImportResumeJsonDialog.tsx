@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { useViewer } from "@/data-access-layer/auth/viewer";
 import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
+import { isCreditDenial } from "@/data-access-layer/event-sourced/resume/resume-credit-guard";
 import { safeParseResumeJson, type ResumeDocumentV1 } from "@/features/resume/resume-schema";
 import { unwrapUnknownError } from "@/utils/errors";
 import { useNavigate } from "@tanstack/react-router";
@@ -77,6 +78,12 @@ export function ImportResumeJsonDialog({ open, onOpenChange }: ImportResumeJsonD
         search: { tab: "edit" },
       });
     } catch (err: unknown) {
+      // The guard already opened the out-of-credits dialog.
+      if (isCreditDenial(err)) {
+        reset();
+        onOpenChange(false);
+        return;
+      }
       setImportError(unwrapUnknownError(err).message);
       setPending(false);
     }

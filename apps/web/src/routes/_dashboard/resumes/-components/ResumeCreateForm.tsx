@@ -14,6 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useViewer } from "@/data-access-layer/auth/viewer";
 import { searchJobs } from "@/data-access-layer/event-sourced/rows/job-rows";
 import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
+import { ensureResumeCredit } from "@/data-access-layer/event-sourced/resume/resume-credit-guard";
 import { useAppForm } from "@/lib/tanstack/form";
 import { unwrapUnknownError } from "@/utils/errors";
 import { formOptions } from "@tanstack/react-form";
@@ -59,6 +60,9 @@ export function ResumeCreateForm({ onSuccess }: ResumeCreateFormProps) {
         toast.error("You must be signed in to create a résumé");
         return;
       }
+
+      const credit = await ensureResumeCredit({ action: "create" });
+      if (!credit.ok) return;
 
       setPending(true);
       try {

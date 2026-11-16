@@ -9,10 +9,10 @@ import type { DashboardToolContext } from "@/features/agentic-tools/definitions/
 import { requireJob } from "./local-job-tools";
 
 /** Runs after the user approved: reuse or copy the résumé, point it at the job, then hand off. */
-export function startLocalResumeForJob(
+export async function startLocalResumeForJob(
   ctx: DashboardToolContext,
   input: StartResumeForJobToolInput,
-): StartResumeForJobToolOutput {
+): Promise<StartResumeForJobToolOutput> {
   const data = startResumeForJobToolInputSchema.parse(input);
   const job = requireJob(ctx.db, data.jobId);
   const base = ctx.db.collections.resume.get(data.resumeId);
@@ -25,8 +25,9 @@ export function startLocalResumeForJob(
   let name = base.name;
   let jobAttached = true;
   if (data.mode === "copy") {
-    const copy = cloneResume(ctx.db, base.id, {
+    const copy = await cloneResume(ctx.db, base.id, {
       name: data.name ?? `${base.name} for ${jobLabel}`.slice(0, 120),
+      notifyOutOfCredits: false,
     });
     resumeId = copy.resumeId;
     name = copy.name;

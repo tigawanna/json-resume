@@ -36,3 +36,11 @@ React 19 (compiler; no `useMemo` / `useCallback`), Tailwind CSS v4, TanStack Rou
 - `import type` only for `@api/*`. No `any` and no casts that hide type errors. `catch` and `onError` use `unknown`.
 - Schema changes go through Drizzle. Do not hand-edit SQL migrations unless explicitly allowed. Do not edit `auth.schema`; `auth:migrate` generates it.
 - Invalidate React Query with `meta.invalidates`. Do not call `invalidateQueries` inside `onSuccess`.
+
+## Drizzle reads
+
+Push filtering, joining, and shaping into one SQL statement. Do not issue a query per row when a join can load the graph, and do not reshape rows in JavaScript when the select can return the shape.
+
+- A simple relation (`with`, column omit, limit) uses `db.query`.
+- Anything the relational API cannot express as one join — extra filters on the joined table, aggregates, custom nesting — uses `db.select` plus `innerJoin` / `leftJoin`. Spread `getTableColumns` (drop columns you do not want) and pass the related table, or a subset of its columns, as a nested field so the result stays typed: `{ ...eventColumns, user }`.
+- Do not write the whole statement in `sql`. That drops the schema types. `sql` is only for a single selected field or a fragment inside `where` / `orderBy` when the query builder has no equivalent.

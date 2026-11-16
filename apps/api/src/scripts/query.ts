@@ -1,28 +1,30 @@
-import "dotenv/config";
 import { db } from "@api/db/client";
 import { user } from "@repo/db/schema/auth-schema";
 import { syncEvent } from "@repo/db/schema/sync-schema";
+import "dotenv/config";
 import { eq, getTableColumns } from "drizzle-orm";
 
-const syncEvents = await db.query.syncEvent.findMany({
+await db.query.syncEvent.findMany({
   with: {
     user: true,
   },
   columns: {
     payload: false,
   },
-  limit: 5,
+  limit: 2,
 });
 
-console.dir(syncEvents, { depth: null });
+// console.dir(syncEvents, { depth: null });
 
 const { payload: _payload, ...eventColumns } = getTableColumns(syncEvent);
 
-await db
+const rows = await db
   .select({
-    event: eventColumns,
+    ...eventColumns,
     user,
   })
   .from(syncEvent)
   .innerJoin(user, eq(syncEvent.userId, user.id))
-  .limit(5);
+  .limit(2);
+
+console.dir(rows, { depth: null }); 

@@ -42,6 +42,7 @@ export async function spendResumeCredit(input: {
         type: "resume_spend",
         amount: 0,
         idempotencyKey,
+        resumeId: input.resumeId,
         reason: input.reason ?? "grandfathered",
       });
     });
@@ -50,6 +51,29 @@ export async function spendResumeCredit(input: {
 
   await ensureMonthlyAllocation({ userId: input.userId, now: input.now });
   return chargeResumeSpend(input, idempotencyKey);
+}
+
+/**
+ * A client bypassed the guard (offline, modified, or raced) and synced a résumé
+ * with no credits left. Record an amount-0 row under the same idempotency key
+ * so the charge is never retried and the admin can see it. Data is never held.
+ */
+export async function recordResumeOverdraft(input: {
+  userId: string;
+  resumeId: string;
+}): Promise<void> {
+  await db
+    .insert(creditLedger)
+    .values({
+      userId: input.userId,
+      bucket: "monthly",
+      type: "resume_overdraft",
+      amount: 0,
+      idempotencyKey: `resume:${input.resumeId}`,
+      resumeId: input.resumeId,
+      reason: "overdraft",
+    })
+    .onConflictDoNothing();
 }
 
 async function chargeResumeSpend(
