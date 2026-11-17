@@ -84,17 +84,19 @@ While the account is under the caps, the marginal cost of another user is $0. Th
 
 ## Architecture
 
-Two stacks. Sync is DynamoDB and Lambda. Everything that queries rows, including projection, wallets, and remote MCP, stays on the existing API.
+Two stacks. Sync is DynamoDB and Lambda. Everything that queries rows, including projection, wallets, and remote MCP, stays on the existing API. The device never calls Lambda directly.
 
 ```
 device
   │
-  ├─ GET  /sync/credit-status     existing API (Turso)
-  │     session + available credits → proceed | stop
-  │
-  └─ if proceed
-        POST /sync/events         Lambda → DynamoDB log
-        GET  /sync/events         Lambda → DynamoDB log
+  └─ API Gateway  (reject missing or expired JWT)
+        │
+        ├─ GET  /sync/credit-status     existing API (Turso)
+        │     available credits → proceed | stop
+        │
+        └─ if proceed
+              POST /sync/events         Lambda → DynamoDB log
+              GET  /sync/events         Lambda → DynamoDB log
 
 existing API (Turso, later Postgres)
   projector, wallets, REST, remote MCP
@@ -102,6 +104,8 @@ existing API (Turso, later Postgres)
 
 **Sync Lambda.** One function in front of the event log. Push appends events for the session user and returns the new per-user sequence. Pull queries `seq` greater than the cursor. The function does not read or write the wallet, and it does not project. A device that only syncs never needs the projected tables. "My résumés" is not a query this function can answer; the server only has the log.
 
-**Credit gate.** Before a push or a pull, the client calls the existing API. That call confirms the session and the available credits, spends what the operation costs, and returns whether sync may proceed. On stop, the client exits before it touches Lambda, so an empty wallet does not write the log. This replaces the current rule, where a résumé insert is always projected and an empty wallet records an overdraft instead of refusing the sync. Charging moves to this status check. The projector no longer decides billing.
+**API Gateway.** Credit-status and sync both arrive here. The authorizer rejects a call when the JWT is missing or expired, so those requests never reach the existing API or Sync Lambda.
+
+**Credit gate.** Before a push or a pull, the client calls the existing API through the gateway. That call checks the available credits, spends what the operation costs, and returns whether sync may proceed. On stop, the client exits before it touches Lambda, so an empty wallet does not write the log. This replaces the current rule, where a résumé insert is always projected and an empty wallet records an overdraft instead of refusing the sync. Charging moves to this status check. The projector no longer decides billing.
 
 **Existing API.** Projection, wallet monitoring, the REST surface, and remote MCP keep running as the normal API. Turso is enough at this size. The same process can sit on a Lambda web function later without changing the route shape. Moving the projected tables to Postgres is a database swap once the row volume or the vector queries outgrow Turso, not a change to the sync log.
