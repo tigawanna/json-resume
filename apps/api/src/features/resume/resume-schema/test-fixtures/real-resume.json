@@ -1,0 +1,202 @@
+{
+  "version": 1,
+  "meta": {
+    "templateId": "classic"
+  },
+  "sectionOrder": ["header", "summary", "experience", "education", "projects", "talks", "skills"],
+  "header": {
+    "enabled": true,
+    "fullName": "Dennis Waweru",
+    "headline": "Senior React Developer",
+    "email": "denniskinuthiawaweru@gmail.com",
+    "location": "Remote",
+    "links": [
+      {
+        "label": "GitHub",
+        "url": "https://github.com/tigawanna"
+      },
+      {
+        "label": "LinkedIn",
+        "url": "https://linkedin.com/in/dennis-kinuthia-waweru"
+      }
+    ]
+  },
+  "summary": {
+    "enabled": true,
+    "text": "Senior React Developer with 6+ years of experience building dynamic, responsive front-end applications using React, TypeScript, and the TanStack ecosystem (Router, Query, Start). Expert in integrating React applications with RESTful APIs and crafting visually consistent, accessible UIs with Tailwind CSS. Passionate about performance optimization, comprehensive testing (Jest, React Testing Library, Playwright, Vitest), accessibility standards (WCAG/ARIA), and mentoring developers in collaborative, remote-first environments."
+  },
+  "experience": {
+    "enabled": true,
+    "items": [
+      {
+        "company": "IDEALTECH (US - Remote)",
+        "role": "Senior Typescript Engineer",
+        "start": "2026-01",
+        "end": "Present",
+        "bullets": [
+          "Built type-safe React applications with TanStack Router and  Nextjs to build client projects around vacacation rentals and education advisrs",
+          "Integrated Tailwind CSS for responsive, visually consistent UI across all projects, ensuring designs met accessibility standards including WCAG and ARIA.",
+          "Wrote end-to-end and unit tests with Playwright and Vitest, maintaining high code quality and reducing production regressions and providing agents with good feedback",
+          "Handled Supabase, Stripe, Google and other external API integrations for various projects.",
+          "Set up CI/CD with Railway, CodeMagic, Play Store, and Vercel to streamline remote deployments."
+        ]
+      },
+      {
+        "company": "Silicon Savannah Solutions (US - Remote)",
+        "role": "React Native Developer (Contract)",
+        "start": "2025-11",
+        "end": "2026-01",
+        "location": "Remote US",
+        "bullets": [
+          "Improved app startup time by 30% by optimizing data fetching and eliminating N+1 queries, skills transferable to web performance using tanstack query. cache seeding",
+          "Rebuilt onboarding flows with robust form state management in TypeScript, delivering a seamless user onboarding experience.",
+          "Integrated automated end-to-end testing with Maestro (analogous to Playwright), increasing release reliability in a remote, async environment."
+        ]
+      },
+      {
+        "company": "Goymarey Software Solutions LTD",
+        "role": "Fullstack TypeScript Developer",
+        "start": "2025-02",
+        "end": "2025-11",
+        "location": "Nairobi in-person",
+        "bullets": [
+          "Architected type-safe React frontends with Apollo GraphQL, Tanstack router and TypeScript, consuming backend APIs to deliver CRM dashboards.",
+          "Implemented unit and integration tests with Jest and React Testing Library, ensuring type-safe React frontends and GraphQL-driven CRM dashboards were reliable and regression-free.",
+          "Led code reviews and mentored developers on best practices for component design, state management, and testing, improving overall team quality.",
+          "Managed CI/CD pipelines with GitHub Actions to ensure reliable, rapid deployment of production web applications.",
+          "Implemented Node.js backend features including OAuth resolvers and AI integration for sentiment analysis and lead quality scoring."
+        ]
+      },
+      {
+        "company": "Mentorlst (Remote)",
+        "role": "Frontend Developer (Part-time)",
+        "start": "2023-07",
+        "end": "2025-01",
+        "bullets": [
+          "Optimized React application performance using code splitting, lazy loading, and TanStack Query, achieving faster page loads and smoother user experience.",
+          "Wrote comprehensive end-to-end tests with Playwright, increasing release confidence and reducing regressions for a fully remote team.",
+          "Implemented type-safe authentication and authorization flows with TypeScript, ensuring secure and maintainable frontend code."
+        ]
+      },
+      {
+        "company": "Agricultural and Industrial Holdings",
+        "role": "Software Developer (Full-stack)",
+        "start": "2018-02",
+        "end": "2024-12",
+        "location": "Nairobi on-site",
+        "bullets": [
+          "Built and maintained full-stack features using React, Node.js, and PostgreSQL, replacing manual Excel workflows with automated dashboards that reduced data entry errors by 90%.",
+          "Designed and documented RESTful APIs consumed by React frontends, enforcing type-safe contracts with TypeScript.",
+          "Wrote unit and integration tests using Jest and React Testing Library, improving reliability of full-stack features consuming RESTful APIs.",
+          "Established CI/CD pipelines with GitHub Actions and Docker, enabling stable, frequent deployments."
+        ]
+      }
+    ]
+  },
+  "education": {
+    "enabled": true,
+    "items": [
+      {
+        "school": "Holberton",
+        "degree": "Software Engineering",
+        "field": "Software Engineering",
+        "year": "2022"
+      }
+    ]
+  },
+  "projects": {
+    "enabled": true,
+    "items": [
+      {
+        "name": "json-resume",
+        "url": "https://github.com/tigawanna/json-resume",
+        "homepageUrl": "https://agentic-json-resume-web.vercel.app",
+        "description": "Résumé as typed JSON. Tweak it with any LLM, edit it by hand. Export a clean PDF, same result every time. Store sections individually so you can reuse and remix them later, reassemble everything back into a polished PDF whenever you need.",
+        "tech": ["tanstack router", "tanstack start", "tailwind"]
+      },
+      {
+        "name": "frens",
+        "url": "https://github.com/tigawanna/frens",
+        "homepageUrl": "https://frens-seven.vercel.app",
+        "description": "GraphQL modern, type-safe stack with Pothos and Prisma for the main API + better auth for the auth(z) , and frontend with react and the relay client",
+        "tech": ["expressjs", "graphql", "prisma", "react", "relay", "tanstack router", "tailwind"]
+      },
+      {
+        "name": "Earth and Home",
+        "url": "",
+        "description": "Next.js landing page and management dashboard for a property agent, hosted on Cloudflare using Open-Next.",
+        "tech": ["Next.js", "TypeScript", "Cloudflare"]
+      }
+    ]
+  },
+  "talks": {
+    "enabled": true,
+    "items": [
+      {
+        "title": "Reusable React patterns with TypeScript",
+        "event": "React Devs KE Meetup",
+        "date": "2025",
+        "links": [
+          {
+            "label": "slides",
+            "url": "http://github.com/tigawanna/ReactDevsKe-Meetup-February-2025"
+          }
+        ]
+      },
+      {
+        "title": "Exploring the React ecosystem",
+        "event": "RenderCon KE",
+        "date": "2024",
+        "links": [
+          {
+            "label": "slides",
+            "url": "https://docs.google.com/presentation/d/14q3-684ay5uK7Rhtp8ysj5ZVgCk_rsWsf7k9SFPHSKk/edit?slide=id.p#slide=id.p"
+          }
+        ]
+      }
+    ]
+  },
+  "skills": {
+    "enabled": true,
+    "groups": [
+      {
+        "name": "Languages",
+        "items": ["TypeScript", "JavaScript (ES6+)", "SQL", "HTML/CSS"]
+      },
+      {
+        "name": "Frontend",
+        "items": [
+          "React",
+          "Next.js",
+          "TanStack Router",
+          "TanStack Query",
+          "TanStack Start",
+          "Tailwind CSS",
+          "Responsive Design",
+          "WCAG/ARIA Accessibility"
+        ]
+      },
+      {
+        "name": "Backend",
+        "items": ["Node.js", "Express", "REST APIs", "GraphQL", "PostgreSQL", "Supabase"]
+      },
+      {
+        "name": "Testing & DevOps",
+        "items": [
+          "Jest",
+          "React Testing Library",
+          "Playwright",
+          "Vitest",
+          "Maestro",
+          "CI/CD (GitHub Actions)",
+          "Docker",
+          "Vercel"
+        ]
+      },
+      {
+        "name": "Tools & Workflows",
+        "items": ["Git", "Code Review", "Remote Collaboration", "Agile/Scrum"]
+      }
+    ]
+  }
+}

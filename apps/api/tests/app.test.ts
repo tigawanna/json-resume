@@ -29,20 +29,18 @@ describe("apps/api health", () => {
 });
 
 describe("apps/api auth gating", () => {
-  it("GET /api/viewer without a session returns 401", async () => {
-    const res = await app.request("/api/viewer");
-    expect(res.status).toBe(401);
-    const body = (await res.json()) as { error: { message: string; code: string } };
+  it("protected routes reject requests without a session", async () => {
+    const viewer = await app.request("/api/viewer");
+    expect(viewer.status).toBe(401);
+    const body = (await viewer.json()) as { error: { message: string; code: string } };
     expect(body.error.code).toBe("UNAUTHORIZED");
-  });
 
-  it("PATCH /api/me without a session returns 401", async () => {
-    const res = await app.request("/api/me", {
+    const me = await app.request("/api/me", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name: "Renamed" }),
     });
-    expect(res.status).toBe(401);
+    expect(me.status).toBe(401);
   });
 });
 

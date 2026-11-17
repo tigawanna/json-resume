@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import { db } from "../../../db/client";
 import { creditLedger } from "@repo/db/schema/credits-schema";
 import realEventsFixture from "./test-fixtures/resume-projection-events.json";
+import { toSyncEvent } from "./test-fixtures/to-sync-event";
 import {
   resume,
   resumeEducation,
@@ -32,26 +33,6 @@ const fixture = realEventsFixture as {
     clientTimestamp: number;
   }>;
 };
-
-function toSyncEvent(
-  input: (typeof fixture.events)[number],
-  userId: string,
-): typeof syncEvent.$inferInsert {
-  return {
-    eventId: crypto.randomUUID(),
-    userId,
-    collectionId: input.collectionId,
-    type: input.type,
-    key: input.key,
-    payload: JSON.stringify(input.payload),
-    previous: null,
-    txId: crypto.randomUUID(),
-    clientId: "charge-test",
-    clientTimestamp: input.clientTimestamp,
-    serverTimestamp: new Date(input.clientTimestamp),
-    projectedAt: null,
-  };
-}
 
 describe("projection charges real sync events", () => {
   it("grandfathers the three real résumés, projects their child rows for free, and never double-charges on rebuild", async () => {

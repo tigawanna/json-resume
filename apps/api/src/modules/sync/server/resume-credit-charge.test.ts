@@ -15,6 +15,9 @@ import {
 afterAll(cleanupTouchedUsers);
 
 const ENABLED: CreditChargePolicy = { enabled: true, startAt: undefined };
+// A fixed, post-startAt instant: "now" must not decide whether a résumé is
+// grandfathered, and the suite must behave the same on any clock or date.
+const NOW = new Date("2026-11-20T12:00:00.000Z");
 
 function ledgerFor(userId: string) {
   return db.select().from(creditLedger).where(eq(creditLedger.userId, userId));
@@ -78,7 +81,7 @@ describe("chargeProjectedResume", () => {
     await chargeProjectedResume({
       userId,
       resumeId: "res-disabled",
-      createdAt: new Date(),
+      createdAt: NOW,
       policy: { enabled: false, startAt: undefined },
     });
 
@@ -91,13 +94,13 @@ describe("chargeProjectedResume", () => {
     await chargeProjectedResume({
       userId,
       resumeId: "res-replay",
-      createdAt: new Date(),
+      createdAt: NOW,
       policy: ENABLED,
     });
     await chargeProjectedResume({
       userId,
       resumeId: "res-replay",
-      createdAt: new Date(),
+      createdAt: NOW,
       policy: ENABLED,
     });
 
@@ -138,14 +141,14 @@ describe("chargeProjectedResume", () => {
     await chargeProjectedResume({
       userId,
       resumeId: "res-overdraft",
-      createdAt: new Date(),
+      createdAt: NOW,
       policy: ENABLED,
     });
     // A deferred retry or rebuild must not add a second overdraft row.
     await chargeProjectedResume({
       userId,
       resumeId: "res-overdraft",
-      createdAt: new Date(),
+      createdAt: NOW,
       policy: ENABLED,
     });
 

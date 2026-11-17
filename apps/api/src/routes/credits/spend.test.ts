@@ -45,6 +45,30 @@ describe("spendResumeCredit", () => {
     ).rejects.toBeInstanceOf(InsufficientCreditsError);
   });
 
+  it("spends monthly before bonus while both buckets have funds", async () => {
+    const { userId } = await signUp("spend-both@example.com", "Both");
+    await ensureMonthlyAllocation({ userId, now: FEB_2026 }); // 20 monthly
+    await adminGrantCredits({ userId, amount: 3, reason: "test", adminUserId: userId });
+
+    const result = await spendResumeCredit({ userId, resumeId: "res-both", now: FEB_2026 });
+    if (result.status !== "charged") throw new Error("expected charged");
+    expect(result.bucket).toBe("monthly");
+
+    const [wallet] = await db
+      .select()
+      .from(creditWallet)
+      .where(eq(creditWallet.userId, userId))
+      .limit(1);
+    expect(wallet!.monthlyBalance).toBe(19);
+    expect(wallet!.bonusBalance).toBe(3);
+
+    const rows = await db.select().from(creditLedger).where(eq(creditLedger.userId, userId));
+    expect(rows.find((row) => row.type === "resume_spend")).toMatchObject({
+      bucket: "monthly",
+      amount: -1,
+    });
+  });
+
   it("spends monthly first, then bonus", async () => {
     const { userId } = await signUp("spend-order@example.com", "Order");
 

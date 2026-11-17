@@ -1,0 +1,256 @@
+{
+  "source": "Derived from .stash/agentic-json-resume-backup-2026-10-21.json (real local app DB). Free text redacted; ids, relationships, column shapes and event types untouched. The real resume update/delete events are retargeted to the real inserted resume id so they mutate a row that exists in this self-contained stream.",
+  "resumeId": "01a145a7-51bc-7a0f-ad34-c0ef342651f9",
+  "experienceId": "656f7db7-97b3-4d50-8587-cfb5e7a0bc65",
+  "unrelatedDeleteKey": "4e4f1255-8bec-462d-9a06-42bb7db9af03",
+  "events": [
+    {
+      "collectionId": "resume",
+      "type": "insert",
+      "key": "01a145a7-51bc-7a0f-ad34-c0ef342651f9",
+      "payload": {
+        "id": "01a145a7-51bc-7a0f-ad34-c0ef342651f9",
+        "userId": "QrHcDvQ7gf9dqjqUzVm1i6naCkQubEaA",
+        "name": "sample",
+        "fullName": "sample",
+        "headline": "sample",
+        "description": "sample",
+        "jobDescription": "sample",
+        "jobId": "01a135d3-41be-7c01-986a-19e535c55cfd",
+        "templateId": "sample",
+        "layout": {
+          "sections": [
+            {
+              "key": "header",
+              "title": "sample",
+              "enabled": true
+            }
+          ]
+        },
+        "searchableText": "sample",
+        "embedding": null,
+        "embeddingModel": null,
+        "createdAt": 1792169955772,
+        "updatedAt": 1792169955772,
+        "$synced": true,
+        "$origin": "remote",
+        "$key": "521564db-4a91-4959-ae6a-68f4b500007b",
+        "$collectionId": "resume"
+      },
+      "previous": null,
+      "clientTimestamp": 1792169955772
+    },
+    {
+      "collectionId": "resumeExperience",
+      "type": "update",
+      "key": "656f7db7-97b3-4d50-8587-cfb5e7a0bc65",
+      "payload": {
+        "id": "656f7db7-97b3-4d50-8587-cfb5e7a0bc65",
+        "company": "sample",
+        "role": "sample",
+        "startDate": "2018-02",
+        "endDate": "2024-12",
+        "location": "sample",
+        "sortOrder": 3,
+        "searchableText": "sample",
+        "embedding": null,
+        "embeddingModel": null,
+        "createdAt": 1791208297015,
+        "updatedAt": 1791905277411,
+        "userId": "QrHcDvQ7gf9dqjqUzVm1i6naCkQubEaA"
+      },
+      "previous": {
+        "id": "656f7db7-97b3-4d50-8587-cfb5e7a0bc65",
+        "company": "sample",
+        "role": "sample",
+        "startDate": "2018-02",
+        "endDate": "2024-12",
+        "location": "sample",
+        "sortOrder": 3,
+        "searchableText": "sample",
+        "embedding": null,
+        "embeddingModel": null,
+        "createdAt": 1791208297015,
+        "updatedAt": 1791905094248,
+        "userId": "QrHcDvQ7gf9dqjqUzVm1i6naCkQubEaA"
+      },
+      "clientTimestamp": 1791905277411
+    },
+    {
+      "collectionId": "resume",
+      "type": "update",
+      "key": "01a145a7-51bc-7a0f-ad34-c0ef342651f9",
+      "payload": {
+        "id": "01a145a7-51bc-7a0f-ad34-c0ef342651f9",
+        "userId": "QrHcDvQ7gf9dqjqUzVm1i6naCkQubEaA",
+        "name": "sample",
+        "fullName": "sample",
+        "headline": "sample",
+        "description": "sample",
+        "jobDescription": "sample",
+        "jobId": "01a130e7-f125-7cde-ad14-ed91b123efe4",
+        "templateId": "sample",
+        "layout": {
+          "sections": [
+            {
+              "key": "header",
+              "title": "sample",
+              "enabled": true
+            }
+          ]
+        },
+        "searchableText": "sample",
+        "embedding": null,
+        "embeddingModel": null,
+        "createdAt": 1791904341168,
+        "updatedAt": 1791904350342,
+        "$synced": true,
+        "$origin": "remote",
+        "$key": "521564db-4a91-4959-ae6a-68f4b500007b",
+        "$collectionId": "resume"
+      },
+      "previous": {
+        "id": "01a145a7-51bc-7a0f-ad34-c0ef342651f9",
+        "userId": "QrHcDvQ7gf9dqjqUzVm1i6naCkQubEaA",
+        "name": "sample",
+        "fullName": "sample",
+        "headline": "sample",
+        "description": "sample",
+        "jobDescription": "sample",
+        "jobId": "01a130e7-f125-7cde-ad14-ed91b123efe4",
+        "templateId": "sample",
+        "layout": {
+          "sections": [
+            {
+              "key": "header",
+              "title": "sample",
+              "enabled": true
+            }
+          ]
+        },
+        "searchableText": "sample",
+        "embedding": null,
+        "embeddingModel": null,
+        "createdAt": 1791904341168,
+        "updatedAt": 1791904341168,
+        "$synced": true,
+        "$origin": "remote",
+        "$key": "521564db-4a91-4959-ae6a-68f4b500007b",
+        "$collectionId": "resume"
+      },
+      "clientTimestamp": 1791904350342
+    },
+    {
+      "collectionId": "resume",
+      "type": "delete",
+      "key": "4e4f1255-8bec-462d-9a06-42bb7db9af03",
+      "payload": {
+        "id": "4e4f1255-8bec-462d-9a06-42bb7db9af03",
+        "userId": "QrHcDvQ7gf9dqjqUzVm1i6naCkQubEaA",
+        "name": "sample",
+        "fullName": "sample",
+        "headline": "sample",
+        "description": "sample",
+        "jobDescription": "sample",
+        "jobId": "01a023b9-8d51-7808-98ab-09960ced66f6",
+        "templateId": "sample",
+        "layout": {
+          "sections": [
+            {
+              "key": "header",
+              "title": "sample",
+              "enabled": true
+            }
+          ]
+        },
+        "searchableText": "sample",
+        "embedding": null,
+        "embeddingModel": null,
+        "createdAt": 1784729142607,
+        "updatedAt": 1791824678768
+      },
+      "previous": {
+        "id": "4e4f1255-8bec-462d-9a06-42bb7db9af03",
+        "userId": "QrHcDvQ7gf9dqjqUzVm1i6naCkQubEaA",
+        "name": "sample",
+        "fullName": "sample",
+        "headline": "sample",
+        "description": "sample",
+        "jobDescription": "sample",
+        "jobId": "01a023b9-8d51-7808-98ab-09960ced66f6",
+        "templateId": "sample",
+        "layout": {
+          "sections": [
+            {
+              "key": "header",
+              "title": "sample",
+              "enabled": true
+            }
+          ]
+        },
+        "searchableText": "sample",
+        "embedding": null,
+        "embeddingModel": null,
+        "createdAt": 1784729142607,
+        "updatedAt": 1791824678768
+      },
+      "clientTimestamp": 1791824678768
+    },
+    {
+      "collectionId": "resume",
+      "type": "delete",
+      "key": "01a145a7-51bc-7a0f-ad34-c0ef342651f9",
+      "payload": {
+        "id": "01a145a7-51bc-7a0f-ad34-c0ef342651f9",
+        "userId": "QrHcDvQ7gf9dqjqUzVm1i6naCkQubEaA",
+        "name": "sample",
+        "fullName": "sample",
+        "headline": "sample",
+        "description": "sample",
+        "jobDescription": "sample",
+        "jobId": "01a023b9-8d51-7808-98ab-09960ced66f6",
+        "templateId": "sample",
+        "layout": {
+          "sections": [
+            {
+              "key": "header",
+              "title": "sample",
+              "enabled": true
+            }
+          ]
+        },
+        "searchableText": "sample",
+        "embedding": null,
+        "embeddingModel": null,
+        "createdAt": 1784729142607,
+        "updatedAt": 1791824678768
+      },
+      "previous": {
+        "id": "01a145a7-51bc-7a0f-ad34-c0ef342651f9",
+        "userId": "QrHcDvQ7gf9dqjqUzVm1i6naCkQubEaA",
+        "name": "sample",
+        "fullName": "sample",
+        "headline": "sample",
+        "description": "sample",
+        "jobDescription": "sample",
+        "jobId": "01a023b9-8d51-7808-98ab-09960ced66f6",
+        "templateId": "sample",
+        "layout": {
+          "sections": [
+            {
+              "key": "header",
+              "title": "sample",
+              "enabled": true
+            }
+          ]
+        },
+        "searchableText": "sample",
+        "embedding": null,
+        "embeddingModel": null,
+        "createdAt": 1784729142607,
+        "updatedAt": 1791824678768
+      },
+      "clientTimestamp": 1791824678768
+    }
+  ]
+}

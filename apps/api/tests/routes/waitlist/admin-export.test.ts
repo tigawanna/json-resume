@@ -48,8 +48,8 @@ describe("waitlist admin export and stats", () => {
     });
     expect(res.status).toBe(200);
     const body = (await res.json()) as { joined: number; linked: number; removed: number };
-    expect(body.joined).toBeGreaterThanOrEqual(1);
-    expect(body.linked).toBeGreaterThanOrEqual(1);
-    expect(body.removed).toBeGreaterThanOrEqual(1);
+    // Each test file gets its own database, so these are exact counts, not
+    // "at least one" — a regression that double-counts will fail here.
+    expect(body).toEqual({ joined: 1, linked: 1, removed: 1 });
   });
 });

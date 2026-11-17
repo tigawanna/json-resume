@@ -17,6 +17,12 @@ process.env.GITHUB_CLIENT_ID ??= "test-client-id";
 process.env.GITHUB_CLIENT_SECRET ??= "test-client-secret";
 process.env.BETTER_AUTH_URL ??= "http://localhost:3100";
 process.env.FRONTEND_URL ??= "http://localhost:3040";
+// Pin the credit policy so projection tests are deterministic on a clean
+// checkout (a fresh clone has CREDITS_* commented out in .env.example). The
+// real-event fixture contains résumés created before this instant, so they
+// must be grandfathered rather than charged.
+process.env.CREDITS_ENABLED ??= "true";
+process.env.CREDITS_START_AT ??= "2026-11-16T00:00:00.000Z";
 
 const externalUrl = process.env.TEST_DATABASE_URL;
 const databaseDir = externalUrl ? undefined : mkdtempSync(join(tmpdir(), "ajr-api-test-"));
