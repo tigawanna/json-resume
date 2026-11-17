@@ -45,6 +45,18 @@ describe("buildHandoffMessage", () => {
       "still targets its previous job",
     );
   });
+
+  it("describes a first résumé created from dashboard intake", () => {
+    expect(
+      handoffContext({
+        ...handoff,
+        mode: "create",
+        baseResumeName: "",
+        jobLabel: "",
+        jobAttached: false,
+      }),
+    ).toContain("created this résumé from intake");
+  });
 });
 
 describe("withoutStackedHandoffs", () => {

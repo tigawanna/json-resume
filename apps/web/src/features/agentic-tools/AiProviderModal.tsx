@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { CopyTextButton } from "@/features/application-answers/CopyTextButton";
 import { cn } from "@/lib/utils";
 import { ModelPicker } from "@/lib/openrouter/ModelPicker";
 import { DEFAULT_MODEL } from "@/lib/openrouter/routing";
@@ -93,24 +94,33 @@ export function AiProviderModal({
                 Browser only
               </span>
             </div>
-            <div className="relative">
-              <Input
-                id="modal-api-key"
-                type={showKey ? "text" : "password"}
-                value={apiKey}
-                onChange={(e) => setApiKey(e.target.value)}
-                placeholder="sk-or-v1-..."
-                className="h-12 rounded-xl border-0 bg-base-200 pr-11 shadow-none ring-1 ring-[color-mix(in_oklch,var(--color-base-content)_10%,transparent)] focus-visible:ring-primary/35"
-                autoComplete="off"
+            <div className="flex items-center gap-2">
+              <div className="relative min-w-0 flex-1">
+                <Input
+                  id="modal-api-key"
+                  type={showKey ? "text" : "password"}
+                  value={apiKey}
+                  onChange={(e) => setApiKey(e.target.value)}
+                  placeholder="sk-or-v1-..."
+                  className="h-12 rounded-xl border-0 bg-base-200 pr-11 shadow-none ring-1 ring-[color-mix(in_oklch,var(--color-base-content)_10%,transparent)] focus-visible:ring-primary/35"
+                  autoComplete="off"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowKey((v) => !v)}
+                  className="absolute top-1/2 right-3 flex size-8 -translate-y-1/2 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-[color-mix(in_oklch,var(--color-base-content)_8%,transparent)] hover:text-foreground"
+                  aria-label={showKey ? "Hide key" : "Show key"}
+                >
+                  {showKey ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                </button>
+              </div>
+              <CopyTextButton
+                text={apiKey.trim()}
+                label="Copy API key"
+                copiedMessage="API key copied to clipboard"
+                compact
+                dataTest="modal-api-key-copy"
               />
-              <button
-                type="button"
-                onClick={() => setShowKey((v) => !v)}
-                className="absolute top-1/2 right-3 flex size-8 -translate-y-1/2 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-[color-mix(in_oklch,var(--color-base-content)_8%,transparent)] hover:text-foreground"
-                aria-label={showKey ? "Hide key" : "Show key"}
-              >
-                {showKey ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-              </button>
             </div>
             <p className="mt-2 text-xs text-muted-foreground">
               <a

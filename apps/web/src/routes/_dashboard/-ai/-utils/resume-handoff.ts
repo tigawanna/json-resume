@@ -36,6 +36,12 @@ export function withoutStackedHandoffs<T>(messages: ReadonlyArray<T>): T[] {
 
 /** The one line the editor's assistant reads about the handoff. */
 export function handoffContext(handoff: ResumeHandoff): string {
+  if (handoff.mode === "create") {
+    const job = handoff.jobAttached
+      ? ` It targets ${handoff.jobLabel}, and the posting is attached.`
+      : "";
+    return `Context handoff. The dashboard assistant created this résumé from intake.${job} Use the following prompt as the user's request, then ask_user for anything still missing before you write.`;
+  }
   const started =
     handoff.mode === "copy"
       ? `The dashboard assistant copied "${handoff.baseResumeName}" into this résumé for ${handoff.jobLabel}.`

@@ -1,5 +1,6 @@
-import { createChatUI, type MessageProps } from "@tanstack/ai-react/ui";
+import { createChatUI, type MessageProps, type ToolProps } from "@tanstack/ai-react/ui";
 import { cn } from "@/lib/utils";
+import { AskUserQuestionCard } from "../AskUserQuestionCard";
 import {
   dashboardAssistantChatOptions,
   type DashboardAssistantChatOptions,
@@ -37,6 +38,12 @@ function DashboardAssistantMessage({
   );
 }
 
+function DashboardAskUserTool({
+  part,
+}: ToolProps<DashboardAssistantChatOptions, "ask_user">) {
+  return <AskUserQuestionCard part={part} dataTest="dashboard-assistant-ask-user" />;
+}
+
 /** Every tool needs an entry. `start_resume_for_job` gets its approval as the `interrupt` prop. */
 export const DashboardAssistantChatUI = createChatUI(dashboardAssistantChatOptions, {
   components: {
@@ -64,6 +71,8 @@ export const DashboardAssistantChatUI = createChatUI(dashboardAssistantChatOptio
     get_application_stats: DashboardToolCall,
     get_profile_overview: DashboardToolCall,
     start_resume_for_job: DashboardStartResumeTool,
+    start_first_resume: DashboardToolCall,
+    ask_user: DashboardAskUserTool,
     query_collection: DashboardToolCall,
     mutate_collection: DashboardMutateTool,
     search_conversations: DashboardToolCall,

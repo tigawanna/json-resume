@@ -27,15 +27,25 @@ const LIBRARY_SUGGESTIONS: PageSuggestion[] = [
   },
 ];
 
+const FIRST_RESUME_INSTRUCTIONS = [
+  "When list_resumes (or rank_resumes_for_job) shows none, or the user wants a first résumé from scratch:",
+  "1. Do not tell them to create a résumé in the UI. You create it.",
+  "2. Call ask_user once: whether they can paste an existing résumé (or LinkedIn export) or they are starting from scratch. Wait. Do not ask that in prose.",
+  "3. If they will paste: tell them to paste it in the next message. When they paste, parse it into a ResumeDocumentV1. Invent nothing.",
+  "4. If they start from scratch: call ask_user one question at a time (name, current or target role, years of experience, main skills, most recent company and title). Use allowOther so they can type. Stop when you have a skeleton.",
+  "5. Call start_first_resume with a short name, the parsed document when you have one (or a skeleton of only the facts they gave), and a suggestedPrompt that restates the intake so the editor can fill the résumé and then ask_user for anything still missing. If they also pasted a job, save_job first and pass jobId.",
+  "6. After it returns, one short sentence. The app opens the résumé. Never call start_resume_for_job when there is nothing to copy from.",
+].join("\n");
+
 const JOB_INSTRUCTIONS = [
-  "When the user brings a job posting or asks for a résumé for a job:",
+  FIRST_RESUME_INSTRUCTIONS,
+  "When the user already has résumés and brings a job posting or asks for a résumé for a job:",
   "1. Save the posting with save_job (pass the full posting text; fill company and title when the posting states them). Do not pass attachToResumeId.",
   "2. Call rank_resumes_for_job with the job id. When the top candidates are close, read them with get_resume (only the header, summary, experience and skills sections) to judge the fit.",
   '3. Decide. Use mode "reuse" only when one résumé already fits the job almost as it is: a high score, few or minor missing terms, and it targets no other job (or this one). Otherwise use mode "copy" from the best starting point, so their other applications stay untouched.',
   "4. Call start_resume_for_job once. The user approves or denies it on a card, so give a short, specific reason and a suggestedPrompt that tells the editor's assistant what to tailor first.",
   "5. After an approval, reply with one short sentence. The app opens the résumé and the editor's assistant takes over. After a denial, ask what they would prefer and do not call it again unless they ask.",
-  "If the user has no résumés, say so. Do not call start_resume_for_job.",
-  "If the user only pastes a posting without asking for anything, ask whether they want a résumé for it before saving anything.",
+  "If the user only pastes a posting without asking for anything, and they already have résumés, ask whether they want a résumé for it before saving anything.",
 ].join("\n");
 
 const EXPERIENCE_INSTRUCTIONS = [
@@ -60,14 +70,19 @@ export const PAGE_CONTEXTS: Record<string, PageContext> = {
     routeId: "/_dashboard/dashboard",
     label: "Dashboard",
     summary:
-      "Paste a job description and the assistant picks a résumé, copies it, and opens the editor.",
+      "Start a first résumé from a paste or a few questions, or paste a job to copy an existing one into the editor.",
     instructions: [
       JOB_INSTRUCTIONS,
-      "On this page a pasted job description is enough. Do not ask for confirmation before saving it.",
-      'Always start with mode "copy": clone the best résumé, pass a name that matches the job (role and company), and let the tool attach the posting to the copy.',
+      "On this page a pasted job description is enough when they already have a résumé. Do not ask for confirmation before saving it.",
+      'When they have a résumé to copy, always start with mode "copy": clone the best résumé, pass a name that matches the job (role and company), and let the tool attach the posting to the copy.',
       "The tool opens that copy on its AI tab and hands the editor the job plus your suggestedPrompt. Do not navigate yourself.",
     ].join("\n"),
     suggestions: [
+      {
+        label: "Start my first résumé",
+        prompt: "I do not have a résumé here yet. Help me start one.",
+        send: true,
+      },
       {
         label: "Paste a job and pick a résumé",
         prompt: "Find the best résumé to start from for this job:\n\n",

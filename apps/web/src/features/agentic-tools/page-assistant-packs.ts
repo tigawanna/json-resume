@@ -10,9 +10,11 @@ import {
   getCoverLetterToolDefinition,
   listCoverLettersToolDefinition,
 } from "./definitions/cover-letter-definitions";
+import { askUserToolDefinition } from "./definitions/assistant-definitions";
 import {
   getApplicationStatsToolDefinition,
   getProfileOverviewToolDefinition,
+  startFirstResumeToolDefinition,
   startResumeForJobToolDefinition,
 } from "./definitions/dashboard-definitions";
 import { experienceToolDefinitions } from "./definitions/experience-definitions";
@@ -40,16 +42,18 @@ const jobPack = [
   saveJobToolDefinition,
   listJobsToolDefinition,
   getJobToolDefinition,
+  listResumesToolDefinition,
+  getResumeToolDefinition,
   rankResumesForJobToolDefinition,
   quotePayRateToolDefinition,
   startResumeForJobToolDefinition,
+  startFirstResumeToolDefinition,
+  askUserToolDefinition,
   getApplicationStatsToolDefinition,
 ] as const;
 
 const resumeListPack = [
   ...jobPack,
-  listResumesToolDefinition,
-  getResumeToolDefinition,
   searchLibraryToolDefinition,
   getProfileOverviewToolDefinition,
   searchApplicationAnswersToolDefinition,

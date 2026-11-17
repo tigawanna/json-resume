@@ -1,10 +1,12 @@
 import {
   getApplicationStatsToolDefinition,
   getProfileOverviewToolDefinition,
+  startFirstResumeToolDefinition,
   startResumeForJobToolDefinition,
 } from "@/features/agentic-tools/definitions/dashboard-definitions";
 import type { DashboardToolContext } from "@/features/agentic-tools/definitions/tool-context";
 import {
+  askUserClientTool,
   getCoverLetterClientTool,
   getJobClientTool,
   getResumeClientTool,
@@ -18,6 +20,7 @@ import {
   searchLibraryClientTool,
 } from "./client-tools";
 import { getLocalApplicationStats, getLocalProfileOverview } from "./local-insight-tools";
+import { startLocalFirstResume } from "./local-start-first-resume-tool";
 import { startLocalResumeForJob } from "./local-start-resume-tool";
 
 type DashboardClientToolCtx = { context: DashboardToolContext };
@@ -32,6 +35,10 @@ export const getProfileOverviewClientTool = getProfileOverviewToolDefinition.cli
 
 export const startResumeForJobClientTool = startResumeForJobToolDefinition.client(
   (input, ctx: DashboardClientToolCtx) => startLocalResumeForJob(ctx.context, input),
+);
+
+export const startFirstResumeClientTool = startFirstResumeToolDefinition.client(
+  (input, ctx: DashboardClientToolCtx) => startLocalFirstResume(ctx.context, input),
 );
 
 export const dashboardAssistantClientTools = [
@@ -49,4 +56,6 @@ export const dashboardAssistantClientTools = [
   getApplicationStatsClientTool,
   getProfileOverviewClientTool,
   startResumeForJobClientTool,
+  startFirstResumeClientTool,
+  askUserClientTool,
 ];

@@ -11,8 +11,8 @@ import {
   type ChatRunParams,
 } from "./stream-agent-chat.server";
 
-/** Save job, rank, read a few candidates, propose: about 6 tool calls, plus room for insight questions. */
-const MAX_AGENT_ITERATIONS = 10;
+/** Job flow is about 6 calls; first-résumé intake is several ask_user rounds plus create. */
+const MAX_AGENT_ITERATIONS = 18;
 
 /**
  * The dashboard chat never ends, so the history sent to the model is capped.

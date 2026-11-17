@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { CopyTextButton } from "@/features/application-answers/CopyTextButton";
 import { pingOpenRouter } from "@/lib/openrouter/api";
 import { openRouterModelEndpointsQueryOptions } from "@/lib/openrouter/endpoints";
 import { ModelPicker } from "@/lib/openrouter/ModelPicker";
@@ -66,7 +67,7 @@ export function AiSettingsForm({
   const [slopGuardDraft, setSlopGuardDraft] = useState(slopGuard);
   const [showKey, setShowKey] = useState(false);
   const [tipsOpen, setTipsOpen] = useState(() => apiKey.trim() === "");
-  const pingKeyRef = useRef("");
+  const pingSeqRef = useRef(0);
   const [pingState, setPingState] = useState<PingState>({ status: "idle" });
   const promptDirty = promptDraft !== systemPrompt;
 
@@ -81,9 +82,16 @@ export function AiSettingsForm({
     enabled: model.length > 0,
   });
 
+  /** Drop any ping in flight so a late response cannot label the wrong key/model. */
+  function invalidatePing() {
+    pingSeqRef.current += 1;
+    setPingState({ status: "idle" });
+  }
+
   function handleModelChange(next: string) {
     if (next === model) return;
     setModel(next);
+    invalidatePing();
     if (routing.mode === "custom") setRouting({ ...routing, providers: [] });
   }
 
@@ -105,14 +113,16 @@ export function AiSettingsForm({
     onSaved?.();
   }
 
-  async function handlePing(key = apiKey.trim()) {
+  async function handlePing() {
+    const key = apiKey.trim();
     if (!key || !model) return;
-    pingKeyRef.current = key;
+    const seq = ++pingSeqRef.current;
     setPingState({ status: "pending" });
     try {
       const reply = await pingOpenRouter({ apiKey: key, model });
-      setPingState({ status: "ok", reply });
+      if (seq === pingSeqRef.current) setPingState({ status: "ok", reply });
     } catch (err: unknown) {
+      if (seq !== pingSeqRef.current) return;
       const message = err instanceof Error ? err.message : "OpenRouter did not respond";
       setPingState({ status: "error", message });
     }
@@ -121,6 +131,7 @@ export function AiSettingsForm({
   function handleClear() {
     aiSettings.clearSettings();
     setApiKey("");
+    invalidatePing();
   }
 
   return (
@@ -167,14 +178,8 @@ export function AiSettingsForm({
                 type={showKey ? "text" : "password"}
                 value={apiKey}
                 onChange={(event) => {
-                  const next = event.target.value;
-                  setApiKey(next);
-                  if (next.trim() !== pingKeyRef.current) setPingState({ status: "idle" });
-                }}
-                onPaste={(event) => {
-                  const pasted = event.clipboardData.getData("text").trim();
-                  if (!pasted || !model) return;
-                  void handlePing(pasted);
+                  setApiKey(event.target.value);
+                  invalidatePing();
                 }}
                 placeholder="sk-or-v1-..."
                 autoComplete="off"
@@ -196,6 +201,13 @@ export function AiSettingsForm({
                 {showKey ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
               </button>
             </div>
+            <CopyTextButton
+              text={apiKey.trim()}
+              label="Copy API key"
+              copiedMessage="API key copied to clipboard"
+              compact
+              dataTest="event-sourced-api-key-copy"
+            />
             <button
               type="button"
               onClick={() =>

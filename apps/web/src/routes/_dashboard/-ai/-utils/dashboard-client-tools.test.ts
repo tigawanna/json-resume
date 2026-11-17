@@ -49,6 +49,9 @@ describe("page assistant tools", () => {
     expect(toolsForPack("job").map((tool) => tool.name)).not.toContain(
       "set_experience_title_bullets",
     );
+    expect(toolsForPack("job").map((tool) => tool.name)).toEqual(
+      expect.arrayContaining(["ask_user", "start_first_resume", "list_resumes"]),
+    );
     expect(toolsForPack("resume-list").map((tool) => tool.name)).toContain("list_resumes");
     expect(toolsForPack("resume-list").map((tool) => tool.name)).toContain("query_collection");
     expect(toolsForPack("resume-list").map((tool) => tool.name)).not.toContain(

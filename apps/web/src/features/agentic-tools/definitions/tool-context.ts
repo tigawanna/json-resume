@@ -42,7 +42,7 @@ export type LocalToolContext = {
 export type ResumeHandoff = {
   resumeId: string;
   name: string;
-  mode: "reuse" | "copy";
+  mode: "reuse" | "copy" | "create";
   baseResumeName: string;
   jobLabel: string;
   jobAttached: boolean;

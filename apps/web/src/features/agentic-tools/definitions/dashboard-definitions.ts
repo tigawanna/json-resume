@@ -7,6 +7,10 @@ import {
   startResumeForJobToolInputSchema,
   startResumeForJobToolOutputSchema,
 } from "../dashboard-tool-schemas";
+import {
+  startFirstResumeToolInputSchema,
+  startFirstResumeToolOutputSchema,
+} from "../first-resume-tool-schemas";
 
 export const startResumeForJobToolDefinition = toolDefinition({
   name: "start_resume_for_job",
@@ -15,6 +19,14 @@ export const startResumeForJobToolDefinition = toolDefinition({
   inputSchema: startResumeForJobToolInputSchema,
   outputSchema: startResumeForJobToolOutputSchema,
   needsApproval: true,
+});
+
+export const startFirstResumeToolDefinition = toolDefinition({
+  name: "start_first_resume",
+  description:
+    "Create a new résumé (blank or from a parsed paste) and open it on its AI tab with your suggestedPrompt. Use it when the user has no résumés, or they want one from scratch. Do not tell them to create it in the UI. Call it after ask_user intake. No approval.",
+  inputSchema: startFirstResumeToolInputSchema,
+  outputSchema: startFirstResumeToolOutputSchema,
 });
 
 export const getApplicationStatsToolDefinition = toolDefinition({

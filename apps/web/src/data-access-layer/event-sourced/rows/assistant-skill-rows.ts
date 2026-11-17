@@ -375,6 +375,9 @@ export interface BuiltinAssistantSkill {
   scopes: AssistantSkillScope[];
 }
 
+import { EMPTY_RESUME_SKILL } from "./builtin-empty-resume-skill";
+import { IMPORT_RESUMES_SKILL } from "./builtin-import-resumes-skill";
+
 export const BUILTIN_ASSISTANT_SKILLS: BuiltinAssistantSkill[] = [
   {
     id: "builtin-dev-bullets",
@@ -392,6 +395,8 @@ export const BUILTIN_ASSISTANT_SKILLS: BuiltinAssistantSkill[] = [
     body: PRAGMATIC_TAILORING_BODY,
     scopes: ["resume", "experience", "dashboard"],
   },
+  EMPTY_RESUME_SKILL,
+  IMPORT_RESUMES_SKILL,
 ];
 
 export function builtinAssistantSkill(key: string) {
@@ -491,6 +496,7 @@ function previousDocuments(skill: BuiltinAssistantSkill) {
       }),
     ];
   }
+  if (skill.key !== "pragmatic-tailoring") return [];
   return [
     PREVIOUS_PRAGMATIC_BODY,
     composeSkillMarkdown({
