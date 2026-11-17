@@ -1,16 +1,66 @@
 # AWS architecture
 
-This package is the plan for moving the product onto AWS when usage justifies the bill. It is not deployed. The product currently sits at about 10 to 20 users a week, which does not pay for a standing API Gateway, a web function, DynamoDB, CloudFront, and a database. Turso and the current host stay the running system. This CDK app is what `cdk deploy` would build on the day that changes.
+This package is the plan for moving the product onto AWS when usage justifies the bill. Nothing is deployed. About 10 to 20 users a week does not pay for a standing API Gateway, a web function, DynamoDB, CloudFront, and a database. Turso and the current host stay the running system. This CDK app is what `cdk deploy` would build on the day that changes.
 
-Two stacks, on purpose. Sync is its own Lambda in front of a DynamoDB event log. The API is the Hono app in `apps/api`, mounted as a Lambda web function. API Gateway sends `ANY /api/v1` to that function after it rejects a missing or expired JWT and applies the rate limit. The function serves authentication, credits, the waitlist, and the projected tables. Sync Lambda does not open that database. Before it writes or reads the log, it asks the web function whether the user is allowed, by calling the function's own endpoint (`*.lambda-web.<region>.on.aws`) with IAM. That call skips the public gateway and does not use `/api/v1`. A device still uses `GET /api/v1/credit-status`. Code already inside the Hono process calls the credit function directly.
+The split is deliberate. The API stays a portable Node process. Sync is the part that is allowed to grow into AWS.
 
-The web app is the other half of a future deploy. CloudFront serves the built files in `apps/web/dist/client`. There is no other frontend work in this package.
+### The API mounts on any fetch handler
 
-Nothing here is applied to an account. `cdk synth` only prints a template. A real deploy needs AWS credentials, the API and web builds, and a decision to start paying.
+`apps/api` is a Hono app. Its public surface is `app.fetch`, the standard Fetch handler. Node serves it today. A Lambda web function, a Worker, or another host can take the same object later. Routes, authentication, credits, the waitlist, and the projected tables stay inside that process.
 
-## When Turso is no longer enough
+```ts
+import { serve } from "@hono/node-server";
+import { app } from "@repo/api/app";
 
-Aurora is not the cheaper database at this size. Aurora Serverless v2 has a floor of 0.5 ACU, which is on the order of $40 a month before storage, in us-east-1. A small RDS for PostgreSQL instance is closer to $12 a month and is the usual free-tier shape for a year. Aurora earns its place when the database has to grow and shrink without a resize, or when a reader replica is cheaper to add than a second RDS instance. If this product gets there, the swap is Aurora PostgreSQL, and the sync log stays on DynamoDB. The API Lambda keeps the same routes. Only the database URL changes.
+serve({ fetch: app.fetch, port: Number(process.env.PORT ?? 8080) });
+```
+
+On AWS, API Gateway is only the public door. It rejects a missing or expired JWT, applies the rate limit, then forwards `ANY /api/v1` to the web function. A device still asks `GET /api/v1/credit-status`. Code already inside the Hono process calls the credit function directly and skips HTTP.
+
+### Sync is coupled to AWS primitives
+
+Sync is its own Lambda in front of a DynamoDB event log. It never opens the API database. Before a push or a pull it asks the web function whether the user is allowed, over IAM, on the function's own endpoint (`*.lambda-web.<region>.on.aws`). That call skips the public gateway and the `/api/v1` prefix.
+
+```ts
+sync.addToRolePolicy(
+  new PolicyStatement({
+    actions: ["lambda:InvokeWebFunctionEndpoint"],
+    resources: [webFunctionEndpointArn],
+  }),
+);
+```
+
+That coupling is the scalable half, and it is the reason sync is not folded into the Hono app:
+
+| Primitive | What it unlocks |
+|---|---|
+| DynamoDB | The event log: append and sequence, sized for the free allowance well past today's traffic. |
+| DynamoDB Streams | Materialization. A second function writes the projected tables. Sync Lambda stays off that database. |
+| SQS, SNS, SES | Fan-out, mail, and queues once a single Lambda invoke is the wrong shape. |
+| Bedrock | A remote MCP and agent that can sit behind those queues and grow with them. |
+| EventBridge | Schedules and the small quality-of-life wiring that should live outside the request path. |
+
+None of SQS, SNS, SES, Bedrock, or EventBridge are in the template yet. The boundary is what makes adding them a new subscriber, not a rewrite of the API.
+
+### Why an event log
+
+The client keeps its own rows and keeps editing them with no server in the picture. A device can stay offline for as long as someone uses it, including the whole life of the data. The event log is for the moment that device comes online. It pushes the events it made and pulls every event past its cursor. That cursor is the diff, so catch-up is the missed events, and a quiet device has very little to transfer.
+
+The editor works in both shapes. One device and its local rows is a complete app. The event log, when it is there, publishes those same edits so another device can pull them.
+
+The materializer turns the log into ordinary tables for anything that wants rows. A remote API reads those tables. A remote agent edits there, on the server, apart from whichever device is open. Each agent write is appended to the event log like any other change. Clients pull those events with the same cursor they use for a second laptop and apply them onto the rows they already hold. An agent change arrives as a diff on the merge path the device already uses, including for a device that was offline the whole time.
+
+The event log is how a change is written down as a diff.
+
+### The site
+
+CloudFront serves the built files in `apps/web/dist/client`. There is no other frontend work in this package.
+
+`cdk synth` only prints a template. A real deploy needs AWS credentials, the API and web builds, and a decision to start paying.
+
+## How the database scales
+
+The API database moves to RDS for PostgreSQL on the smallest instance, in the same Region as the API. Postgres on RDS has higher availability and durability than the current hosted database, and the instance sits on the AWS network next to the Lambda that reads it. That same instance loads `pgvector` and full-text search, which the premium remote agent tools use for embeddings and document search. The sync log stays on DynamoDB. The API Lambda keeps the same routes. Only the database URL changes.
 
 `docs/architecture.drawio` is the plan, drawn by hand. The picture below is the CDK app itself. `pnpm --filter @repo/aws build` synthesizes the stacks and rewrites `docs/cdk.png`, so this preview changes when the stacks change.
 
@@ -25,7 +75,7 @@ Aurora is not the cheaper database at this size. Aurora Serverless v2 has a floo
 | Client signals | Three different answers | `401` means log in again and get a new JWT. Retrying the same token does nothing. `429` carries `Retry-After`, so the client waits out the rate limit. A credit stop from `GET /api/v1/credit-status` is the payment signal. Upgrading the plan is what changes that, not the throttle header. |
 | Sync check | IAM call to the web function endpoint | Sync Lambda asks the same Hono app if the user is allowed, on `*.lambda-web.<region>.on.aws`, with no `/api/v1` and no public gateway. Code inside the Hono process calls the credit function directly. |
 | Event log | DynamoDB | The log is an append and a sequence query, not a join. One résumé is about 70 small items. On-demand DynamoDB stays inside the free allowance far past the current 10–20 users a week. |
-| Projected tables | A stream materializer, separate from Sync Lambda | DynamoDB Streams invokes a second function that writes the projected tables into Turso (later Aurora or RDS). Sync Lambda never opens that database. A device that only syncs never needs those tables. |
+| Projected tables | A stream materializer, separate from Sync Lambda | DynamoDB Streams invokes a second function that writes the projected tables into RDS for PostgreSQL. Sync Lambda never opens that database. A device that only syncs never needs those tables. |
 | Site | CloudFront in front of the built web app | The web build is static files. CloudFront serves `apps/web/dist/client`. It is not part of the request path for sync or credits. |
 
 ## Run it on Floci
@@ -146,7 +196,7 @@ device
   │
   └─ API Gateway  (reject missing or expired JWT)
         │
-        ├─ ANY /api/v1                  API Lambda web function (Turso)
+        ├─ ANY /api/v1                  API Lambda web function (RDS PostgreSQL)
         │     mounts the Hono app: authentication, credits,
         │     waitlist, projected tables
         │     GET /api/v1/credit-status → proceed | stop
@@ -160,16 +210,16 @@ Sync Lambda
         allowed?  — no API Gateway, no /api/v1
 ```
 
-**Sync Lambda.** One function in front of the event log. Push appends events for the session user and returns the new per-user sequence. Pull queries `seq` greater than the cursor. Before either of those, it asks the API Lambda whether this user is allowed to sync. That call goes straight to the web function endpoint with IAM auth. It does not pass through API Gateway, and the path does not include `/api/v1`. The same long-lived Hono process answers it. Sync Lambda still does not open Turso, does not read the wallet itself, and does not project. A device that only syncs never needs the projected tables. "My résumés" is not a query this function can answer; the server only has the log.
+**Sync Lambda.** One function in front of the event log. Push appends events for the session user and returns the new per-user sequence. Pull queries `seq` greater than the cursor. Before either of those, it asks the API Lambda whether this user is allowed to sync. That call goes straight to the web function endpoint with IAM auth. It does not pass through API Gateway, and the path does not include `/api/v1`. The same long-lived Hono process answers it. Sync Lambda still does not open the API database, does not read the wallet itself, and does not project. A device that only syncs never needs the projected tables. "My résumés" is not a query this function can answer; the server only has the log.
 
 **Who calls the web function.** A device uses the public path, `GET /api/v1/credit-status`, through API Gateway. A Lambda in this account, including Sync Lambda, calls `*.lambda-web.<region>.on.aws` with IAM and skips that prefix. Code that is already inside the Hono process calls the credit function directly and skips HTTP.
 
 **API Gateway.** `/api/v1` and the sync event routes both arrive here. The authorizer rejects a call when the JWT is missing or expired. `/api/v1` is one HTTP proxy into the API Lambda. Credit-status is not its own gateway integration.
 
-**Credit gate.** The device can call `GET /api/v1/credit-status` before it syncs, so an empty wallet never starts a sync request. Sync Lambda repeats the check itself: it asks the web function if the user is allowed, and it refuses the push or pull when the answer is no. That is the check that protects the log. Charging still happens in the web function, against the wallet in Turso. The projector no longer decides billing.
+**Credit gate.** The device can call `GET /api/v1/credit-status` before it syncs, so an empty wallet never starts a sync request. Sync Lambda repeats the check itself: it asks the web function if the user is allowed, and it refuses the push or pull when the answer is no. That is the check that protects the log. Charging still happens in the web function, against the wallet in RDS. The projector no longer decides billing.
 
-**API Lambda.** One web function mounts the Hono app as its handler. API Gateway forwards all of `/api/v1` to it after the JWT check. The function serves authentication, the credit wallet and ledger, the waitlist, and the projected résumé tables. Those tables share one Turso database, and a credit read joins the wallet to the waitlist entry. Splitting them into their own functions would add a cold start and a second database client without a boundary the request needs.
+**API Lambda.** One web function mounts the Hono app as its handler. API Gateway forwards all of `/api/v1` to it after the JWT check. The function serves authentication, the credit wallet and ledger, the waitlist, and the projected résumé tables. Those tables share one RDS for PostgreSQL database, and a credit read joins the wallet to the waitlist entry. Splitting them into their own functions would add a cold start and a second database client without a boundary the request needs.
 
-The materializer is the other function in this stack. It is not a web function. DynamoDB Streams invokes it, and it writes the projected tables into the same Turso database the API Lambda reads. Sync Lambda never shares this database.
+The materializer is the other function in this stack. It is not a web function. DynamoDB Streams invokes it, and it writes the projected tables into the same RDS database the API Lambda reads. Sync Lambda never shares this database.
 
-Turso is enough at this size. Moving the projected tables, wallets, and waitlist to Postgres is a database swap once the row volume or the vector queries outgrow Turso, not a change to the function split or the sync log.
+Projected tables, wallets, and the waitlist live on that RDS instance. `pgvector` and full-text search on it back the premium remote agent tools. The function split and the sync log stay as they are. Only the database URL changes.
