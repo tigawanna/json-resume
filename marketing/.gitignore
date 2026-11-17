@@ -4,3 +4,4 @@ frames
 *.mkv
 *.mp4
 !**/dist
+screenshots

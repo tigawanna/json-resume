@@ -4,7 +4,8 @@
 
 ## Watch the current cut
 
-`marketing/cravfted-promo/dist/cravfted-promo.mp4` — 24 s, 1920×1080, 24 fps, silent.
+- `marketing/cravfted-promo/dist/cravfted-promo-v2.mp4` — **current cut**: 30 s, 1920×1080, 24 fps, silent. Walks the real flow from "Let's get started" through pasting the job description, tailoring, and export.
+- `marketing/cravfted-promo/dist/cravfted-promo.mp4` — first cut, 24 s, kept for reference.
 
 ## Render it yourself
 

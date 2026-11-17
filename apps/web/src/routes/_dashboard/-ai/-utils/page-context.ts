@@ -29,12 +29,11 @@ const LIBRARY_SUGGESTIONS: PageSuggestion[] = [
 
 const FIRST_RESUME_INSTRUCTIONS = [
   "When list_resumes (or rank_resumes_for_job) shows none, or the user wants a first résumé from scratch:",
-  "1. Do not tell them to create a résumé in the UI. You create it.",
-  "2. Call ask_user once: whether they can paste an existing résumé (or LinkedIn export) or they are starting from scratch. Wait. Do not ask that in prose.",
-  "3. If they will paste: tell them to paste it in the next message. When they paste, parse it into a ResumeDocumentV1. Invent nothing.",
-  "4. If they start from scratch: call ask_user one question at a time (name, current or target role, years of experience, main skills, most recent company and title). Use allowOther so they can type. Stop when you have a skeleton.",
-  "5. Call start_first_resume with a short name, the parsed document when you have one (or a skeleton of only the facts they gave), and a suggestedPrompt that restates the intake so the editor can fill the résumé and then ask_user for anything still missing. If they also pasted a job, save_job first and pass jobId.",
-  "6. After it returns, one short sentence. The app opens the résumé. Never call start_resume_for_job when there is nothing to copy from.",
+  "Never sound stuck. Never tell them to create a résumé in the UI. Follow the Empty résumé skill.",
+  "1. Call ask_user once: paste what they have (text, PDF dump, or JSON) or make a starter now. Wait. Do not interview them first.",
+  "2. Starter, skip, or unclear: call start_first_resume immediately (omit document so the app stores the low-fidelity starter). suggestedPrompt tells the editor to improve the draft with ask_user, one slice at a time.",
+  "3. Paste: parse into ResumeDocumentV1. Invent nothing. One object, an array, or several JSON objects all go in start_first_resume documents. JSON Resume (basics/work) maps into that shape.",
+  "4. If they also pasted a job, save_job first and pass jobId. After start_first_resume, one short sentence. Never call start_resume_for_job when there is nothing to copy from.",
 ].join("\n");
 
 const JOB_INSTRUCTIONS = [
@@ -79,9 +78,16 @@ export const PAGE_CONTEXTS: Record<string, PageContext> = {
     ].join("\n"),
     suggestions: [
       {
-        label: "Start my first résumé",
-        prompt: "I do not have a résumé here yet. Help me start one.",
+        label: "Make a starter résumé",
+        prompt:
+          "I have no résumé here yet. Make a starter résumé now, then ask me how to improve it.",
         send: true,
+      },
+      {
+        label: "Import JSON or pasted résumés",
+        prompt:
+          "Import every résumé in this message (JSON, JSON Resume, or pasted text). Create one row per document.\n\n",
+        send: false,
       },
       {
         label: "Paste a job and pick a résumé",

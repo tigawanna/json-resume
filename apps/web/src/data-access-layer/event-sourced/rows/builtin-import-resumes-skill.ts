@@ -1,3 +1,5 @@
+import type { BuiltinAssistantSkill } from "./assistant-skill-rows";
+
 const DESCRIPTION =
   "Turn pasted JSON, JSON Resume, PDF text, or several documents into résumés in this app. Attach this skill when importing a batch.";
 
@@ -31,7 +33,7 @@ Rules: one object or an array. Copy every fact from the source. Never invent emp
 - Refuse because the paste is not a file.
 `;
 
-export const IMPORT_RESUMES_SKILL = {
+export const IMPORT_RESUMES_SKILL: BuiltinAssistantSkill = {
   id: "builtin-import-resumes",
   key: "import-resumes",
   name: "Import JSON résumés",

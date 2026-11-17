@@ -42,9 +42,11 @@ describe("start_first_resume", () => {
       jobId: null,
       jobAttached: false,
       imported: false,
+      createdCount: 1,
       opensAfterReply: true,
     });
     expect(fixture.db().collections.resume.get(result.resumeId)?.name).toBe("Alex Chen");
+    expect(fixture.db().collections.resume.get(result.resumeId)?.fullName).toBe("Your name");
     expect(ctx.handoffs).toEqual([
       expect.objectContaining({
         resumeId: result.resumeId,
@@ -70,6 +72,7 @@ describe("start_first_resume", () => {
       jobId: "go",
       jobAttached: true,
       imported: true,
+      createdCount: 1,
     });
     expect(fixture.db().collections.resume.get(result.resumeId)?.jobId).toBe("go");
     expect(ctx.handoffs[0]).toEqual(
@@ -79,5 +82,23 @@ describe("start_first_resume", () => {
         jobAttached: true,
       }),
     );
+  });
+
+  it("imports several documents and hands off the last", async () => {
+    const ctx = dashboardContext();
+    const document = createDefaultResume();
+
+    const result = await startLocalFirstResume(ctx, {
+      ...intake,
+      documents: [
+        { name: "One", document },
+        { name: "Two", document },
+      ],
+    });
+
+    expect(result.createdCount).toBe(2);
+    expect(result.imported).toBe(true);
+    expect(result.name).toBe("Two");
+    expect(fixture.db().collections.resume.toArray).toHaveLength(2);
   });
 });

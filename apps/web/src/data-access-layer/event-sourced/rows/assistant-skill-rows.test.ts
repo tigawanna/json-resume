@@ -32,7 +32,13 @@ describe("assistant skills", () => {
     expect(db.collections.assistantSkill.get("builtin-pragmatic-tailoring")?.body).toContain(
       "Developer bullets wins",
     );
-    expect(db.collections.assistantSkill.toArray).toHaveLength(2);
+    expect(db.collections.assistantSkill.toArray).toHaveLength(4);
+    expect(db.collections.assistantSkill.get("builtin-empty-resume")?.body).toContain(
+      "low-fidelity",
+    );
+    expect(db.collections.assistantSkill.get("builtin-import-resumes")?.body).toContain(
+      "Portable recipe",
+    );
 
     db.collections.assistantSkill.update("builtin-dev-bullets", (row) => {
       row.body = "Custom bullets.";
@@ -91,6 +97,8 @@ describe("assistant skills", () => {
 
     expect(matched.map((skill) => skill.name)).toEqual([
       "Developer bullets",
+      "Empty résumé",
+      "Import JSON résumés",
       "Pragmatic tailoring",
     ]);
   });

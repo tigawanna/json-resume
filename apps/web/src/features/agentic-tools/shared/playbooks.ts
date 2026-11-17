@@ -8,6 +8,17 @@ import {
 type Playbook = { when: string; steps: string[] };
 
 const PLAYBOOKS: Record<PlaybookName, Playbook> = {
+  first_resume: {
+    when: "The active résumé is empty, a starter with placeholders, or the user is starting from scratch.",
+    steps: [
+      "Do not say you cannot help. Do not send them to create a résumé by hand. Follow the Empty résumé skill over Pragmatic tailoring until a real role exists.",
+      "get_resume with header, summary, experience and skills.",
+      "If it is empty or still placeholders, write a low-fidelity skeleton with update_resume_details, set_summary, upsert_experience and set_skills. Placeholders only: Your name, The role you want next, Your latest company, Your title, two Replace this bullets, Add a skill. Never invent a real employer.",
+      "Then ask_user once: name and headline, latest job, paste a résumé, or skills. Wait. After the answer, fill that slice and ask the next. Do not interview before the skeleton exists.",
+      "If they paste a résumé or JSON, follow import_resume.",
+      "Finish with wrap_up, listing the résumé as edited or created.",
+    ],
+  },
   edit_resume: {
     when: "Any change request that does not ask for a new copy, version or variant.",
     steps: [
@@ -48,11 +59,11 @@ const PLAYBOOKS: Record<PlaybookName, Playbook> = {
     ],
   },
   import_resume: {
-    when: "The user pastes a whole résumé to import.",
+    when: "The user pastes a résumé, JSON Resume, PDF text, or several JSON documents.",
     steps: [
-      "Parse it into a complete ResumeDocumentV1 without inventing anything.",
-      "create_resume with the document; the new résumé becomes active.",
-      "open_resume so the user sees it, then wrap_up with it as created.",
+      "Follow the Import JSON résumés skill. Parse each document into ResumeDocumentV1 without inventing anything. Map JSON Resume basics/work/education/skills into our shape.",
+      "create_resume once per document. An array or several JSON objects in one message are several résumés.",
+      "open_resume the last one so the user sees it, then wrap_up every new résumé as created.",
     ],
   },
   cover_letter: {

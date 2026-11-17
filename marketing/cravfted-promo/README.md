@@ -12,7 +12,9 @@ Source project for the 24-second product promo. The composition is plain HTML/CS
 | `assets/` | Logo, icons, screenshot crops, self-hosted fonts, GSAP |
 | `render.mjs` | Frames with Playwright Chromium, encodes with FFmpeg |
 | `MOTION.md` | Shot list, brand-token sources, open decisions |
-| `dist/cravfted-promo.mp4` | Rendered master (generated) |
+| `screenshots/` | Raw flow captures supplied by the user |
+| `assets/screens/flow/` | Crops used by the shots |
+| `dist/cravfted-promo-v2.mp4` | Current 30 s master (generated) |
 
 ## Render
 

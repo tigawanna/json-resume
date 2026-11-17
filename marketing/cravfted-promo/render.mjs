@@ -10,7 +10,7 @@ const requireFromWeb = createRequire(path.join(repo, "apps/web/package.json"));
 const { chromium } = requireFromWeb("@playwright/test");
 
 const FPS = 24;
-const DURATION = 24;
+const DURATION = 30;
 const TOTAL = FPS * DURATION;
 const framesDir = path.join(here, "frames");
 const outDir = path.join(here, "dist");
@@ -54,7 +54,7 @@ if (preview) {
   process.exit(0);
 }
 
-const out = path.join(outDir, "cravfted-promo.mp4");
+const out = path.join(outDir, "cravfted-promo-v2.mp4");
 const ffmpeg = spawnSync("ffmpeg", [
   "-y", "-loglevel", "error",
   "-framerate", String(FPS),

@@ -772,6 +772,7 @@ export const setNotesToolOutputSchema = z.object({
 
 export const playbookNameSchema = z.enum([
   "edit_resume",
+  "first_resume",
   "pasted_job",
   "tailored_copy",
   "fill_from_library",

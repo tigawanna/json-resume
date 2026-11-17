@@ -6,12 +6,10 @@ import { Link } from "@tanstack/react-router";
 import { FileText, Plus, Sparkles } from "lucide-react";
 import { useLiveQuery } from "@tanstack/react-db";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
-import { ResumeCreateFormDialog } from "../../resumes/-components/ResumeCreateForm";
+import { openDashboardAssistant } from "../../-ai/-hooks/use-dashboard-assistant";
 
 export function RecentResumes({ onStartFromJob }: { onStartFromJob: () => void }) {
   const db = useEventSourcedDb();
-  const [createOpen, setCreateOpen] = useState(false);
   const { data: resumes, isLoading } = useLiveQuery((q) =>
     q
       .from({ row: db.collections.resume })
@@ -69,7 +67,14 @@ export function RecentResumes({ onStartFromJob }: { onStartFromJob: () => void }
           <ResourceCard
             dataTest="dashboard-create-resume"
             className="h-full"
-            onClick={() => setCreateOpen(true)}
+            onClick={() =>
+              openDashboardAssistant({
+                fresh: true,
+                send: true,
+                prompt:
+                  "I have no résumé here yet. Make a starter résumé now, then ask me how to improve it.",
+              })
+            }
           >
             <div className="flex h-full items-start gap-3 px-4 py-4">
               <span className="bg-primary/12 text-primary grid size-9 shrink-0 place-items-center rounded-lg">
@@ -77,7 +82,9 @@ export function RecentResumes({ onStartFromJob }: { onStartFromJob: () => void }
               </span>
               <div className="min-w-0 space-y-0.5">
                 <p className="text-sm font-medium leading-tight">From scratch</p>
-                <p className="text-muted-foreground text-xs">Start a blank résumé</p>
+                <p className="text-muted-foreground text-xs">
+                  Starter résumé, then questions to fill it in
+                </p>
               </div>
             </div>
           </ResourceCard>
@@ -118,7 +125,6 @@ export function RecentResumes({ onStartFromJob }: { onStartFromJob: () => void }
           </ResourceCard>
         ))}
       </div>
-      <ResumeCreateFormDialog open={createOpen} setOpen={setCreateOpen} />
     </section>
   );
 }

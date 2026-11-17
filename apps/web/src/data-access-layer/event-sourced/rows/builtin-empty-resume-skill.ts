@@ -1,3 +1,5 @@
+import type { BuiltinAssistantSkill } from "./assistant-skill-rows";
+
 const DESCRIPTION =
   "When a résumé is empty, make a low-fidelity starter and ask how to improve it. Never stall or send the user to create it by hand.";
 
@@ -28,7 +30,7 @@ get_resume. If header.fullName is empty or "Your name" and experience is empty o
 - Clone Jordan Lee sample content or invent jobs, dates, or metrics.
 `;
 
-export const EMPTY_RESUME_SKILL = {
+export const EMPTY_RESUME_SKILL: BuiltinAssistantSkill = {
   id: "builtin-empty-resume",
   key: "empty-resume",
   name: "Empty résumé",

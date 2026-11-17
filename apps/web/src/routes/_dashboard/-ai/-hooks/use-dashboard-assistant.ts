@@ -63,9 +63,19 @@ function stringParams(params: Record<string, unknown>) {
 
 export const OPEN_ASSISTANT_EVENT = "dashboard-assistant-open";
 
-export function openDashboardAssistant(options?: { fresh?: boolean }) {
+export function openDashboardAssistant(options?: {
+  fresh?: boolean;
+  prompt?: string;
+  send?: boolean;
+}) {
   window.dispatchEvent(
-    new CustomEvent(OPEN_ASSISTANT_EVENT, { detail: { fresh: options?.fresh === true } }),
+    new CustomEvent(OPEN_ASSISTANT_EVENT, {
+      detail: {
+        fresh: options?.fresh === true,
+        prompt: options?.prompt,
+        send: options?.send === true,
+      },
+    }),
   );
 }
 

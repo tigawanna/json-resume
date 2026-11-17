@@ -7,6 +7,8 @@ import {
   parseSkillMarkdown,
   skillDocument,
 } from "./assistant-skill-markdown";
+import { EMPTY_RESUME_SKILL } from "./builtin-empty-resume-skill";
+import { IMPORT_RESUMES_SKILL } from "./builtin-import-resumes-skill";
 
 export const ASSISTANT_SKILL_SCOPES = ["resume", "experience", "dashboard"] as const;
 
@@ -374,9 +376,6 @@ export interface BuiltinAssistantSkill {
   body: string;
   scopes: AssistantSkillScope[];
 }
-
-import { EMPTY_RESUME_SKILL } from "./builtin-empty-resume-skill";
-import { IMPORT_RESUMES_SKILL } from "./builtin-import-resumes-skill";
 
 export const BUILTIN_ASSISTANT_SKILLS: BuiltinAssistantSkill[] = [
   {

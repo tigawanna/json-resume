@@ -88,15 +88,19 @@ html, body {
 .hero em { color: var(--primary); font-style: italic; }
 .support { margin-top: 38px; font-size: 32px; color: var(--muted); }
 
-/* 3 & 5 — product shots */
+/* 3–8 — real product flow captures */
 .shot-frame {
   position: absolute; overflow: hidden; border: 1px solid rgba(86, 188, 125, 0.35);
-  border-radius: 18px; background: var(--surface);
+  border-radius: 14px; background: var(--surface);
   box-shadow: 0 50px 120px rgba(0, 0, 0, 0.6), 0 0 0 10px rgba(232, 237, 233, 0.025);
 }
 .shot-frame img { display: block; width: 100%; height: auto; }
-.json-frame { left: 640px; top: 150px; width: 1160px; }
-.ai-frame { left: 120px; top: 168px; width: 1100px; }
+.start-frame { left: 130px; top: 210px; width: 940px; }
+.jd-frame { left: 1120px; top: 150px; width: 680px; }
+.assistant-frame { left: 1120px; top: 260px; width: 680px; }
+.aitab-frame { left: 130px; top: 170px; width: 1240px; }
+.tailor-frame { left: 80px; top: 170px; width: 1760px; }
+.letter-frame { left: 130px; top: 210px; width: 900px; }
 .window-bar {
   height: 54px; display: flex; align-items: center; gap: 9px; padding: 0 22px;
   background: #1d231e; border-bottom: 1px solid var(--border);
@@ -104,39 +108,13 @@ html, body {
 .dot { width: 11px; height: 11px; border-radius: 50%; background: #4d574f; }
 .dot:first-child { background: var(--accent); opacity: 0.8; }
 .window-title { margin-left: 18px; font-size: 18px; color: #8c9b90; letter-spacing: 0.01em; }
-.scan-highlight {
-  position: absolute; left: 54px; top: 400px; width: 760px; height: 210px;
-  border: 2px solid var(--primary); border-radius: 6px; opacity: 0;
-  box-shadow: 0 0 0 6px rgba(86, 188, 125, 0.12), inset 0 0 40px rgba(86, 188, 125, 0.08);
-}
-.chat-highlight {
-  position: absolute; left: 40px; top: 215px; width: 980px; height: 220px;
-  border: 2px solid var(--primary); border-radius: 10px; opacity: 0;
-  box-shadow: 0 0 0 6px rgba(86, 188, 125, 0.12);
-}
-#scene-json .caption-block { left: 130px; top: 430px; }
-#scene-ai .caption-block { left: 1290px; top: 390px; }
+.caption-block.right-copy { left: 1130px; top: 400px; }
+.caption-block.left-copy { left: 130px; top: 400px; }
+.caption-block.bottom-copy { left: 130px; top: 820px; max-width: 1500px; }
 
-/* 4 — sections */
-.scene-sections .eyebrow { position: absolute; top: 110px; }
-.cards { position: absolute; top: 230px; left: 0; right: 0; display: flex; justify-content: center; gap: 28px; }
-.card {
-  width: 350px; height: 310px; padding: 38px 34px; border-radius: 20px;
-  border: 1px solid var(--border); background: linear-gradient(160deg, var(--surface-2), var(--surface));
-}
-.icon-mask {
-  display: block; width: 64px; height: 64px; background: var(--primary);
-  -webkit-mask: var(--icon) center / contain no-repeat;
-  mask: var(--icon) center / contain no-repeat;
-}
-.braces { font-family: "DM Serif Display", serif; font-size: 56px; color: var(--primary); line-height: 1; }
-.card-title { margin-top: 26px; margin-bottom: 26px; font-size: 32px; font-weight: 600; }
 .bar { height: 9px; margin-bottom: 12px; border-radius: 5px; background: rgba(232, 237, 233, 0.18); }
-.bar.dark { background: rgba(232, 237, 233, 0.1); }
-.w55 { width: 55%; } .w60 { width: 60%; } .w65 { width: 65%; } .w70 { width: 70%; }
-.w75 { width: 75%; } .w80 { width: 80%; } .w85 { width: 85%; } .w90 { width: 90%; }
-.scene-sections .caption { position: absolute; bottom: 138px; }
-.scene-sections .subcaption { position: absolute; bottom: 78px; }
+.w60 { width: 60%; } .w65 { width: 65%; } .w75 { width: 75%; }
+.w80 { width: 80%; } .w85 { width: 85%; } .w90 { width: 90%; }
 
 /* 6 — export */
 .scene-pdf .eyebrow { position: absolute; top: 92px; }
@@ -157,8 +135,8 @@ html, body {
   display: grid; place-items: center; font-size: 52px; color: var(--bg);
   background: var(--primary); box-shadow: 0 0 0 12px rgba(86, 188, 125, 0.16);
 }
-.scene-pdf .caption { position: absolute; left: 170px; top: 380px; text-align: left; }
-.scene-pdf .subcaption { position: absolute; left: 170px; top: 480px; text-align: left; }
+.pdf-copy { position: absolute; left: 170px; top: 380px; text-align: left; }
+.pdf-sub { position: absolute; left: 170px; top: 480px; text-align: left; }
 
 /* 7 — outro */
 .scene-outro { display: flex; flex-direction: column; align-items: center; justify-content: center; }

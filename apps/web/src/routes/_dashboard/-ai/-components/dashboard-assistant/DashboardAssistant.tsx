@@ -53,6 +53,8 @@ export function DashboardAssistant() {
   const { composerRef } = assistant;
   const sheet = open && presentation === "sheet";
   const startFreshRef = useRef(assistant.startNew);
+  const sendTextRef = useRef(assistant.sendText);
+  const queuedPromptRef = useRef<{ text: string; send: boolean } | null>(null);
   startFreshRef.current = () => {
     const current = assistant.conversations.find(
       (conversation) => conversation.id === assistant.activeConversationId,
@@ -60,6 +62,7 @@ export function DashboardAssistant() {
     if (current && current.messageCount === 0) return;
     assistant.startNew();
   };
+  sendTextRef.current = assistant.sendText;
 
   useEffect(() => {
     if (!open || !assistant.isReady) return;
@@ -69,13 +72,31 @@ export function DashboardAssistant() {
 
   useEffect(() => {
     function openFromPage(event: Event) {
-      const fresh = event instanceof CustomEvent && event.detail?.fresh === true;
-      if (fresh) startFreshRef.current();
+      const detail =
+        event instanceof CustomEvent
+          ? (event.detail as { fresh?: boolean; prompt?: string; send?: boolean } | undefined)
+          : undefined;
+      if (detail?.fresh === true) startFreshRef.current();
+      const prompt = typeof detail?.prompt === "string" ? detail.prompt.trim() : "";
+      if (prompt) queuedPromptRef.current = { text: prompt, send: detail?.send === true };
       setOpen(true);
     }
     window.addEventListener(OPEN_ASSISTANT_EVENT, openFromPage);
     return () => window.removeEventListener(OPEN_ASSISTANT_EVENT, openFromPage);
   }, []);
+
+  useEffect(() => {
+    if (!open || !assistant.isReady || !assistant.activeConversationId) return;
+    const queued = queuedPromptRef.current;
+    if (!queued) return;
+    queuedPromptRef.current = null;
+    if (queued.send) {
+      void sendTextRef.current(queued.text);
+      return;
+    }
+    composerRef.current?.setText(queued.text);
+    composerRef.current?.focus();
+  }, [open, assistant.isReady, assistant.activeConversationId, composerRef]);
 
   if (hidden) return null;
 

@@ -1,52 +1,40 @@
-# CraVfted — product promo (first cut)
+# CraVfted — product promo v2
 
-16:9 · 1920×1080 · 24 fps · 24 s · silent (captions carry the story)
+16:9 · 1920×1080 · 24 fps · 30 s · silent (captions carry the story)
 
-Status: **first cut, inferred brief**. Brand colors, fonts, icons and product screenshots come from the repo; copy, pacing and the shot list are inferred from `README.md`.
+v1 used the old doc screenshots. v2 replaces the middle of the film with the real **job description → tailored résumé** flow captured in `screenshots/` by the user.
 
-## Brand kit (source)
+## Brand kit (from the repo)
 
 | Item | Source | Value |
 | --- | --- | --- |
-| Logo | `apps/web/public/logo.svg` | green `#06d079` mark |
-| Background | dark DaisyUI theme in `apps/web/src/styles.css` | `#121613` |
-| Surface | dark theme | `#171c18` / `#1a201c` |
-| Foreground | dark theme | `#e8ede9` |
+| Logo | `apps/web/public/logo.svg` | green mark |
+| Background / surface | dark DaisyUI theme in `apps/web/src/styles.css` | `#121613` / `#171c18` |
+| Foreground / muted | dark theme | `#e8ede9` / `#b6c2ba` |
 | Primary | dark theme | `#56bc7d` (deep `#267d42`) |
-| Muted | dark theme | `#b6c2ba` |
-| Accent | dark theme | `#fb923c` (used only on window dots) |
-| Sans | app `@theme` | DM Sans |
-| Serif | app `@theme` | DM Serif Display |
-| Icons | `apps/web/public/icons/*.svg` | pencil-case, doculytics, cabinet (tinted with CSS masks) |
+| Accent | dark theme | `#fb923c` |
+| Fonts | app `@theme` | DM Sans + DM Serif Display (self-hosted woff2) |
 
 ## Shots
 
-| # | Time | Shot | Copy | Motion |
+| # | Time | Shot | Copy | Capture |
 | --- | --- | --- | --- | --- |
-| 1 | 0.0–1.6 | Logo lockup on dark grid | CraVfted | mark scales in, wordmark rises, rule draws |
-| 2 | 1.6–5.2 | Typographic problem beat | THE OLD WAY / Copy · Paste · Reformat · Repeat / *Formatting is not the work.* / Half an hour lost to margins. Every single time. | chips stagger in, hero rises, chips fade back |
-| 3 | 5.2–9.4 | JSON editor screenshot, right | 01 / SOURCE OF TRUTH / Résumé as typed JSON. / One document you actually own. | panel enters from right with slight tilt, caption reveals, green scan box pulses |
-| 4 | 9.4–12.6 | Four section cards | 02 / BUILDING BLOCKS / Experience · Skills · Projects · Education / Sections you own. Reuse and remix. / Move a block, keep the layout. | cards stagger up, first and third swap to show remix |
-| 5 | 12.6–16.6 | AI assistant screenshot, left | 03 / YOUR MODEL, YOUR KEYS / Tweak it with any LLM. / Same schema in. Same layout out. | panel enters from left, caption reveals, chat bubble outlined |
-| 6 | 16.6–20.0 | Two PDF pages aligning | 04 / EXPORT / Same PDF. Every time. / The layout is code, not a document. | pages rotate flat and stack, check pops in |
-| 7 | 20.0–24.0 | Outro lockup | CraVfted / Own your data. Own your story. / Résumé as typed JSON. | mark + wordmark rise, rule draws, tagline fades up |
+| 1 | 0.0–1.5 | Logo lockup | CraVfted | — |
+| 2 | 1.5–4.5 | Problem typography | *Formatting is not the work.* | — |
+| 3 | 4.5–7.0 | Dashboard | 01 / START HERE · Let's get crafting. | `screenshots/…19-59-00.png` |
+| 4 | 7.0–10.5 | JD pasted into assistant | 02 / THE BRIEF · Paste the whole posting. | `…20-01-06.png` |
+| 5 | 10.5–13.5 | Assistant ranks résumés | 03 / THE MATCH · It finds your closest résumé. | `…20-16-23.png` |
+| 6 | 13.5–16.5 | AI workbench | 04 / THE WORKBENCH · Your résumé, still typed JSON. | `…20-18-09.png` |
+| 7 | 16.5–20.5 | Tailoring diff | 05 / THE TAILOR · One prompt. Every diff visible. | `…20-21-36.png` |
+| 8 | 20.5–23.5 | Cover letter | 06 / THE LETTER · A matching letter, same brief. | `…20-22-38.png` |
+| 9 | 23.5–26.0 | PDF export | 07 / EXPORT · Same PDF. Every time. | CSS illustration |
+| 10 | 26.0–30.0 | Outro | Own your data. Own your story. | — |
 
-## Transitions
+Crops of the captures live in `assets/screens/flow/`; originals are untouched in `screenshots/`.
 
-Cross-dissolve, 0.4 s, at every scene boundary. No camera moves; motion lives inside each shot.
+## Open decisions
 
-## Assets
-
-- `assets/screens/json-tab-crop.png` — crop of `apps/web/docs/json_tab.png` (personal sidebar/footer removed)
-- `assets/screens/ai-tab-crop.png` — crop of `apps/web/docs/ai_tab.png` (chat + tool call)
-- `assets/logo.svg`, `assets/icons/*.svg` — copied from the app
-- `assets/fonts/*.woff2` — self-hosted DM Sans / DM Serif Display latin subsets
-- `assets/vendor/gsap.min.js` — timeline driver
-
-## Inferred / needs a decision
-
-- **Product name** is `CraVfted` (taken verbatim from the repo README) — confirm spelling and capitalization.
-- **No audio.** Add music and/or TTS narration if you want a voiced cut; nothing was generated because no provider keys were used.
-- **No URL or CTA button** in the outro — none was available in the repo.
-- **No 9:16 cut** yet; this is the 16:9 master. A vertical version needs a separate layout, not just a crop.
-- The screenshots are real product captures with demo résumé content; no names or emails appear in the crops.
+- Product name is still `CraVfted` from the README — confirm.
+- The captures contain the user's own name and résumé details. Crops reduce them but don't fully anonymize; decide whether to blur or use a clean demo account before publishing.
+- The JD-before screenshot shows a short stray chat message ("lets get started") — replace with a cleaner capture if you have one.
+- No audio, no URL/CTA, and no 9:16 cut yet.

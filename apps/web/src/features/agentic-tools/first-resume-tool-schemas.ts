@@ -11,8 +11,19 @@ export const startFirstResumeToolInputSchema = z.object({
   document: resumeDocumentV1Schema
     .optional()
     .describe(
-      "Parsed résumé when the user pasted one, or a skeleton with only facts from ask_user. Omit for a blank shell.",
+      "One parsed résumé. Prefer documents when importing several. Omit both to store the low-fidelity starter.",
     ),
+  documents: z
+    .array(
+      z.object({
+        name: z.string().trim().min(1).max(120),
+        document: resumeDocumentV1Schema,
+      }),
+    )
+    .min(1)
+    .max(20)
+    .optional()
+    .describe("Several parsed résumés (JSON array or multiple pastes). Each becomes its own row."),
   jobId: z
     .string()
     .trim()
@@ -40,7 +51,8 @@ export const startFirstResumeToolOutputSchema = z.object({
   name: z.string(),
   jobId: z.string().nullable(),
   jobAttached: z.boolean(),
-  imported: z.boolean().describe("True when a document was stored on create."),
+  imported: z.boolean().describe("True when at least one user-supplied document was stored."),
+  createdCount: z.number().int(),
   opensAfterReply: z.literal(true),
 });
 
