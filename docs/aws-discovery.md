@@ -1,4 +1,4 @@
-# AWS discovery: sync log on DynamoDB and Lambda
+****# AWS discovery: sync log on DynamoDB and Lambda
 
 Rough sizing for the managed sync log. The architecture section below is the plan for splitting sync from the projected API. Prices are us-east-1 list prices: DynamoDB on-demand at $1.25 per million write request units and $0.25 per million read request units, storage at $0.25 per GB-month past the allowance, Lambda at $0.20 per million requests and $0.0000166667 per GB-second.
 
@@ -91,21 +91,30 @@ device
   │
   └─ API Gateway  (reject missing or expired JWT)
         │
-        ├─ GET  /sync/credit-status     existing API (Turso)
-        │     available credits → proceed | stop
+        ├─ ANY /api/v1                  API Lambda web function (Turso)
+        │     mounts the Hono app: authentication, credits,
+        │     waitlist, projected tables
+        │     GET /api/v1/credit-status → proceed | stop
         │
         └─ if proceed
-              POST /sync/events         Lambda → DynamoDB log
-              GET  /sync/events         Lambda → DynamoDB log
+              POST /sync/events         Sync Lambda → DynamoDB log
+              GET  /sync/events         Sync Lambda → DynamoDB log
 
-existing API (Turso, later Postgres)
-  projector, wallets, REST, remote MCP
+Sync Lambda
+  └─ IAM to the web function endpoint (*.lambda-web.<region>.on.aws)
+        allowed?  — no API Gateway, no /api/v1
 ```
 
-**Sync Lambda.** One function in front of the event log. Push appends events for the session user and returns the new per-user sequence. Pull queries `seq` greater than the cursor. The function does not read or write the wallet, and it does not project. A device that only syncs never needs the projected tables. "My résumés" is not a query this function can answer; the server only has the log.
+**Sync Lambda.** One function in front of the event log. Push appends events for the session user and returns the new per-user sequence. Pull queries `seq` greater than the cursor. Before either of those, it asks the API Lambda whether this user is allowed to sync. That call goes straight to the web function endpoint with IAM auth. It does not pass through API Gateway, and the path does not include `/api/v1`. The same long-lived Hono process answers it. Sync Lambda still does not open Turso, does not read the wallet itself, and does not project. A device that only syncs never needs the projected tables. "My résumés" is not a query this function can answer; the server only has the log.
 
-**API Gateway.** Credit-status and sync both arrive here. The authorizer rejects a call when the JWT is missing or expired, so those requests never reach the existing API or Sync Lambda.
+**Who calls the web function.** A device uses the public path, `GET /api/v1/credit-status`, through API Gateway. A Lambda in this account, including Sync Lambda, calls `*.lambda-web.<region>.on.aws` with IAM and skips that prefix. Code that is already inside the Hono process calls the credit function directly and skips HTTP.
 
-**Credit gate.** Before a push or a pull, the client calls the existing API through the gateway. That call checks the available credits, spends what the operation costs, and returns whether sync may proceed. On stop, the client exits before it touches Lambda, so an empty wallet does not write the log. This replaces the current rule, where a résumé insert is always projected and an empty wallet records an overdraft instead of refusing the sync. Charging moves to this status check. The projector no longer decides billing.
+**API Gateway.** `/api/v1` and the sync event routes both arrive here. The authorizer rejects a call when the JWT is missing or expired. `/api/v1` is one HTTP proxy into the API Lambda. Credit-status is not its own gateway integration.
 
-**Existing API.** Projection, wallet monitoring, the REST surface, and remote MCP keep running as the normal API. Turso is enough at this size. The same process can sit on a Lambda web function later without changing the route shape. Moving the projected tables to Postgres is a database swap once the row volume or the vector queries outgrow Turso, not a change to the sync log.
+**Credit gate.** The device can call `GET /api/v1/credit-status` before it syncs, so an empty wallet never starts a sync request. Sync Lambda repeats the check itself: it asks the web function if the user is allowed, and it refuses the push or pull when the answer is no. That is the check that protects the log. Charging still happens in the web function, against the wallet in Turso. The projector no longer decides billing.
+
+**API Lambda.** One web function mounts the Hono app as its handler. API Gateway forwards all of `/api/v1` to it after the JWT check. The function serves authentication, the credit wallet and ledger, the waitlist, and the projected résumé tables. Those tables share one Turso database, and a credit read joins the wallet to the waitlist entry. Splitting them into their own functions would add a cold start and a second database client without a boundary the request needs.
+
+The materializer is the other function in this stack. It is not a web function. DynamoDB Streams invokes it, and it writes the projected tables into the same Turso database the API Lambda reads. Sync Lambda never shares this database.
+
+Turso is enough at this size. Moving the projected tables, wallets, and waitlist to Postgres is a database swap once the row volume or the vector queries outgrow Turso, not a change to the function split or the sync log.
