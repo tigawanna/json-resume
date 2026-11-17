@@ -1,6 +1,51 @@
-****# AWS discovery: sync log on DynamoDB and Lambda
+# AWS architecture
 
-Rough sizing for the managed sync log. The architecture section below is the plan for splitting sync from the projected API. Prices are us-east-1 list prices: DynamoDB on-demand at $1.25 per million write request units and $0.25 per million read request units, storage at $0.25 per GB-month past the allowance, Lambda at $0.20 per million requests and $0.0000166667 per GB-second.
+This package is the plan for moving the product onto AWS when usage justifies the bill. It is not deployed. The product currently sits at about 10 to 20 users a week, which does not pay for a standing API Gateway, a web function, DynamoDB, CloudFront, and a database. Turso and the current host stay the running system. This CDK app is what `cdk deploy` would build on the day that changes.
+
+Two stacks, on purpose. Sync is its own Lambda in front of a DynamoDB event log. The API is the Hono app in `apps/api`, mounted as a Lambda web function. API Gateway sends `ANY /api/v1` to that function after it rejects a missing or expired JWT and applies the rate limit. The function serves authentication, credits, the waitlist, and the projected tables. Sync Lambda does not open that database. Before it writes or reads the log, it asks the web function whether the user is allowed, by calling the function's own endpoint (`*.lambda-web.<region>.on.aws`) with IAM. That call skips the public gateway and does not use `/api/v1`. A device still uses `GET /api/v1/credit-status`. Code already inside the Hono process calls the credit function directly.
+
+The web app is the other half of a future deploy. CloudFront serves the built files in `apps/web/dist/client`. There is no other frontend work in this package.
+
+Nothing here is applied to an account. `cdk synth` only prints a template. A real deploy needs AWS credentials, the API and web builds, and a decision to start paying.
+
+## When Turso is no longer enough
+
+Aurora is not the cheaper database at this size. Aurora Serverless v2 has a floor of 0.5 ACU, which is on the order of $40 a month before storage, in us-east-1. A small RDS for PostgreSQL instance is closer to $12 a month and is the usual free-tier shape for a year. Aurora earns its place when the database has to grow and shrink without a resize, or when a reader replica is cheaper to add than a second RDS instance. If this product gets there, the swap is Aurora PostgreSQL, and the sync log stays on DynamoDB. The API Lambda keeps the same routes. Only the database URL changes.
+
+`docs/architecture.drawio` is the plan, drawn by hand. The picture below is the CDK app itself. `pnpm --filter @repo/aws build` synthesizes the stacks and rewrites `docs/cdk.png`, so this preview changes when the stacks change.
+
+![CDK stacks](docs/cdk.png)
+
+## Why each piece
+
+| Piece | Choice | Why |
+|---|---|---|
+| API process | Lambda web function, not a per-request invoke | The Hono app stays open and takes many concurrent requests in one environment. A Lambda proxy integration would start one invoke per request and throw that away. |
+| Public front door | API Gateway HTTP API in front of `/api/v1` | The gateway checks the JWT before the web function runs. A missing or expired token is rejected there, so we never call the auth service and never spend a concurrency slot. The gateway also throttles. |
+| Client signals | Three different answers | `401` means log in again and get a new JWT. Retrying the same token does nothing. `429` carries `Retry-After`, so the client waits out the rate limit. A credit stop from `GET /api/v1/credit-status` is the payment signal. Upgrading the plan is what changes that, not the throttle header. |
+| Sync check | IAM call to the web function endpoint | Sync Lambda asks the same Hono app if the user is allowed, on `*.lambda-web.<region>.on.aws`, with no `/api/v1` and no public gateway. Code inside the Hono process calls the credit function directly. |
+| Event log | DynamoDB | The log is an append and a sequence query, not a join. One résumé is about 70 small items. On-demand DynamoDB stays inside the free allowance far past the current 10–20 users a week. |
+| Projected tables | A stream materializer, separate from Sync Lambda | DynamoDB Streams invokes a second function that writes the projected tables into Turso (later Aurora or RDS). Sync Lambda never opens that database. A device that only syncs never needs those tables. |
+| Site | CloudFront in front of the built web app | The web build is static files. CloudFront serves `apps/web/dist/client`. It is not part of the request path for sync or credits. |
+
+## Run it on Floci
+
+Floci is the local AWS emulator. It does not bill an account. Start the one you already have, point the AWS tools at it, then deploy this package there.
+
+```bash
+floci start
+eval "$(floci env)"
+pnpm --filter @repo/aws exec cdk bootstrap
+pnpm --filter @repo/aws exec cdk deploy --all --require-approval never
+```
+
+`floci env` sets `AWS_ENDPOINT_URL` to the emulator (port 4566) and dummy credentials. `cdk deploy` then talks to that endpoint. `floci stop` tears the emulator down. The data goes with it unless you started Floci with `--persist`.
+
+Treat a failed resource as a gap in the emulator. Lambda web functions and the HTTP API JWT authorizer may not exist there yet. That is a reason to keep iterating locally, not a reason to deploy this to a paid account.
+
+## Sync log sizing
+
+Rough sizing for the managed sync log. Prices below are us-east-1 list prices: DynamoDB on-demand at $1.25 per million write request units and $0.25 per million read request units, storage at $0.25 per GB-month past the allowance, Lambda at $0.20 per million requests and $0.0000166667 per GB-second.
 
 ## What one résumé weighs
 
@@ -81,6 +126,16 @@ Unsubsidized price of one such user for a month, on-demand DynamoDB plus Lambda,
 About **10 cents per user per year**. Storage past 25 GB adds $0.25 per GB-month, which is under a cent per user per year at 2.30 MB a month.
 
 While the account is under the caps, the marginal cost of another user is $0. The 10 cents is what it costs to keep a user after the free request allowance is exhausted, not a bill you pay on top of the free tier.
+
+## What the stacks deploy
+
+`bin/app.ts` is three stacks. None of them are wired to a live account.
+
+- **Api** bundles `src/api-server.ts`, which serves the Hono app from `@repo/api`. That asset is the Lambda web function. The HTTP API in front of it is the public `/api/v1` proxy (JWT and throttle). It is not a Lambda proxy integration, because that would be one invoke per request and would throw away the web function's concurrency.
+- **Sync** is an event function for the log, plus permission to call the web function endpoint with `lambda:InvokeWebFunctionEndpoint`.
+- **Web** uploads `apps/web/dist/client` to S3 and puts CloudFront in front of it. Build the web app before a synth that includes this stack.
+
+Local checks, when you want them, are the AWS emulators or a local API Gateway stand-in. They are for proving the handler, not for running the product.
 
 ## Architecture
 
