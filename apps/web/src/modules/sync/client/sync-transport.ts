@@ -18,6 +18,7 @@ import {
   noteUploadChunk,
   noteUploaded,
 } from "./sync-progress";
+import { syncAuthHeaders } from "./sync-jwt";
 
 const SYNC_URL = `${clientEnv.VITE_HONO_API_URL}/api/sync/events`;
 const COMPACT_URL = `${clientEnv.VITE_HONO_API_URL}/api/sync/compact`;
@@ -37,7 +38,7 @@ export async function proposeCompaction(proposal: CompactionProposal): Promise<C
   const response = await fetch(COMPACT_URL, {
     method: "POST",
     credentials: "include",
-    headers: { "Content-Type": "application/json" },
+    headers: await syncAuthHeaders({ extra: { "Content-Type": "application/json" } }),
     body: JSON.stringify(proposal),
   });
   if (!response.ok) {
@@ -103,8 +104,8 @@ function parsePushResponse(value: unknown): PushResponse {
 }
 
 /**
- * Cookie-session transport. Push/pull never run unless the DB has sync enabled;
- * the server still 401s if there is no session.
+ * Cookie session plus a Bearer JWT for `/api/sync/*`. The gateway can reject a
+ * missing token; Hono still identifies the user from the session cookie.
  *
  * One call is one request: the library sizes each batch (`syncPreset`) and
  * splits it further on HTTP 413, which it detects via `SyncPushError.status`.
@@ -118,7 +119,7 @@ export function createCookieSyncTransport(): SyncTransport {
       const response = await fetch(SYNC_URL, {
         method: "POST",
         credentials: "include",
-        headers: { "Content-Type": "application/json" },
+        headers: await syncAuthHeaders({ extra: { "Content-Type": "application/json" } }),
         body,
       });
       if (!response.ok) {
@@ -144,7 +145,7 @@ export function createCookieSyncTransport(): SyncTransport {
       const response = await fetch(url, {
         method: "GET",
         credentials: "include",
-        headers: { Accept: "application/json" },
+        headers: await syncAuthHeaders({ extra: { Accept: "application/json" } }),
       });
       if (!response.ok) {
         const body = await response.text();

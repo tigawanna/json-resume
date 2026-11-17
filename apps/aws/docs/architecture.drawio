@@ -7,10 +7,10 @@
                 <mxCell id="title" value="Résumé sync log — architecture" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=22;fontStyle=1;fontColor=#102033;" parent="1" vertex="1">
                     <mxGeometry x="40" y="16" width="1200" height="36" as="geometry"/>
                 </mxCell>
-                <mxCell id="subtitle" value="Devices use /api/v1 through API Gateway. Sync Lambda asks the same web function directly, with IAM, whether the user is allowed. That call skips the public gateway and does not use /api/v1." style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=13;fontColor=#243044;" parent="1" vertex="1">
+                <mxCell id="subtitle" value="Devices use /api/* through API Gateway; only /api/sync/* is JWT-checked there. Sync Lambda invokes the API Lambda directly, with IAM, to ask whether the user is allowed. That call skips the public gateway." style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=13;fontColor=#243044;" parent="1" vertex="1">
                     <mxGeometry x="40" y="52" width="1400" height="28" as="geometry"/>
                 </mxCell>
-                <mxCell id="lane_api" value="API Lambda  ·  one web function" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;dashPattern=8 6;arcSize=3;fillColor=#f7f9fc;strokeColor=#5d7394;strokeWidth=1.5;fontColor=#102033;fontSize=14;fontStyle=1;align=left;verticalAlign=top;spacingLeft=16;spacingTop=8;" parent="1" vertex="1">
+                <mxCell id="lane_api" value="API Lambda  ·  one function" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;dashPattern=8 6;arcSize=3;fillColor=#f7f9fc;strokeColor=#5d7394;strokeWidth=1.5;fontColor=#102033;fontSize=14;fontStyle=1;align=left;verticalAlign=top;spacingLeft=16;spacingTop=8;" parent="1" vertex="1">
                     <mxGeometry x="180" y="97" width="1240" height="330" as="geometry"/>
                 </mxCell>
                 <mxCell id="lane_sync" value="Sync stack  ·  DynamoDB + Lambda" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;dashPattern=8 6;arcSize=3;fillColor=#f7f9fc;strokeColor=#5d7394;strokeWidth=1.5;fontColor=#102033;fontSize=14;fontStyle=1;align=left;verticalAlign=top;spacingLeft=16;spacingTop=8;" parent="1" vertex="1">
@@ -19,10 +19,10 @@
                 <mxCell id="lane_mat" value="Materialization  ·  DynamoDB Streams" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;dashPattern=8 6;arcSize=3;fillColor=#f7f9fc;strokeColor=#5d7394;strokeWidth=1.5;fontColor=#102033;fontSize=14;fontStyle=1;align=left;verticalAlign=top;spacingLeft=16;spacingTop=8;" parent="1" vertex="1">
                     <mxGeometry x="220" y="740" width="1240" height="230" as="geometry"/>
                 </mxCell>
-                <mxCell id="api_block" value="API Lambda web function" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e7f0fc;strokeColor=#1f4e89;strokeWidth=2;fontColor=#102033;fontSize=15;fontStyle=1;align=left;verticalAlign=top;spacingLeft=16;spacingTop=10;" vertex="1" parent="1">
+                <mxCell id="api_block" value="API Lambda" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e7f0fc;strokeColor=#1f4e89;strokeWidth=2;fontColor=#102033;fontSize=15;fontStyle=1;align=left;verticalAlign=top;spacingLeft=16;spacingTop=10;" vertex="1" parent="1">
                     <mxGeometry x="500" y="150" width="900" height="250" as="geometry"/>
                 </mxCell>
-                <mxCell id="api_note" value="Mounts the Hono app as this function's handler. Public callers use /api/v1: authentication, credits, the waitlist, and the projected tables. A device reads GET /api/v1/credit-status. Code inside this process calls the credit function directly and skips HTTP." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#1f4e89;fontColor=#102033;fontSize=13;align=left;verticalAlign=middle;spacing=10;" vertex="1" parent="1">
+                <mxCell id="api_note" value="Mounts the Hono app as this function's handler. Public callers use /api/*: authentication, credits, the waitlist, and the projected tables. A device reads GET /api/credits. Code inside this process calls the credit function directly and skips HTTP." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#1f4e89;fontColor=#102033;fontSize=13;align=left;verticalAlign=middle;spacing=10;" vertex="1" parent="1">
                     <mxGeometry x="516" y="186" width="720" height="88" as="geometry"/>
                 </mxCell>
                 <mxCell id="tables_projected" value="Projected tables" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d6e6fa;strokeColor=#1f4e89;fontColor=#102033;fontSize=13;fontStyle=1;align=center;verticalAlign=middle;" parent="1" vertex="1">
@@ -37,16 +37,16 @@
                 <mxCell id="tables_auth" value="Better auth tables" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d6e6fa;strokeColor=#1f4e89;fontColor=#102033;fontSize=13;fontStyle=1;align=center;verticalAlign=middle;" vertex="1" parent="1">
                     <mxGeometry x="952" y="286" width="150" height="40" as="geometry"/>
                 </mxCell>
-                <mxCell id="entity_caption" value="These live in one Turso database (Postgres later). GET /api/v1/credit-status reads the wallet here." style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=12;fontColor=#102033;" vertex="1" parent="1">
+                <mxCell id="entity_caption" value="These live in one Turso database (Postgres later). GET /api/credits reads the wallet here." style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=12;fontColor=#102033;" vertex="1" parent="1">
                     <mxGeometry x="516" y="334" width="620" height="28" as="geometry"/>
                 </mxCell>
-                <mxCell id="bubble_sync" value="Sync Lambda — one function in front of the log. Before it appends or queries, it asks the web function if this user is allowed. That call uses the web function endpoint with IAM and does not go through API Gateway or /api/v1. It still never reads Turso itself." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff4e5;strokeColor=#c46a00;fontColor=#3a2408;fontSize=13;align=left;verticalAlign=middle;spacing=12;" parent="1" vertex="1">
+                <mxCell id="bubble_sync" value="Sync Lambda — one function in front of the log. Before it appends or queries, it asks the API Lambda if this user is allowed. That call is an IAM invoke and does not go through API Gateway. It still never reads Turso itself." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff4e5;strokeColor=#c46a00;fontColor=#3a2408;fontSize=13;align=left;verticalAlign=middle;spacing=12;" parent="1" vertex="1">
                     <mxGeometry x="460" y="520" width="640" height="110" as="geometry"/>
                 </mxCell>
                 <mxCell id="streams" value="DynamoDB Streams change stream on the event log" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#efe6fb;strokeColor=#5b2d9e;fontColor=#2a1248;fontSize=13;fontStyle=1;align=center;verticalAlign=middle;spacing=8;" parent="1" vertex="1">
                     <mxGeometry x="280" y="810" width="250" height="90" as="geometry"/>
                 </mxCell>
-                <mxCell id="bubble_mat" value="Stream materializer — not a web function. The stream invokes it, and it writes projected tables into the API Lambda's Turso database. A device that only syncs never needs those tables." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#efe6fb;strokeColor=#5b2d9e;fontColor=#2a1248;fontSize=13;align=left;verticalAlign=middle;spacing=12;" parent="1" vertex="1">
+                <mxCell id="bubble_mat" value="Stream materializer. The stream invokes it, and it writes projected tables into the API Lambda's Turso database. A device that only syncs never needs those tables." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#efe6fb;strokeColor=#5b2d9e;fontColor=#2a1248;fontSize=13;align=left;verticalAlign=middle;spacing=12;" parent="1" vertex="1">
                     <mxGeometry x="820" y="800" width="560" height="110" as="geometry"/>
                 </mxCell>
                 <mxCell id="device" value="Device" style="sketch=0;points=[[0,0,0],[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0,0],[0,1,0],[0.25,1,0],[0.5,1,0],[0.75,1,0],[1,1,0],[0,0.25,0],[0,0.5,0],[0,0.75,0],[1,0.25,0],[1,0.5,0],[1,0.75,0]];outlineConnect=0;fontColor=#232F3E;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.client;fillColor=#232F3D" parent="1" vertex="1">
@@ -75,10 +75,10 @@
                         </Array>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="e2" value="ANY /api/v1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=2;strokeColor=#1f4e89;endArrow=block;endFill=1;fontSize=12;fontColor=#102033;labelBackgroundColor=#ffffff;exitX=1;exitY=0.5;entryX=0;entryY=0.3;" parent="1" source="api_gateway" target="api_block" edge="1">
+                <mxCell id="e2" value="ANY /api/*" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=2;strokeColor=#1f4e89;endArrow=block;endFill=1;fontSize=12;fontColor=#102033;labelBackgroundColor=#ffffff;exitX=1;exitY=0.5;entryX=0;entryY=0.3;" parent="1" source="api_gateway" target="api_block" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="e4" value="GET /api/v1/credit-status → proceed | stop" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=2;strokeColor=#1f4e89;endArrow=block;endFill=1;fontSize=12;fontColor=#102033;labelBackgroundColor=#ffffff;exitX=0.5;exitY=0;entryX=0.5;entryY=0;" parent="1" source="api_block" target="device" edge="1">
+                <mxCell id="e4" value="GET /api/credits → proceed | stop" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=2;strokeColor=#1f4e89;endArrow=block;endFill=1;fontSize=12;fontColor=#102033;labelBackgroundColor=#ffffff;exitX=0.5;exitY=0;entryX=0.5;entryY=0;" parent="1" source="api_block" target="device" edge="1">
                     <mxGeometry relative="1" as="geometry">
                         <Array as="points">
                             <mxPoint x="950" y="86"/>
@@ -86,7 +86,7 @@
                         </Array>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="e5" value="5. if proceed: POST / GET /sync/events" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=2;strokeColor=#c46a00;endArrow=block;endFill=1;fontSize=12;fontColor=#3a2408;labelBackgroundColor=#ffffff;exitX=0;exitY=0.5;entryX=0;entryY=0.5;" parent="1" source="api_gateway" target="sync_lambda" edge="1">
+                <mxCell id="e5" value="5. if proceed: POST / GET /api/sync/events (JWT)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=2;strokeColor=#c46a00;endArrow=block;endFill=1;fontSize=12;fontColor=#3a2408;labelBackgroundColor=#ffffff;exitX=0;exitY=0.5;entryX=0;entryY=0.5;" parent="1" source="api_gateway" target="sync_lambda" edge="1">
                     <mxGeometry x="-0.1089" y="12" relative="1" as="geometry">
                         <Array as="points">
                             <mxPoint x="248" y="222"/>
@@ -115,7 +115,7 @@
                 <mxCell id="e8" value="8. trigger" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=2;strokeColor=#5b2d9e;endArrow=block;endFill=1;fontSize=12;fontColor=#2a1248;labelBackgroundColor=#ffffff;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" parent="1" source="streams" target="materializer" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="e10" value="allowed? IAM to *.lambda-web, no /api/v1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;dashPattern=8 4;strokeWidth=2;strokeColor=#c46a00;endArrow=block;endFill=1;fontSize=12;fontColor=#3a2408;labelBackgroundColor=#ffffff;exitX=0.5;exitY=0;entryX=0.22;entryY=1;" parent="1" source="sync_lambda" target="api_block" edge="1">
+                <mxCell id="e10" value="allowed? IAM invoke, no gateway" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;dashPattern=8 4;strokeWidth=2;strokeColor=#c46a00;endArrow=block;endFill=1;fontSize=12;fontColor=#3a2408;labelBackgroundColor=#ffffff;exitX=0.5;exitY=0;entryX=0.22;entryY=1;" parent="1" source="sync_lambda" target="api_block" edge="1">
                     <mxGeometry relative="1" as="geometry">
                         <Array as="points">
                             <mxPoint x="312" y="430"/>

@@ -1,12 +1,12 @@
 # AWS architecture
 
-This package is the plan for moving the product onto AWS when usage justifies the bill. Nothing is deployed. About 10 to 20 users a week does not pay for a standing API Gateway, a web function, DynamoDB, CloudFront, and a database. Turso and the current host stay the running system. This CDK app is what `cdk deploy` would build on the day that changes.
+This package is the plan for moving the product onto AWS when usage justifies the bill. Nothing is deployed. About 10 to 20 users a week does not pay for a standing API Gateway, an API Lambda, DynamoDB, CloudFront, and a database. Turso and the current host stay the running system. This CDK app is what `cdk deploy` would build on the day that changes.
 
 The split is deliberate. The API stays a portable Node process. Sync is the part that is allowed to grow into AWS.
 
 ### The API mounts on any fetch handler
 
-`apps/api` is a Hono app. Its public surface is `app.fetch`, the standard Fetch handler. Node serves it today. A Lambda web function, a Worker, or another host can take the same object later. Routes, authentication, credits, the waitlist, and the projected tables stay inside that process.
+`apps/api` is a Hono app. Its public surface is `app.fetch`, the standard Fetch handler. Node serves it today. A Lambda (through `hono/aws-lambda`), a Worker, or another host can take the same object later. Routes, authentication, credits, the waitlist, and the projected tables stay inside that process.
 
 ```ts
 import { serve } from "@hono/node-server";
@@ -15,19 +15,14 @@ import { app } from "@repo/api/app";
 serve({ fetch: app.fetch, port: Number(process.env.PORT ?? 8080) });
 ```
 
-On AWS, API Gateway is only the public door. It rejects a missing or expired JWT, applies the rate limit, then forwards `ANY /api/v1` to the web function. A device still asks `GET /api/v1/credit-status`. Code already inside the Hono process calls the credit function directly and skips HTTP.
+On AWS, API Gateway is only the public door. It applies the rate limit and forwards every `/api/*` path to the API Lambda. Only `/api/sync/*` carries a JWT check at the gateway. The rest, including Better Auth at `/api/auth/*`, uses session cookies checked inside Hono. A device still asks `GET /api/credits`. Code already inside the Hono process calls the credit function directly and skips HTTP.
 
 ### Sync is coupled to AWS primitives
 
-Sync is its own Lambda in front of a DynamoDB event log. It never opens the API database. Before a push or a pull it asks the web function whether the user is allowed, over IAM, on the function's own endpoint (`*.lambda-web.<region>.on.aws`). That call skips the public gateway and the `/api/v1` prefix.
+Sync is its own Lambda in front of a DynamoDB event log. It never opens the API database. Before a push or a pull it asks the API whether the user is allowed by invoking the API Lambda directly over IAM. That call skips the public gateway.
 
 ```ts
-sync.addToRolePolicy(
-  new PolicyStatement({
-    actions: ["lambda:InvokeWebFunctionEndpoint"],
-    resources: [webFunctionEndpointArn],
-  }),
-);
+api.grantInvoke(sync);
 ```
 
 That coupling is the scalable half, and it is the reason sync is not folded into the Hono app:
@@ -62,18 +57,17 @@ CloudFront serves the built files in `apps/web/dist/client`. There is no other f
 
 The API database moves to RDS for PostgreSQL on the smallest instance, in the same Region as the API. Postgres on RDS has higher availability and durability than the current hosted database, and the instance sits on the AWS network next to the Lambda that reads it. That same instance loads `pgvector` and full-text search, which the premium remote agent tools use for embeddings and document search. The sync log stays on DynamoDB. The API Lambda keeps the same routes. Only the database URL changes.
 
-`docs/architecture.drawio` is the plan, drawn by hand. The picture below is the CDK app itself. `pnpm --filter @repo/aws build` synthesizes the stacks and rewrites `docs/cdk.png`, so this preview changes when the stacks change.
-
-![CDK stacks](docs/cdk.png)
+`docs/architecture.drawio` is the plan, drawn by hand.
 
 ## Why each piece
 
 | Piece | Choice | Why |
 |---|---|---|
-| API process | Lambda web function, not a per-request invoke | The Hono app stays open and takes many concurrent requests in one environment. A Lambda proxy integration would start one invoke per request and throw that away. |
-| Public front door | API Gateway HTTP API in front of `/api/v1` | The gateway checks the JWT before the web function runs. A missing or expired token is rejected there, so we never call the auth service and never spend a concurrency slot. The gateway also throttles. |
-| Client signals | Three different answers | `401` means log in again and get a new JWT. Retrying the same token does nothing. `429` carries `Retry-After`, so the client waits out the rate limit. A credit stop from `GET /api/v1/credit-status` is the payment signal. Upgrading the plan is what changes that, not the throttle header. |
-| Sync check | IAM call to the web function endpoint | Sync Lambda asks the same Hono app if the user is allowed, on `*.lambda-web.<region>.on.aws`, with no `/api/v1` and no public gateway. Code inside the Hono process calls the credit function directly. |
+| API process | One Lambda running the Hono app through `hono/aws-lambda` | The same `app` the Node server mounts. Routes, auth, credits and the waitlist stay in one function with one database client. |
+| Secrets | Secrets Manager, one JSON secret | Database URL and token, the Better Auth secret, GitHub OAuth and the cron secret stay out of the template and the Lambda config. The function reads them on cold start. |
+| Public front door | API Gateway HTTP API in front of `/api/*` | The gateway throttles everything. On `/api/sync/*` it also checks the JWT before the Lambda runs, so a missing or expired token never spends a concurrency slot. Other routes keep Better Auth cookies, because a gateway authorizer would block `/api/auth/*` logins. |
+| Client signals | Three different answers | On sync, `401` means log in again and get a new JWT. Retrying the same token does nothing. `429` carries `Retry-After`, so the client waits out the rate limit. A credit stop from `GET /api/credits` is the payment signal. Upgrading the plan is what changes that, not the throttle header. |
+| Sync check | IAM invoke of the API Lambda | Sync Lambda asks the same Hono app if the user is allowed, with no public gateway in between. Code inside the Hono process calls the credit function directly. |
 | Event log | DynamoDB | The log is an append and a sequence query, not a join. One résumé is about 70 small items. On-demand DynamoDB stays inside the free allowance far past the current 10–20 users a week. |
 | Projected tables | A stream materializer, separate from Sync Lambda | DynamoDB Streams invokes a second function that writes the projected tables into RDS for PostgreSQL. Sync Lambda never opens that database. A device that only syncs never needs those tables. |
 | Site | CloudFront in front of the built web app | The web build is static files. CloudFront serves `apps/web/dist/client`. It is not part of the request path for sync or credits. |
@@ -82,16 +76,37 @@ The API database moves to RDS for PostgreSQL on the smallest instance, in the sa
 
 Floci is the local AWS emulator. It does not bill an account. Start the one you already have, point the AWS tools at it, then deploy this package there.
 
+Docker must be running. From `apps/aws`:
+
 ```bash
 floci start
 eval "$(floci env)"
-pnpm --filter @repo/aws exec cdk bootstrap
-pnpm --filter @repo/aws exec cdk deploy --all --require-approval never
+export CDK_DEFAULT_ACCOUNT=000000000000
+set -a; source ../web/.env; set +a   # the API env vars (DATABASE_URL, BETTER_AUTH_SECRET, GITHUB_*)
+pnpm exec cdk bootstrap aws://000000000000/us-east-1
+pnpm exec cdk deploy --all -c web=true --require-approval never
+curl http://<ApiUrl id>.execute-api.localhost.floci.io:4566/api/health
 ```
 
 `floci env` sets `AWS_ENDPOINT_URL` to the emulator (port 4566) and dummy credentials. `cdk deploy` then talks to that endpoint. `floci stop` tears the emulator down. The data goes with it unless you started Floci with `--persist`.
 
-Treat a failed resource as a gap in the emulator. Lambda web functions and the HTTP API JWT authorizer may not exist there yet. That is a reason to keep iterating locally, not a reason to deploy this to a paid account.
+Secrets (`DATABASE_URL`, `DATABASE_AUTH_TOKEN`, `BETTER_AUTH_SECRET`, `GITHUB_CLIENT_*`, `CRON_SECRET`) go into the `resume-api/secrets` Secrets Manager secret. The Lambda only gets its ARN and loads the values before importing the app. Plain config (`BETTER_AUTH_URL`, `FRONTEND_URL`, `BETTER_AUTH_TRUSTED_ORIGINS`, `CREDITS_*`) stays as Lambda env vars.
+
+- **On Floci**, the secret is seeded from your shell so one `cdk deploy` runs end to end. Those values do pass through the template, which is fine for an emulator.
+- **On a real account**, CDK only generates `BETTER_AUTH_SECRET` and keeps the secret when the stack is deleted. Fill in the rest once, outside the template:
+
+```bash
+aws secretsmanager put-secret-value --secret-id resume-api/secrets \
+  --secret-string '{"BETTER_AUTH_SECRET":"…","DATABASE_URL":"libsql://…","DATABASE_AUTH_TOKEN":"…","GITHUB_CLIENT_ID":"…","GITHUB_CLIENT_SECRET":"…"}'
+```
+
+`DATABASE_URL` must be a remote `libsql://` or `https://` URL. The API uses the libsql HTTP client everywhere, so a `file:` database is only for tests.
+
+The API issues ES256 JWTs (`GET /api/auth/token`) and publishes JWKS at `/api/auth/jwks`. OpenID discovery is `GET {BETTER_AUTH_URL}/.well-known/openid-configuration`. The web sync client sends `Authorization: Bearer` on `/api/sync/*` and still sends the session cookie so Hono can identify the user.
+
+On a real account the gateway JWT authorizer turns on automatically, using `BETTER_AUTH_URL` as issuer and audience. Override with `SYNC_JWT_ISSUER` / `SYNC_JWT_AUDIENCE` if those differ. Floci leaves it off unless you set `SYNC_JWT_ISSUER` to a URL the authorizer can fetch. Only `GET` and `POST` on `/api/sync/*` get the authorizer; `OPTIONS` and `/api/auth/*` do not.
+
+Known Floci gaps: CDK custom-resource Lambdas cannot reach S3 inside the emulator. When `AWS_ENDPOINT_URL` is set, the Web stack skips auto-delete and the site upload. The bucket and distribution are created empty.
 
 ## Sync log sizing
 
@@ -179,47 +194,47 @@ While the account is under the caps, the marginal cost of another user is $0. Th
 
 ## What the stacks deploy
 
-`bin/app.ts` is three stacks. None of them are wired to a live account.
+`bin/app.ts` has three stacks. None of them are wired to a live account. What is built today:
 
-- **Api** bundles `src/api-server.ts`, which serves the Hono app from `@repo/api`. That asset is the Lambda web function. The HTTP API in front of it is the public `/api/v1` proxy (JWT and throttle). It is not a Lambda proxy integration, because that would be one invoke per request and would throw away the web function's concurrency.
-- **Sync** is an event function for the log, plus permission to call the web function endpoint with `lambda:InvokeWebFunctionEndpoint`.
-- **Web** uploads `apps/web/dist/client` to S3 and puts CloudFront in front of it. Build the web app before a synth that includes this stack.
+- **Api** bundles `src/api-server.ts`, which wraps `app` from `@repo/api/app` with `hono/aws-lambda`. `apps/api` is not modified for Lambda. The handler loads `resume-api/secrets` from Secrets Manager into `process.env`, then imports the app. `NODE_ENV=production` turns off the file log drain. An HTTP API forwards every path (`/api/*`, including Better Auth) to it, with a stage throttle of 50 requests per second and a burst of 100. `GET` and `POST` on `/api/sync/*` get a JWT authorizer on a real account (`BETTER_AUTH_URL` as issuer). Floci leaves that off unless `SYNC_JWT_ISSUER` is set.
+- **Sync** is the `resume-sync-events` DynamoDB table (`userId` + `seq`, on-demand, stream on) and a placeholder function that can read and write it. The live sync routes still run inside the API.
+- **Web** is opt-in with `-c web=true`. It creates an S3 bucket behind CloudFront and uploads `apps/web/dist/client`, or a placeholder page when no build exists.
 
 Local checks, when you want them, are the AWS emulators or a local API Gateway stand-in. They are for proving the handler, not for running the product.
 
 ## Architecture
 
-Two stacks. Sync is DynamoDB and Lambda. Everything that queries rows, including projection, wallets, and remote MCP, stays on the existing API. The device never calls Lambda directly.
+This is the target design, not all of it built yet (see "What the stacks deploy"). Sync is DynamoDB and Lambda. Everything that queries rows, including projection, wallets, and remote MCP, stays on the existing API. The device never calls Lambda directly.
 
 ```
 device
   │
-  └─ API Gateway  (reject missing or expired JWT)
+  └─ API Gateway  (throttle)
         │
-        ├─ ANY /api/v1                  API Lambda web function (RDS PostgreSQL)
+        ├─ ANY /api/*                   API Lambda (RDS PostgreSQL), cookie auth
         │     mounts the Hono app: authentication, credits,
         │     waitlist, projected tables
-        │     GET /api/v1/credit-status → proceed | stop
+        │     GET /api/credits → proceed | stop
         │
-        └─ if proceed
-              POST /sync/events         Sync Lambda → DynamoDB log
-              GET  /sync/events         Sync Lambda → DynamoDB log
+        └─ if proceed  (reject missing or expired JWT)
+              POST /api/sync/events     Sync Lambda → DynamoDB log
+              GET  /api/sync/events     Sync Lambda → DynamoDB log
 
 Sync Lambda
-  └─ IAM to the web function endpoint (*.lambda-web.<region>.on.aws)
-        allowed?  — no API Gateway, no /api/v1
+  └─ IAM invoke of the API Lambda
+        allowed?  — no API Gateway
 ```
 
-**Sync Lambda.** One function in front of the event log. Push appends events for the session user and returns the new per-user sequence. Pull queries `seq` greater than the cursor. Before either of those, it asks the API Lambda whether this user is allowed to sync. That call goes straight to the web function endpoint with IAM auth. It does not pass through API Gateway, and the path does not include `/api/v1`. The same long-lived Hono process answers it. Sync Lambda still does not open the API database, does not read the wallet itself, and does not project. A device that only syncs never needs the projected tables. "My résumés" is not a query this function can answer; the server only has the log.
+**Sync Lambda.** One function in front of the event log. Push appends events for the session user and returns the new per-user sequence. Pull queries `seq` greater than the cursor. Before either of those, it asks the API Lambda whether this user is allowed to sync. That call invokes the API Lambda directly with IAM auth and does not pass through API Gateway. The same Hono app answers it. Sync Lambda still does not open the API database, does not read the wallet itself, and does not project. A device that only syncs never needs the projected tables. "My résumés" is not a query this function can answer; the server only has the log.
 
-**Who calls the web function.** A device uses the public path, `GET /api/v1/credit-status`, through API Gateway. A Lambda in this account, including Sync Lambda, calls `*.lambda-web.<region>.on.aws` with IAM and skips that prefix. Code that is already inside the Hono process calls the credit function directly and skips HTTP.
+**Who calls the API Lambda.** A device uses the public path, `GET /api/credits`, through API Gateway. A Lambda in this account, including Sync Lambda, invokes it directly with IAM. Code that is already inside the Hono process calls the credit function directly and skips HTTP.
 
-**API Gateway.** `/api/v1` and the sync event routes both arrive here. The authorizer rejects a call when the JWT is missing or expired. `/api/v1` is one HTTP proxy into the API Lambda. Credit-status is not its own gateway integration.
+**API Gateway.** All of `/api/*` arrives here. The sync event routes (`/api/sync/*`) have a JWT authorizer that rejects a missing or expired token. Every other route is one HTTP proxy into the API Lambda, where Better Auth checks the session cookie. Credits is not its own gateway integration.
 
-**Credit gate.** The device can call `GET /api/v1/credit-status` before it syncs, so an empty wallet never starts a sync request. Sync Lambda repeats the check itself: it asks the web function if the user is allowed, and it refuses the push or pull when the answer is no. That is the check that protects the log. Charging still happens in the web function, against the wallet in RDS. The projector no longer decides billing.
+**Credit gate.** The device can call `GET /api/credits` before it syncs, so an empty wallet never starts a sync request. Sync Lambda repeats the check itself: it asks the API Lambda if the user is allowed, and it refuses the push or pull when the answer is no. That is the check that protects the log. Charging still happens in the API Lambda, against the wallet in RDS. The projector no longer decides billing.
 
-**API Lambda.** One web function mounts the Hono app as its handler. API Gateway forwards all of `/api/v1` to it after the JWT check. The function serves authentication, the credit wallet and ledger, the waitlist, and the projected résumé tables. Those tables share one RDS for PostgreSQL database, and a credit read joins the wallet to the waitlist entry. Splitting them into their own functions would add a cold start and a second database client without a boundary the request needs.
+**API Lambda.** One function mounts the Hono app as its handler. API Gateway forwards all of `/api/*` to it. The function serves authentication, the credit wallet and ledger, the waitlist, and the projected résumé tables. Those tables share one RDS for PostgreSQL database, and a credit read joins the wallet to the waitlist entry. Splitting them into their own functions would add a cold start and a second database client without a boundary the request needs.
 
-The materializer is the other function in this stack. It is not a web function. DynamoDB Streams invokes it, and it writes the projected tables into the same RDS database the API Lambda reads. Sync Lambda never shares this database.
+The materializer is the other function in this stack. DynamoDB Streams invokes it, and it writes the projected tables into the same RDS database the API Lambda reads. Sync Lambda never shares this database.
 
 Projected tables, wallets, and the waitlist live on that RDS instance. `pgvector` and full-text search on it back the premium remote agent tools. The function split and the sync log stay as they are. Only the database URL changes.

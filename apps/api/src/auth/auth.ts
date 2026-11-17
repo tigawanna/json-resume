@@ -8,6 +8,7 @@ import { multiSession } from "better-auth/plugins/multi-session";
 import { organization } from "better-auth/plugins/organization";
 import * as authSchema from "@repo/db/schema/auth-schema";
 import { type AppDb, getDb } from "@api/db/client";
+import { jwtPlugin } from "@api/auth/jwt";
 import { env } from "@api/env";
 
 /**
@@ -56,6 +57,7 @@ export function createAuth({ db }: { db: AppDb }) {
         roles: organizationRoles,
       }),
       multiSession(),
+      jwtPlugin(),
       apiKey({
         defaultPrefix: "ajr",
         rateLimit: {

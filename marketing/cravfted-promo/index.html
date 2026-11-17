@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>CraVfted — Product Promo</title>
+    <link rel="stylesheet" href="assets/styles.css" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="timeline.js" defer></script>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="24"
+      data-width="1920"
+      data-height="1080"
+    >
+      <div class="backdrop-grid"></div>
+      <div class="backdrop-glow"></div>
+
+      <!-- 1 · Brand intro -->
+      <section
+        id="scene-intro"
+        class="scene scene-intro"
+        data-composition-id="intro"
+        data-start="0"
+        data-duration="1.6"
+        data-track-index="1"
+      >
+        <div class="intro-lockup">
+          <img class="intro-mark" src="assets/logo.svg" alt="" />
+          <div class="intro-wordmark">CraVfted</div>
+          <div class="intro-rule"></div>
+        </div>
+      </section>
+
+      <!-- 2 · Problem -->
+      <section
+        id="scene-problem"
+        class="scene scene-problem"
+        data-composition-id="problem"
+        data-start="1.6"
+        data-duration="3.6"
+        data-track-index="1"
+      >
+        <div class="eyebrow">THE OLD WAY</div>
+        <div class="chips">
+          <span class="chip">Copy</span>
+          <span class="chip">Paste</span>
+          <span class="chip">Reformat</span>
+          <span class="chip">Repeat</span>
+        </div>
+        <h1 class="hero">Formatting is <em>not</em><br />the work.</h1>
+        <p class="support">Half an hour lost to margins. Every single time.</p>
+      </section>
+
+      <!-- 3 · JSON editor -->
+      <section
+        id="scene-json"
+        class="scene scene-shot"
+        data-composition-id="json"
+        data-start="5.2"
+        data-duration="4.2"
+        data-track-index="1"
+      >
+        <div class="shot-frame json-frame">
+          <div class="window-bar">
+            <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+            <span class="window-title">cravfted — resume editor</span>
+          </div>
+          <img src="assets/screens/json-tab-crop.png" alt="CraVfted JSON editor" />
+          <div class="scan-highlight"></div>
+        </div>
+        <div class="caption-block">
+          <div class="eyebrow">01 / SOURCE OF TRUTH</div>
+          <div class="caption">Résumé as typed JSON.</div>
+          <div class="subcaption">One document you actually own.</div>
+        </div>
+      </section>
+
+      <!-- 4 · Sections -->
+      <section
+        id="scene-sections"
+        class="scene scene-sections"
+        data-composition-id="sections"
+        data-start="9.4"
+        data-duration="3.2"
+        data-track-index="1"
+      >
+        <div class="eyebrow centered">02 / BUILDING BLOCKS</div>
+        <div class="cards">
+          <div class="card" data-card="0">
+            <span class="icon-mask" style="--icon: url('icons/pencil-case.svg')"></span>
+            <div class="card-title">Experience</div>
+            <div class="bar w80"></div><div class="bar w60"></div>
+          </div>
+          <div class="card" data-card="1">
+            <span class="icon-mask" style="--icon: url('icons/doculytics.svg')"></span>
+            <div class="card-title">Skills</div>
+            <div class="bar w70"></div><div class="bar w90"></div>
+          </div>
+          <div class="card" data-card="2">
+            <span class="icon-mask" style="--icon: url('icons/cabinet.svg')"></span>
+            <div class="card-title">Projects</div>
+            <div class="bar w85"></div><div class="bar w55"></div>
+          </div>
+          <div class="card" data-card="3">
+            <span class="braces">{ }</span>
+            <div class="card-title">Education</div>
+            <div class="bar w65"></div><div class="bar w75"></div>
+          </div>
+        </div>
+        <div class="caption centered">Sections you own. Reuse and remix.</div>
+        <div class="subcaption centered">Move a block, keep the layout.</div>
+      </section>
+
+      <!-- 5 · AI assistant -->
+      <section
+        id="scene-ai"
+        class="scene scene-shot"
+        data-composition-id="ai"
+        data-start="12.6"
+        data-duration="4"
+        data-track-index="1"
+      >
+        <div class="shot-frame ai-frame">
+          <div class="window-bar">
+            <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+            <span class="window-title">cravfted — AI assistant</span>
+          </div>
+          <img src="assets/screens/ai-tab-crop.png" alt="CraVfted AI assistant" />
+          <div class="chat-highlight"></div>
+        </div>
+        <div class="caption-block">
+          <div class="eyebrow">03 / YOUR MODEL, YOUR KEYS</div>
+          <div class="caption">Tweak it with any LLM.</div>
+          <div class="subcaption">Same schema in. Same layout out.</div>
+        </div>
+      </section>
+
+      <!-- 6 · Deterministic export -->
+      <section
+        id="scene-pdf"
+        class="scene scene-pdf"
+        data-composition-id="pdf"
+        data-start="16.6"
+        data-duration="3.4"
+        data-track-index="1"
+      >
+        <div class="eyebrow centered">04 / EXPORT</div>
+        <div class="pages">
+          <div class="page page-back">
+            <div class="doc-heading"></div><div class="doc-name"></div>
+            <div class="rule"></div>
+            <div class="bar w90"></div><div class="bar w80"></div><div class="bar w65"></div>
+            <div class="rule"></div>
+            <div class="bar w85"></div><div class="bar w75"></div><div class="bar w60"></div>
+          </div>
+          <div class="page page-front">
+            <div class="doc-heading"></div><div class="doc-name"></div>
+            <div class="rule"></div>
+            <div class="bar w90"></div><div class="bar w80"></div><div class="bar w65"></div>
+            <div class="rule"></div>
+            <div class="bar w85"></div><div class="bar w75"></div><div class="bar w60"></div>
+          </div>
+          <div class="checkmark">✓</div>
+        </div>
+        <div class="caption centered">Same PDF. Every time.</div>
+        <div class="subcaption centered">The layout is code, not a document.</div>
+      </section>
+
+      <!-- 7 · Outro -->
+      <section
+        id="scene-outro"
+        class="scene scene-outro"
+        data-composition-id="outro"
+        data-start="20"
+        data-duration="4"
+        data-track-index="1"
+      >
+        <img class="outro-mark" src="assets/logo.svg" alt="" />
+        <div class="outro-wordmark">CraVfted</div>
+        <div class="outro-rule"></div>
+        <div class="outro-tagline">Own your data. Own your story.</div>
+        <div class="outro-cta">Résumé as typed JSON.</div>
+      </section>
+    </div>
+  </body>
+</html>

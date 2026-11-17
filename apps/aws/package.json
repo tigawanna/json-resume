@@ -4,22 +4,19 @@
   "type": "module",
   "scripts": {
     "synth": "cdk synth",
-    "build": "cdk synth && cp cdk.out/cdkgraph/diagram.png docs/cdk.png",
-    "diagram": "cdk synth && cfn-dia draw.io -t cdk.json -c -s --stacks Api,Sync,Web -o docs/cdk.drawio -e AWS::IAM::Role AWS::IAM::Policy AWS::Lambda::LayerVersion AWS::S3::BucketPolicy AWS::CDK::Metadata && sed -i 's/fontColor=#B3B3B3/fontColor=#FFFFFF/g' docs/cdk.drawio",
+    "build": "cdk synth",
     "check-types": "tsc -b --noEmit"
   },
   "dependencies": {
-    "@hono/node-server": "^1.19.17",
-    "@repo/api": "workspace:*"
+    "@repo/api": "workspace:*",
+    "hono": "^4.13.17"
   },
   "devDependencies": {
+    "@aws-sdk/client-secrets-manager": "^3.1170.0",
+    "@types/aws-lambda": "^8.10.164",
     "@types/node": "^25.2.0",
     "aws-cdk": "^2.1135.1",
     "aws-cdk-lib": "^2.264.0",
-    "@aws-prototyping-sdk/cdk-graph": "^0.19.68",
-    "@aws-prototyping-sdk/cdk-graph-plugin-diagram": "^0.19.68",
-    "@aws-prototyping-sdk/aws-arch": "^0.19.68",
-    "@mhlabs/cfn-diagram": "^1.1.40",
     "constructs": "^10.4.2",
     "esbuild": "^0.28.2",
     "tsx": "^4.23.13",

@@ -117,6 +117,7 @@ See `apps/web/src/features/agentic-tools/README.md` for the full AI layer refere
 - `CLAUDE.md` — agent guide: stack rules, code conventions, tooling.
 - `apps/web/docs/testing-strategy.md` — unit and e2e testing approach.
 - `apps/web/src/features/agentic-tools/README.md` — AI tool layer (oRPC, MCP, tool schemas).
+- `VIDEO.md` — how to render and edit the product promo video.
 
 ## License
 

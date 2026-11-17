@@ -44,7 +44,8 @@ Lives next to the server code so the pair is visible. The browser database in `d
 
 | File                    | Entrypoint                  | Purpose                                                           |
 | ----------------------- | --------------------------- | ----------------------------------------------------------------- |
-| `sync-transport.ts`     | `createCookieSyncTransport` | Push and pull over `/api/sync/events`.                            |
+| `sync-jwt.ts`           | `getSyncAccessToken`        | `GET /api/auth/token` for the Bearer JWT on sync requests.        |
+| `sync-transport.ts`     | `createCookieSyncTransport` | Push and pull over `/api/sync/events` (cookie + Bearer JWT).      |
 | `sync-progress.ts`      | `useSyncTransferProgress`   | Upload and download counters for the sync UI.                     |
 | `sync-push-tuning.ts`   | `installSyncPushTuning`     | Shrinks the push batch after HTTP 413. Stored on the device only. |
 | `stale-replay-guard.ts` | `installStaleReplayGuard`   | Drops a replayed event when the local row is newer.               |

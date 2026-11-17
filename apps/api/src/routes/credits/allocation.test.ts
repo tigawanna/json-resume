@@ -1,6 +1,7 @@
 import { afterAll, describe, expect, it } from "vitest";
 import { eq } from "drizzle-orm";
-import { createDb, db, getDb, setDb } from "../../db/client";
+import { db, getDb, setDb } from "../../db/client";
+import { createTestDb } from "../../../tests/setup/local-db";
 import { user } from "@repo/db/schema/auth-schema";
 import { creditLedger, creditWallet } from "@repo/db/schema/credits-schema";
 import { ensureMonthlyAllocation, periodKeyOf, spendResumeCredit } from "./wallet";
@@ -63,7 +64,7 @@ describe("lazy monthly allocation", () => {
     // Drive the real allocation path through six independent connections to
     // the same throwaway database so the transactions genuinely overlap.
     const sharedDb = getDb();
-    const clients = Array.from({ length: 6 }, () => createDb({ url: process.env.DATABASE_URL! }));
+    const clients = Array.from({ length: 6 }, () => createTestDb({ url: process.env.DATABASE_URL! }));
     try {
       await Promise.all(
         // Keep the wait short: contending writers are tolerated by the

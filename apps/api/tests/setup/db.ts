@@ -29,10 +29,11 @@ const databaseDir = externalUrl ? undefined : mkdtempSync(join(tmpdir(), "ajr-ap
 const databaseUrl = externalUrl ?? `file:${join(databaseDir!, "test.sqlite")}`;
 process.env.DATABASE_URL = databaseUrl;
 
-const { createDb, setDb } = await import("@api/db/client");
+const { setDb } = await import("@api/db/client");
 const { createAuth, setAuth } = await import("@api/auth/auth");
+const { createTestDb } = await import("./local-db");
 
-const db = createDb({ url: databaseUrl });
+const db = createTestDb({ url: databaseUrl });
 await migrate(db, { migrationsFolder });
 setDb({ db });
 setAuth({ auth: createAuth({ db }) });

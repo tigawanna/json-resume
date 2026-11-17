@@ -18,11 +18,16 @@ if (process.env.NODE_ENV !== "production") {
   loadEnvFiles();
 }
 
+const REMOTE_DATABASE_URL = /^(libsql|https?|wss?):\/\//;
+
 const EnvSchema = z
   .object({
     NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
     PORT: z.coerce.number().default(3100),
-    /** Turso / libsql URL (`libsql://…` or `file:…`). Same database as `apps/web`. */
+    /**
+     * Remote Turso / libsql URL. Same database as `apps/web`. `file:` needs the
+     * native client, which only the test setup uses; run `turso dev` for a local server.
+     */
     DATABASE_URL: z.string().min(1),
     DATABASE_AUTH_TOKEN: z.string().optional(),
     BETTER_AUTH_SECRET: z.string().min(1),
@@ -40,6 +45,10 @@ const EnvSchema = z
     CREDITS_START_AT: z.iso.datetime().optional(),
     /** Directory for the dev NDJSON wide-event drain. */
     EVLOG_DIR: z.string().default(".evlog/logs"),
+  })
+  .refine((env) => env.NODE_ENV === "test" || REMOTE_DATABASE_URL.test(env.DATABASE_URL), {
+    path: ["DATABASE_URL"],
+    message: "use a libsql://, https:// or http:// URL",
   })
   .transform((env) => ({
     ...env,

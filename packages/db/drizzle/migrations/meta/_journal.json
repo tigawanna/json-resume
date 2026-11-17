@@ -134,6 +134,13 @@
       "when": 1794756906668,
       "tag": "0018_mean_tinkerer",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "6",
+      "when": 1794916310687,
+      "tag": "0019_kind_warpath",
+      "breakpoints": true
     }
   ]
 }

@@ -19,6 +19,7 @@ import { syncEventsRoute } from "@api/routes/sync/events";
 import { syncCompactRoute } from "@api/routes/sync/compact";
 import { projectSyncEventsRoute } from "@api/routes/cron/project-sync-events";
 import { squashSyncEventsRoute } from "@api/routes/cron/squash-sync-events";
+import { oidcDiscoveryRoute } from "@api/routes/oidc/discovery";
 
 const isProduction = env.NODE_ENV === "production";
 
@@ -80,6 +81,12 @@ export function createApp({ db, auth }: { db: AppDb; auth: Auth }) {
     .onError((error, c) => errorResponse({ c, error, isProduction }));
 }
 
-export const app = createApp({ db: getDb(), auth: getAuth() });
+const api = createApp({ db: getDb(), auth: getAuth() });
 
-export type AppType = typeof app;
+/** Discovery sits outside `/api` so API Gateway can load `{issuer}/.well-known/openid-configuration`. */
+export const app = new Hono()
+  .route("/", oidcDiscoveryRoute)
+  .route("/", api)
+  .notFound((c) => c.json(errorBody({ message: "Not Found", code: "NOT_FOUND" }), 404));
+
+export type AppType = typeof api;

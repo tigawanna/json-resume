@@ -1,0 +1,6 @@
+frames
+*.webm
+*.mov
+*.mkv
+*.mp4
+!**/dist

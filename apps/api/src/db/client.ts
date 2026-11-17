@@ -1,11 +1,14 @@
 import { schema } from "@repo/db/schema/index";
-import { drizzle } from "drizzle-orm/libsql/node";
+import { drizzle } from "drizzle-orm/libsql/web";
 import { EnhancedQueryLogger } from "drizzle-query-logger";
 import { env } from "@api/env";
 
 export type AppDb = ReturnType<typeof createDb>;
 
-/** Build a database client for a URL. The app root and tests both use this. */
+/**
+ * Build a database client for a remote URL (`libsql://`, `https://`, `http://`).
+ * The HTTP client has no native binding, so any bundler or host can ship it.
+ */
 export function createDb({ url, authToken }: { url: string; authToken?: string }) {
   return drizzle({
     connection: { url, authToken },
