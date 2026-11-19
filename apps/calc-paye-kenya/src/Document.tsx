@@ -28,7 +28,15 @@ export default function Document(props: { children: JSX.Element }) {
         <script innerHTML={BOOT_THEME} />
         <HydrationScript />
       </head>
-      <body>{props.children}</body>
+      <body>
+        {props.children}
+        <svg aria-hidden="true" style={{ position: "absolute", width: 0, height: 0, overflow: "hidden" }}>
+          <filter id="theme-wave" x="-20%" y="-20%" width="140%" height="140%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.018 0.03" numOctaves="2" seed="7" result="noise" />
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale="22" xChannelSelector="R" yChannelSelector="G" />
+          </filter>
+        </svg>
+      </body>
     </html>
   );
 }

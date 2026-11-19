@@ -161,9 +161,24 @@ export function CalculatorProvider(props: { children: JSX.Element }) {
 
   function toggleTheme(): void {
     const next: Theme = theme() === "dark" ? "light" : "dark";
-    setTheme(next);
     saveTheme({ theme: next });
-    applyTheme({ theme: next });
+    let applied = false;
+    const commit = () => {
+      if (applied) return;
+      applied = true;
+      setTheme(next);
+      applyTheme({ theme: next });
+    };
+
+    if (typeof document !== "undefined" && typeof document.startViewTransition === "function") {
+      const transition = document.startViewTransition(commit);
+      void transition.finished.catch(() => {});
+      void transition.updateCallbackDone.catch(() => {});
+      // Background tabs can pause frames before the transition callback runs.
+      setTimeout(commit, 250);
+    } else {
+      commit();
+    }
   }
 
   async function refreshRates(): Promise<void> {

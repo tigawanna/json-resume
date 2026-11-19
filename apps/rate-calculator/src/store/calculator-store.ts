@@ -157,8 +157,23 @@ export const useCalculatorStore = create<CalculatorState>((set, get) => ({
   toggleTheme: () => {
     const theme: Theme = get().theme === "dark" ? "light" : "dark";
     saveTheme(theme);
-    applyTheme(theme);
-    set({ theme });
+    let applied = false;
+    const commit = () => {
+      if (applied) return;
+      applied = true;
+      applyTheme(theme);
+      set({ theme });
+    };
+
+    if (typeof document !== "undefined" && typeof document.startViewTransition === "function") {
+      const transition = document.startViewTransition(commit);
+      void transition.finished.catch(() => {});
+      void transition.updateCallbackDone.catch(() => {});
+      // Background tabs can pause frames before the transition callback runs.
+      setTimeout(commit, 250);
+    } else {
+      commit();
+    }
   },
 
   refreshRates: async () => {
