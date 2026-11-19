@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d0c" />
+    <meta
+      name="description"
+      content="Calc Paye Kenya — an hourly rate, currency and KRA tax calculator for salary negotiations."
+    />
+    <title>Calc Paye Kenya — Rate & KRA calculator</title>
+    <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta property="og:title" content="Calc Paye Kenya — Rate & KRA calculator" />
+    <meta
+      property="og:description"
+      content="Convert any hourly rate across currencies and see Kenyan PAYE, NSSF, SHIF and housing levy deductions."
+    />
+    <meta property="og:image" content="/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <!-- Apply the saved theme before the first paint so reloads never flash the wrong palette. -->
+    <script>
+      (() => {
+        const root = document.documentElement;
+        try {
+          const theme = localStorage.getItem("calcpayekenya:theme") === "light" ? "light" : "dark";
+          root.classList.toggle("dark", theme === "dark");
+          root.style.colorScheme = theme;
+          document
+            .querySelector('meta[name="theme-color"]')
+            ?.setAttribute("content", theme === "dark" ? "#0b0d0c" : "#fbfbf9");
+        } catch {
+          root.classList.add("dark");
+        }
+      })();
+    </script>
+    <!-- Critical paint styles: keep the boot loader themed before React/CSS loads. -->
+    <style>
+      :root {
+        color-scheme: light;
+        --boot-bg: #fbfbf9;
+        --boot-fg: #1b1d1a;
+        --boot-muted: #5f655f;
+        --boot-green: #267d42;
+        --boot-track: rgb(38 125 66 / 0.2);
+      }
+      .dark {
+        color-scheme: dark;
+        --boot-bg: #0b0d0c;
+        --boot-fg: #e9ece6;
+        --boot-muted: #8a9189;
+        --boot-green: #56bc7d;
+        --boot-track: rgb(86 188 125 / 0.2);
+      }
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+        background: var(--boot-bg);
+        color: var(--boot-fg);
+      }
+      html {
+        scrollbar-gutter: stable;
+      }
+      body {
+        font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      #root {
+        min-height: 100vh;
+      }
+      .boot {
+        display: flex;
+        min-height: 100vh;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+      }
+      .boot__mark,
+      .boot__label {
+        margin: 0;
+      }
+      .boot__mark {
+        font-size: 1.125rem;
+        font-weight: 500;
+        letter-spacing: -0.01em;
+      }
+      .boot__mark span {
+        color: var(--boot-green);
+      }
+      .boot__spinner {
+        width: 1.25rem;
+        height: 1.25rem;
+        border: 2px solid var(--boot-track);
+        border-top-color: var(--boot-green);
+        border-radius: 9999px;
+        animation: boot-spin 0.7s linear infinite;
+      }
+      .boot__label {
+        color: var(--boot-muted);
+        font-size: 10px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+      @keyframes boot-spin {
+        to {
+          transform: rotate(1turn);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .boot__spinner {
+          animation-duration: 1.6s;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root">
+      <div class="boot" role="status" aria-live="polite">
+        <p class="boot__mark">calc paye kenya<span>.</span></p>
+        <span class="boot__spinner" aria-hidden="true"></span>
+        <p class="boot__label">Loading rates</p>
+      </div>
+    </div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

@@ -1,0 +1,31 @@
+{
+  "taxYear": "2026",
+  "reviewed": "November 2026",
+  "paye": {
+    "personalReliefAnnual": 28800,
+    "bands": [
+      { "label": "First 288,000", "upTo": 288000, "rate": 0.1 },
+      { "label": "Next 100,000", "upTo": 388000, "rate": 0.25 },
+      { "label": "Next 5,612,000", "upTo": 6000000, "rate": 0.3 },
+      { "label": "Next 3,600,000", "upTo": 9600000, "rate": 0.325 },
+      { "label": "Above 9,600,000", "upTo": null, "rate": 0.35 }
+    ]
+  },
+  "nssf": {
+    "employeeRate": 0.06,
+    "employerRate": 0.06,
+    "lowerEarningsLimit": 9000,
+    "upperEarningsLimit": 108000
+  },
+  "shif": {
+    "rate": 0.0275,
+    "minimum": 300
+  },
+  "ahl": {
+    "employeeRate": 0.015,
+    "employerRate": 0.015
+  },
+  "nita": {
+    "monthly": 50
+  }
+}
