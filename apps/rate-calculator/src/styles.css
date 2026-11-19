@@ -108,8 +108,8 @@ body {
 
   ::view-transition-new(root) {
     animation:
-      theme-bubble 620ms cubic-bezier(0.22, 0.72, 0.2, 1) both,
-      theme-ripple 620ms ease-in-out both;
+      theme-bubble 620ms linear both,
+      theme-ripple 620ms linear both;
   }
 }
 
@@ -118,16 +118,16 @@ body {
     clip-path: circle(0% at 100% 100%);
   }
   20% {
-    clip-path: circle(14% at 97% 95%);
+    clip-path: circle(31% at 97% 80%);
   }
-  42% {
-    clip-path: circle(36% at 90% 83%);
+  40% {
+    clip-path: circle(62% at 94% 60%);
   }
-  64% {
-    clip-path: circle(62% at 84% 64%);
+  60% {
+    clip-path: circle(93% at 94% 40%);
   }
-  84% {
-    clip-path: circle(88% at 94% 32%);
+  80% {
+    clip-path: circle(124% at 97% 20%);
   }
   100% {
     clip-path: circle(155% at 100% 0%);
@@ -139,8 +139,8 @@ body {
   100% {
     filter: none;
   }
-  28%,
-  72% {
+  20%,
+  80% {
     filter: url(#theme-wave);
   }
 }
