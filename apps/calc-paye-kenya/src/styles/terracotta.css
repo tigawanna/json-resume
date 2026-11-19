@@ -1,0 +1,224 @@
+/*
+ * shadcn-like skin for the unstyled Terracotta primitives.
+ * Behaviour, ARIA and keyboard handling come from Terracotta; these rules are
+ * the only thing that decides how the widgets look.
+ */
+
+[tc-button] {
+  font: inherit;
+  cursor: pointer;
+}
+
+[tc-button][tc-disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+[tc-button]:focus-visible,
+[tc-switch]:focus-visible,
+[tc-disclosure-button]:focus-visible,
+[tc-tooltip-trigger]:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.tc-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  border: 1px solid transparent;
+  border-radius: 0.35rem;
+  background: transparent;
+  color: var(--foreground);
+  font-size: 0.75rem;
+  font-weight: 400;
+  line-height: 1;
+  padding: 0.4rem 0.6rem;
+  white-space: nowrap;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+
+.tc-btn-default,
+.tc-btn-selected {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.tc-btn-default:hover,
+.tc-btn-selected:hover {
+  background: color-mix(in srgb, var(--primary) 88%, transparent);
+}
+
+.tc-btn-ghost:hover,
+.tc-btn-outline:hover {
+  background: var(--accent);
+}
+
+.tc-btn-outline {
+  border-color: var(--input);
+}
+
+.tc-btn-danger {
+  color: var(--destructive);
+}
+
+.tc-btn-danger:hover {
+  background: color-mix(in srgb, var(--destructive) 12%, transparent);
+}
+
+.tc-btn-link {
+  padding: 0;
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.tc-btn-sm {
+  height: 1.75rem;
+  padding: 0.25rem 0.6rem;
+}
+
+.tc-btn-icon {
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+}
+
+.tc-segment {
+  display: inline-flex;
+  gap: 0.15rem;
+  border: 1px solid var(--border);
+  border-radius: 0.4rem;
+  padding: 0.15rem;
+}
+
+.tc-segment .tc-btn {
+  border-radius: 0.25rem;
+}
+
+/* Switch */
+[tc-switch] {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: 1.95rem;
+  height: 1.1rem;
+  flex: none;
+  padding: 0.14rem;
+  border: 1px solid transparent;
+  border-radius: 9999px;
+  background: var(--input);
+  transition: background-color 120ms ease;
+}
+
+[tc-switch][tc-checked] {
+  background: var(--primary);
+}
+
+.switch-knob {
+  width: 0.8rem;
+  height: 0.8rem;
+  border-radius: 9999px;
+  background: var(--muted-foreground);
+  transition: translate 120ms ease, background-color 120ms ease;
+}
+
+[tc-switch][tc-checked] .switch-knob {
+  translate: 0.82rem 0;
+  background: var(--primary-foreground);
+}
+
+/* Tooltip */
+[tc-tooltip] {
+  position: relative;
+  display: inline-flex;
+}
+
+[tc-tooltip-panel] {
+  position: absolute;
+  z-index: 60;
+  inset-block-start: 100%;
+  inset-inline-start: 50%;
+  translate: -50% 0;
+  margin-block-start: 0.35rem;
+  border: 1px solid var(--border);
+  border-radius: 0.35rem;
+  background: var(--popover);
+  color: var(--foreground);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.65rem;
+  white-space: nowrap;
+  box-shadow: 0 4px 14px rgb(0 0 0 / 0.18);
+}
+
+/* Disclosure (PAYE band breakdown) */
+.disclosure-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0;
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--muted-foreground);
+}
+
+.disclosure-button:hover {
+  color: var(--foreground);
+}
+
+.disclosure-chevron {
+  transition: rotate 120ms ease;
+}
+
+[tc-disclosure-button][tc-expanded] .disclosure-chevron {
+  rotate: 90deg;
+}
+
+/* Dialog used as the currency drawer */
+[tc-dialog-overlay] {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgb(0 0 0 / 0.5);
+}
+
+[tc-dialog-panel] {
+  position: fixed;
+  z-index: 51;
+  inset-block: 0;
+  inset-inline-end: 0;
+  display: flex;
+  flex-direction: column;
+  width: min(24rem, 85vw);
+  border-inline-start: 1px solid var(--border);
+  background: var(--background);
+  padding: 1.25rem;
+  overflow-y: auto;
+}
+
+@media (max-width: 640px) {
+  [tc-dialog-panel] {
+    inset-block: auto 0;
+    inset-inline: 0;
+    width: 100%;
+    max-height: 80vh;
+    border-inline-start: 0;
+    border-block-start: 1px solid var(--border);
+    border-start-start-radius: 0.75rem;
+    border-start-end-radius: 0.75rem;
+  }
+}
+
+[tc-dialog-title] {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+[tc-dialog-description] {
+  margin: 0.35rem 0 0;
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}
+

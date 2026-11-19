@@ -1,0 +1,41 @@
+{
+  "name": "calc-paye-kenya",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port 3060",
+    "build": "vite build",
+    "preview": "vite preview --port 3060",
+    "check-types": "tsc --noEmit",
+    "test": "vitest run",
+    "gen:favicons": "tsx scripts/favicons.ts",
+    "gen:og": "tsx scripts/og.tsx"
+  },
+  "dependencies": {
+    "@solidjs/meta": "^2.0.0",
+    "@solidjs/web": "^2.0.3",
+    "solid-js": "^2.0.3",
+    "terracotta": "^2.0.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.28.0",
+    "@solidjs/babel-plugin": "^2.0.0",
+    "@solidjs/prerender": "^0.3.0",
+    "@solidjs/vite-plugin": "^3.0.1",
+    "@tailwindcss/vite": "^4.3.0",
+    "@types/node": "^25.2.0",
+    "@types/react": "^19.2.14",
+    "png-to-ico": "^3.0.2",
+    "prerender-crawler": "^0.3.0",
+    "react": "^19.2.5",
+    "seroval": "1.8.2",
+    "sharp": "^0.35.5",
+    "tailwindcss": "^4.3.0",
+    "takumi-js": "^2.20.0",
+    "tsx": "^4.23.15",
+    "typescript": "7.0.2",
+    "vite": "^8.3.8",
+    "vitest": "^5.1.1"
+  }
+}
