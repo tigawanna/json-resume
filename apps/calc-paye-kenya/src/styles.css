@@ -103,9 +103,14 @@ body {
   }
 
   ::view-transition-new(root) {
-    animation:
-      theme-bubble 620ms linear both,
-      theme-ripple 620ms linear both;
+    animation: theme-bubble 620ms linear both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
   }
 }
 
@@ -130,13 +135,3 @@ body {
   }
 }
 
-@keyframes theme-ripple {
-  0%,
-  100% {
-    filter: none;
-  }
-  20%,
-  80% {
-    filter: url(#theme-wave);
-  }
-}
