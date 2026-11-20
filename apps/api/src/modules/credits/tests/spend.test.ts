@@ -1,15 +1,15 @@
 import { afterAll, describe, expect, it } from "vitest";
 import { eq } from "drizzle-orm";
-import { db } from "../../db/client";
+import { db } from "@api/db/client";
 import { user } from "@repo/db/schema/auth-schema";
 import { creditLedger, creditWallet } from "@repo/db/schema/credits-schema";
-import { ensureMonthlyAllocation } from "@api/routes/wallet";
+import { ensureMonthlyAllocation } from "@api/modules/wallet";
 import {
   adminAdjustCredits,
   adminGrantCredits,
   InsufficientCreditsError,
   spendResumeCredit,
-} from "@api/routes/credits";
+} from "@api/modules/credits";
 import { cleanupTouchedUsers, FEB_2026, signUp } from "./test-helpers";
 
 afterAll(cleanupTouchedUsers);

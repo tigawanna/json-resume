@@ -2,8 +2,8 @@ import { CREDIT_POLICY } from "@repo/isomorphic/credits-policy";
 import { eq } from "drizzle-orm";
 import { db } from "../../db/client";
 import { creditLedger, creditWallet } from "@repo/db/schema/credits-schema";
-import { ensureMonthlyAllocation } from "@api/routes/wallet/allocation";
-import { ensureWallet, readWallet } from "@api/routes/wallet/store";
+import { ensureMonthlyAllocation } from "@api/modules/wallet/allocation";
+import { ensureWallet, readWallet } from "@api/modules/wallet/store";
 import { InsufficientCreditsError } from "./errors";
 
 export type SpendResult =

@@ -12,7 +12,7 @@ import {
   resumeSummary,
 } from "@repo/db/schema/resume";
 import { syncEvent } from "@repo/db/schema/sync-schema";
-import { cleanupTouchedUsers, signUp } from "../../../routes/credits/test-helpers";
+import { cleanupTouchedUsers, signUp } from "@api/modules/credits/tests/test-helpers";
 import { projectUnappliedSyncEvents } from "./project-legacy.server";
 
 afterAll(cleanupTouchedUsers);

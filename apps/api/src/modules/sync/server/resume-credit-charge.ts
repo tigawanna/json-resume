@@ -3,7 +3,7 @@ import {
   InsufficientCreditsError,
   recordResumeOverdraft,
   spendResumeCredit,
-} from "@api/routes/credits";
+} from "@api/modules/credits";
 import { unwrapUnknownError } from "@api/utils/errors";
 import { log } from "evlog";
 

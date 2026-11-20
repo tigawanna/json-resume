@@ -3,7 +3,7 @@ import {
   AdjustmentBelowZeroError,
   BannedUserError,
   UnknownUserError,
-} from "@api/routes/credits";
+} from "@api/modules/credits";
 import type { AppEnv } from "@api/types";
 import type { Context } from "hono";
 

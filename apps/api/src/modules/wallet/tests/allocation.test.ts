@@ -1,11 +1,11 @@
 import { afterAll, describe, expect, it } from "vitest";
 import { eq } from "drizzle-orm";
-import { db, getDb, setDb } from "../../db/client";
-import { createTestDb } from "../../../tests/setup/local-db";
+import { db, getDb, setDb } from "@api/db/client";
+import { createTestDb } from "../../../../tests/setup/local-db";
 import { user } from "@repo/db/schema/auth-schema";
 import { creditLedger, creditWallet } from "@repo/db/schema/credits-schema";
-import { spendResumeCredit } from "@api/routes/credits";
-import { ensureMonthlyAllocation, periodKeyOf } from "@api/routes/wallet";
+import { spendResumeCredit } from "@api/modules/credits";
+import { ensureMonthlyAllocation, periodKeyOf } from "@api/modules/wallet";
 import {
   cleanupTouchedUsers,
   FEB_2026,
@@ -13,7 +13,7 @@ import {
   signUp,
   walletRequest,
   type WalletResponse,
-} from "../credits/test-helpers";
+} from "@api/modules/credits/tests/test-helpers";
 
 afterAll(cleanupTouchedUsers);
 

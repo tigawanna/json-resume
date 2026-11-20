@@ -1,6 +1,6 @@
 import { requireAdmin } from "@api/auth/middleware";
 import { errorBody } from "@api/lib/http";
-import { adminAdjustCredits } from "@api/routes/credits";
+import { adminAdjustCredits } from "@api/modules/credits";
 import type { AppEnv } from "@api/types";
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";

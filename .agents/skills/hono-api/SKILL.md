@@ -29,7 +29,6 @@ apps/api/src/
     <name>.service.ts
     schema.ts            # when more than one handler shares zod
     tests/               # service + HTTP tests; do not drop *.test.ts next to impl
-  routes/<resource>/     # leftover HTTP until migrated into modules/
   lib/                   # http error helpers
 ```
 
@@ -54,7 +53,7 @@ Controllers are HTTP only (middleware, `zValidator`, `c.json`). They take inject
 
 Services hold business rules and talk to `DbService` / `AuthService`. They take one named constructor object. Tests construct them with fakes; they should not import the process-wide `db` / `auth` proxies.
 
-`createApp` binds `DbService` and `AuthService` on a fresh container. Keep `setDb` / `setAuth` until remaining `src/routes/` modules are migrated.
+`createApp` binds `DbService` and `AuthService` on a fresh container. Keep `setDb` / `setAuth` while handlers still import the process-wide `db` / `auth` proxies.
 
 ## Generate CLI
 

@@ -1,7 +1,7 @@
 import { asc, count, desc, eq } from "drizzle-orm";
 import { db } from "../../db/client";
 import { creditLedger } from "@repo/db/schema/credits-schema";
-import type { Executor } from "@api/routes/wallet/store";
+import type { Executor } from "@api/modules/wallet/store";
 
 export type LedgerPage = {
   items: Array<typeof creditLedger.$inferSelect>;

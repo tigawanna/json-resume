@@ -1,6 +1,6 @@
 import { requireSession } from "@api/auth/middleware";
 import { errorBody } from "@api/lib/http";
-import { ensureMonthlyAllocation, periodKeyOf } from "@api/routes/wallet";
+import { ensureMonthlyAllocation, periodKeyOf } from "@api/modules/wallet";
 import type { AppEnv } from "@api/types";
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";

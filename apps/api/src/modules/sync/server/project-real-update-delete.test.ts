@@ -4,7 +4,7 @@ import { creditLedger } from "@repo/db/schema/credits-schema";
 import { resume, resumeExperience } from "@repo/db/schema/resume";
 import { syncEvent } from "@repo/db/schema/sync-schema";
 import { db } from "../../../db/client";
-import { cleanupTouchedUsers, signUp } from "../../../routes/credits/test-helpers";
+import { cleanupTouchedUsers, signUp } from "@api/modules/credits/tests/test-helpers";
 import { projectUnappliedSyncEvents } from "./project-legacy.server";
 import realEvents from "./test-fixtures/real-update-delete-events.json";
 import { toSyncEvent, type FixtureEvent } from "./test-fixtures/to-sync-event";

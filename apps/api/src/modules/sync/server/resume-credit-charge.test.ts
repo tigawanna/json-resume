@@ -3,8 +3,8 @@ import { eq } from "drizzle-orm";
 import { db } from "../../../db/client";
 import { user } from "@repo/db/schema/auth-schema";
 import { creditLedger, creditWallet } from "@repo/db/schema/credits-schema";
-import { ensureMonthlyAllocation } from "../../../routes/wallet";
-import { cleanupTouchedUsers, FEB_2026, signUp } from "../../../routes/credits/test-helpers";
+import { ensureMonthlyAllocation } from "@api/modules/wallet";
+import { cleanupTouchedUsers, FEB_2026, signUp } from "@api/modules/credits/tests/test-helpers";
 import { tablesByCollection } from "./project-legacy.server";
 import {
   chargeProjectedResume,

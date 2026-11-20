@@ -1,7 +1,7 @@
 import { expect } from "vitest";
 import { eq, inArray } from "drizzle-orm";
 import { apiClient, authSignUpRequest, sessionInit } from "@api/core/testing/api-client";
-import { db } from "../../db/client";
+import { db } from "@api/db/client";
 import { user } from "@repo/db/schema/auth-schema";
 import { creditLedger, creditWallet } from "@repo/db/schema/credits-schema";
 

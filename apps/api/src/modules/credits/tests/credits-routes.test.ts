@@ -2,9 +2,9 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { eq } from "drizzle-orm";
 import { creditLedger } from "@repo/db/schema/credits-schema";
 import { apiClient, sessionInit } from "@api/core/testing/api-client";
-import { db } from "../../db/client";
-import { adminGrantCredits } from "@api/routes/credits";
-import { periodKeyOf } from "@api/routes/wallet";
+import { db } from "@api/db/client";
+import { adminGrantCredits } from "@api/modules/credits";
+import { periodKeyOf } from "@api/modules/wallet";
 import {
   cleanupTouchedUsers,
   makeAdmin,

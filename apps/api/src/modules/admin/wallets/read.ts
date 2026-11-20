@@ -1,6 +1,6 @@
 import { db } from "@api/db/client";
-import { readLedger } from "@api/routes/credits";
-import { readWalletForUser } from "@api/routes/wallet";
+import { readLedger } from "@api/modules/credits";
+import { readWalletForUser } from "@api/modules/wallet";
 import { user } from "@repo/db/schema/auth-schema";
 import { eq } from "drizzle-orm";
 

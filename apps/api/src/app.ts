@@ -9,16 +9,16 @@ import { type AppDb, getDb, setDb } from "@api/db/client";
 import { env } from "@api/env";
 import { createAppContainer } from "@api/core/di/create-app-container";
 import { errorBody, errorResponse } from "@api/lib/http";
+import { AdminController } from "@api/modules/admin/admin.controller";
+import { CreditsController } from "@api/modules/credits/credits.controller";
+import { CronController } from "@api/modules/cron/cron.controller";
 import { HealthController } from "@api/modules/health/health.controller";
 import { MeController } from "@api/modules/me/me.controller";
+import { OidcController } from "@api/modules/oidc/oidc.controller";
+import { SyncController } from "@api/modules/sync/sync.controller";
 import { ViewerController } from "@api/modules/viewer/viewer.controller";
-import { adminRoute } from "@api/routes/admin";
-import { creditsRoute } from "@api/routes/credits";
-import { walletRoute } from "@api/routes/wallet";
-import { waitlistRoute } from "@api/routes/waitlist/route";
-import { syncRoute } from "@api/routes/sync";
-import { cronRoute } from "@api/routes/cron";
-import { oidcDiscoveryRoute } from "@api/routes/oidc/discovery";
+import { WaitlistController } from "@api/modules/waitlist/waitlist.controller";
+import { WalletController } from "@api/modules/wallet/wallet.controller";
 
 const isProduction = env.NODE_ENV === "production";
 
@@ -42,6 +42,12 @@ export function createApp({ db, auth }: { db: AppDb; auth: Auth }) {
   const health = container.resolve({ token: HealthController });
   const viewer = container.resolve({ token: ViewerController });
   const me = container.resolve({ token: MeController });
+  const sync = container.resolve({ token: SyncController });
+  const cron = container.resolve({ token: CronController });
+  const waitlist = container.resolve({ token: WaitlistController });
+  const admin = container.resolve({ token: AdminController });
+  const wallet = container.resolve({ token: WalletController });
+  const credits = container.resolve({ token: CreditsController });
 
   /**
    * Keep this a single chained expression: `AppType` is inferred from it, and
@@ -73,21 +79,22 @@ export function createApp({ db, auth }: { db: AppDb; auth: Auth }) {
     .route("/health", health.routes)
     .route("/viewer", viewer.routes)
     .route("/me", me.routes)
-    .route("/sync", syncRoute)
-    .route("/cron", cronRoute)
-    .route("/waitlist", waitlistRoute)
-    .route("/admin", adminRoute)
-    .route("/wallet", walletRoute)
-    .route("/credits", creditsRoute)
+    .route("/sync", sync.routes)
+    .route("/cron", cron.routes)
+    .route("/waitlist", waitlist.routes)
+    .route("/admin", admin.routes)
+    .route("/wallet", wallet.routes)
+    .route("/credits", credits.routes)
     .notFound((c) => c.json(errorBody({ message: "Not Found", code: "NOT_FOUND" }), 404))
     .onError((error, c) => errorResponse({ c, error, isProduction }));
 }
 
 const api = createApp({ db: getDb(), auth: getAuth() });
+const oidc = new OidcController();
 
 /** Discovery sits outside `/api` so API Gateway can load `{issuer}/.well-known/openid-configuration`. */
 export const app = new Hono()
-  .route("/", oidcDiscoveryRoute)
+  .route("/", oidc.routes)
   .route("/", api)
   .notFound((c) => c.json(errorBody({ message: "Not Found", code: "NOT_FOUND" }), 404));
 
