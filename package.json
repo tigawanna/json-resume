@@ -4,6 +4,7 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
+    "dev:core": "turbo run dev --filter=!@repo/aws --filter=!calc-paye-kenya --filter=!rate-calculator",
     "lint": "vp lint --deny-warnings .",
     "lint:fix": "vp lint --fix .",
     "format": "vp fmt .",
