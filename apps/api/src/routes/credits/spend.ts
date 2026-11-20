@@ -1,10 +1,10 @@
 import { CREDIT_POLICY } from "@repo/isomorphic/credits-policy";
 import { eq } from "drizzle-orm";
-import { db } from "../../../db/client";
+import { db } from "../../db/client";
 import { creditLedger, creditWallet } from "@repo/db/schema/credits-schema";
+import { ensureMonthlyAllocation } from "@api/routes/wallet/allocation";
+import { ensureWallet, readWallet } from "@api/routes/wallet/store";
 import { InsufficientCreditsError } from "./errors";
-import { ensureMonthlyAllocation } from "./allocation";
-import { ensureWallet, readWallet } from "./store";
 
 export type SpendResult =
   | { status: "charged"; bucket: "monthly" | "bonus"; balance: number }

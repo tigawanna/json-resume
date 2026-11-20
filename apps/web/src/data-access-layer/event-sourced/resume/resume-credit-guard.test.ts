@@ -17,7 +17,7 @@ vi.mock("@/lib/env/client-env", () => ({
 
 vi.mock("@/lib/hono/client", () => ({
   get honoClient() {
-    return { api: { credits: { check: { $post: mocks.post } } } };
+    return { api: { wallet: { checks: { $post: mocks.post } } } };
   },
 }));
 

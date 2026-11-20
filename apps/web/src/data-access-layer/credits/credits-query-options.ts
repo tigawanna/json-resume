@@ -4,6 +4,7 @@ import { parseApiError } from "@/lib/hono/parse-api-error";
 import type { queryKeyPrefixes } from "@/data-access-layer/query-keys";
 
 type CreditsKey = (typeof queryKeyPrefixes)["credits"];
+type WalletKey = (typeof queryKeyPrefixes)["wallet"];
 
 export type CreditWalletResponse = {
   monthly: number;
@@ -18,9 +19,9 @@ export type CreditWalletResponse = {
 
 /** The viewer's wallet. Reading it lazily allocates the current month. */
 export const creditWalletQueryOptions = queryOptions({
-  queryKey: ["credits", "wallet"] satisfies [CreditsKey, ...string[]],
+  queryKey: ["wallet"] satisfies [WalletKey],
   queryFn: async (): Promise<CreditWalletResponse> => {
-    const response = await honoClient.api.credits.$get();
+    const response = await honoClient.api.wallet.$get();
     if (!response.ok) throw await parseApiError(response, "Could not load your credits");
     return response.json();
   },
@@ -48,9 +49,9 @@ export type CreditLedgerResponse = {
 
 export function creditLedgerQueryOptions(input: CreditLedgerFilters) {
   return queryOptions({
-    queryKey: ["credits", "ledger", input] satisfies [CreditsKey, ...unknown[]],
+    queryKey: ["credits", input] satisfies [CreditsKey, ...unknown[]],
     queryFn: async (): Promise<CreditLedgerResponse> => {
-      const response = await honoClient.api.credits.ledger.$get({
+      const response = await honoClient.api.credits.$get({
         query: { page: String(input.page), perPage: String(input.perPage) },
       });
       if (!response.ok) throw await parseApiError(response, "Could not load your ledger");
@@ -59,12 +60,28 @@ export function creditLedgerQueryOptions(input: CreditLedgerFilters) {
   });
 }
 
-/** Wallet + ledger for one user, admin view. */
-export function adminUserCreditsQueryOptions(input: { userId: string; page: number; perPage: number }) {
+export function adminUserWalletQueryOptions(input: { userId: string }) {
   return queryOptions({
-    queryKey: ["credits", "admin", "user", input] satisfies [CreditsKey, ...unknown[]],
+    queryKey: ["wallet", "admin", input.userId] satisfies [WalletKey, ...string[]],
     queryFn: async () => {
-      const response = await honoClient.api.admin.credits.user[":userId"].$get({
+      const response = await honoClient.api.admin.wallets[":userId"].$get({
+        param: { userId: input.userId },
+      });
+      if (!response.ok) throw await parseApiError(response, "Could not load the user's wallet");
+      return response.json();
+    },
+  });
+}
+
+export function adminUserCreditsQueryOptions(input: {
+  userId: string;
+  page: number;
+  perPage: number;
+}) {
+  return queryOptions({
+    queryKey: ["credits", "admin", input] satisfies [CreditsKey, ...unknown[]],
+    queryFn: async () => {
+      const response = await honoClient.api.admin.wallets[":userId"].credits.$get({
         param: { userId: input.userId },
         query: { page: String(input.page), perPage: String(input.perPage) },
       });
@@ -85,11 +102,14 @@ export function adminGrantCreditsMutationOptions() {
   return mutationOptions({
     mutationKey: ["credits", "admin", "grant"],
     mutationFn: async (input: AdminGrantInput) => {
-      const response = await honoClient.api.admin.credits.grant.$post({ json: input });
+      const response = await honoClient.api.admin.wallets[":userId"].credits.$post({
+        param: { userId: input.userId },
+        json: { amount: input.amount, reason: input.reason },
+      });
       if (!response.ok) throw await parseApiError(response, "Could not grant credits");
       return response.json();
     },
-    meta: { invalidates: [["credits"]] },
+    meta: { invalidates: [["credits"], ["wallet"]] },
   });
 }
 
@@ -103,12 +123,15 @@ export type AdminAdjustInput = {
 
 export function adminAdjustCreditsMutationOptions() {
   return mutationOptions({
-    mutationKey: ["credits", "admin", "adjust"],
+    mutationKey: ["wallet", "admin", "adjust"],
     mutationFn: async (input: AdminAdjustInput) => {
-      const response = await honoClient.api.admin.credits.adjust.$post({ json: input });
+      const response = await honoClient.api.admin.wallets[":userId"].$patch({
+        param: { userId: input.userId },
+        json: { bucket: input.bucket, amount: input.amount, reason: input.reason },
+      });
       if (!response.ok) throw await parseApiError(response, "Could not adjust credits");
       return response.json();
     },
-    meta: { invalidates: [["credits"]] },
+    meta: { invalidates: [["credits"], ["wallet"]] },
   });
 }

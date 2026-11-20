@@ -1,4 +1,7 @@
-import { adminUserCreditsQueryOptions } from "@/data-access-layer/credits/credits-query-options";
+import {
+  adminUserCreditsQueryOptions,
+  adminUserWalletQueryOptions,
+} from "@/data-access-layer/credits/credits-query-options";
 import { TSRListPagination } from "@/components/pagination/TSRListPagination";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
@@ -18,9 +21,14 @@ export function AdminUserCreditsView() {
   const { userId } = routeApi.useParams();
   const page = routeApi.useSearch().page ?? 1;
 
-  const { data, isPending, error } = useQuery(
+  const walletQuery = useQuery(adminUserWalletQueryOptions({ userId }));
+  const ledgerQuery = useQuery(
     adminUserCreditsQueryOptions({ userId, page, perPage: PAGE_SIZE }),
   );
+  const data = walletQuery.data;
+  const ledger = ledgerQuery.data;
+  const isPending = walletQuery.isPending || ledgerQuery.isPending;
+  const error = walletQuery.error ?? ledgerQuery.error;
 
   if (isPending) {
     return (
@@ -50,10 +58,10 @@ export function AdminUserCreditsView() {
       </div>
 
       <div className="px-4 md:px-6">
-        <AdminUserLedger items={data.ledger.items} />
+        <AdminUserLedger items={ledger?.items ?? []} />
       </div>
       <div className="px-4 md:px-6">
-        <TSRListPagination routeID={ROUTE_ID} totalPages={data.ledger.pagination.totalPages} />
+        <TSRListPagination routeID={ROUTE_ID} totalPages={ledger?.pagination.totalPages ?? 1} />
       </div>
     </div>
   );

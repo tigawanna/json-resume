@@ -6,7 +6,8 @@ import { resume } from "@repo/db/schema/resume";
 import { syncEvent } from "@repo/db/schema/sync-schema";
 import { app } from "../../../app";
 import { db } from "../../../db/client";
-import { adminAdjustCredits, adminGrantCredits, ensureMonthlyAllocation } from "../../../routes/credits/wallet";
+import { adminAdjustCredits, adminGrantCredits } from "../../../routes/credits";
+import { ensureMonthlyAllocation } from "../../../routes/wallet";
 import { cleanupTouchedUsers, MAR_2026, signUp, makeAdmin, type WalletResponse } from "../../../routes/credits/test-helpers";
 import realEvents from "./test-fixtures/resume-projection-events.json";
 import { toSyncEvent, type FixtureEvent } from "./test-fixtures/to-sync-event";
@@ -48,7 +49,7 @@ function ledgerFor(userId: string) {
 }
 
 async function walletFor(cookie: string) {
-  const res = await app.request("/api/credits", { method: "GET", headers: { cookie } });
+  const res = await app.request("/api/wallet", { method: "GET", headers: { cookie } });
   expect(res.status).toBe(200);
   return (await res.json()) as WalletResponse;
 }

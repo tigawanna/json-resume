@@ -1,6 +1,6 @@
 import { CREDIT_POLICY } from "@repo/isomorphic/credits-policy";
 import { eq } from "drizzle-orm";
-import { db } from "../../../db/client";
+import { db } from "../../db/client";
 import { creditLedger, creditWallet } from "@repo/db/schema/credits-schema";
 import { isEligibleForMonthly } from "./eligibility";
 import { periodKeyOf } from "./period";

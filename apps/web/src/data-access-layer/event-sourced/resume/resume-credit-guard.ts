@@ -62,7 +62,7 @@ export async function ensureResumeCredit(input: {
   if (typeof navigator !== "undefined" && navigator.onLine === false) return { ok: true };
 
   try {
-    const response = await honoClient.api.credits.check.$post({
+    const response = await honoClient.api.wallet.checks.$post({
       json: { action: input.action },
     });
     if (!response.ok) throw await parseApiError(response, "Could not check your credits");

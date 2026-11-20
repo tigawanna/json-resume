@@ -4,7 +4,8 @@ import { db, getDb, setDb } from "../../db/client";
 import { createTestDb } from "../../../tests/setup/local-db";
 import { user } from "@repo/db/schema/auth-schema";
 import { creditLedger, creditWallet } from "@repo/db/schema/credits-schema";
-import { ensureMonthlyAllocation, periodKeyOf, spendResumeCredit } from "./wallet";
+import { spendResumeCredit } from "@api/routes/credits";
+import { ensureMonthlyAllocation, periodKeyOf } from "@api/routes/wallet";
 import {
   cleanupTouchedUsers,
   FEB_2026,
@@ -12,7 +13,7 @@ import {
   signUp,
   walletRequest,
   type WalletResponse,
-} from "./test-helpers";
+} from "../credits/test-helpers";
 
 afterAll(cleanupTouchedUsers);
 

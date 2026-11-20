@@ -1,6 +1,6 @@
 import { CREDIT_POLICY } from "@repo/isomorphic/credits-policy";
 import { and, eq, or } from "drizzle-orm";
-import { db } from "../../../db/client";
+import { db } from "../../db/client";
 import { user } from "@repo/db/schema/auth-schema";
 import { waitlistEntry } from "@repo/db/schema/credits-schema";
 import type { Executor } from "./store";

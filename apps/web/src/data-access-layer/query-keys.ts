@@ -30,4 +30,5 @@ export const queryKeyPrefixes = {
   openrouterCredits: "openrouter-credits",
   waitlist: "waitlist",
   credits: "credits",
+  wallet: "wallet",
 } as const;

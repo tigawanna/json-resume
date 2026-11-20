@@ -3,8 +3,8 @@ import { eq } from "drizzle-orm";
 import { creditLedger } from "@repo/db/schema/credits-schema";
 import { app } from "../../app";
 import { db } from "../../db/client";
-import { adminGrantCredits } from "./wallet";
-import { periodKeyOf } from "./wallet";
+import { adminGrantCredits } from "@api/routes/credits";
+import { periodKeyOf } from "@api/routes/wallet";
 import {
   cleanupTouchedUsers,
   makeAdmin,
@@ -27,18 +27,18 @@ describe("admin credits HTTP endpoints", () => {
   });
 
   function grant(targetUserId: string, amount: number, reason: string, cookie = adminCookie) {
-    return app.request("/api/admin/credits/grant", {
+    return app.request(`/api/admin/wallets/${targetUserId}/credits`, {
       method: "POST",
       headers: { "Content-Type": "application/json", cookie },
-      body: JSON.stringify({ userId: targetUserId, amount, reason }),
+      body: JSON.stringify({ amount, reason }),
     });
   }
 
   function adjust(targetUserId: string, amount: number, reason: string) {
-    return app.request("/api/admin/credits/adjust", {
-      method: "POST",
+    return app.request(`/api/admin/wallets/${targetUserId}`, {
+      method: "PATCH",
       headers: { "Content-Type": "application/json", cookie: adminCookie },
-      body: JSON.stringify({ userId: targetUserId, bucket: "bonus", amount, reason }),
+      body: JSON.stringify({ bucket: "bonus", amount, reason }),
     });
   }
 
@@ -49,7 +49,7 @@ describe("admin credits HTTP endpoints", () => {
   });
 
   it("requires a session for the viewer wallet", async () => {
-    const res = await app.request("/api/credits", { method: "GET" });
+    const res = await app.request("/api/wallet", { method: "GET" });
     expect(res.status).toBe(401);
   });
 
@@ -89,7 +89,7 @@ describe("admin credits HTTP endpoints", () => {
     const { userId } = await signUp(email, "ViewTarget");
     await adminGrantCredits({ userId, amount: 5, reason: "seed", adminUserId: userId });
 
-    const res = await app.request(`/api/admin/credits/user/${userId}`, {
+    const res = await app.request(`/api/admin/wallets/${userId}`, {
       method: "GET",
       headers: { cookie: adminCookie },
     });
@@ -97,13 +97,22 @@ describe("admin credits HTTP endpoints", () => {
     const body = (await res.json()) as {
       user: { email: string };
       wallet: { monthly: number; bonus: number };
-      ledger: { items: Array<{ type: string }>; pagination: { total: number } };
     };
     expect(body.user.email).toBe(email);
     expect(body.wallet.bonus).toBe(5);
-    expect(body.ledger.items.length).toBeGreaterThan(0);
 
-    const missing = await app.request("/api/admin/credits/user/no-such-user", {
+    const ledgerRes = await app.request(`/api/admin/wallets/${userId}/credits?page=1&perPage=20`, {
+      method: "GET",
+      headers: { cookie: adminCookie },
+    });
+    expect(ledgerRes.status).toBe(200);
+    const ledger = (await ledgerRes.json()) as {
+      items: Array<{ type: string }>;
+      pagination: { total: number };
+    };
+    expect(ledger.items.length).toBeGreaterThan(0);
+
+    const missing = await app.request("/api/admin/wallets/no-such-user", {
       method: "GET",
       headers: { cookie: adminCookie },
     });
@@ -127,7 +136,7 @@ describe("admin credits HTTP endpoints", () => {
     });
 
     // Three rows (one grant + two admin grants) so a lost LIMIT is visible.
-    const res = await app.request("/api/credits/ledger?page=1&perPage=2", {
+    const res = await app.request("/api/credits?page=1&perPage=2", {
       method: "GET",
       headers: { cookie },
     });
@@ -141,7 +150,7 @@ describe("admin credits HTTP endpoints", () => {
     expect(body.pagination).toMatchObject({ page: 1, perPage: 2, total: 3, totalPages: 2 });
     expect(body.periodKey).toBe(periodKeyOf(new Date()));
 
-    const second = await app.request("/api/credits/ledger?page=2&perPage=2", {
+    const second = await app.request("/api/credits?page=2&perPage=2", {
       method: "GET",
       headers: { cookie },
     });

@@ -12,6 +12,7 @@ import { healthRoute } from "@api/routes/health/route";
 import { meRoute } from "@api/routes/me/route";
 import { adminRoute } from "@api/routes/admin";
 import { creditsRoute } from "@api/routes/credits";
+import { walletRoute } from "@api/routes/wallet";
 import { waitlistRoute } from "@api/routes/waitlist/route";
 import { viewerRoute } from "@api/routes/viewer/route";
 import { syncRoute } from "@api/routes/sync";
@@ -70,6 +71,7 @@ export function createApp({ db, auth }: { db: AppDb; auth: Auth }) {
     .route("/cron", cronRoute)
     .route("/waitlist", waitlistRoute)
     .route("/admin", adminRoute)
+    .route("/wallet", walletRoute)
     .route("/credits", creditsRoute)
     .notFound((c) => c.json(errorBody({ message: "Not Found", code: "NOT_FOUND" }), 404))
     .onError((error, c) => errorResponse({ c, error, isProduction }));

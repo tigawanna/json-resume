@@ -1,0 +1,1 @@
+export { walletsAdminRoute } from "./route";

@@ -3,13 +3,13 @@ import { eq } from "drizzle-orm";
 import { db } from "../../db/client";
 import { user } from "@repo/db/schema/auth-schema";
 import { creditWallet } from "@repo/db/schema/credits-schema";
+import { ensureMonthlyAllocation } from "@api/routes/wallet";
 import {
   AdjustmentBelowZeroError,
   adminAdjustCredits,
   adminGrantCredits,
-  ensureMonthlyAllocation,
   spendResumeCredit,
-} from "./wallet";
+} from "@api/routes/credits";
 import { cleanupTouchedUsers, FEB_2026, MAR_2026, signUp } from "./test-helpers";
 
 afterAll(cleanupTouchedUsers);

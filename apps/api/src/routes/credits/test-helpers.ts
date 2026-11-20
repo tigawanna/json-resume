@@ -32,7 +32,7 @@ export async function makeAdmin(email: string) {
 }
 
 export function walletRequest(cookie: string) {
-  return app.request("/api/credits", { method: "GET", headers: { cookie } });
+  return app.request("/api/wallet", { method: "GET", headers: { cookie } });
 }
 
 /** Removes users last: wallet and ledger rows cascade on user delete. */

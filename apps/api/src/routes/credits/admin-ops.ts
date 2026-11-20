@@ -1,9 +1,9 @@
 import { eq } from "drizzle-orm";
-import { db } from "../../../db/client";
+import { db } from "../../db/client";
 import { user } from "@repo/db/schema/auth-schema";
 import { creditLedger, creditWallet } from "@repo/db/schema/credits-schema";
-import { BannedUserError, UnknownUserError, AdjustmentBelowZeroError } from "./errors";
-import { ensureWallet, type CreditWallet } from "./store";
+import { ensureWallet, type CreditWallet } from "@api/routes/wallet/store";
+import { AdjustmentBelowZeroError, BannedUserError, UnknownUserError } from "./errors";
 
 /** Admin bonus grant (plan §5.5). Bonus credits carry over across months. */
 export async function adminGrantCredits(input: {
