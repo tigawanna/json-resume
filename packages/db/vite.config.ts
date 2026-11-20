@@ -7,7 +7,7 @@ export default defineConfig({
       formats: ["es"],
     },
     rolldownOptions: {
-      external: [/^drizzle-orm/],
+      external: [/^drizzle-orm/, "drizzle-zod", "zod"],
     },
     minify: false,
     emptyOutDir: true,

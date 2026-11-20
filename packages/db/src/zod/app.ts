@@ -1,0 +1,20 @@
+import { applicationAnswer } from "../schema/application-answer-schema";
+import { assistantSkill } from "../schema/assistant-skill-schema";
+import { coverLetter } from "../schema/cover-letter-schema";
+import { creditLedger, creditWallet, waitlistEntry } from "../schema/credits-schema";
+import { job } from "../schema/job-schema";
+import { savedProject } from "../schema/saved-project-schema";
+import { syncBackend, syncEvent, syncSquashState } from "../schema/sync-schema";
+import { drizzleZod } from "./table";
+
+export const jobZod = drizzleZod({ table: job });
+export const coverLetterZod = drizzleZod({ table: coverLetter });
+export const applicationAnswerZod = drizzleZod({ table: applicationAnswer });
+export const assistantSkillZod = drizzleZod({ table: assistantSkill });
+export const savedProjectZod = drizzleZod({ table: savedProject });
+export const creditWalletZod = drizzleZod({ table: creditWallet });
+export const creditLedgerZod = drizzleZod({ table: creditLedger });
+export const waitlistEntryZod = drizzleZod({ table: waitlistEntry });
+export const syncEventZod = drizzleZod({ table: syncEvent });
+export const syncSquashStateZod = drizzleZod({ table: syncSquashState });
+export const syncBackendZod = drizzleZod({ table: syncBackend });

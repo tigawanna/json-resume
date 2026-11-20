@@ -9,8 +9,7 @@ import { AuthService } from "./core/auth/auth.service";
 import { AppDb } from "./core/db/client";
 import { env } from "./env";
 import { errorBody, errorResponse } from "./lib/http";
-import { MeController } from "./modules/me/me.controller";
-import { MeService } from "./modules/me/me.service";
+import { createRoutes } from "./modules";
 
 const isProduction = env.NODE_ENV === "production";
 
@@ -28,10 +27,7 @@ type AppProps = {
 export function createApp({ db }: AppProps) {
   const auth = createAuth({ db });
   const authService = new AuthService({ auth });
-  const me = new MeController({
-    me: new MeService({ auth: authService }),
-    auth: authService,
-  });
+
   return (
     new Hono<EvlogVariables>()
       .basePath("/api")
@@ -56,7 +52,7 @@ export function createApp({ db }: AppProps) {
       )
       // Better Auth owns everything under /api/auth/*.
       .on(["GET", "POST"], "/auth/*", (c) => auth.handler(c.req.raw))
-      .route("/me", me.routes)
+      .route("/", createRoutes({ auth: authService }))
       .notFound((c) => c.json(errorBody({ message: "Not Found", code: "NOT_FOUND" }), 404))
       .onError((error, c) => errorResponse({ c, error, isProduction }))
   );

@@ -6,6 +6,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./migrations": "./src/migrations.ts",
+    "./zod": "./src/zod/index.ts",
     "./schema/*": "./src/schema/*.ts",
     "./schema/resume": "./src/schema/resume/index.ts",
     "./schema/resume/*": "./src/schema/resume/*.ts"
@@ -21,7 +22,9 @@
   },
   "dependencies": {
     "drizzle-orm": "^0.45.2",
-    "uuidv7": "^1.2.1"
+    "drizzle-zod": "^0.8.3",
+    "uuidv7": "^1.2.1",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
