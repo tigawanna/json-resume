@@ -1,8 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { app } from "@api/app";
+import { apiClient, sessionInit } from "@api/core/testing/api-client";
 import {
-  type ApiError,
-  type Entry,
   cleanupTouchedRecords,
   makeAdmin,
   seedEntry,
@@ -29,65 +27,66 @@ describe("PATCH /api/admin/waitlist/entries/:id", () => {
     delta = await seedEntry({ label: "delta", name: "Delta" });
   });
 
+  function patchEntry({
+    id,
+    json,
+  }: {
+    id: string;
+    json: { status?: "joined" | "removed"; userId?: string | null; notes?: string | null };
+  }) {
+    return apiClient.api.admin.waitlist.entries[":id"].$patch(
+      { param: { id }, json },
+      sessionInit({ cookie: adminCookie }),
+    );
+  }
+
   it("removes, restores, links, and unlinks an entry", async () => {
-    const remove = await app.request(`/api/admin/waitlist/entries/${beta.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json", Cookie: adminCookie },
-      body: JSON.stringify({ status: "removed", notes: "requested removal" }),
+    const remove = await patchEntry({
+      id: beta.id,
+      json: { status: "removed", notes: "requested removal" },
     });
     expect(remove.status).toBe(200);
-    const removed = (await remove.json()) as { entry: Entry };
-    expect(removed.entry.status).toBe("removed");
-    expect(removed.entry.notes).toBe("requested removal");
+    if (!remove.ok) throw new Error("expected remove to succeed");
+    const removed = await remove.json();
+    expect(removed.entry?.status).toBe("removed");
+    expect(removed.entry?.notes).toBe("requested removal");
 
-    const restore = await app.request(`/api/admin/waitlist/entries/${beta.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json", Cookie: adminCookie },
-      body: JSON.stringify({ status: "joined" }),
-    });
+    const restore = await patchEntry({ id: beta.id, json: { status: "joined" } });
     expect(restore.status).toBe(200);
-    expect(((await restore.json()) as { entry: Entry }).entry.status).toBe("joined");
+    if (!restore.ok) throw new Error("expected restore to succeed");
+    expect((await restore.json()).entry?.status).toBe("joined");
 
-    const link = await app.request(`/api/admin/waitlist/entries/${beta.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json", Cookie: adminCookie },
-      body: JSON.stringify({ userId: memberUserId }),
-    });
+    const link = await patchEntry({ id: beta.id, json: { userId: memberUserId } });
     expect(link.status).toBe(200);
-    expect(((await link.json()) as { entry: Entry }).entry.userId).toBe(memberUserId);
+    if (!link.ok) throw new Error("expected link to succeed");
+    expect((await link.json()).entry?.userId).toBe(memberUserId);
 
-    const unlink = await app.request(`/api/admin/waitlist/entries/${beta.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json", Cookie: adminCookie },
-      body: JSON.stringify({ userId: null }),
-    });
+    const unlink = await patchEntry({ id: beta.id, json: { userId: null } });
     expect(unlink.status).toBe(200);
-    expect(((await unlink.json()) as { entry: Entry }).entry.userId).toBeNull();
+    if (!unlink.ok) throw new Error("expected unlink to succeed");
+    expect((await unlink.json()).entry?.userId).toBeNull();
   });
 
   it("validates patches and rejects unknown entries or users", async () => {
-    const invalidBody = await app.request(`/api/admin/waitlist/entries/${delta.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json", Cookie: adminCookie },
-      body: JSON.stringify({ status: "nope" }),
+    const invalidBody = await patchEntry({
+      id: delta.id,
+      json: { status: "nope" as "joined" },
     });
     expect(invalidBody.status).toBe(400);
-    expect(((await invalidBody.json()) as ApiError).error.code).toBe("VALIDATION_ERROR");
+    expect(await invalidBody.json()).toMatchObject({ error: { code: "VALIDATION_ERROR" } });
 
-    const unknownEntry = await app.request("/api/admin/waitlist/entries/no-such-id", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json", Cookie: adminCookie },
-      body: JSON.stringify({ status: "removed" }),
+    const unknownEntry = await patchEntry({
+      id: "no-such-id",
+      json: { status: "removed" },
     });
     expect(unknownEntry.status).toBe(404);
-    expect(((await unknownEntry.json()) as ApiError).error.code).toBe("NOT_FOUND");
+    expect(await unknownEntry.json()).toMatchObject({ error: { code: "NOT_FOUND" } });
 
-    const unknownUser = await app.request(`/api/admin/waitlist/entries/${delta.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json", Cookie: adminCookie },
-      body: JSON.stringify({ userId: "nonexistent-user-id" }),
+    const unknownUser = await patchEntry({
+      id: delta.id,
+      json: { userId: "nonexistent-user-id" },
     });
     expect(unknownUser.status).toBe(404);
-    expect(((await unknownUser.json()) as ApiError).error.code).toBe("NOT_FOUND");
+    expect(await unknownUser.json()).toMatchObject({ error: { code: "NOT_FOUND" } });
   });
 });

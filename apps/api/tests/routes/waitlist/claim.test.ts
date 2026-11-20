@@ -3,7 +3,6 @@ import { eq } from "drizzle-orm";
 import { waitlistEntry } from "@repo/db/schema/credits-schema";
 import { db } from "@api/db/client";
 import {
-  type ApiError,
   type ClaimResponse,
   claimWaitlist,
   cleanupTouchedRecords,
@@ -77,6 +76,6 @@ describe("POST /api/waitlist/claim", () => {
   it("returns 401 without a session", async () => {
     const res = await claimWaitlist();
     expect(res.status).toBe(401);
-    expect(((await res.json()) as ApiError).error.code).toBe("UNAUTHORIZED");
+    expect(await res.json()).toMatchObject({ error: { code: "UNAUTHORIZED" } });
   });
 });

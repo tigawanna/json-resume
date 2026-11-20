@@ -1,6 +1,6 @@
 import { expect } from "vitest";
 import { eq, inArray } from "drizzle-orm";
-import { app } from "../../app";
+import { apiClient, authSignUpRequest, sessionInit } from "@api/core/testing/api-client";
 import { db } from "../../db/client";
 import { user } from "@repo/db/schema/auth-schema";
 import { creditLedger, creditWallet } from "@repo/db/schema/credits-schema";
@@ -14,11 +14,7 @@ const touchedUserIds: string[] = [];
 
 /** Sign up through Better Auth and return the session cookie + user id. */
 export async function signUp(email: string, name: string) {
-  const res = await app.request("/api/auth/sign-up/email", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password: "password123", name }),
-  });
+  const res = await authSignUpRequest({ email, name });
   expect(res.status).toBe(200);
   touchedUserEmails.push(email);
   const cookie = res.headers.get("set-cookie")!.split(";")[0]!;
@@ -32,7 +28,7 @@ export async function makeAdmin(email: string) {
 }
 
 export function walletRequest(cookie: string) {
-  return app.request("/api/wallet", { method: "GET", headers: { cookie } });
+  return apiClient.api.wallet.$get(undefined, sessionInit({ cookie }));
 }
 
 /** Removes users last: wallet and ledger rows cascade on user delete. */

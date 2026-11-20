@@ -4,7 +4,7 @@ import { user } from "@repo/db/schema/auth-schema";
 import { creditLedger } from "@repo/db/schema/credits-schema";
 import { resume } from "@repo/db/schema/resume";
 import { syncEvent } from "@repo/db/schema/sync-schema";
-import { app } from "../../../app";
+import { apiClient, sessionInit } from "@api/core/testing/api-client";
 import { db } from "../../../db/client";
 import { adminAdjustCredits, adminGrantCredits } from "../../../routes/credits";
 import { ensureMonthlyAllocation } from "../../../routes/wallet";
@@ -49,7 +49,7 @@ function ledgerFor(userId: string) {
 }
 
 async function walletFor(cookie: string) {
-  const res = await app.request("/api/wallet", { method: "GET", headers: { cookie } });
+  const res = await apiClient.api.wallet.$get(undefined, sessionInit({ cookie }));
   expect(res.status).toBe(200);
   return (await res.json()) as WalletResponse;
 }
@@ -62,11 +62,10 @@ describe("a user syncing résumés across account states", () => {
 
     // State 1 — new account, joined waitlist: first sync triggers allocation
     // and charges one real credit.
-    const joined = await app.request("/api/waitlist", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", cookie },
-      body: JSON.stringify({ email: EMAIL, consent: true, source: "landing" }),
-    });
+    const joined = await apiClient.api.waitlist.$post(
+      { json: { email: EMAIL, consent: true, source: "landing" } },
+      sessionInit({ cookie }),
+    );
     expect(joined.status).toBe(200);
 
     await syncResume(userId, "journey-resume-1");

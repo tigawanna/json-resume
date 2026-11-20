@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { app } from "@api/app";
+import { apiClient, sessionInit } from "@api/core/testing/api-client";
 import { cleanupTouchedRecords, makeAdmin, seedEntry, signUp } from "./helpers";
 
 afterAll(cleanupTouchedRecords);
@@ -25,9 +25,10 @@ describe("waitlist admin export and stats", () => {
   });
 
   it("exports every entry as escaped CSV", async () => {
-    const res = await app.request("/api/admin/waitlist/export", {
-      headers: { Cookie: adminCookie },
-    });
+    const res = await apiClient.api.admin.waitlist.export.$get(
+      undefined,
+      sessionInit({ cookie: adminCookie }),
+    );
     expect(res.status).toBe(200);
     expect(res.headers.get("content-type")).toContain("text/csv");
     expect(res.headers.get("content-disposition")).toContain('filename="waitlist.csv"');
@@ -43,13 +44,12 @@ describe("waitlist admin export and stats", () => {
   });
 
   it("returns stats for the admin home card", async () => {
-    const res = await app.request("/api/admin/waitlist/stats", {
-      headers: { Cookie: adminCookie },
-    });
+    const res = await apiClient.api.admin.waitlist.stats.$get(
+      undefined,
+      sessionInit({ cookie: adminCookie }),
+    );
     expect(res.status).toBe(200);
-    const body = (await res.json()) as { joined: number; linked: number; removed: number };
-    // Each test file gets its own database, so these are exact counts, not
-    // "at least one" — a regression that double-counts will fail here.
+    const body = await res.json();
     expect(body).toEqual({ joined: 1, linked: 1, removed: 1 });
   });
 });

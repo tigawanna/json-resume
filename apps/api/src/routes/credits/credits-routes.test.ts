@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { eq } from "drizzle-orm";
 import { creditLedger } from "@repo/db/schema/credits-schema";
-import { app } from "../../app";
+import { apiClient, sessionInit } from "@api/core/testing/api-client";
 import { db } from "../../db/client";
 import { adminGrantCredits } from "@api/routes/credits";
 import { periodKeyOf } from "@api/routes/wallet";
@@ -27,19 +27,17 @@ describe("admin credits HTTP endpoints", () => {
   });
 
   function grant(targetUserId: string, amount: number, reason: string, cookie = adminCookie) {
-    return app.request(`/api/admin/wallets/${targetUserId}/credits`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", cookie },
-      body: JSON.stringify({ amount, reason }),
-    });
+    return apiClient.api.admin.wallets[":userId"].credits.$post(
+      { param: { userId: targetUserId }, json: { amount, reason } },
+      sessionInit({ cookie }),
+    );
   }
 
   function adjust(targetUserId: string, amount: number, reason: string) {
-    return app.request(`/api/admin/wallets/${targetUserId}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json", cookie: adminCookie },
-      body: JSON.stringify({ bucket: "bonus", amount, reason }),
-    });
+    return apiClient.api.admin.wallets[":userId"].$patch(
+      { param: { userId: targetUserId }, json: { bucket: "bonus", amount, reason } },
+      sessionInit({ cookie: adminCookie }),
+    );
   }
 
   it("blocks non-admins", async () => {
@@ -49,7 +47,7 @@ describe("admin credits HTTP endpoints", () => {
   });
 
   it("requires a session for the viewer wallet", async () => {
-    const res = await app.request("/api/wallet", { method: "GET" });
+    const res = await apiClient.api.wallet.$get();
     expect(res.status).toBe(401);
   });
 
@@ -89,10 +87,10 @@ describe("admin credits HTTP endpoints", () => {
     const { userId } = await signUp(email, "ViewTarget");
     await adminGrantCredits({ userId, amount: 5, reason: "seed", adminUserId: userId });
 
-    const res = await app.request(`/api/admin/wallets/${userId}`, {
-      method: "GET",
-      headers: { cookie: adminCookie },
-    });
+    const res = await apiClient.api.admin.wallets[":userId"].$get(
+      { param: { userId } },
+      sessionInit({ cookie: adminCookie }),
+    );
     expect(res.status).toBe(200);
     const body = (await res.json()) as {
       user: { email: string };
@@ -101,10 +99,10 @@ describe("admin credits HTTP endpoints", () => {
     expect(body.user.email).toBe(email);
     expect(body.wallet.bonus).toBe(5);
 
-    const ledgerRes = await app.request(`/api/admin/wallets/${userId}/credits?page=1&perPage=20`, {
-      method: "GET",
-      headers: { cookie: adminCookie },
-    });
+    const ledgerRes = await apiClient.api.admin.wallets[":userId"].credits.$get(
+      { param: { userId }, query: { page: "1", perPage: "20" } },
+      sessionInit({ cookie: adminCookie }),
+    );
     expect(ledgerRes.status).toBe(200);
     const ledger = (await ledgerRes.json()) as {
       items: Array<{ type: string }>;
@@ -112,10 +110,10 @@ describe("admin credits HTTP endpoints", () => {
     };
     expect(ledger.items.length).toBeGreaterThan(0);
 
-    const missing = await app.request("/api/admin/wallets/no-such-user", {
-      method: "GET",
-      headers: { cookie: adminCookie },
-    });
+    const missing = await apiClient.api.admin.wallets[":userId"].$get(
+      { param: { userId: "no-such-user" } },
+      sessionInit({ cookie: adminCookie }),
+    );
     expect(missing.status).toBe(404);
   });
 
@@ -136,10 +134,10 @@ describe("admin credits HTTP endpoints", () => {
     });
 
     // Three rows (one grant + two admin grants) so a lost LIMIT is visible.
-    const res = await app.request("/api/credits?page=1&perPage=2", {
-      method: "GET",
-      headers: { cookie },
-    });
+    const res = await apiClient.api.credits.$get(
+      { query: { page: "1", perPage: "2" } },
+      sessionInit({ cookie }),
+    );
     expect(res.status).toBe(200);
     const body = (await res.json()) as {
       items: Array<{ type: string }>;
@@ -150,10 +148,10 @@ describe("admin credits HTTP endpoints", () => {
     expect(body.pagination).toMatchObject({ page: 1, perPage: 2, total: 3, totalPages: 2 });
     expect(body.periodKey).toBe(periodKeyOf(new Date()));
 
-    const second = await app.request("/api/credits?page=2&perPage=2", {
-      method: "GET",
-      headers: { cookie },
-    });
+    const second = await apiClient.api.credits.$get(
+      { query: { page: "2", perPage: "2" } },
+      sessionInit({ cookie }),
+    );
     expect(((await second.json()) as { items: unknown[] }).items).toHaveLength(1);
   });
 });

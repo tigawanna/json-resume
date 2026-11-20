@@ -2,6 +2,7 @@ import { user } from "@repo/db/schema/auth-schema";
 import { eq } from "drizzle-orm";
 import { afterAll, describe, expect, it } from "vitest";
 import { app } from "@api/app";
+import { authSignUpRequest } from "@api/core/testing/api-client";
 import { db } from "@api/db/client";
 import { env } from "@api/env";
 
@@ -15,11 +16,7 @@ afterAll(async () => {
 
 async function signInCookie({ email }: { email: string }) {
   createdEmails.push(email);
-  const signup = await app.request("/api/auth/sign-up/email", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password: "password123", name: "Jwt User" }),
-  });
+  const signup = await authSignUpRequest({ email, name: "Jwt User" });
   expect(signup.status).toBe(200);
   const setCookie = signup.headers.get("set-cookie");
   expect(setCookie).toBeTruthy();

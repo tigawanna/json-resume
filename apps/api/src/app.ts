@@ -7,14 +7,15 @@ import { evlog, type EvlogVariables } from "evlog/hono";
 import { type Auth, getAuth, setAuth } from "@api/auth/auth";
 import { type AppDb, getDb, setDb } from "@api/db/client";
 import { env } from "@api/env";
+import { createAppContainer } from "@api/core/di/create-app-container";
 import { errorBody, errorResponse } from "@api/lib/http";
-import { healthRoute } from "@api/routes/health/route";
-import { meRoute } from "@api/routes/me/route";
+import { HealthController } from "@api/modules/health/health.controller";
+import { MeController } from "@api/modules/me/me.controller";
+import { ViewerController } from "@api/modules/viewer/viewer.controller";
 import { adminRoute } from "@api/routes/admin";
 import { creditsRoute } from "@api/routes/credits";
 import { walletRoute } from "@api/routes/wallet";
 import { waitlistRoute } from "@api/routes/waitlist/route";
-import { viewerRoute } from "@api/routes/viewer/route";
 import { syncRoute } from "@api/routes/sync";
 import { cronRoute } from "@api/routes/cron";
 import { oidcDiscoveryRoute } from "@api/routes/oidc/discovery";
@@ -36,6 +37,11 @@ initLogger({
 export function createApp({ db, auth }: { db: AppDb; auth: Auth }) {
   setDb({ db });
   setAuth({ auth });
+
+  const container = createAppContainer({ db, auth });
+  const health = container.resolve({ token: HealthController });
+  const viewer = container.resolve({ token: ViewerController });
+  const me = container.resolve({ token: MeController });
 
   /**
    * Keep this a single chained expression: `AppType` is inferred from it, and
@@ -64,9 +70,9 @@ export function createApp({ db, auth }: { db: AppDb; auth: Auth }) {
     )
     // Better Auth owns everything under /api/auth/*.
     .on(["GET", "POST"], "/auth/*", (c) => auth.handler(c.req.raw))
-    .route("/health", healthRoute)
-    .route("/viewer", viewerRoute)
-    .route("/me", meRoute)
+    .route("/health", health.routes)
+    .route("/viewer", viewer.routes)
+    .route("/me", me.routes)
     .route("/sync", syncRoute)
     .route("/cron", cronRoute)
     .route("/waitlist", waitlistRoute)

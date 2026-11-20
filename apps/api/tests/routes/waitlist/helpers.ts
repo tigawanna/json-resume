@@ -2,7 +2,7 @@ import { expect } from "vitest";
 import { eq, inArray } from "drizzle-orm";
 import { user } from "@repo/db/schema/auth-schema";
 import { waitlistEntry } from "@repo/db/schema/credits-schema";
-import { app } from "@api/app";
+import { apiClient, authSignUpRequest, sessionInit } from "@api/core/testing/api-client";
 import { db } from "@api/db/client";
 
 export type JoinResponse = { joined: boolean };
@@ -47,11 +47,7 @@ export async function signUp({
   email?: string;
   name: string;
 }) {
-  const res = await app.request("/api/auth/sign-up/email", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password: "password123", name }),
-  });
+  const res = await authSignUpRequest({ email, name });
   expect(res.status).toBe(200);
 
   touchedUserEmails.push(email);
@@ -70,23 +66,38 @@ export function joinWaitlist({
   cookie,
 }: {
   email: string;
-  body?: Record<string, unknown>;
+  body?: {
+    name?: string;
+    source?: "landing" | "waitlist-page" | "dashboard" | "admin";
+    website?: string;
+    consent?: boolean;
+  };
   cookie?: string;
 }) {
   trackEmail({ email });
-  const headers: Record<string, string> = { "Content-Type": "application/json" };
-  if (cookie) headers.Cookie = cookie;
-
-  return app.request("/api/waitlist", {
-    method: "POST",
-    headers,
-    body: JSON.stringify({ email, consent: true, source: "landing", ...body }),
-  });
+  const json = {
+    email,
+    consent: true as const,
+    source: "landing" as const,
+    ...body,
+  } as {
+    email: string;
+    consent: true;
+    source?: "landing" | "waitlist-page" | "dashboard";
+    name?: string;
+    website?: string;
+  };
+  if (cookie) {
+    return apiClient.api.waitlist.$post({ json }, sessionInit({ cookie }));
+  }
+  return apiClient.api.waitlist.$post({ json });
 }
 
 export function claimWaitlist({ cookie }: { cookie?: string } = {}) {
-  const headers: Record<string, string> = cookie ? { Cookie: cookie } : {};
-  return app.request("/api/waitlist/claim", { method: "POST", headers });
+  if (cookie) {
+    return apiClient.api.waitlist.claim.$post(undefined, sessionInit({ cookie }));
+  }
+  return apiClient.api.waitlist.claim.$post();
 }
 
 export async function seedEntry({
