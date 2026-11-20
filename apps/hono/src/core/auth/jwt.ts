@@ -1,5 +1,5 @@
+import { env } from "@hono-api/env";
 import { jwt } from "better-auth/plugins/jwt";
-import { env } from "@api/env";
 
 /**
  * Access tokens for `/api/sync/*`. ES256 is what API Gateway's HTTP JWT

@@ -1,6 +1,6 @@
 import { apiKey } from "@better-auth/api-key";
-import { jwtPlugin } from "@hono-api/auth/jwt";
-import { type AppDb } from "@hono-api/db/client";
+import { jwtPlugin } from "@hono-api/core/auth/jwt";
+import { type AppDb } from "@hono-api/core/db/client";
 import { env } from "@hono-api/env";
 import * as authSchema from "@repo/db/schema/auth-schema";
 import { organizationAc, organizationRoles } from "@repo/isomorphic/auth-roles";

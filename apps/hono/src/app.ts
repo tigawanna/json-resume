@@ -4,10 +4,13 @@ import { evlog, type EvlogVariables } from "evlog/hono";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import path from "node:path";
-import { createAuth } from "./auth/auth";
-import { getDb } from "./db/client";
+import { createAuth } from "./core/auth/auth";
+import { AuthService } from "./core/auth/auth.service";
+import { AppDb } from "./core/db/client";
 import { env } from "./env";
 import { errorBody, errorResponse } from "./lib/http";
+import { MeController } from "./modules/me/me.controller";
+import { MeService } from "./modules/me/me.service";
 
 const isProduction = env.NODE_ENV === "production";
 
@@ -18,9 +21,17 @@ initLogger({
   },
 });
 
-export function createApp() {
-  const db = getDb();
+type AppProps = {
+  db: AppDb;
+};
+
+export function createApp({ db }: AppProps) {
   const auth = createAuth({ db });
+  const authService = new AuthService({ auth });
+  const me = new MeController({
+    me: new MeService({ auth: authService }),
+    auth: authService,
+  });
   return (
     new Hono<EvlogVariables>()
       .basePath("/api")
@@ -45,16 +56,8 @@ export function createApp() {
       )
       // Better Auth owns everything under /api/auth/*.
       .on(["GET", "POST"], "/auth/*", (c) => auth.handler(c.req.raw))
+      .route("/me", me.routes)
       .notFound((c) => c.json(errorBody({ message: "Not Found", code: "NOT_FOUND" }), 404))
       .onError((error, c) => errorResponse({ c, error, isProduction }))
   );
 }
-
-const api = createApp();
-
-/** Discovery sits outside `/api` so API Gateway can load `{issuer}/.well-known/openid-configuration`. */
-export const app = new Hono()
-  .route("/", api)
-  .notFound((c) => c.json(errorBody({ message: "Not Found", code: "NOT_FOUND" }), 404));
-
-export type AppType = typeof api;
