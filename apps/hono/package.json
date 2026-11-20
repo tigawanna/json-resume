@@ -1,0 +1,42 @@
+{
+  "name": "hono-api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./app": "./src/app.ts"
+  },
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "vp pack src/index.ts --platform node --out-dir dist",
+    "start": "node dist/index.mjs",
+    "test": "vitest run",
+    "check-types": "tsc -b --noEmit",
+    "generate": "tsx src/scripts/generate/cli.ts"
+  },
+  "dependencies": {
+    "@better-auth/api-key": "^1.7.18",
+    "@hono/node-server": "^1.19.17",
+    "@hono/zod-validator": "^0.9.1",
+    "@libsql/client": "^0.17.2",
+    "@repo/db": "workspace:*",
+    "@repo/isomorphic": "workspace:*",
+    "better-auth": "^1.7.18",
+    "dotenv": "^17.4.2",
+    "drizzle-orm": "^0.45.2",
+    "drizzle-query-logger": "^1.1.2",
+    "event-sourced-collection": "^0.0.16",
+    "evlog": "^2.35.1",
+    "hono": "^4.13.19",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
+    "@types/node": "^25.2.0",
+    "tsx": "^4.23.13",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vitest": "^5.1.0"
+  }
+}

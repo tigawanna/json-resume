@@ -1,0 +1,17 @@
+{
+  "extends": "@repo/typescript-config/base.json",
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "types": ["node"],
+    "noEmit": true,
+    "declaration": false,
+    "declarationMap": false,
+    "verbatimModuleSyntax": false,
+    "paths": {
+      "@hono-api/*": ["./src/*"],
+      "@/*": ["../../web/src/*"]
+    }
+  },
+  "include": ["src/**/*.ts", "tests/**/*.ts", "src/scripts/**/*.ts"]
+}
