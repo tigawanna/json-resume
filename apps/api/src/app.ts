@@ -10,15 +10,12 @@ import { env } from "@api/env";
 import { errorBody, errorResponse } from "@api/lib/http";
 import { healthRoute } from "@api/routes/health/route";
 import { meRoute } from "@api/routes/me/route";
-import { waitlistAdminRoute } from "@api/routes/admin/waitlist";
-import { creditsAdminRoute } from "@api/routes/admin/credits";
-import { creditsRoute } from "@api/routes/credits/route";
+import { adminRoute } from "@api/routes/admin";
+import { creditsRoute } from "@api/routes/credits";
 import { waitlistRoute } from "@api/routes/waitlist/route";
 import { viewerRoute } from "@api/routes/viewer/route";
-import { syncEventsRoute } from "@api/routes/sync/events";
-import { syncCompactRoute } from "@api/routes/sync/compact";
-import { projectSyncEventsRoute } from "@api/routes/cron/project-sync-events";
-import { squashSyncEventsRoute } from "@api/routes/cron/squash-sync-events";
+import { syncRoute } from "@api/routes/sync";
+import { cronRoute } from "@api/routes/cron";
 import { oidcDiscoveryRoute } from "@api/routes/oidc/discovery";
 
 const isProduction = env.NODE_ENV === "production";
@@ -69,14 +66,11 @@ export function createApp({ db, auth }: { db: AppDb; auth: Auth }) {
     .route("/health", healthRoute)
     .route("/viewer", viewerRoute)
     .route("/me", meRoute)
-    .route("/sync/events", syncEventsRoute)
-    .route("/sync/compact", syncCompactRoute)
-    .route("/cron/project-sync-events", projectSyncEventsRoute)
-    .route("/cron/squash-sync-events", squashSyncEventsRoute)
+    .route("/sync", syncRoute)
+    .route("/cron", cronRoute)
     .route("/waitlist", waitlistRoute)
-    .route("/admin/waitlist", waitlistAdminRoute)
+    .route("/admin", adminRoute)
     .route("/credits", creditsRoute)
-    .route("/admin/credits", creditsAdminRoute)
     .notFound((c) => c.json(errorBody({ message: "Not Found", code: "NOT_FOUND" }), 404))
     .onError((error, c) => errorResponse({ c, error, isProduction }));
 }

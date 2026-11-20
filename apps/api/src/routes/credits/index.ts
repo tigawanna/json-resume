@@ -1,0 +1,1 @@
+export { creditsRoute } from "./route";
