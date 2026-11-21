@@ -1,9 +1,6 @@
 packages:
   - apps/*
   - packages/*
-  # Solid 2 declares different package exports than the Solid 1 peers used by
-  # apps/web; keep this app on its own lockfile so both can coexist.
-  - "!apps/calc-paye-kenya"
 
 catalog:
   "@typescript/native-preview": 7.0.0-dev.20260707.2
@@ -50,7 +47,7 @@ overrides:
   proxy-addr: ^2.0.8
   qs: ^6.17.1
   seroval: ^1.7.10
-  # apps/web and its devtools still target Solid 1; the Solid 2 port uses its own lockfile.
+  # apps/web and its devtools still target Solid 1.
   solid-js: 1.9.19
   sharp: ^0.35.5
   shell-quote: ^1.12.0
