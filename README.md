@@ -32,31 +32,31 @@ No vendor lock-in, no waiting for some background service, no proprietary format
 
 ## Stack
 
-| Layer         | Choice                                            |
-| ------------- | ------------------------------------------------- |
-| Monorepo      | pnpm workspaces + Turbo                           |
-| App framework | TanStack Start (SSR-capable React 19 + compiler)  |
-| Routing       | TanStack Router (file-based)                      |
-| Data fetching | TanStack Query + TanStack DB (local collections)  |
-| API           | Hono (`apps/api`) with oRPC + OpenAPI for tools   |
-| Database      | Drizzle ORM on libSQL (Turso or local file)       |
-| Auth          | Better Auth (GitHub OAuth)                        |
-| AI            | TanStack AI + OpenRouter (BYO key)                |
-| PDF           | `@react-pdf/renderer`                             |
-| Styling       | Tailwind CSS v4 + DaisyUI tokens + shadcn/ui      |
-| Testing       | Vitest (unit) + Playwright (e2e)                  |
-| Tooling       | Vite+ (`vp` CLI)                                  |
+| Layer         | Choice                                           |
+| ------------- | ------------------------------------------------ |
+| Monorepo      | pnpm workspaces + Turbo                          |
+| App framework | TanStack Start (SSR-capable React 19 + compiler) |
+| Routing       | TanStack Router (file-based)                     |
+| Data fetching | TanStack Query + TanStack DB (local collections) |
+| API           | Hono (`apps/api`) with oRPC + OpenAPI for tools  |
+| Database      | Drizzle ORM on libSQL (Turso or local file)      |
+| Auth          | Better Auth (GitHub OAuth)                       |
+| AI            | TanStack AI + OpenRouter (BYO key)               |
+| PDF           | `@react-pdf/renderer`                            |
+| Styling       | Tailwind CSS v4 + DaisyUI tokens + shadcn/ui     |
+| Testing       | Vitest (unit) + Playwright (e2e)                 |
+| Tooling       | Vite+ (`vp` CLI)                                 |
 
 ## Repo layout
 
-| Path            | Role                                                              |
-| --------------- | ----------------------------------------------------------------- |
-| `apps/web`      | TanStack Start app: UI, routes, local collections, PDF pipeline   |
-| `apps/api`      | Hono API: auth, Drizzle queries, AI/agent tools (oRPC, MCP, SSE)  |
-| `packages/db`   | Drizzle schema shared by both apps                                |
-| `packages/isomorphic` | Shared types and auth config                                |
-| `packages/ui`   | Shared React components                                           |
-| `packages/typescript-config` | Shared tsconfig presets                              |
+| Path                         | Role                                                             |
+| ---------------------------- | ---------------------------------------------------------------- |
+| `apps/web`                   | TanStack Start app: UI, routes, local collections, PDF pipeline  |
+| `apps/api`                   | Hono API: auth, Drizzle queries, AI/agent tools (oRPC, MCP, SSE) |
+| `packages/db`                | Drizzle schema shared by both apps                               |
+| `packages/isomorphic`        | Shared types and auth config                                     |
+| `packages/ui`                | Shared React components                                          |
+| `packages/typescript-config` | Shared tsconfig presets                                          |
 
 Data flow: the browser keeps sections in local TanStack DB collections and syncs them to the server as events; the API exposes read-only, Drizzle-backed tools for AI agents through oRPC, MCP, and OpenAPI-compatible routes (see `apps/web/src/features/agentic-tools/README.md`).
 
@@ -84,16 +84,16 @@ Database schema changes go through Drizzle (`pnpm --dir apps/web db:generate` th
 
 ## Scripts
 
-| Command          | What it does                        |
-| ---------------- | ----------------------------------- |
-| `pnpm dev`       | Turbo dev (web + api)               |
-| `pnpm build`     | Build all packages and apps         |
-| `pnpm lint`      | `vp lint` (deny warnings)           |
-| `pnpm format`    | `vp fmt`                            |
-| `pnpm test`      | Vitest unit tests                   |
-| `pnpm test:e2e`  | Playwright e2e                      |
-| `pnpm check-types` | Typecheck all packages            |
-| `pnpm quality`   | Lint + format check                 |
+| Command            | What it does                |
+| ------------------ | --------------------------- |
+| `pnpm dev`         | Turbo dev (web + api)       |
+| `pnpm build`       | Build all packages and apps |
+| `pnpm lint`        | `vp lint` (deny warnings)   |
+| `pnpm format`      | `vp fmt`                    |
+| `pnpm test`        | Vitest unit tests           |
+| `pnpm test:e2e`    | Playwright e2e              |
+| `pnpm check-types` | Typecheck all packages      |
+| `pnpm quality`     | Lint + format check         |
 
 Use **`vp`** from the repo root for per-task lint/format/test (e.g. `vp check`).
 

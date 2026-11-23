@@ -7,10 +7,7 @@ export type Executor = Pick<typeof db, "select" | "insert" | "update">;
 
 export type CreditWallet = typeof creditWallet.$inferSelect;
 
-export async function readWallet(
-  tx: Executor,
-  userId: string,
-): Promise<CreditWallet | undefined> {
+export async function readWallet(tx: Executor, userId: string): Promise<CreditWallet | undefined> {
   const [wallet] = await tx
     .select()
     .from(creditWallet)

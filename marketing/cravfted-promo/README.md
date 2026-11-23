@@ -4,17 +4,17 @@ Source project for the 24-second product promo. The composition is plain HTML/CS
 
 ## Files
 
-| Path | Role |
-| --- | --- |
-| `index.html` | Scene structure and shot metadata |
-| `timeline.js` | Paused GSAP master timeline; seek by time |
-| `assets/styles.css` | Tokens taken from the app's dark DaisyUI theme |
-| `assets/` | Logo, icons, screenshot crops, self-hosted fonts, GSAP |
-| `render.mjs` | Frames with Playwright Chromium, encodes with FFmpeg |
-| `MOTION.md` | Shot list, brand-token sources, open decisions |
-| `screenshots/` | Raw flow captures supplied by the user |
-| `assets/screens/flow/` | Crops used by the shots |
-| `dist/cravfted-promo-v2.mp4` | Current 30 s master (generated) |
+| Path                         | Role                                                   |
+| ---------------------------- | ------------------------------------------------------ |
+| `index.html`                 | Scene structure and shot metadata                      |
+| `timeline.js`                | Paused GSAP master timeline; seek by time              |
+| `assets/styles.css`          | Tokens taken from the app's dark DaisyUI theme         |
+| `assets/`                    | Logo, icons, screenshot crops, self-hosted fonts, GSAP |
+| `render.mjs`                 | Frames with Playwright Chromium, encodes with FFmpeg   |
+| `MOTION.md`                  | Shot list, brand-token sources, open decisions         |
+| `screenshots/`               | Raw flow captures supplied by the user                 |
+| `assets/screens/flow/`       | Crops used by the shots                                |
+| `dist/cravfted-promo-v2.mp4` | Current 30 s master (generated)                        |
 
 ## Render
 

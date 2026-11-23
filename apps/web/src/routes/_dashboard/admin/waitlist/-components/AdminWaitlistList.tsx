@@ -5,7 +5,13 @@ import { TSRListPagination } from "@/components/pagination/TSRListPagination";
 import { SearchBox } from "@/components/search/SearchBox";
 import { usePageSearchQuery } from "@/components/search/use-page-search-query";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useQuery } from "@tanstack/react-query";
 import { getRouteApi } from "@tanstack/react-router";
 import { AdminPageHeader } from "../../-components/AdminPageHeader";
@@ -63,7 +69,10 @@ export function AdminWaitlistList() {
         </div>
         <div className="flex shrink-0 items-center gap-2">
           <StatusFilter value={search.status} onChange={(status) => patchSearch({ status })} />
-          <AccountFilter value={search.hasAccount} onChange={(hasAccount) => patchSearch({ hasAccount })} />
+          <AccountFilter
+            value={search.hasAccount}
+            onChange={(hasAccount) => patchSearch({ hasAccount })}
+          />
           <Button type="button" variant="outline" size="sm" asChild data-test="waitlist-export">
             <a href={`${clientEnv.VITE_HONO_API_URL}/api/admin/waitlist/export`}>Export CSV</a>
           </Button>

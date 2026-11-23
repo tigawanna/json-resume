@@ -38,9 +38,7 @@ function DashboardAssistantMessage({
   );
 }
 
-function DashboardAskUserTool({
-  part,
-}: ToolProps<DashboardAssistantChatOptions, "ask_user">) {
+function DashboardAskUserTool({ part }: ToolProps<DashboardAssistantChatOptions, "ask_user">) {
   return <AskUserQuestionCard part={part} dataTest="dashboard-assistant-ask-user" />;
 }
 

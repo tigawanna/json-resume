@@ -27,4 +27,4 @@ const rows = await db
   .innerJoin(user, eq(syncEvent.userId, user.id))
   .limit(2);
 
-console.dir(rows, { depth: null }); 
+console.dir(rows, { depth: null });

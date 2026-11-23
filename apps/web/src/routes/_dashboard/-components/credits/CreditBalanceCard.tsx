@@ -12,10 +12,7 @@ export function CreditBalanceCard() {
   if (clientEnv.VITE_CREDITS_ENABLED !== "true") return null;
 
   return (
-    <div
-      className="w-full max-w-[90%] md:max-w-[70%]"
-      data-test="credit-balance-card"
-    >
+    <div className="w-full max-w-[90%] md:max-w-[70%]" data-test="credit-balance-card">
       <CreditBalanceCardContent />
     </div>
   );

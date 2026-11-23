@@ -6,9 +6,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { DashboardLayout } from "@/components/dashoboard-sidebar/DashboardLayout";
 import { EventSourcedDbProvider } from "@/data-access-layer/event-sourced/provider";
 import { useViewer } from "@/data-access-layer/auth/viewer";
-import {
-  claimWaitlistMutationOptions,
-} from "@/data-access-layer/waitlist/waitlist-query-options";
+import { claimWaitlistMutationOptions } from "@/data-access-layer/waitlist/waitlist-query-options";
 import { useMutation } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { FpsCounter } from "@/components/fps-counter/FpsCounter";

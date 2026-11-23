@@ -27,13 +27,13 @@ api.grantInvoke(sync);
 
 That coupling is the scalable half, and it is the reason sync is not folded into the Hono app:
 
-| Primitive | What it unlocks |
-|---|---|
-| DynamoDB | The event log: append and sequence, sized for the free allowance well past today's traffic. |
+| Primitive        | What it unlocks                                                                                      |
+| ---------------- | ---------------------------------------------------------------------------------------------------- |
+| DynamoDB         | The event log: append and sequence, sized for the free allowance well past today's traffic.          |
 | DynamoDB Streams | Materialization. A second function writes the projected tables. Sync Lambda stays off that database. |
-| SQS, SNS, SES | Fan-out, mail, and queues once a single Lambda invoke is the wrong shape. |
-| Bedrock | A remote MCP and agent that can sit behind those queues and grow with them. |
-| EventBridge | Schedules and the small quality-of-life wiring that should live outside the request path. |
+| SQS, SNS, SES    | Fan-out, mail, and queues once a single Lambda invoke is the wrong shape.                            |
+| Bedrock          | A remote MCP and agent that can sit behind those queues and grow with them.                          |
+| EventBridge      | Schedules and the small quality-of-life wiring that should live outside the request path.            |
 
 None of SQS, SNS, SES, Bedrock, or EventBridge are in the template yet. The boundary is what makes adding them a new subscriber, not a rewrite of the API.
 
@@ -61,16 +61,16 @@ The API database moves to RDS for PostgreSQL on the smallest instance, in the sa
 
 ## Why each piece
 
-| Piece | Choice | Why |
-|---|---|---|
-| API process | One Lambda running the Hono app through `hono/aws-lambda` | The same `app` the Node server mounts. Routes, auth, credits and the waitlist stay in one function with one database client. |
-| Secrets | Secrets Manager, one JSON secret | Database URL and token, the Better Auth secret, GitHub OAuth and the cron secret stay out of the template and the Lambda config. The function reads them on cold start. |
-| Public front door | API Gateway HTTP API in front of `/api/*` | The gateway throttles everything. On `/api/sync/*` it also checks the JWT before the Lambda runs, so a missing or expired token never spends a concurrency slot. Other routes keep Better Auth cookies, because a gateway authorizer would block `/api/auth/*` logins. |
-| Client signals | Three different answers | On sync, `401` means log in again and get a new JWT. Retrying the same token does nothing. `429` carries `Retry-After`, so the client waits out the rate limit. A credit stop from `GET /api/credits` is the payment signal. Upgrading the plan is what changes that, not the throttle header. |
-| Sync check | IAM invoke of the API Lambda | Sync Lambda asks the same Hono app if the user is allowed, with no public gateway in between. Code inside the Hono process calls the credit function directly. |
-| Event log | DynamoDB | The log is an append and a sequence query, not a join. One résumé is about 70 small items. On-demand DynamoDB stays inside the free allowance far past the current 10–20 users a week. |
-| Projected tables | A stream materializer, separate from Sync Lambda | DynamoDB Streams invokes a second function that writes the projected tables into RDS for PostgreSQL. Sync Lambda never opens that database. A device that only syncs never needs those tables. |
-| Site | CloudFront in front of the built web app | The web build is static files. CloudFront serves `apps/web/dist/client`. It is not part of the request path for sync or credits. |
+| Piece             | Choice                                                    | Why                                                                                                                                                                                                                                                                                            |
+| ----------------- | --------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| API process       | One Lambda running the Hono app through `hono/aws-lambda` | The same `app` the Node server mounts. Routes, auth, credits and the waitlist stay in one function with one database client.                                                                                                                                                                   |
+| Secrets           | Secrets Manager, one JSON secret                          | Database URL and token, the Better Auth secret, GitHub OAuth and the cron secret stay out of the template and the Lambda config. The function reads them on cold start.                                                                                                                        |
+| Public front door | API Gateway HTTP API in front of `/api/*`                 | The gateway throttles everything. On `/api/sync/*` it also checks the JWT before the Lambda runs, so a missing or expired token never spends a concurrency slot. Other routes keep Better Auth cookies, because a gateway authorizer would block `/api/auth/*` logins.                         |
+| Client signals    | Three different answers                                   | On sync, `401` means log in again and get a new JWT. Retrying the same token does nothing. `429` carries `Retry-After`, so the client waits out the rate limit. A credit stop from `GET /api/credits` is the payment signal. Upgrading the plan is what changes that, not the throttle header. |
+| Sync check        | IAM invoke of the API Lambda                              | Sync Lambda asks the same Hono app if the user is allowed, with no public gateway in between. Code inside the Hono process calls the credit function directly.                                                                                                                                 |
+| Event log         | DynamoDB                                                  | The log is an append and a sequence query, not a join. One résumé is about 70 small items. On-demand DynamoDB stays inside the free allowance far past the current 10–20 users a week.                                                                                                         |
+| Projected tables  | A stream materializer, separate from Sync Lambda          | DynamoDB Streams invokes a second function that writes the projected tables into RDS for PostgreSQL. Sync Lambda never opens that database. A device that only syncs never needs those tables.                                                                                                 |
+| Site              | CloudFront in front of the built web app                  | The web build is static files. CloudFront serves `apps/web/dist/client`. It is not part of the request path for sync or credits.                                                                                                                                                               |
 
 ## Run it on Floci
 
@@ -118,12 +118,12 @@ A résumé is stored as one event per row, not one event for the whole document.
 
 The projection fixture (`resume-projection-events.json`) is 3 résumés, 208 events, and 73,628 bytes of JSON payloads. That is 354 bytes of payload per event. The standalone résumé document (`real-resume.json`) is 8,534 bytes and expands to about 70 rows: the résumé, a summary, 5 jobs, 20 bullets, education, 3 projects, 2 talks, 5 skill groups, 30 skills, and a couple of links.
 
-| | Count |
-|---|---|
-| Events to create one résumé | 70 |
-| DynamoDB writes to create one résumé | 140 (one `Put` for the event, one `Update` for the per-user sequence counter) |
-| Lambda invocations to create one résumé | 1 (the push batch holds 100 events) |
-| Reads on that push | 0 (conditional put, no lookup first) |
+|                                         | Count                                                                         |
+| --------------------------------------- | ----------------------------------------------------------------------------- |
+| Events to create one résumé             | 70                                                                            |
+| DynamoDB writes to create one résumé    | 140 (one `Put` for the event, one `Update` for the per-user sequence counter) |
+| Lambda invocations to create one résumé | 1 (the push batch holds 100 events)                                           |
+| Reads on that push                      | 0 (conditional put, no lookup first)                                          |
 
 A cover letter or job description cannot approach the 400 KB DynamoDB item limit. An update stores the new text and the previous text, so the prose would have to be about 200 KB (roughly 30,000 words) before the write failed. A long posting is about 10 KB. 100 KB of English is about 1,000 lines.
 
@@ -133,12 +133,12 @@ Items in the estimates below are counted as 1 KB, which is above the measured pa
 
 The 12-month account trial is separate. DynamoDB Standard and Lambda keep these monthly allowances for the life of the account, per Region:
 
-| Allowance | Amount | What it does not cover |
-|---|---|---|
-| DynamoDB storage | 25 GB | Standard-IA, backups, point-in-time recovery |
+| Allowance                     | Amount                           | What it does not cover                                |
+| ----------------------------- | -------------------------------- | ----------------------------------------------------- |
+| DynamoDB storage              | 25 GB                            | Standard-IA, backups, point-in-time recovery          |
 | DynamoDB provisioned capacity | 25 write units and 25 read units | On-demand requests. Storage is still free up to 25 GB |
-| Lambda requests | 1,000,000 | |
-| Lambda compute | 400,000 GB-seconds | |
+| Lambda requests               | 1,000,000                        |                                                       |
+| Lambda compute                | 400,000 GB-seconds               |                                                       |
 
 25 provisioned write units is 25 items per second of up to 1 KB, all month, at no charge. The storage cap is what accumulates across the year. The request cap resets every month.
 
@@ -151,24 +151,24 @@ The 12-month account trial is separate. DynamoDB Standard and Lambda keep these 
 
 Per user per month:
 
-| | Count |
-|---|---|
-| New events kept if nothing is squashed | 2,360 |
-| Storage added | 2.30 MB |
-| Lambda invocations | 1,934 (960 pushes, 960 pulls, 14 create batches) |
-| DynamoDB writes | 4,720 |
-| DynamoDB reads | 960 |
+|                                        | Count                                            |
+| -------------------------------------- | ------------------------------------------------ |
+| New events kept if nothing is squashed | 2,360                                            |
+| Storage added                          | 2.30 MB                                          |
+| Lambda invocations                     | 1,934 (960 pushes, 960 pulls, 14 create batches) |
+| DynamoDB writes                        | 4,720                                            |
+| DynamoDB reads                         | 960                                              |
 
 If squash keeps only the current row for each key, a user who holds 20 résumés occupies about 1.37 MB and stays there. The 2.30 MB figure is the append-only case, where every keystroke flush is kept for the year.
 
 ## How many of those users fit for a year
 
-| Ceiling | Users | Why |
-|---|---|---|
-| Lambda requests | **517** | 1,000,000 / 1,934 |
-| Lambda compute | 4,136 | 256 MB for 200 ms is 0.05 GB-seconds per call |
-| DynamoDB storage, append-only for 12 months | 925 | 25 GB / (2.30 MB × 12) |
-| DynamoDB storage, squashed to live rows | about 18,700 | 25 GB / 1.37 MB |
+| Ceiling                                     | Users        | Why                                           |
+| ------------------------------------------- | ------------ | --------------------------------------------- |
+| Lambda requests                             | **517**      | 1,000,000 / 1,934                             |
+| Lambda compute                              | 4,136        | 256 MB for 200 ms is 0.05 GB-seconds per call |
+| DynamoDB storage, append-only for 12 months | 925          | 25 GB / (2.30 MB × 12)                        |
+| DynamoDB storage, squashed to live rows     | about 18,700 | 25 GB / 1.37 MB                               |
 
 **517 users** is the number that stays inside every monthly allowance for the whole year, if every one of them types on that schedule. At 517 users the log grows to about 14 GB by month 12, still under 25 GB. Compute used is about 50,000 GB-seconds of the 400,000. Average write rate at that population is under 1 write per second, against a free 25.
 
@@ -180,13 +180,13 @@ Someone who only creates 20 résumés and does not type all day is a different c
 
 Unsubsidized price of one such user for a month, on-demand DynamoDB plus Lambda, with no free units applied:
 
-| | Per user per month |
-|---|---|
-| DynamoDB writes (4,720 × $1.25 / 1,000,000) | $0.0059 |
-| DynamoDB reads (960 × $0.25 / 1,000,000) | $0.0002 |
-| Lambda requests | $0.0004 |
-| Lambda compute (256 MB, 200 ms) | $0.0016 |
-| **Total** | **$0.008** |
+|                                             | Per user per month |
+| ------------------------------------------- | ------------------ |
+| DynamoDB writes (4,720 × $1.25 / 1,000,000) | $0.0059            |
+| DynamoDB reads (960 × $0.25 / 1,000,000)    | $0.0002            |
+| Lambda requests                             | $0.0004            |
+| Lambda compute (256 MB, 200 ms)             | $0.0016            |
+| **Total**                                   | **$0.008**         |
 
 About **10 cents per user per year**. Storage past 25 GB adds $0.25 per GB-month, which is under a cent per user per year at 2.30 MB a month.
 

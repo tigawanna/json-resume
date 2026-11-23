@@ -12,7 +12,8 @@ export function CabinetDocuments({ className, size = 24, ...props }: CabinetDocu
       viewBox="0 0 512 512"
       fill="currentColor"
       className={className}
-      {...props}>
+      {...props}
+    >
       <defs>
         <filter id="cabinet-thin-borders">
           <feMorphology operator="erode" radius="7" />

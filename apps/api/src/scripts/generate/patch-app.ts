@@ -1,17 +1,10 @@
 import type { ResourceNames } from "./names";
 
-const MODULE_IMPORT =
-  /^import \{ \w+Controller \} from "@api\/modules\/[^"]+";$/gm;
+const MODULE_IMPORT = /^import \{ \w+Controller \} from "@api\/modules\/[^"]+";$/gm;
 const RESOLVE = /^ {2}const \w+ = container\.resolve\(\{ token: \w+Controller \}\);$/gm;
 const MODULE_ROUTE = /^ {4}\.route\("\/[^"]+", \w+\.routes\)$/gm;
 
-export function patchAppSource({
-  source,
-  names,
-}: {
-  source: string;
-  names: ResourceNames;
-}) {
+export function patchAppSource({ source, names }: { source: string; names: ResourceNames }) {
   if (source.includes(`@api/modules/${names.kebab}/${names.kebab}.controller`)) {
     throw new Error(`${names.kebab} is already imported in app.ts`);
   }
@@ -20,10 +13,7 @@ export function patchAppSource({
   const resolveLine = `  const ${names.camel} = container.resolve({ token: ${names.pascal}Controller });`;
   const routeLine = `    .route("/${names.kebab}", ${names.camel}.routes)`;
 
-  return insertRoute(
-    insertResolve(insertImport({ source, importLine }), resolveLine),
-    routeLine,
-  );
+  return insertRoute(insertResolve(insertImport({ source, importLine }), resolveLine), routeLine);
 }
 
 function insertImport({ source, importLine }: { source: string; importLine: string }) {

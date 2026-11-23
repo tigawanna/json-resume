@@ -86,7 +86,8 @@ export function LandingWorkbench() {
           <span>Same loop, your data. Local-first and reversible.</span>
           <Link
             to="/dashboard"
-            className="flex items-center gap-1 text-primary transition-opacity hover:opacity-80">
+            className="flex items-center gap-1 text-primary transition-opacity hover:opacity-80"
+          >
             Open the editor
             <ArrowRight className="size-3" />
           </Link>
@@ -133,7 +134,8 @@ function WorkbenchFrame() {
     <div
       ref={frameRef}
       data-test="landing-workbench-frame"
-      className="mx-auto max-w-5xl overflow-hidden border border-border/60 bg-base-100 shadow-sm">
+      className="mx-auto max-w-5xl overflow-hidden border border-border/60 bg-base-100 shadow-sm"
+    >
       <WindowBar />
 
       <AiChrome />
@@ -143,7 +145,8 @@ function WorkbenchFrame() {
           <div
             ref={scrollRef}
             className="flex h-72 flex-col gap-3 overflow-y-auto px-3 py-4 md:h-88 md:px-4"
-            data-test="landing-workbench-chat">
+            data-test="landing-workbench-chat"
+          >
             {state.prompt ? (
               <>
                 <div className="flex justify-end">
@@ -202,7 +205,8 @@ function WorkbenchFrame() {
           type="button"
           onClick={restart}
           className="flex items-center gap-1 transition-colors hover:text-base-content"
-          data-test="landing-workbench-replay">
+          data-test="landing-workbench-replay"
+        >
           <RotateCcw className="size-3" />
           replay
         </button>
@@ -242,7 +246,8 @@ function AiChrome() {
     <div
       aria-hidden
       className="flex h-9 shrink-0 items-center justify-end gap-1 border-b border-border/60 px-2"
-      data-test="landing-workbench-ai-chrome">
+      data-test="landing-workbench-ai-chrome"
+    >
       <span className="flex items-center gap-1.5 rounded-md bg-secondary px-2 py-1 text-[11px] text-secondary-content">
         <FileText className="size-3.5" />
         Preview
@@ -288,7 +293,8 @@ function Composer({ state }: { state: WorkbenchStreamState }) {
           <div className="flex min-w-0 items-center gap-1">
             <span
               aria-hidden
-              className="flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground">
+              className="flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground"
+            >
               <Plus className="size-4" />
             </span>
             <span className="hidden min-w-0 items-center gap-1.5 px-1 text-[11px] sm:flex">
@@ -314,7 +320,8 @@ function Composer({ state }: { state: WorkbenchStreamState }) {
               className={cn(
                 "flex size-7 items-center justify-center rounded-md bg-primary text-primary-content transition-opacity",
                 !canSend && "opacity-50",
-              )}>
+              )}
+            >
               <ArrowUp className="size-4" />
             </span>
           </div>
@@ -389,7 +396,8 @@ function AskCard({ tool }: { tool: WorkbenchToolRun }) {
   return (
     <div
       className="flex flex-col gap-2 rounded-xl bg-base-200/40 px-3 py-3 ring-1 ring-primary/25"
-      data-test="landing-workbench-ask">
+      data-test="landing-workbench-ask"
+    >
       <p className="text-[11px] font-medium text-base-content">{ask.question}</p>
       {answered ? (
         <p className="text-[11px] text-muted-foreground">{ask.selected}</p>
@@ -398,7 +406,8 @@ function AskCard({ tool }: { tool: WorkbenchToolRun }) {
           {ask.options.map((option) => (
             <span
               key={option}
-              className="rounded-lg border border-primary/15 bg-primary/10 px-2.5 py-2 text-left text-[11px] text-base-content/90">
+              className="rounded-lg border border-primary/15 bg-primary/10 px-2.5 py-2 text-left text-[11px] text-base-content/90"
+            >
               {option}
             </span>
           ))}
@@ -460,7 +469,8 @@ function ToolSuccess({
   return (
     <div
       className="mt-1.5 flex items-center gap-2 rounded-lg bg-[color-mix(in_oklch,var(--color-success)_9%,var(--color-base-100))] px-2.5 py-2 ring-1 ring-[color-mix(in_oklch,var(--color-success)_25%,transparent)]"
-      data-test={`landing-workbench-${view}-card`}>
+      data-test={`landing-workbench-${view}-card`}
+    >
       <span className="flex size-7 shrink-0 items-center justify-center rounded-md bg-success/15 text-success">
         {icon}
       </span>
@@ -471,7 +481,8 @@ function ToolSuccess({
       <button
         type="button"
         onClick={() => onOpenView(view)}
-        className="flex shrink-0 items-center gap-1 text-[10px] font-medium text-success transition-opacity hover:opacity-75">
+        className="flex shrink-0 items-center gap-1 text-[10px] font-medium text-success transition-opacity hover:opacity-75"
+      >
         <Eye className="size-3" />
         Preview
       </button>
@@ -502,12 +513,14 @@ function PreviewPanel({
   return (
     <div
       className={cn("flex min-h-0 flex-col bg-base-100", className)}
-      data-test="landing-workbench-preview">
+      data-test="landing-workbench-preview"
+    >
       <header className="flex flex-wrap items-center gap-2 border-b border-border/60 px-3 py-2">
         <span className="min-w-0 flex-1 truncate text-xs font-medium">{RESUME_CONTENT.name}</span>
         <div
           className="flex w-full items-center gap-0.5 overflow-x-auto rounded-lg bg-base-200 p-0.5 scrollbar-none lg:w-auto [&::-webkit-scrollbar]:hidden"
-          data-test="landing-workbench-tabs">
+          data-test="landing-workbench-tabs"
+        >
           {WORKBENCH_VIEWS.map((value) => {
             const meta = VIEW_META[value];
             const Icon = meta.icon;
@@ -523,7 +536,8 @@ function PreviewPanel({
                   active
                     ? "bg-base-100 text-base-content shadow-sm"
                     : "text-muted-foreground hover:text-base-content",
-                )}>
+                )}
+              >
                 <Icon className="size-3" />
                 {meta.label}
                 {value === "changes" && hasDiff ? (
@@ -569,7 +583,8 @@ function ResumePaper({
   return (
     <div
       className="mx-auto flex max-w-sm flex-col gap-3 bg-base-100 p-3 ring-1 ring-border/60 md:p-4"
-      data-test="landing-workbench-resume">
+      data-test="landing-workbench-resume"
+    >
       <div>
         <p className="font-serif text-lg leading-tight tracking-tight text-base-content">
           {RESUME_CONTENT.name}
@@ -581,7 +596,8 @@ function ResumePaper({
         className={cn(
           "border-l-2 pl-3 transition-colors duration-500",
           summaryDone ? "border-primary" : "border-border",
-        )}>
+        )}
+      >
         <p className="font-mono text-[9px] tracking-[0.2em] text-muted-foreground uppercase">
           Summary
         </p>
@@ -607,7 +623,8 @@ function ResumePaper({
                   dropped
                     ? "text-muted-foreground/50 line-through decoration-border"
                     : "text-muted-foreground",
-                )}>
+                )}
+              >
                 <span aria-hidden className="mt-1.5 size-1 shrink-0 bg-primary/60" />
                 <span>{text}</span>
               </li>
@@ -625,7 +642,8 @@ function ResumePaper({
               skillsDone &&
                 (tag === "TypeScript" || tag === "React") &&
                 "border-primary/40 text-primary",
-            )}>
+            )}
+          >
             {tag}
           </span>
         ))}
@@ -699,7 +717,8 @@ function EventsView({ landed }: { landed: ReadonlySet<string> }) {
         {rows.map((row, index) => (
           <li
             key={row.tool}
-            className="flex items-center gap-2 border-b border-border/40 px-1 py-2">
+            className="flex items-center gap-2 border-b border-border/40 px-1 py-2"
+          >
             <div className="min-w-0 flex-1">
               <p className="text-[11px] font-medium text-base-content">{row.label}</p>
               <p className="truncate text-[10px] text-muted-foreground">{row.detail}</p>
@@ -707,7 +726,8 @@ function EventsView({ landed }: { landed: ReadonlySet<string> }) {
             {index < rows.length - 1 ? (
               <span
                 className="flex size-6 shrink-0 items-center justify-center text-muted-foreground"
-                aria-label="Undo this and newer">
+                aria-label="Undo this and newer"
+              >
                 <History className="size-3.5" />
               </span>
             ) : null}
@@ -732,7 +752,8 @@ function LetterView({ ready }: { ready: boolean }) {
   return (
     <div
       className="mx-auto max-w-sm bg-base-100 p-4 ring-1 ring-border/60"
-      data-test="landing-workbench-letter">
+      data-test="landing-workbench-letter"
+    >
       <div className="flex items-start justify-between gap-2 border-b border-border/60 pb-2">
         <div className="min-w-0">
           <p className="truncate font-serif text-sm text-base-content">
@@ -814,7 +835,8 @@ function SuggestedPrompts() {
       {SUGGESTED_PROMPTS.map((prompt) => (
         <span
           key={prompt}
-          className="flex items-center gap-2 rounded-lg border border-border/60 px-3 py-2 text-[11px] text-muted-foreground">
+          className="flex items-center gap-2 rounded-lg border border-border/60 px-3 py-2 text-[11px] text-muted-foreground"
+        >
           <ArrowUp className="size-3 shrink-0 text-primary" />
           {prompt}
         </span>
@@ -838,7 +860,8 @@ function ThinkingBlock({ text, streaming }: { text: string; streaming: boolean }
         className={cn(
           "mt-1 border-l border-border/60 pl-3 text-[11px] leading-5 text-muted-foreground/70",
           streaming ? "line-clamp-3" : "line-clamp-2",
-        )}>
+        )}
+      >
         {text || "…"}
       </p>
     </details>
@@ -883,7 +906,8 @@ function ScriptBlock({ block }: { block: string }) {
         {lines.map((line, index) => (
           <li
             key={index}
-            className="flex gap-1.5 text-[11px] leading-relaxed text-muted-foreground">
+            className="flex gap-1.5 text-[11px] leading-relaxed text-muted-foreground"
+          >
             <span aria-hidden className="mt-1.5 size-1 shrink-0 bg-primary/60" />
             <span>
               <Inline text={line.slice(2)} />

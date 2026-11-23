@@ -1,9 +1,5 @@
 import { errorBody } from "@api/lib/http";
-import {
-  AdjustmentBelowZeroError,
-  BannedUserError,
-  UnknownUserError,
-} from "@api/modules/credits";
+import { AdjustmentBelowZeroError, BannedUserError, UnknownUserError } from "@api/modules/credits";
 import type { AppEnv } from "@api/types";
 import type { Context } from "hono";
 

@@ -1,10 +1,20 @@
-import { creditLedgerQueryOptions, type CreditLedgerResponse } from "@/data-access-layer/credits/credits-query-options";
+import {
+  creditLedgerQueryOptions,
+  type CreditLedgerResponse,
+} from "@/data-access-layer/credits/credits-query-options";
 import { TSRListPagination } from "@/components/pagination/TSRListPagination";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty";
 import { Spinner } from "@/components/ui/spinner";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { formatLocaleDateTime } from "@/utils/date-helpers";
 import { useQuery } from "@tanstack/react-query";
 import { getRouteApi } from "@tanstack/react-router";
@@ -45,7 +55,10 @@ export function CreditsLedgerList() {
       <CardContent>
         <LedgerBody query={query} />
         <div className="mt-4">
-          <TSRListPagination routeID={ROUTE_ID} totalPages={query.data?.pagination.totalPages ?? 0} />
+          <TSRListPagination
+            routeID={ROUTE_ID}
+            totalPages={query.data?.pagination.totalPages ?? 0}
+          />
         </div>
       </CardContent>
     </Card>
@@ -65,7 +78,9 @@ function LedgerBody({ query }: { query: ReturnType<typeof useQuery<CreditLedgerR
       <Empty>
         <EmptyHeader>
           <EmptyTitle>No credit activity yet</EmptyTitle>
-          <EmptyDescription>Grants, expiries, and résumé spends will show up here.</EmptyDescription>
+          <EmptyDescription>
+            Grants, expiries, and résumé spends will show up here.
+          </EmptyDescription>
         </EmptyHeader>
       </Empty>
     );
@@ -93,7 +108,9 @@ function LedgerBody({ query }: { query: ReturnType<typeof useQuery<CreditLedgerR
               </TableCell>
               <TableCell className="font-mono text-sm">{amountLabel(row.amount)}</TableCell>
               <TableCell>
-                <Badge variant={row.bucket === "bonus" ? "secondary" : "outline"}>{row.bucket}</Badge>
+                <Badge variant={row.bucket === "bonus" ? "secondary" : "outline"}>
+                  {row.bucket}
+                </Badge>
               </TableCell>
               <TableCell className="text-xs text-muted-foreground">
                 {formatLocaleDateTime(row.createdAt)}

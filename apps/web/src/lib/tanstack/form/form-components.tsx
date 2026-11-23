@@ -7,7 +7,12 @@ interface SubmitButtonProps extends React.ComponentProps<typeof Button> {
   children?: React.ReactNode;
 }
 
-export function SubmitButton({ label = "Submit", className, children, ...props }: SubmitButtonProps) {
+export function SubmitButton({
+  label = "Submit",
+  className,
+  children,
+  ...props
+}: SubmitButtonProps) {
   const form = useFormContext();
 
   return (

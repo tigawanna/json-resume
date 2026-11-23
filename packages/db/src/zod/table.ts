@@ -1,9 +1,5 @@
 import type { Table } from "drizzle-orm";
-import {
-  createInsertSchema,
-  createSelectSchema,
-  createUpdateSchema,
-} from "drizzle-zod";
+import { createInsertSchema, createSelectSchema, createUpdateSchema } from "drizzle-zod";
 
 export { createInsertSchema, createSelectSchema, createUpdateSchema };
 

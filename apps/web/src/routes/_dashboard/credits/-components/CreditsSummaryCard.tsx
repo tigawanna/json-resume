@@ -23,11 +23,7 @@ export function CreditsSummaryCard() {
   );
 }
 
-function SummaryBody({
-  query,
-}: {
-  query: ReturnType<typeof useQuery<CreditWalletResponse>>;
-}) {
+function SummaryBody({ query }: { query: ReturnType<typeof useQuery<CreditWalletResponse>> }) {
   if (query.isPending) {
     return <p className="text-sm text-muted-foreground">Loading…</p>;
   }
@@ -54,8 +50,7 @@ function SummaryBody({
           </span>
         ) : null}
         <span className="inline-flex items-center gap-1">
-          <CalendarClock className="size-3.5" />
-          1 credit = 1 résumé
+          <CalendarClock className="size-3.5" />1 credit = 1 résumé
         </span>
       </div>
     </div>

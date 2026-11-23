@@ -17,12 +17,9 @@ export async function startLocalFirstResume(
   const data = startFirstResumeToolInputSchema.parse(input);
   const job = data.jobId ? requireJob(ctx.db, data.jobId) : null;
   const supplied =
-    data.documents ??
-    (data.document ? [{ name: data.name, document: data.document }] : []);
+    data.documents ?? (data.document ? [{ name: data.name, document: data.document }] : []);
   const items =
-    supplied.length > 0
-      ? supplied
-      : [{ name: data.name, document: createStarterResumeDocument() }];
+    supplied.length > 0 ? supplied : [{ name: data.name, document: createStarterResumeDocument() }];
 
   let created = { resumeId: "", name: data.name };
   for (const item of items) {

@@ -81,11 +81,13 @@ describe("projection charges real sync events", () => {
     ]);
 
     // A rebuild re-emits inserts for the same three résumés: still three charges.
-    await db.insert(syncEvent).values(
-      fixture.events
-        .filter((event) => event.collectionId === "resume")
-        .map((event) => toSyncEvent(event, userId)),
-    );
+    await db
+      .insert(syncEvent)
+      .values(
+        fixture.events
+          .filter((event) => event.collectionId === "resume")
+          .map((event) => toSyncEvent(event, userId)),
+      );
     await projectUnappliedSyncEvents(fixture.events.length);
 
     const afterRebuild = await db

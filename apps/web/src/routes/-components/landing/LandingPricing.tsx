@@ -88,11 +88,7 @@ export function LandingPricing() {
         ))}
       </div>
 
-      <WaitlistJoinDialog
-        open={joinOpen}
-        onOpenChange={setJoinOpen}
-        source="landing"
-      />
+      <WaitlistJoinDialog open={joinOpen} onOpenChange={setJoinOpen} source="landing" />
     </Section>
   );
 }

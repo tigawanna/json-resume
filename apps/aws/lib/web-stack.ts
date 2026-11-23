@@ -2,10 +2,7 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { CfnOutput, RemovalPolicy, Stack, type StackProps } from "aws-cdk-lib";
-import {
-  Distribution,
-  ViewerProtocolPolicy,
-} from "aws-cdk-lib/aws-cloudfront";
+import { Distribution, ViewerProtocolPolicy } from "aws-cdk-lib/aws-cloudfront";
 import { S3BucketOrigin } from "aws-cdk-lib/aws-cloudfront-origins";
 import { Bucket } from "aws-cdk-lib/aws-s3";
 import { BucketDeployment, Source } from "aws-cdk-lib/aws-s3-deployment";

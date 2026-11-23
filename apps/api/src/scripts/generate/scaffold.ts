@@ -13,13 +13,7 @@ export function apiRootFromCli({ cliDir }: { cliDir: string }) {
   return path.resolve(cliDir, "../../..");
 }
 
-export async function writeService({
-  srcDir,
-  names,
-}: {
-  srcDir: string;
-  names: ResourceNames;
-}) {
+export async function writeService({ srcDir, names }: { srcDir: string; names: ResourceNames }) {
   const dir = path.join(srcDir, "modules", names.kebab);
   await mkdir(dir, { recursive: true });
   const file = path.join(dir, `${names.kebab}.service.ts`);
@@ -32,13 +26,7 @@ export async function writeService({
   return file;
 }
 
-export async function writeController({
-  srcDir,
-  names,
-}: {
-  srcDir: string;
-  names: ResourceNames;
-}) {
+export async function writeController({ srcDir, names }: { srcDir: string; names: ResourceNames }) {
   const dir = path.join(srcDir, "modules", names.kebab);
   await mkdir(dir, { recursive: true });
   const file = path.join(dir, `${names.kebab}.controller.ts`);
@@ -51,13 +39,7 @@ export async function writeController({
   return file;
 }
 
-export async function mountController({
-  srcDir,
-  names,
-}: {
-  srcDir: string;
-  names: ResourceNames;
-}) {
+export async function mountController({ srcDir, names }: { srcDir: string; names: ResourceNames }) {
   const appFile = path.join(srcDir, "app.ts");
   const source = await readFile(appFile, "utf8");
   await writeFile(appFile, patchAppSource({ source, names }));

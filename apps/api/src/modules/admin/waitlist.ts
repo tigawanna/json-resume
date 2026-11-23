@@ -35,15 +35,11 @@ export const waitlistAdminRoute = new Hono<AppEnv>()
   .patch(
     "/entries/:id",
     requireAdmin,
-    zValidator(
-      "param",
-      z.object({ id: z.string().min(1).max(64) }),
-      (result, c) => {
-        if (!result.success) {
-          return c.json(errorBody({ message: "Invalid entry id", code: "VALIDATION_ERROR" }), 400);
-        }
-      },
-    ),
+    zValidator("param", z.object({ id: z.string().min(1).max(64) }), (result, c) => {
+      if (!result.success) {
+        return c.json(errorBody({ message: "Invalid entry id", code: "VALIDATION_ERROR" }), 400);
+      }
+    }),
     zValidator("json", updateEntryInput, (result, c) => {
       if (!result.success) {
         return c.json(

@@ -41,8 +41,8 @@ export function OutOfCreditsDialog() {
         <DialogHeader>
           <DialogTitle>Out of résumé credits</DialogTitle>
           <DialogDescription>
-            You&apos;ve used your {CREDIT_POLICY.monthlyCredits} résumés this month. Credits reset on{" "}
-            {resetDate}. Editing existing résumés is always free.
+            You&apos;ve used your {CREDIT_POLICY.monthlyCredits} résumés this month. Credits reset
+            on {resetDate}. Editing existing résumés is always free.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>

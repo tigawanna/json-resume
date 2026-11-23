@@ -12,7 +12,10 @@ export const grantInput = z.object({
 export const adjustInput = z.object({
   bucket: z.enum(["monthly", "bonus"]),
   /** Signed: negative removes credits. */
-  amount: z.number().int().refine((value) => value !== 0, "Amount cannot be zero"),
+  amount: z
+    .number()
+    .int()
+    .refine((value) => value !== 0, "Amount cannot be zero"),
   reason: z.string().trim().min(1).max(500),
 });
 

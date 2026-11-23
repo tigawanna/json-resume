@@ -14,7 +14,10 @@ function isAuthorized(request: Request): boolean {
 
 export const squashSyncEventsRoute = new Hono<AppEnv>().on(["GET", "POST"], "/", async (c) => {
   if (!env.CRON_SECRET) {
-    return c.json(errorBody({ message: "CRON_SECRET is not configured", code: "NOT_CONFIGURED" }), 503);
+    return c.json(
+      errorBody({ message: "CRON_SECRET is not configured", code: "NOT_CONFIGURED" }),
+      503,
+    );
   }
   if (!isAuthorized(c.req.raw)) {
     return c.json(errorBody({ message: "Unauthorized", code: "UNAUTHORIZED" }), 401);

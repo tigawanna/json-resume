@@ -32,8 +32,9 @@ describe("lazy monthly allocation", () => {
 
     // The snapshot and the append-only ledger must agree. Without this, a
     // mismatch between the grant amount and the wallet balance is invisible.
-    const grant = (await db.select().from(creditLedger).where(eq(creditLedger.userId, userId)))
-      .find((row) => row.type === "monthly_grant");
+    const grant = (
+      await db.select().from(creditLedger).where(eq(creditLedger.userId, userId))
+    ).find((row) => row.type === "monthly_grant");
     expect(grant).toMatchObject({
       amount: 20,
       bucket: "monthly",
@@ -65,7 +66,9 @@ describe("lazy monthly allocation", () => {
     // Drive the real allocation path through six independent connections to
     // the same throwaway database so the transactions genuinely overlap.
     const sharedDb = getDb();
-    const clients = Array.from({ length: 6 }, () => createTestDb({ url: process.env.DATABASE_URL! }));
+    const clients = Array.from({ length: 6 }, () =>
+      createTestDb({ url: process.env.DATABASE_URL! }),
+    );
     try {
       await Promise.all(
         // Keep the wait short: contending writers are tolerated by the
@@ -86,7 +89,8 @@ describe("lazy monthly allocation", () => {
       expect(results.some((result) => result.status === "fulfilled")).toBe(true);
       for (const result of results) {
         if (result.status === "rejected") {
-          const message = result.reason instanceof Error ? result.reason.message : String(result.reason);
+          const message =
+            result.reason instanceof Error ? result.reason.message : String(result.reason);
           expect(message).toMatch(/busy|locked/i);
         }
       }
@@ -133,9 +137,7 @@ describe("lazy monthly allocation", () => {
     const grants = ledger.filter((row) => row.type === "monthly_grant");
     expect(grants).toHaveLength(2); // one per month
     expect(
-      grants
-        .map((row) => row.periodKey)
-        .sort((a, b) => (a ?? "").localeCompare(b ?? "")),
+      grants.map((row) => row.periodKey).sort((a, b) => (a ?? "").localeCompare(b ?? "")),
     ).toEqual(["2026-02", "2026-03"]);
   });
 

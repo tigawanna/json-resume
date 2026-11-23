@@ -371,28 +371,12 @@
               ]
             }
           ],
-          "education": [
-            "sample"
-          ],
-          "projects": [
-            "sample",
-            "sample"
-          ],
-          "talks": [
-            "sample",
-            "sample"
-          ],
-          "contacts": [
-            "sample",
-            "sample"
-          ],
-          "links": [
-            "sample",
-            "sample"
-          ],
-          "summaries": [
-            "sample"
-          ],
+          "education": ["sample"],
+          "projects": ["sample", "sample"],
+          "talks": ["sample", "sample"],
+          "contacts": ["sample", "sample"],
+          "links": ["sample", "sample"],
+          "summaries": ["sample"],
           "notes": [],
           "certifications": [],
           "volunteers": [],
@@ -627,28 +611,12 @@
               ]
             }
           ],
-          "education": [
-            "sample"
-          ],
-          "projects": [
-            "sample",
-            "sample"
-          ],
-          "talks": [
-            "sample",
-            "sample"
-          ],
-          "contacts": [
-            "sample",
-            "sample"
-          ],
-          "links": [
-            "sample",
-            "sample"
-          ],
-          "summaries": [
-            "sample"
-          ],
+          "education": ["sample"],
+          "projects": ["sample", "sample"],
+          "talks": ["sample", "sample"],
+          "contacts": ["sample", "sample"],
+          "links": ["sample", "sample"],
+          "summaries": ["sample"],
           "notes": [],
           "certifications": [],
           "volunteers": [],
@@ -883,29 +851,12 @@
               ]
             }
           ],
-          "education": [
-            "sample"
-          ],
-          "projects": [
-            "sample",
-            "sample",
-            "sample"
-          ],
-          "talks": [
-            "sample",
-            "sample"
-          ],
-          "contacts": [
-            "sample",
-            "sample"
-          ],
-          "links": [
-            "sample",
-            "sample"
-          ],
-          "summaries": [
-            "sample"
-          ],
+          "education": ["sample"],
+          "projects": ["sample", "sample", "sample"],
+          "talks": ["sample", "sample"],
+          "contacts": ["sample", "sample"],
+          "links": ["sample", "sample"],
+          "summaries": ["sample"],
           "notes": [],
           "certifications": [],
           "volunteers": [],

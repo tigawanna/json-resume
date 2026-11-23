@@ -49,6 +49,8 @@ async function openResumeList(page: Page) {
 }
 
 function resumeCard(page: Page, name: string): Locator {
-  const title = page.locator("[data-slot='card-title']").filter({ hasText: new RegExp(`^\\s*${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*$`) });
+  const title = page
+    .locator("[data-slot='card-title']")
+    .filter({ hasText: new RegExp(`^\\s*${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*$`) });
   return page.getByTestId("resumes-table").locator(ROW_SELECTOR).filter({ has: title });
 }

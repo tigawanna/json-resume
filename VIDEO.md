@@ -1,4 +1,5 @@
 # Making the promo video
+
 [projects](https://github.com/nexu-io/openmotion)
 (The product promo lives in [`marketing/cravfted-promo/`](marketing/cravfted-promo/). It's plain HTML + CSS + a GSAP timeline — no video editor, no API keys, no per-render cost.
 
@@ -28,12 +29,12 @@ Frame numbers are `seconds × 24` (frame 150 ≈ 6.25 s).
 
 ## Change something
 
-| Want to change… | Edit |
-| --- | --- |
-| On-screen words | `marketing/cravfted-promo/index.html` |
-| Colors, fonts, spacing | `marketing/cravfted-promo/assets/styles.css` (tokens come from `apps/web/src/styles.css`) |
-| Timing, order, animation | `marketing/cravfted-promo/timeline.js` (all times are absolute seconds) |
-| Shot list / open decisions | `marketing/cravfted-promo/MOTION.md` |
+| Want to change…            | Edit                                                                                      |
+| -------------------------- | ----------------------------------------------------------------------------------------- |
+| On-screen words            | `marketing/cravfted-promo/index.html`                                                     |
+| Colors, fonts, spacing     | `marketing/cravfted-promo/assets/styles.css` (tokens come from `apps/web/src/styles.css`) |
+| Timing, order, animation   | `marketing/cravfted-promo/timeline.js` (all times are absolute seconds)                   |
+| Shot list / open decisions | `marketing/cravfted-promo/MOTION.md`                                                      |
 
 Then rerun `node render.mjs`.
 

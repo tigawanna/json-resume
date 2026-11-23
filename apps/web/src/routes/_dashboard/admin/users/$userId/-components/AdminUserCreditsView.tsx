@@ -22,9 +22,7 @@ export function AdminUserCreditsView() {
   const page = routeApi.useSearch().page ?? 1;
 
   const walletQuery = useQuery(adminUserWalletQueryOptions({ userId }));
-  const ledgerQuery = useQuery(
-    adminUserCreditsQueryOptions({ userId, page, perPage: PAGE_SIZE }),
-  );
+  const ledgerQuery = useQuery(adminUserCreditsQueryOptions({ userId, page, perPage: PAGE_SIZE }));
   const data = walletQuery.data;
   const ledger = ledgerQuery.data;
   const isPending = walletQuery.isPending || ledgerQuery.isPending;
@@ -48,7 +46,11 @@ export function AdminUserCreditsView() {
 
   return (
     <div className="flex min-h-full w-full flex-col gap-6" data-test="admin-user-credits">
-      <AdminPageHeader title={`${data.user.name} · credits`} description={data.user.email} backTo="/admin" />
+      <AdminPageHeader
+        title={`${data.user.name} · credits`}
+        description={data.user.email}
+        backTo="/admin"
+      />
 
       <WalletSummary monthly={data.wallet.monthly} bonus={data.wallet.bonus} />
 

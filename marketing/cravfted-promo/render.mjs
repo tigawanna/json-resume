@@ -20,9 +20,17 @@ fs.mkdirSync(outDir, { recursive: true });
 
 const browser = await chromium.launch({
   headless: true,
-  args: ["--no-sandbox", "--disable-dev-shm-usage", "--allow-file-access-from-files", "--font-render-hinting=none"],
+  args: [
+    "--no-sandbox",
+    "--disable-dev-shm-usage",
+    "--allow-file-access-from-files",
+    "--font-render-hinting=none",
+  ],
 });
-const page = await browser.newPage({ viewport: { width: 1920, height: 1080 }, deviceScaleFactor: 1 });
+const page = await browser.newPage({
+  viewport: { width: 1920, height: 1080 },
+  deviceScaleFactor: 1,
+});
 page.on("pageerror", (error) => console.error("PAGE ERROR:", error.message));
 page.on("console", (message) => {
   if (message.type() === "error") console.error("CONSOLE:", message.text());
@@ -45,7 +53,11 @@ for (const i of indices) {
     window.__timelines.main.time(t);
     return true;
   }, i / FPS);
-  await page.screenshot({ path: path.join(framesDir, `frame-${String(i).padStart(4, "0")}.jpg`), type: "jpeg", quality: 92 });
+  await page.screenshot({
+    path: path.join(framesDir, `frame-${String(i).padStart(4, "0")}.jpg`),
+    type: "jpeg",
+    quality: 92,
+  });
 }
 await browser.close();
 
@@ -55,14 +67,30 @@ if (preview) {
 }
 
 const out = path.join(outDir, "cravfted-promo-v2.mp4");
-const ffmpeg = spawnSync("ffmpeg", [
-  "-y", "-loglevel", "error",
-  "-framerate", String(FPS),
-  "-i", path.join(framesDir, "frame-%04d.jpg"),
-  "-c:v", "libx264", "-preset", "medium", "-crf", "18",
-  "-pix_fmt", "yuv420p", "-movflags", "+faststart",
-  out,
-], { stdio: "inherit" });
+const ffmpeg = spawnSync(
+  "ffmpeg",
+  [
+    "-y",
+    "-loglevel",
+    "error",
+    "-framerate",
+    String(FPS),
+    "-i",
+    path.join(framesDir, "frame-%04d.jpg"),
+    "-c:v",
+    "libx264",
+    "-preset",
+    "medium",
+    "-crf",
+    "18",
+    "-pix_fmt",
+    "yuv420p",
+    "-movflags",
+    "+faststart",
+    out,
+  ],
+  { stdio: "inherit" },
+);
 
 if (ffmpeg.status !== 0) process.exit(ffmpeg.status || 1);
 console.log(`Rendered ${TOTAL} frames → ${out}`);

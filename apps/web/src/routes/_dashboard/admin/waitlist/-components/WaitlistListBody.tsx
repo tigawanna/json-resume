@@ -22,11 +22,7 @@ export function WaitlistListBody(input: {
   }
 
   if (input.itemsEmpty) {
-    return input.hasFilters ? (
-      <FilteredEmpty onClear={input.clearSearch} />
-    ) : (
-      <WaitlistEmpty />
-    );
+    return input.hasFilters ? <FilteredEmpty onClear={input.clearSearch} /> : <WaitlistEmpty />;
   }
 
   return (

@@ -7,14 +7,8 @@ import {
 } from "../schema/resume/resume-ai-chat";
 import { resumeCertification } from "../schema/resume/resume-certification";
 import { resumeContact } from "../schema/resume/resume-contact";
-import {
-  resumeEducation,
-  resumeEducationBullet,
-} from "../schema/resume/resume-education";
-import {
-  resumeExperience,
-  resumeExperienceBullet,
-} from "../schema/resume/resume-experience";
+import { resumeEducation, resumeEducationBullet } from "../schema/resume/resume-education";
+import { resumeExperience, resumeExperienceBullet } from "../schema/resume/resume-experience";
 import { resumeLanguage } from "../schema/resume/resume-language";
 import { resumeLink } from "../schema/resume/resume-link";
 import { resumeNote } from "../schema/resume/resume-note";

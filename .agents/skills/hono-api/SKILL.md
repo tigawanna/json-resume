@@ -122,20 +122,32 @@ export class MeService {
 function createMeRoutes({ me }: { me: MeService }) {
   return new Hono<AppEnv>()
     .get("/", requireSession, (c) => c.json(me.profile({ session: c.get("session") })))
-    .patch("/", requireSession, zValidator("json", updateMeInput, (result, c) => {
-      if (!result.success) {
-        return c.json(errorBody({
-          message: "Invalid request body",
-          code: "VALIDATION_ERROR",
-          issues: result.error.issues,
-        }), 400);
-      }
-    }), async (c) => {
-      const { name } = c.req.valid("json");
-      const updated = await me.updateName({ name, headers: c.req.raw.headers });
-      if (!updated.ok) return c.json(errorBody({ message: "Failed to reload session", code: "INTERNAL_ERROR" }), 500);
-      return c.json({ user: updated.user });
-    });
+    .patch(
+      "/",
+      requireSession,
+      zValidator("json", updateMeInput, (result, c) => {
+        if (!result.success) {
+          return c.json(
+            errorBody({
+              message: "Invalid request body",
+              code: "VALIDATION_ERROR",
+              issues: result.error.issues,
+            }),
+            400,
+          );
+        }
+      }),
+      async (c) => {
+        const { name } = c.req.valid("json");
+        const updated = await me.updateName({ name, headers: c.req.raw.headers });
+        if (!updated.ok)
+          return c.json(
+            errorBody({ message: "Failed to reload session", code: "INTERNAL_ERROR" }),
+            500,
+          );
+        return c.json({ user: updated.user });
+      },
+    );
 }
 ```
 

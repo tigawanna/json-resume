@@ -22,7 +22,8 @@ export function addSyncJwtRoutes({
   httpApi: HttpApi;
   integration: HttpRouteIntegration;
 }) {
-  const issuer = process.env.SYNC_JWT_ISSUER ?? (isEmulator ? undefined : process.env.BETTER_AUTH_URL);
+  const issuer =
+    process.env.SYNC_JWT_ISSUER ?? (isEmulator ? undefined : process.env.BETTER_AUTH_URL);
   if (!issuer) {
     Annotations.of(scope).addWarningV2(
       "resume:sync-jwt-off",

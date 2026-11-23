@@ -316,7 +316,11 @@ function PreviewFileActions({
         onClick={() => void handleDownload()}
         data-test="resume-ai-preview-download"
       >
-        {savingPdf ? <Loader2 className="size-3.5 animate-spin" /> : <FileDown className="size-3.5" />}
+        {savingPdf ? (
+          <Loader2 className="size-3.5 animate-spin" />
+        ) : (
+          <FileDown className="size-3.5" />
+        )}
         Download
       </Button>
       <PublishResumeButton

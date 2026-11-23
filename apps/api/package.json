@@ -24,7 +24,7 @@
     "@repo/isomorphic": "workspace:*",
     "better-auth": "^1.7.18",
     "dotenv": "^17.4.2",
-    "drizzle-orm": "^0.45.2",
+    "drizzle-orm": "catalog:",
     "drizzle-query-logger": "^1.1.2",
     "event-sourced-collection": "^0.0.16",
     "evlog": "^2.35.1",

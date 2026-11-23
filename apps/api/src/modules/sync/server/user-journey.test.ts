@@ -8,7 +8,13 @@ import { apiClient, sessionInit } from "@api/core/testing/api-client";
 import { db } from "../../../db/client";
 import { adminAdjustCredits, adminGrantCredits } from "@api/modules/credits";
 import { ensureMonthlyAllocation } from "@api/modules/wallet";
-import { cleanupTouchedUsers, MAR_2026, signUp, makeAdmin, type WalletResponse } from "@api/modules/credits/tests/test-helpers";
+import {
+  cleanupTouchedUsers,
+  MAR_2026,
+  signUp,
+  makeAdmin,
+  type WalletResponse,
+} from "@api/modules/credits/tests/test-helpers";
 import realEvents from "./test-fixtures/resume-projection-events.json";
 import { toSyncEvent, type FixtureEvent } from "./test-fixtures/to-sync-event";
 import { projectUnappliedSyncEvents } from "./project-legacy.server";
@@ -126,6 +132,8 @@ describe("a user syncing résumés across account states", () => {
     // ledger for audit, and no résumé from any state was dropped.
     const rolled = await ensureMonthlyAllocation({ userId, now: MAR_2026 });
     expect(rolled).toMatchObject({ granted: true, expired: 0, wallet: { monthlyBalance: 20 } });
-    expect(await db.select({ id: resume.id }).from(resume).where(eq(resume.userId, userId))).toHaveLength(4);
+    expect(
+      await db.select({ id: resume.id }).from(resume).where(eq(resume.userId, userId)),
+    ).toHaveLength(4);
   });
 });

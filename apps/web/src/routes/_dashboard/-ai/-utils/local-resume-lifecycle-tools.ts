@@ -98,13 +98,17 @@ export async function createLocalResumeFromDocument(
     document: ResumeDocumentV1;
   },
 ): Promise<{ resumeId: string; name: string }> {
-  const resumeId = await insertBlankResume(ctx, {
-    name: input.name,
-    description: input.description ?? "",
-    fullName: input.document.header.fullName || input.name,
-    headline: input.document.header.headline ?? "",
-    templateId: input.document.meta.templateId,
-  }, { action: "import" });
+  const resumeId = await insertBlankResume(
+    ctx,
+    {
+      name: input.name,
+      description: input.description ?? "",
+      fullName: input.document.header.fullName || input.name,
+      headline: input.document.header.headline ?? "",
+      templateId: input.document.meta.templateId,
+    },
+    { action: "import" },
+  );
   attachJobDescription(ctx.db, ctx.userId, resumeId, input.jobDescription ?? "");
   await importDocument(ctx.db, resumeId, input.document);
   return { resumeId, name: input.name };
@@ -140,13 +144,17 @@ export async function createLocalResume(
   const data = createResumeToolInputSchema.parse(input);
   const jobId = data.jobId ? requireJob(ctx.db, data.jobId).id : null;
   const header = data.document?.header;
-  const resumeId = await insertBlankResume(ctx, {
-    name: data.name,
-    description: data.description ?? "",
-    fullName: header?.fullName || "",
-    headline: header?.headline ?? "",
-    templateId: data.document?.meta.templateId ?? "classic",
-  }, { action: "create", notifyOutOfCredits: false });
+  const resumeId = await insertBlankResume(
+    ctx,
+    {
+      name: data.name,
+      description: data.description ?? "",
+      fullName: header?.fullName || "",
+      headline: header?.headline ?? "",
+      templateId: data.document?.meta.templateId ?? "classic",
+    },
+    { action: "create", notifyOutOfCredits: false },
+  );
   if (jobId) attachJobToResume(ctx.db, resumeId, jobId);
   if (data.document) await importDocument(ctx.db, resumeId, data.document);
   if (data.makeActive) ctx.setActiveResumeId(resumeId);

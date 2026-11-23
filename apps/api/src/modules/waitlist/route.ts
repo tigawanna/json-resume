@@ -11,11 +11,7 @@ import { waitlistEntry } from "@repo/db/schema/credits-schema";
 
 /** Normalized on the way in: trimmed, lowercased, then validated. */
 export const joinWaitlistInput = z.object({
-  email: z
-    .string()
-    .trim()
-    .toLowerCase()
-    .pipe(z.email().max(320)),
+  email: z.string().trim().toLowerCase().pipe(z.email().max(320)),
   name: z.string().trim().min(1).max(120).optional(),
   /** Explicit consent checkbox. */
   consent: z.literal(true),

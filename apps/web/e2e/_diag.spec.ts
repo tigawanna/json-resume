@@ -14,12 +14,18 @@ test("diag autosave", async ({ page }) => {
   const dialog = page.getByRole("dialog", { name: "New Résumé" });
   await dialog.getByPlaceholder("e.g. Backend Engineer — Acme").fill(`Diag ${uniqueId}`);
   await dialog.getByRole("button", { name: "Create" }).click();
-  await page.getByTestId("resumes-table").getByText(`Diag ${uniqueId}`, { exact: true }).first().click();
+  await page
+    .getByTestId("resumes-table")
+    .getByText(`Diag ${uniqueId}`, { exact: true })
+    .first()
+    .click();
   await expect(page.getByTestId("resume-workbench")).toBeVisible();
   const metadata = page.getByTestId("metadata-form");
   await metadata.getByLabel("Headline").fill("Staff Platform Engineer");
   await page.waitForTimeout(5000);
   console.log("===== LOGS =====");
-  for (const l of logs) if (l.includes("AUTOSAVE") || l.includes("PAGEERROR") || l.includes("Failed to load")) console.log(l);
+  for (const l of logs)
+    if (l.includes("AUTOSAVE") || l.includes("PAGEERROR") || l.includes("Failed to load"))
+      console.log(l);
   console.log("STATUS", await metadata.getByTestId("autosave-status").textContent());
 });

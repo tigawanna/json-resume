@@ -95,10 +95,7 @@ export function WaitlistJoinForm({ source }: { source: WaitlistSource }) {
       className="flex flex-col gap-4"
       data-test="waitlist-join-form"
     >
-      <form.AppField
-        name="email"
-        validators={{ onChange: z.email("Enter a valid email address") }}
-      >
+      <form.AppField name="email" validators={{ onChange: z.email("Enter a valid email address") }}>
         {(field) => <field.EmailField label="Email" autoComplete="email" inputMode="email" />}
       </form.AppField>
 

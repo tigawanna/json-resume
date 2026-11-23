@@ -68,7 +68,11 @@ describe("start_resume_for_job", () => {
     seed();
     const ctx = dashboardContext();
 
-    const result = await startLocalResumeForJob(ctx, { ...proposal, resumeId: "cv", mode: "reuse" });
+    const result = await startLocalResumeForJob(ctx, {
+      ...proposal,
+      resumeId: "cv",
+      mode: "reuse",
+    });
 
     expect(result).toMatchObject({ resumeId: "cv", mode: "reuse", jobAttached: true });
     expect(fixture.db().collections.resume.get("cv")?.jobId).toBe("go");
@@ -79,7 +83,11 @@ describe("start_resume_for_job", () => {
     seed();
     const ctx = dashboardContext();
 
-    const result = await startLocalResumeForJob(ctx, { ...proposal, resumeId: "sre", mode: "reuse" });
+    const result = await startLocalResumeForJob(ctx, {
+      ...proposal,
+      resumeId: "sre",
+      mode: "reuse",
+    });
 
     expect(result).toMatchObject({ resumeId: "sre", jobAttached: false });
     expect(fixture.db().collections.resume.get("sre")?.jobId).toBe("old");

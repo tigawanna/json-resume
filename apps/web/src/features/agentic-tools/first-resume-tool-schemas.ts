@@ -29,7 +29,9 @@ export const startFirstResumeToolInputSchema = z.object({
     .trim()
     .min(1)
     .optional()
-    .describe("Tracked job to attach when they also pasted a posting. Save it with save_job first."),
+    .describe(
+      "Tracked job to attach when they also pasted a posting. Save it with save_job first.",
+    ),
   reason: z
     .string()
     .trim()

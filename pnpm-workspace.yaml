@@ -7,6 +7,9 @@ catalog:
   typescript: 7.0.2
   vite: npm:@voidzero-dev/vite-plus-core@1.6.0
   vite-plus: 1.6.0
+  drizzle-orm: 0.45.2
+  drizzle-zod: 0.8.3
+  drizzle-kit: 0.31.9
 
 onlyBuiltDependencies:
   - better-sqlite3
@@ -26,6 +29,10 @@ minimumReleaseAgeExclude:
 dedupePeerDependents: true
 
 overrides:
+  # better-auth and drizzle-orm declare Prisma as an optional peer. Nothing in
+  # this repo uses it. Drop the package so it cannot fork the Drizzle install.
+  "@prisma/client": "-"
+  prisma: "-"
   "@types/react": ^19.2.14
   "@types/react-dom": ^19.2.3
   "@babel/core": ^7.29.13

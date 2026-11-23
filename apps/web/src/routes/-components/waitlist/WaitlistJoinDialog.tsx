@@ -26,8 +26,8 @@ export function WaitlistJoinDialog({
         <DialogHeader>
           <DialogTitle>Join the waitlist</DialogTitle>
           <DialogDescription>
-            Pro features are in the works. Leave your email and we'll reach out when they open —
-            no payment, no spam.
+            Pro features are in the works. Leave your email and we'll reach out when they open — no
+            payment, no spam.
           </DialogDescription>
         </DialogHeader>
         <WaitlistJoinForm source={source} />

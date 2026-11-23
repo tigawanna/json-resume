@@ -6,6 +6,4 @@ import { fileURLToPath } from "node:url";
  *
  * Exported so callers do not climb to it with a relative URL.
  */
-export const migrationsFolder = fileURLToPath(
-  new URL("../drizzle/migrations", import.meta.url),
-);
+export const migrationsFolder = fileURLToPath(new URL("../drizzle/migrations", import.meta.url));

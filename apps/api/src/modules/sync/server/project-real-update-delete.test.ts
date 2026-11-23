@@ -43,10 +43,7 @@ describe("projection of real update and delete events", () => {
     expect(experience).toBeDefined();
     expect(experience!.role).toBe("sample"); // the recorded update payload
 
-    const afterWrite = await db
-      .select()
-      .from(creditLedger)
-      .where(eq(creditLedger.userId, userId));
+    const afterWrite = await db.select().from(creditLedger).where(eq(creditLedger.userId, userId));
     const spends = afterWrite.filter((row) => row.type === "resume_spend");
     expect(spends).toHaveLength(1);
     expect(spends[0]).toMatchObject({
@@ -67,16 +64,10 @@ describe("projection of real update and delete events", () => {
     expect(await db.select().from(resume).where(eq(resume.id, stream.resumeId))).toHaveLength(0);
     // The projector deletes only the target row; child rows are not cascaded here.
     expect(
-      await db
-        .select()
-        .from(resumeExperience)
-        .where(eq(resumeExperience.id, stream.experienceId)),
+      await db.select().from(resumeExperience).where(eq(resumeExperience.id, stream.experienceId)),
     ).toHaveLength(1);
 
-    const afterDelete = await db
-      .select()
-      .from(creditLedger)
-      .where(eq(creditLedger.userId, userId));
+    const afterDelete = await db.select().from(creditLedger).where(eq(creditLedger.userId, userId));
     expect(afterDelete.filter((row) => row.type === "resume_spend")).toHaveLength(1);
     expect(afterDelete.filter((row) => row.type === "resume_overdraft")).toHaveLength(0);
   });

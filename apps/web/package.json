@@ -81,7 +81,7 @@
     "daisyui": "^5.5.14",
     "date-fns": "^4.1.0",
     "diff": "^8.0.4",
-    "drizzle-orm": "^0.45.2",
+    "drizzle-orm": "catalog:",
     "embla-carousel-react": "^8.6.0",
     "event-sourced-collection": "^0.0.16",
     "evlog": "^2.35.1",

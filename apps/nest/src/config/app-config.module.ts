@@ -1,8 +1,8 @@
-import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import { validateEnv } from './env.schema.js';
+import { Module } from "@nestjs/common";
+import { ConfigModule } from "@nestjs/config";
+import { validateEnv } from "./env.schema.js";
 
-const isProduction = process.env.NODE_ENV === 'production';
+const isProduction = process.env.NODE_ENV === "production";
 
 @Module({
   imports: [
@@ -11,7 +11,7 @@ const isProduction = process.env.NODE_ENV === 'production';
       cache: true,
       expandVariables: true,
       ignoreEnvFile: isProduction,
-      envFilePath: isProduction ? undefined : ['.env'],
+      envFilePath: isProduction ? undefined : [".env"],
       validate: (source) => validateEnv({ source }),
     }),
   ],

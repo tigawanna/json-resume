@@ -1,17 +1,9 @@
 import { db } from "../../../db/client";
 import { unwrapUnknownError } from "@api/utils/errors";
-import {
-  applicationAnswer,
-} from "@repo/db/schema/application-answer-schema";
-import {
-  assistantSkill,
-} from "@repo/db/schema/assistant-skill-schema";
-import {
-  coverLetter,
-} from "@repo/db/schema/cover-letter-schema";
-import {
-  job,
-} from "@repo/db/schema/job-schema";
+import { applicationAnswer } from "@repo/db/schema/application-answer-schema";
+import { assistantSkill } from "@repo/db/schema/assistant-skill-schema";
+import { coverLetter } from "@repo/db/schema/cover-letter-schema";
+import { job } from "@repo/db/schema/job-schema";
 import {
   resume,
   resumeAiChat,
@@ -33,13 +25,8 @@ import {
   resumeTalk,
   resumeVolunteer,
 } from "@repo/db/schema/resume";
-import {
-  savedProject,
-} from "@repo/db/schema/saved-project-schema";
-import {
-  syncBackend,
-  syncEvent,
-} from "@repo/db/schema/sync-schema";
+import { savedProject } from "@repo/db/schema/saved-project-schema";
+import { syncBackend, syncEvent } from "@repo/db/schema/sync-schema";
 import { and, eq, getTableColumns, isNull, type SQL } from "drizzle-orm";
 import { requestLog } from "@api/lib/evlog/request-log";
 import { log as standaloneLog } from "evlog";
@@ -363,7 +350,6 @@ export async function projectUnappliedSyncEvents(limit = 100): Promise<ProjectLe
 
   return { projected, failed, lastSeq };
 }
-
 
 const MAX_PROJECTION_ROUNDS = 50;
 

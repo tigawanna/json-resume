@@ -123,162 +123,162 @@ const libraryIndexes = <T extends { id: string; userId?: string | null; updatedA
  * after `ensureDb()` once the user session and local settings are known.
  */
 export const appCollectionConfigs: AppCollectionDefs = {
-    resume: {
-      getKey: (row) => row.id,
-      indexes: [...libraryIndexes<Resume>(), byCreatedAt<Resume>()],
-    },
+  resume: {
+    getKey: (row) => row.id,
+    indexes: [...libraryIndexes<Resume>(), byCreatedAt<Resume>()],
+  },
 
-    resumeExperience: {
-      getKey: (row) => row.id,
-      indexes: libraryIndexes<ResumeExperience>(),
-    },
-    resumeExperienceBullet: {
-      getKey: (row) => row.id,
-      indexes: [
-        byId<ResumeExperienceBullet>(),
-        { select: (r) => r.experienceId, indexType: BasicIndex, name: "by-experience" },
-        byUpdatedAt<ResumeExperienceBullet>(),
-      ],
-    },
+  resumeExperience: {
+    getKey: (row) => row.id,
+    indexes: libraryIndexes<ResumeExperience>(),
+  },
+  resumeExperienceBullet: {
+    getKey: (row) => row.id,
+    indexes: [
+      byId<ResumeExperienceBullet>(),
+      { select: (r) => r.experienceId, indexType: BasicIndex, name: "by-experience" },
+      byUpdatedAt<ResumeExperienceBullet>(),
+    ],
+  },
 
-    resumeEducation: {
-      getKey: (row) => row.id,
-      indexes: libraryIndexes<ResumeEducation>(),
-    },
-    resumeEducationBullet: {
-      getKey: (row) => row.id,
-      indexes: [
-        byId<ResumeEducationBullet>(),
-        { select: (r) => r.educationId, indexType: BasicIndex, name: "by-education" },
-        byUpdatedAt<ResumeEducationBullet>(),
-      ],
-    },
+  resumeEducation: {
+    getKey: (row) => row.id,
+    indexes: libraryIndexes<ResumeEducation>(),
+  },
+  resumeEducationBullet: {
+    getKey: (row) => row.id,
+    indexes: [
+      byId<ResumeEducationBullet>(),
+      { select: (r) => r.educationId, indexType: BasicIndex, name: "by-education" },
+      byUpdatedAt<ResumeEducationBullet>(),
+    ],
+  },
 
-    resumeSkillGroup: {
-      getKey: (row) => row.id,
-      indexes: libraryIndexes<ResumeSkillGroup>(),
-    },
-    resumeSkill: {
-      getKey: (row) => row.id,
-      indexes: libraryIndexes<ResumeSkill>(),
-    },
+  resumeSkillGroup: {
+    getKey: (row) => row.id,
+    indexes: libraryIndexes<ResumeSkillGroup>(),
+  },
+  resumeSkill: {
+    getKey: (row) => row.id,
+    indexes: libraryIndexes<ResumeSkill>(),
+  },
 
-    resumeContact: {
-      getKey: (row) => row.id,
-      indexes: libraryIndexes<ResumeContact>(),
-    },
+  resumeContact: {
+    getKey: (row) => row.id,
+    indexes: libraryIndexes<ResumeContact>(),
+  },
 
-    resumeProject: {
-      getKey: (row) => row.id,
-      indexes: libraryIndexes<ResumeProject>(),
-    },
+  resumeProject: {
+    getKey: (row) => row.id,
+    indexes: libraryIndexes<ResumeProject>(),
+  },
 
-    resumeSummary: {
-      getKey: (row) => row.id,
-      indexes: libraryIndexes<ResumeSummary>(),
-    },
+  resumeSummary: {
+    getKey: (row) => row.id,
+    indexes: libraryIndexes<ResumeSummary>(),
+  },
 
-    resumeNote: {
-      getKey: (row) => row.id,
-      indexes: libraryIndexes<ResumeNote>(),
-    },
+  resumeNote: {
+    getKey: (row) => row.id,
+    indexes: libraryIndexes<ResumeNote>(),
+  },
 
-    resumeLink: {
-      getKey: (row) => row.id,
-      indexes: libraryIndexes<ResumeLink>(),
-    },
+  resumeLink: {
+    getKey: (row) => row.id,
+    indexes: libraryIndexes<ResumeLink>(),
+  },
 
-    resumeLanguage: {
-      getKey: (row) => row.id,
-      indexes: libraryIndexes<ResumeLanguage>(),
-    },
+  resumeLanguage: {
+    getKey: (row) => row.id,
+    indexes: libraryIndexes<ResumeLanguage>(),
+  },
 
-    resumeCertification: {
-      getKey: (row) => row.id,
-      indexes: libraryIndexes<ResumeCertification>(),
-    },
+  resumeCertification: {
+    getKey: (row) => row.id,
+    indexes: libraryIndexes<ResumeCertification>(),
+  },
 
-    resumeVolunteer: {
-      getKey: (row) => row.id,
-      indexes: libraryIndexes<ResumeVolunteer>(),
-    },
+  resumeVolunteer: {
+    getKey: (row) => row.id,
+    indexes: libraryIndexes<ResumeVolunteer>(),
+  },
 
-    resumeTalk: {
-      getKey: (row) => row.id,
-      indexes: libraryIndexes<ResumeTalk>(),
-    },
+  resumeTalk: {
+    getKey: (row) => row.id,
+    indexes: libraryIndexes<ResumeTalk>(),
+  },
 
-    resumeAiChat: {
-      getKey: (row) => row.id,
-      localOnly: true,
-      indexes: [byId<ResumeAiChat>(), byUserId<ResumeAiChat>(), byResumeId<ResumeAiChat>()],
-    },
-    resumeAiConversation: {
-      getKey: (row) => row.id,
-      localOnly: true,
-      indexes: [
-        byId<ResumeAiConversation>(),
-        byUserId<ResumeAiConversation>(),
-        byResumeId<ResumeAiConversation>(),
-        byUpdatedAt<ResumeAiConversation>(),
-      ],
-    },
-    resumeAiMessage: {
-      getKey: (row) => row.id,
-      localOnly: true,
-      indexes: [
-        byId<ResumeAiMessage>(),
-        { select: (r) => r.conversationId, indexType: BasicIndex, name: "by-conversation" },
-        { select: (r) => r.messageId, indexType: BasicIndex, name: "by-message-id" },
-        { select: (r) => r.position, indexType: BasicIndex, name: "by-position" },
-      ],
-    },
+  resumeAiChat: {
+    getKey: (row) => row.id,
+    localOnly: true,
+    indexes: [byId<ResumeAiChat>(), byUserId<ResumeAiChat>(), byResumeId<ResumeAiChat>()],
+  },
+  resumeAiConversation: {
+    getKey: (row) => row.id,
+    localOnly: true,
+    indexes: [
+      byId<ResumeAiConversation>(),
+      byUserId<ResumeAiConversation>(),
+      byResumeId<ResumeAiConversation>(),
+      byUpdatedAt<ResumeAiConversation>(),
+    ],
+  },
+  resumeAiMessage: {
+    getKey: (row) => row.id,
+    localOnly: true,
+    indexes: [
+      byId<ResumeAiMessage>(),
+      { select: (r) => r.conversationId, indexType: BasicIndex, name: "by-conversation" },
+      { select: (r) => r.messageId, indexType: BasicIndex, name: "by-message-id" },
+      { select: (r) => r.position, indexType: BasicIndex, name: "by-position" },
+    ],
+  },
 
-    savedProject: {
-      getKey: (row) => row.id,
-      indexes: libraryIndexes<SavedProject>(),
-    },
+  savedProject: {
+    getKey: (row) => row.id,
+    indexes: libraryIndexes<SavedProject>(),
+  },
 
-    job: {
-      getKey: (row) => row.id,
-      indexes: [
-        byId<Job>(),
-        byUserId<Job>(),
-        { select: (r) => r.status, indexType: BasicIndex, name: "by-status" },
-        byUpdatedAt<Job>(),
-      ],
-    },
+  job: {
+    getKey: (row) => row.id,
+    indexes: [
+      byId<Job>(),
+      byUserId<Job>(),
+      { select: (r) => r.status, indexType: BasicIndex, name: "by-status" },
+      byUpdatedAt<Job>(),
+    ],
+  },
 
-    coverLetter: {
-      getKey: (row) => row.id,
-      indexes: [
-        byId<CoverLetter>(),
-        byUserId<CoverLetter>(),
-        { select: (r) => r.resumeId, indexType: BasicIndex, name: "by-resume" },
-        byUpdatedAt<CoverLetter>(),
-      ],
-    },
+  coverLetter: {
+    getKey: (row) => row.id,
+    indexes: [
+      byId<CoverLetter>(),
+      byUserId<CoverLetter>(),
+      { select: (r) => r.resumeId, indexType: BasicIndex, name: "by-resume" },
+      byUpdatedAt<CoverLetter>(),
+    ],
+  },
 
-    applicationAnswer: {
-      getKey: (row) => row.id,
-      indexes: [
-        byId<ApplicationAnswer>(),
-        byUserId<ApplicationAnswer>(),
-        { select: (r) => r.jobId, indexType: BasicIndex, name: "by-job" },
-        { select: (r) => r.resumeId, indexType: BasicIndex, name: "by-resume" },
-        byUpdatedAt<ApplicationAnswer>(),
-      ],
-    },
+  applicationAnswer: {
+    getKey: (row) => row.id,
+    indexes: [
+      byId<ApplicationAnswer>(),
+      byUserId<ApplicationAnswer>(),
+      { select: (r) => r.jobId, indexType: BasicIndex, name: "by-job" },
+      { select: (r) => r.resumeId, indexType: BasicIndex, name: "by-resume" },
+      byUpdatedAt<ApplicationAnswer>(),
+    ],
+  },
 
-    assistantSkill: {
-      getKey: (row) => row.id,
-      indexes: [byId<AssistantSkill>(), byUserId<AssistantSkill>(), byUpdatedAt<AssistantSkill>()],
-    },
+  assistantSkill: {
+    getKey: (row) => row.id,
+    indexes: [byId<AssistantSkill>(), byUserId<AssistantSkill>(), byUpdatedAt<AssistantSkill>()],
+  },
 
-    settings: {
-      getKey: (row) => row.id,
-      localOnly: true,
-    },
+  settings: {
+    getKey: (row) => row.id,
+    localOnly: true,
+  },
 };
 
 const {

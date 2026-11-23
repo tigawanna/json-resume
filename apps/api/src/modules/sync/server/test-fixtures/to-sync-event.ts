@@ -13,10 +13,7 @@ export type FixtureEvent = {
  * Replay a recorded event as a pending sync event for a test user. Only the
  * transport envelope is synthesized; payload/previous are the recorded shapes.
  */
-export function toSyncEvent(
-  input: FixtureEvent,
-  userId: string,
-): typeof syncEvent.$inferInsert {
+export function toSyncEvent(input: FixtureEvent, userId: string): typeof syncEvent.$inferInsert {
   return {
     eventId: crypto.randomUUID(),
     userId,

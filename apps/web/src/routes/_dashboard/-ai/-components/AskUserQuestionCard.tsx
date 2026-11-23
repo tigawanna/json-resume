@@ -120,9 +120,7 @@ export function AskUserQuestionCard({
                     : "border-primary/15 bg-primary/10 text-base-content/90 hover:bg-primary/15",
                 )}
                 data-test={
-                  choice.id === "other"
-                    ? `${dataTest}-other`
-                    : `${dataTest}-option-${choice.id}`
+                  choice.id === "other" ? `${dataTest}-other` : `${dataTest}-option-${choice.id}`
                 }
               >
                 <span

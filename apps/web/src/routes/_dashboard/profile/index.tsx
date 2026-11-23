@@ -3,9 +3,9 @@ import { ProfileView } from "./-components/ProfileView";
 
 export const Route = createFileRoute("/_dashboard/profile/")({
   component: ProfileView,
-  beforeLoad: ({ context,location }) => {
+  beforeLoad: ({ context, location }) => {
     if (!context.viewer?.user) {
-      throw redirect({ to: "/auth",search: { returnTo:location.pathname } });
+      throw redirect({ to: "/auth", search: { returnTo: location.pathname } });
     }
   },
   head: () => ({

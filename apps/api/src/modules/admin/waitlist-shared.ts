@@ -25,7 +25,9 @@ export type WaitlistPage = Awaited<ReturnType<typeof readWaitlistPage>>;
 export async function readWaitlistPage(input: z.output<typeof listQueryInput>) {
   const filters = [];
   if (input.q) {
-    filters.push(or(like(waitlistEntry.email, `%${input.q}%`), like(waitlistEntry.name, `%${input.q}%`)));
+    filters.push(
+      or(like(waitlistEntry.email, `%${input.q}%`), like(waitlistEntry.name, `%${input.q}%`)),
+    );
   }
   if (input.status) {
     filters.push(eq(waitlistEntry.status, input.status));

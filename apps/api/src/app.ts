@@ -53,40 +53,42 @@ export function createApp({ db, auth }: { db: AppDb; auth: Auth }) {
    * Keep this a single chained expression: `AppType` is inferred from it, and
    * that type is what gives the web client end-to-end safety.
    */
-  return new Hono<EvlogVariables>()
-    .basePath("/api")
-    .use(
-      "*",
-      evlog({
-        // Dev-only NDJSON wide events for local debugging; serverless FS is read-only.
-        drain: isProduction
-          ? undefined
-          : createFsDrain({ dir: path.resolve(process.cwd(), env.EVLOG_DIR), maxFiles: 14 }),
-      }),
-    )
-    .use(
-      "*",
-      cors({
-        origin: (origin) => {
-          if (!origin) return null;
-          return env.TRUSTED_ORIGINS.includes(origin) ? origin : null;
-        },
-        credentials: true,
-      }),
-    )
-    // Better Auth owns everything under /api/auth/*.
-    .on(["GET", "POST"], "/auth/*", (c) => auth.handler(c.req.raw))
-    .route("/health", health.routes)
-    .route("/viewer", viewer.routes)
-    .route("/me", me.routes)
-    .route("/sync", sync.routes)
-    .route("/cron", cron.routes)
-    .route("/waitlist", waitlist.routes)
-    .route("/admin", admin.routes)
-    .route("/wallet", wallet.routes)
-    .route("/credits", credits.routes)
-    .notFound((c) => c.json(errorBody({ message: "Not Found", code: "NOT_FOUND" }), 404))
-    .onError((error, c) => errorResponse({ c, error, isProduction }));
+  return (
+    new Hono<EvlogVariables>()
+      .basePath("/api")
+      .use(
+        "*",
+        evlog({
+          // Dev-only NDJSON wide events for local debugging; serverless FS is read-only.
+          drain: isProduction
+            ? undefined
+            : createFsDrain({ dir: path.resolve(process.cwd(), env.EVLOG_DIR), maxFiles: 14 }),
+        }),
+      )
+      .use(
+        "*",
+        cors({
+          origin: (origin) => {
+            if (!origin) return null;
+            return env.TRUSTED_ORIGINS.includes(origin) ? origin : null;
+          },
+          credentials: true,
+        }),
+      )
+      // Better Auth owns everything under /api/auth/*.
+      .on(["GET", "POST"], "/auth/*", (c) => auth.handler(c.req.raw))
+      .route("/health", health.routes)
+      .route("/viewer", viewer.routes)
+      .route("/me", me.routes)
+      .route("/sync", sync.routes)
+      .route("/cron", cron.routes)
+      .route("/waitlist", waitlist.routes)
+      .route("/admin", admin.routes)
+      .route("/wallet", wallet.routes)
+      .route("/credits", credits.routes)
+      .notFound((c) => c.json(errorBody({ message: "Not Found", code: "NOT_FOUND" }), 404))
+      .onError((error, c) => errorResponse({ c, error, isProduction }))
+  );
 }
 
 const api = createApp({ db: getDb(), auth: getAuth() });

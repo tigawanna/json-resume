@@ -22,9 +22,7 @@ export class Container {
     if (cached !== undefined) return cached as T;
 
     const factory = this.factories.get(token);
-    const instance = factory
-      ? (factory(this) as T)
-      : this.constructFromInject({ token });
+    const instance = factory ? (factory(this) as T) : this.constructFromInject({ token });
     this.instances.set(token, instance);
     return instance;
   }

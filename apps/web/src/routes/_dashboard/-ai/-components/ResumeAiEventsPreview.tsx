@@ -126,7 +126,9 @@ function EventRow({
         </span>
         {summary ? <span className="truncate text-base-content/80">{summary}</span> : null}
         {changed.length > 0 ? (
-          <span className="truncate text-xs text-base-content/60">Changed {changed.join(", ")}</span>
+          <span className="truncate text-xs text-base-content/60">
+            Changed {changed.join(", ")}
+          </span>
         ) : null}
         <span className="text-xs text-base-content/50">
           {formatLocaleDateTime(event.timestamp)} · {eventStatus(event)}
