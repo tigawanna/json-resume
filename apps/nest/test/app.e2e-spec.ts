@@ -21,13 +21,17 @@ describe("AppController (e2e)", () => {
   });
 
   it("/docs (GET) serves Scalar", async () => {
-    const response = await request(app.getHttpServer()).get("/docs").expect(200);
+    const response = await request(app.getHttpServer()).get("/api/docs").expect(200);
     expect(response.text).toContain("Scalar");
   });
 
-  it("/docs-json lists SERVER_URL", async () => {
+  it("/docs-json lists SERVER_URL and Better Auth paths", async () => {
     const serverUrl = app.get(ConfigService<AppEnv, true>).get("SERVER_URL", { infer: true });
-    const response = await request(app.getHttpServer()).get("/docs-json").expect(200);
-    expect(response.body.servers).toEqual([{ url: serverUrl }]);
+    const response = await request(app.getHttpServer()).get("/api/docs-json").expect(200);
+    expect(response.body.servers).toEqual([{ url: `${serverUrl}/api` }]);
+    expect(response.body.paths["/me"]).toBeDefined();
+    expect(response.body.paths["/auth/sign-in/email"]).toBeDefined();
+    expect(response.body.tags.map((tag: { name: string }) => tag.name)).toContain("Better Auth");
+    expect(response.body.tags.map((tag: { name: string }) => tag.name)).not.toContain("Default");
   });
 });

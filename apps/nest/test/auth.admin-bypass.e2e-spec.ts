@@ -22,7 +22,7 @@ describe("auth admin bypass", () => {
 
   it("lets x-admin through /me as admin", async () => {
     const response = await request(app.getHttpServer())
-      .get("/me")
+      .get("/api/me")
       .set("x-admin", secret)
       .expect(200);
     expect(response.body.role).toBe("admin");
@@ -30,10 +30,10 @@ describe("auth admin bypass", () => {
   });
 
   it("lets x-admin through the admin session probe", async () => {
-    await request(app.getHttpServer()).get("/admin/session").set("x-admin", secret).expect(200);
+    await request(app.getHttpServer()).get("/api/admin/session").set("x-admin", secret).expect(200);
   });
 
   it("turns down a wrong x-admin value", async () => {
-    await request(app.getHttpServer()).get("/me").set("x-admin", "wrong").expect(401);
+    await request(app.getHttpServer()).get("/api/me").set("x-admin", "wrong").expect(401);
   });
 });

@@ -50,10 +50,10 @@ There is no checked-in OpenAPI file; Nest generates the document at boot.
 
 | What | Path | Example if `PORT=5040` |
 | --- | --- | --- |
-| Scalar UI | `/docs` | http://localhost:5040/docs |
-| OpenAPI JSON | `/docs-json` | http://localhost:5040/docs-json |
+| Scalar UI | `/api/docs` | http://localhost:5040/api/docs |
+| OpenAPI JSON | `/api/docs-json` | http://localhost:5040/api/docs-json |
 
-Scalar loads `/docs-json` from the same origin. Setup lives in `src/bootstrap/configure-app.ts`.
+HTTP is under `/api` (`/api/me`, `/api/auth/*`, …). OpenAPI `servers` is `SERVER_URL/api`, so Scalar lists `/me` and `/auth/...` against that base. Setup lives in `src/bootstrap/configure-app.ts`.
 
 ## Run tests
 

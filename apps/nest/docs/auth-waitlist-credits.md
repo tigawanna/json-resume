@@ -9,7 +9,7 @@ This is the plan for `apps/nest`. Schema and migrations stay in `packages/db`. T
 | Tables, relations, SQL migrations           | `packages/db`                                                |
 | Credit amounts and `requireWaitlist`        | `packages/isomorphic` `CREDIT_POLICY`                        |
 | HTTP, guards, Better Auth mount             | `apps/nest`                                                  |
-| Sync projection, compaction, résumé charges | Not in this pass. `POST /sync` and `GET /sync` return a stub |
+| Sync projection, compaction, résumé charges | Not in this pass. `POST /api/sync` and `GET /api/sync` return a stub |
 
 `apps/nest` does not run Drizzle Kit. Generate and apply SQL from `packages/db` (`pnpm --dir packages/db db:generate` / `db:migrate`).
 
@@ -21,11 +21,13 @@ The runtime client is `drizzle-orm/libsql/web` (HTTP). It uses `DATABASE_URL` (`
 
 `configureApp` in `src/bootstrap/configure-app.ts` is called from `main.ts` and from the test app.
 
-- Scalar UI: `/docs`
-- OpenAPI JSON: `/docs-json`
-- Document `servers` uses `SERVER_URL` (default `http://localhost:5040`)
+- Scalar UI: `/api/docs`
+- OpenAPI JSON: `/api/docs-json`
+- Nest routes use global prefix `/api`. Better Auth is already `/api/auth` and is not prefixed again.
+- Document `servers` is `SERVER_URL` plus `/api` (default `http://localhost:5040/api`). Paths in Scalar are relative to that (`/me`, `/auth/sign-in/email`), matching the HTTP routes `/api/me` and `/api/auth/sign-in/email`.
 - `ZodValidationPipe` and `ZodSerializerInterceptor` are registered here, because the testing app never runs `main.ts`
 - `cleanupOpenApiDoc` from `nestjs-zod` runs on the document factory
+- Better Auth `openAPI({ disableDefaultReference: true })` schema is merged into the same document (`/api/auth/*` paths). Nest already uses Scalar, so Better Auth's own `/api/auth/reference` UI stays off.
 - Cookie auth is documented. Do not document the test header as a public scheme
 
 The app runs on `NodeAdapter` (`@nestjs/platform-node` / `node:http`), not Express. Nest's body parser is off (`bodyParser: false`) so Better Auth can read the raw body. `@thallesp/nestjs-better-auth` parses JSON for the other routes. Trust proxy is `loopback` on the adapter (NodeAdapter does not take an Express hop count).
@@ -53,7 +55,7 @@ The library's global `AuthGuard` is disabled. `AppAuthGuard` is the global guard
 4. `banned` is 403. A banned admin stays banned.
 5. `@Roles(['admin'])` checks `user.role`. Values may be a comma-separated list. The role is read from the database or the Better Auth session, never from a client-supplied role header.
 
-`GET /me` returns `id`, `name`, `email`, `role`, `banned`. No password, token, or account row.
+`GET /api/me` returns `id`, `name`, `email`, `role`, `banned`. No password, token, or account row.
 
 `GET /admin/session` is only a role probe so the guard can be tested. It is not an admin product API.
 
@@ -89,13 +91,13 @@ export class WaitlistController {}
 - Method `@Throttle`: one route only (overrides the class).
 - `@SkipThrottle()`: opt out (health-style routes).
 
-Waitlist uses `WAITLIST_RATE_LIMIT` (5 per minute) in `src/waitlist/waitlist.constants.ts`. `/api/auth/*` and Scalar `/docs` are not Nest handlers, so they are not counted.
+Waitlist uses `WAITLIST_RATE_LIMIT` (5 per minute) in `src/waitlist/waitlist.constants.ts`. `/api/auth/*` and Scalar `/api/docs` are not Nest handlers, so they are not counted.
 
 E2e calls `createTestApp({ throttle: true })` only when asserting 429. Other tests replace `ThrottlerGuard` with `{ canActivate: () => true }`.
 
 ## Waitlist
 
-`POST /waitlist` is public and always answers `{ joined: true }` with status 200, including duplicates and the honeypot (`website` filled). That avoids email enumeration.
+`POST /api/waitlist` is public and always answers `{ joined: true }` with status 200, including duplicates and the honeypot (`website` filled). That avoids email enumeration.
 
 - Email is trimmed and lowercased.
 - `consent` must be `true`.
@@ -103,11 +105,11 @@ E2e calls `createTestApp({ throttle: true })` only when asserting 429. Other tes
 - If the signed-in user's email matches and they are not banned, the entry stores `userId` and `claimedAt`.
 - After that link, credits run the monthly allocation. Banned users are not eligible. With `requireWaitlist: false` (the shared policy today) a linked signed-in user receives `monthlyCredits` (20). With `requireWaitlist: true`, only a `joined` entry makes them eligible.
 
-`POST /waitlist/claim` requires a session. It links an unclaimed entry for the session email and then allocates. `{ claimed: false }` when there is nothing to link. It never overwrites an existing `userId`.
+`POST /api/waitlist/claim` requires a session. It links an unclaimed entry for the session email and then allocates. `{ claimed: false }` when there is nothing to link. It never overwrites an existing `userId`.
 
 ## Credits
 
-`GET /credits` requires a session. It runs the same lazy monthly allocation as `apps/api` (no cron):
+`GET /api/credits` requires a session. It runs the same lazy monthly allocation as `apps/api` (no cron):
 
 - Create the wallet if missing.
 - Same `YYYY-MM` period: do nothing.
@@ -123,7 +125,7 @@ This pass does not port admin grants, résumé spend, or overdraft. Those stay i
 
 ## Sync stub
 
-`GET /sync` and `POST /sync` have no projection, no writes, and no credit charge. Both return:
+`GET /api/sync` and `POST /api/sync` have no projection, no writes, and no credit charge. Both return:
 
 ```json
 { "status": "accepted", "implementation": "pending" }
@@ -144,7 +146,7 @@ When `requireWaitlist` is false, `WaitlistGuard` allows every signed-in user, an
 
 ## Tests
 
-`test/auth.conditions.e2e-spec.ts` covers 20 auth conditions against `/`, `/me`, and `/admin/session` using the personas above.
+`test/auth.conditions.e2e-spec.ts` covers 20 auth conditions against `/api`, `/api/me`, and `/api/admin/session` using the personas above.
 
 `test/waitlist-credits.e2e-spec.ts`:
 
@@ -153,9 +155,9 @@ When `requireWaitlist` is false, `WaitlistGuard` allows every signed-in user, an
 - Signed-in join links the user and grants 20 credits
 - Duplicate join stays `{ joined: true }`
 - Claim links an existing entry
-- `GET /credits` reports the grant
-- `POST /sync` without a user is 401
-- Signed-in `POST /sync` is the stub and does not change the balance
+- `GET /api/credits` reports the grant
+- `POST /api/sync` without a user is 401
+- Signed-in `POST /api/sync` is the stub and does not change the balance
 - With `requireWaitlist: true`, a user who has not joined is 403 and a waitlisted user is accepted
 - A banned user is 403
 
@@ -167,4 +169,4 @@ Do not fill these in until the sync design is reviewed:
 - `spendResumeCredit` / overdraft
 - Idempotency keys on résumé creates
 - JWT authorizer for desktop clients
-- Charging inside `POST /sync` (the guard only checks that a credit exists)
+- Charging inside `POST /api/sync` (the guard only checks that a credit exists)

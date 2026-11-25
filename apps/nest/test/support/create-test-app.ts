@@ -61,7 +61,7 @@ export async function createTestApp({
     createHttpAdapter(),
     nestHttpOptions,
   );
-  configureApp({ app });
+  await configureApp({ app });
   await app.init();
   return { app, db, close: () => database.close() };
 }

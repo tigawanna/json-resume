@@ -15,7 +15,7 @@ async function bootstrap() {
       ...nestHttpOptions,
     },
   );
-  configureApp({ app });
+  await configureApp({ app });
   const config = app.get(ConfigService<AppEnv, true>);
   await app.listen(config.get("PORT", { infer: true }));
 }

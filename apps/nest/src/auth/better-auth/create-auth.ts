@@ -7,6 +7,7 @@ import type { AccessControl } from 'better-auth/plugins/access';
 import { admin } from 'better-auth/plugins/admin';
 import { jwt } from 'better-auth/plugins/jwt';
 import { multiSession } from 'better-auth/plugins/multi-session';
+import { openAPI } from 'better-auth/plugins';
 import { organization } from 'better-auth/plugins/organization';
 import type { DrizzleDB } from '../../database/database.module.js';
 
@@ -18,10 +19,12 @@ type AuthEnv = {
   githubClientSecret: string;
 };
 
+export const AUTH_BASE_PATH = '/api/auth';
+
 export function createAuth({ db, env }: { db: DrizzleDB; env: AuthEnv }) {
   return betterAuth({
     baseURL: env.baseURL,
-    basePath: '/api/auth',
+    basePath: AUTH_BASE_PATH,
     secret: env.secret,
     trustedOrigins: env.trustedOrigins,
     database: drizzleAdapter(db, {
@@ -61,6 +64,7 @@ export function createAuth({ db, env }: { db: DrizzleDB; env: AuthEnv }) {
         defaultPrefix: 'ajr',
         rateLimit: { enabled: true, timeWindow: 60_000, maxRequests: 120 },
       }),
+      openAPI({ disableDefaultReference: true }),
     ],
   });
 }
