@@ -21,11 +21,11 @@ export class CursorPaginatedDto<T> {
   @ApiProperty({ description: 'Items', type: [Object] })
   items: T[];
 
-  @ApiProperty({ description: 'Next cursor', type: String })
-  nextCursor: string;
+  @ApiProperty({ description: 'Next cursor', type: String, nullable: true })
+  nextCursor: string | null;
 
-  @ApiProperty({ description: 'Previous cursor', type: String })
-  previousCursor: string;
+  @ApiProperty({ description: 'Previous cursor', type: String, nullable: true })
+  previousCursor: string | null;
 
   @ApiProperty({ description: 'Has next page', type: Boolean })
   hasNextPage: boolean;

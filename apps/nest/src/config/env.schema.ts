@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-const REMOTE_DATABASE_URL = /^(libsql|https?|wss?):\/\//;
+const REMOTE_DATABASE_URL = /^(libsql|https?|wss?):\/\/|^file:/;
 
 function optionalSecret() {
   return z
@@ -42,7 +42,7 @@ const EnvSchema = z
   })
   .refine((env) => env.NODE_ENV === "test" || REMOTE_DATABASE_URL.test(env.DATABASE_URL), {
     path: ["DATABASE_URL"],
-    message: "use a libsql://, https:// or http:// URL",
+    message: "use a libsql://, https://, http:// or file: URL",
   })
   .refine((env) => env.NODE_ENV !== "production" || !env.ADMIN_BYPASS_SECRET, {
     path: ["ADMIN_BYPASS_SECRET"],

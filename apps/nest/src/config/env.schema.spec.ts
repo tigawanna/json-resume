@@ -40,10 +40,15 @@ describe("validateEnv", () => {
     expect(env.FRONTEND_URL).toBe("http://localhost:5040");
   });
 
-  it("rejects a file database url outside tests", () => {
+  it("accepts a file database url", () => {
+    const env = validateEnv({ source: { ...required, DATABASE_URL: "file:local.db" } });
+    expect(env.DATABASE_URL).toBe("file:local.db");
+  });
+
+  it("rejects an unsupported database url", () => {
     expect(() =>
       validateEnv({
-        source: { ...required, DATABASE_URL: "file:local.db" },
+        source: { ...required, DATABASE_URL: "postgres://localhost/db" },
       }),
     ).toThrow(/DATABASE_URL/);
   });

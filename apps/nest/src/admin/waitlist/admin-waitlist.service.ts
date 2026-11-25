@@ -1,4 +1,4 @@
-import { DRIZZLE, type DrizzleDB } from '@/database/database.module.js';
+import { DRIZZLE, type DrizzleDB } from '../../database/database.module.js';
 import {
   ConflictException,
   Inject,
@@ -6,18 +6,49 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { waitlistEntry } from '@repo/db/schema/credits-schema';
-import { desc, eq } from 'drizzle-orm';
+import { and, asc, desc, eq, gt, lt, or } from 'drizzle-orm';
+import { encodeCursor, type CursorQuery } from '../../shared/pagination/cursor.js';
+import type { CursorPaginatedDto } from '../../shared/types/response-shapes.js';
 import type { AddWaitlistEntryDto } from './admin-waitlist.dto.js';
+
+type WaitlistEntry = typeof waitlistEntry.$inferSelect;
 
 @Injectable()
 export class AdminWaitlistService {
   constructor(@Inject(DRIZZLE) private readonly db: DrizzleDB) {}
 
-  findAll() {
-    return this.db
+  async findAll({ query }: { query: CursorQuery }): Promise<CursorPaginatedDto<WaitlistEntry>> {
+    const { cursor, direction, limit } = query;
+    const forward = direction === 'next';
+    const dirct = forward ? lt : gt;
+    const order = forward ? desc : asc;
+    const rows = await this.db
       .select()
       .from(waitlistEntry)
-      .orderBy(desc(waitlistEntry.createdAt));
+      .where(
+        cursor
+          ? or(
+              dirct(waitlistEntry.createdAt, cursor.createdAt),
+              and(eq(waitlistEntry.createdAt, cursor.createdAt), dirct(waitlistEntry.id, cursor.id)),
+            )
+          : undefined,
+      )
+      .orderBy(order(waitlistEntry.createdAt), order(waitlistEntry.id))
+      .limit(limit + 1);
+    const hasMore = rows.length > limit;
+    const page = rows.slice(0, limit);
+    const items = forward ? page : page.reverse();
+    const hasNextPage = forward ? hasMore : Boolean(cursor);
+    const hasPreviousPage = forward ? Boolean(cursor) : hasMore;
+    const first = items.at(0);
+    const last = items.at(-1);
+    return {
+      items,
+      nextCursor: hasNextPage && last ? encodeCursor(last) : null,
+      previousCursor: hasPreviousPage && first ? encodeCursor(first) : null,
+      hasNextPage,
+      hasPreviousPage,
+    };
   }
 
   async findOne({ id }: { id: string }) {

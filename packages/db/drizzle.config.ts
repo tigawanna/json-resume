@@ -1,11 +1,16 @@
 import { defineConfig } from "drizzle-kit";
 
-export default defineConfig({
+const url = process.env.DATABASE_URL ?? "file:../../.local-db/json-resume.db";
+const shared = {
   schema: "./src/schema/**/*.ts",
   out: "./drizzle/migrations",
-  dialect: "turso",
-  dbCredentials: {
-    url: process.env.DATABASE_URL ?? "file:./.local-db/json-resume-latest.db",
-    authToken: process.env.DATABASE_AUTH_TOKEN ?? "",
-  },
-});
+};
+
+/** The turso dialect demands an auth token, so local files go through the sqlite dialect. */
+export default url.startsWith("file:")
+  ? defineConfig({ ...shared, dialect: "sqlite", dbCredentials: { url } })
+  : defineConfig({
+      ...shared,
+      dialect: "turso",
+      dbCredentials: { url, authToken: process.env.DATABASE_AUTH_TOKEN ?? "" },
+    });

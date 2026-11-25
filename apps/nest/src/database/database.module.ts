@@ -1,13 +1,12 @@
 import { Module } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { schema } from "@repo/db/schema/index";
-import type { LibSQLDatabase } from "drizzle-orm/libsql";
-import { drizzle } from "drizzle-orm/libsql/web";
+import { drizzle, type LibSQLDatabase } from "drizzle-orm/libsql";
 import type { AppEnv } from "../config/env.schema.js";
 
 export const DRIZZLE = Symbol("DRIZZLE");
 
-/** HTTP libSQL client. File and memory URLs belong to the test harness, not here. */
+/** Node libSQL client: accepts remote (libsql/http/ws) and local `file:` URLs. */
 export function createDrizzle({ url, authToken }: { url: string; authToken?: string }) {
   return drizzle({
     connection: { url, authToken },
