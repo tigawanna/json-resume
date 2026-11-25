@@ -13,7 +13,8 @@ import { eq } from 'drizzle-orm';
 import type { Request } from 'express';
 import { DRIZZLE, type DrizzleDB } from '../../database/database.module.js';
 import type { Auth } from '../better-auth/create-auth.js';
-import { IS_PUBLIC, MOCK_AUTH, ROLES } from './auth.constants.js';
+import { ADMIN_BYPASS_SECRET, IS_PUBLIC, MOCK_AUTH, ROLES } from './auth.constants.js';
+import { DEV_ADMIN_USER, matchesAdminBypassHeader } from './dev-admin-bypass.js';
 import type { UserWithRole } from './utils.js';
 import { hasRole } from './utils.js';
 
@@ -26,6 +27,7 @@ export class AppAuthGuard implements CanActivate {
     @Inject(AuthService) private readonly auth: AuthService<Auth>,
     @Inject(DRIZZLE) private readonly db: DrizzleDB,
     @Inject(MOCK_AUTH) private readonly mockAuth: boolean,
+    @Inject(ADMIN_BYPASS_SECRET) private readonly adminBypassSecret: string | undefined,
   ) {}
 
   /** Attach the signed-in user, then allow public routes or enforce auth, ban, and role. */
@@ -58,6 +60,14 @@ export class AppAuthGuard implements CanActivate {
   }: {
     request: RequestWithUser;
   }): Promise<UserWithRole | undefined> {
+    if (
+      matchesAdminBypassHeader({
+        header: request.header('x-admin'),
+        secret: this.adminBypassSecret,
+      })
+    ) {
+      return DEV_ADMIN_USER;
+    }
     if (this.mockAuth) return this.resolveUserFromMockHeader({ request });
     const session = await this.auth.api.getSession({
       headers: requestToFetchHeaders({ request }),

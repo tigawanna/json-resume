@@ -6,7 +6,7 @@ import {
   ClaimResponseDto,
   JoinWaitlistDto,
   JoinedResponseDto,
-} from './join.schema.js';
+} from './join.dto.js';
 import { WaitlistService } from './waitlist.service.js';
 
 @ApiTags('waitlist')

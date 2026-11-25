@@ -66,6 +66,10 @@ Personas: `member`, `memberWaitlisted`, `admin`, `adminWaitlisted`, `banned`, `b
 
 Production never turns `MOCK_AUTH` on. A client cannot become an admin by sending the header.
 
+## Dev admin bypass
+
+Outside production, `ADMIN_BYPASS_SECRET` in env enables header `x-admin`. When the header matches the secret, the guard attaches a synthetic admin (`dev-admin-bypass`). Set the same value in Postman. `NODE_ENV=production` refuses the env var at boot and the factory never injects the secret.
+
 ## Waitlist
 
 `POST /waitlist` is public and always answers `{ joined: true }` with status 200, including duplicates and the honeypot (`website` filled). That avoids email enumeration.

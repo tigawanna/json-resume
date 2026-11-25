@@ -11,7 +11,7 @@ import {
 
 import { createAuth } from './better-auth/create-auth.js';
 import { AppAuthGuard } from './helpers/app-auth.guard.js';
-import { MOCK_AUTH } from './helpers/auth.constants.js';
+import { ADMIN_BYPASS_SECRET, MOCK_AUTH } from './helpers/auth.constants.js';
 import { MeController } from './me/me.controller.js';
 import { AdminController } from './admin/admin.controller.js';
 
@@ -44,6 +44,14 @@ import { AdminController } from './admin/admin.controller.js';
     AppAuthGuard,
     { provide: APP_GUARD, useExisting: AppAuthGuard },
     { provide: MOCK_AUTH, useValue: false },
+    {
+      provide: ADMIN_BYPASS_SECRET,
+      inject: [ConfigService],
+      useFactory: (config: ConfigService<AppEnv, true>) => {
+        if (config.get('NODE_ENV', { infer: true }) === 'production') return undefined;
+        return config.get('ADMIN_BYPASS_SECRET', { infer: true });
+      },
+    },
   ],
   exports: [AppAuthGuard],
 })

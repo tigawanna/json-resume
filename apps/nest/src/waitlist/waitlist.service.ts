@@ -4,7 +4,7 @@ import { eq } from 'drizzle-orm';
 import type { UserWithRole } from '../auth/helpers/utils.js';
 import { CreditsService } from '../credits/credits.service.js';
 import { DRIZZLE, type DrizzleDB } from '../database/database.module.js';
-import type { JoinWaitlistDto } from './join.schema.js';
+import type { JoinWaitlistDto } from './join.dto.js';
 
 @Injectable()
 export class WaitlistService {
@@ -13,10 +13,12 @@ export class WaitlistService {
     private readonly credits: CreditsService,
   ) {}
 
+  /** Always answer joined. Skip insert on honeypot; claim the row when the session email matches. */
   async join({ body, current }: { body: JoinWaitlistDto; current?: UserWithRole }) {
     if (body.website && body.website.trim().length > 0)
       return { joined: true as const };
-    const linked = this.linkTarget({ body, current });
+    // if bad user we exit but if no session user we unly save their emial in the waitlist
+    const eligibleUser = this.eligibleClaimUser({ body, current });
     // See if this email already joined.
     const [existing] = await this.db
       .select()
@@ -25,8 +27,8 @@ export class WaitlistService {
       .limit(1);
 
     if (existing) {
-      if (linked && !existing.userId)
-        await this.claimRow({ id: existing.id, userId: linked.id });
+      if (eligibleUser && !existing.userId)
+        await this.claimRow({ id: existing.id, userId: eligibleUser.id });
       return { joined: true as const };
     }
 
@@ -38,15 +40,16 @@ export class WaitlistService {
         name: body.name,
         source: body.source,
         consentAt: new Date(),
-        userId: linked?.id ?? null,
-        claimedAt: linked ? new Date() : null,
+        userId: eligibleUser?.id ?? null,
+        claimedAt: eligibleUser ? new Date() : null,
       })
       .onConflictDoNothing({ target: waitlistEntry.email });
 
-    if (linked) await this.credits.allocation({ userId: linked.id });
+    if (eligibleUser) await this.credits.allocation({ userId: eligibleUser.id });
     return { joined: true as const };
   }
 
+  /** Attach an unclaimed waitlist row for this session email, then allocate credits. */
   async claim({ current }: { current: UserWithRole }) {
     const email = current.email.trim().toLowerCase();
     // Find an unclaimed waitlist row for this signed-in email.
@@ -60,7 +63,8 @@ export class WaitlistService {
     return { claimed: true };
   }
 
-  private linkTarget({
+  /** Session user only when their email matches the join email and they are not banned. */
+  private eligibleClaimUser({
     body,
     current,
   }: {
@@ -72,8 +76,8 @@ export class WaitlistService {
     return current;
   }
 
+  /** Write userId and claimedAt on the row, then run monthly credit allocation. */
   private async claimRow({ id, userId }: { id: string; userId: string }) {
-    // Attach the waitlist row to this user.
     await this.db
       .update(waitlistEntry)
       .set({ userId, claimedAt: new Date() })

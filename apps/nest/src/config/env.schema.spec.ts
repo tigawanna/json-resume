@@ -39,4 +39,19 @@ describe("validateEnv", () => {
     expect(env.DATABASE_URL).toBe("http://127.0.0.1:8080");
     expect(env.BETTER_AUTH_SECRET).toBe("test-secret-test-secret-test-secret");
   });
+
+  it("accepts ADMIN_BYPASS_SECRET outside production", () => {
+    const env = validateEnv({
+      source: { ...required, NODE_ENV: "development", ADMIN_BYPASS_SECRET: "postman-key" },
+    });
+    expect(env.ADMIN_BYPASS_SECRET).toBe("postman-key");
+  });
+
+  it("rejects ADMIN_BYPASS_SECRET in production", () => {
+    expect(() =>
+      validateEnv({
+        source: { ...required, NODE_ENV: "production", ADMIN_BYPASS_SECRET: "postman-key" },
+      }),
+    ).toThrow(/ADMIN_BYPASS_SECRET/);
+  });
 });

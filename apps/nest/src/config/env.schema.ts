@@ -30,6 +30,7 @@ const EnvSchema = z
     GITHUB_CLIENT_ID: z.string().min(1),
     GITHUB_CLIENT_SECRET: z.string().min(1),
     CRON_SECRET: z.string().optional(),
+    ADMIN_BYPASS_SECRET: optionalSecret(),
     CREDITS_ENABLED: z.enum(["true"]).optional(),
     CREDITS_START_AT: z.iso.datetime().optional(),
     OBSERVE_APP_KEY: optionalSecret(),
@@ -38,6 +39,10 @@ const EnvSchema = z
   .refine((env) => env.NODE_ENV === "test" || REMOTE_DATABASE_URL.test(env.DATABASE_URL), {
     path: ["DATABASE_URL"],
     message: "use a libsql://, https:// or http:// URL",
+  })
+  .refine((env) => env.NODE_ENV !== "production" || !env.ADMIN_BYPASS_SECRET, {
+    path: ["ADMIN_BYPASS_SECRET"],
+    message: "must not be set in production",
   })
   .transform((env) => ({
     ...env,

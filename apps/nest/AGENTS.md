@@ -25,7 +25,7 @@ Nest's packages are ESM only, and this project is ESM too: relative imports end 
 
 ## Production data: NestJS Observe
 
-This app reports its traces, errors, logs and metrics to [NestJS Observe](https://observe.nestjs.com) through `ObserveModule` in `src/app.module.ts`. Its key pair comes from `OBSERVE_APP_KEY` and `OBSERVE_APP_SECRET` in `.env`, which `npx @nestjs/observe link` writes.
+Observe is wired in `src/app.module.ts` but **`enabled: false`**. It records and sends nothing until that flag is turned on. Keys still come from `OBSERVE_APP_KEY` and `OBSERVE_APP_SECRET` (`npx @nestjs/observe link`).
 
 When a task depends on how the app behaves in production - an error users hit, a slow endpoint, a failing job, whether a release made things worse - work from that data, not from the code alone:
 

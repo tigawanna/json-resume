@@ -10,7 +10,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { App } from 'supertest/types.js';
 import { AppModule } from '../../src/app.module.js';
-import { MOCK_AUTH } from '../../src/auth/helpers/auth.constants.js';
+import { ADMIN_BYPASS_SECRET, MOCK_AUTH } from '../../src/auth/helpers/auth.constants.js';
 import { configureApp } from '../../src/bootstrap/configure-app.js';
 import type { CreditsPolicy } from '../../src/credits/allocate.js';
 import { CREDITS_POLICY } from '../../src/credits/credits.service.js';
@@ -33,7 +33,8 @@ export async function createMemoryDatabase() {
 
 export async function createTestApp({
   policy,
-}: { policy?: CreditsPolicy } = {}) {
+  adminBypassSecret,
+}: { policy?: CreditsPolicy; adminBypassSecret?: string } = {}) {
   const database = await createMemoryDatabase();
   const db = database.db;
   await seedPersonas({ db });
@@ -41,7 +42,9 @@ export async function createTestApp({
     .overrideProvider(DRIZZLE)
     .useValue(db)
     .overrideProvider(MOCK_AUTH)
-    .useValue(true);
+    .useValue(true)
+    .overrideProvider(ADMIN_BYPASS_SECRET)
+    .useValue(adminBypassSecret);
   const moduleRef = await (
     policy ? builder.overrideProvider(CREDITS_POLICY).useValue(policy) : builder
   ).compile();
