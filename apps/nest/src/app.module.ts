@@ -11,6 +11,7 @@ import { SyncModule } from "./sync/sync.module.js";
 import { RateLimitModule } from "./rate-limit/rate-limit.module.js";
 import { WaitlistModule } from "./waitlist/waitlist.module.js";
 import type { AppEnv } from "./config/env.schema.js";
+import { AdminModule } from './admin/admin.module.js';
 
 export const { ObserveModule, ObserveInstrument } = createObserveModule();
 
@@ -32,6 +33,7 @@ export const { ObserveModule, ObserveInstrument } = createObserveModule();
         serviceId: "nest",
       }),
     }),
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [AppService],

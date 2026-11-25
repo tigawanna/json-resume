@@ -53,7 +53,7 @@ The library's global `AuthGuard` is disabled. `AppAuthGuard` is the global guard
 2. `@Public()` routes continue even when no user is present. A user is still attached when the request has one, so waitlist join can link a session.
 3. Otherwise missing user is 401.
 4. `banned` is 403. A banned admin stays banned.
-5. `@Roles(['admin'])` checks `user.role`. Values may be a comma-separated list. The role is read from the database or the Better Auth session, never from a client-supplied role header.
+5. `@Roles({ roles: ['admin'] })` checks `user.role`. Values may be a comma-separated list. The role is read from the database or the Better Auth session, never from a client-supplied role header.
 
 `GET /api/me` returns `id`, `name`, `email`, `role`, `banned`. No password, token, or account row.
 

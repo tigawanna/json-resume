@@ -20,6 +20,7 @@ Load a project skill before changing the matching code. Intent skills above cove
 - `tanstack-src-layout` — where files go under `apps/web/src/`
 - `web-ui` — routes, React Query, forms, styling, client types
 - `hono-api` — `apps/api` routes, auth, client, and legacy server migration
+- `nest-app` — `apps/nest` DTOs (drizzle-zod + nestjs-zod), auth guard and roles, rate limits
 - `urgentry` — local error store (`pnpm --dir apps/web urgentry`)
 
 ## Stack
