@@ -1,20 +1,20 @@
 import { relations } from "drizzle-orm";
 import { user } from "@repo/db/schema/auth-schema";
-import { resume } from "./resume";
-import { job } from "../job-schema";
-import { resumeAiChat, resumeAiConversation, resumeAiMessage } from "./resume-ai-chat";
-import { resumeCertification } from "./resume-certification";
-import { resumeContact } from "./resume-contact";
-import { resumeEducation, resumeEducationBullet } from "./resume-education";
-import { resumeExperience, resumeExperienceBullet } from "./resume-experience";
-import { resumeLanguage } from "./resume-language";
-import { resumeLink } from "./resume-link";
-import { resumeNote } from "./resume-note";
-import { resumeProject } from "./resume-project";
-import { resumeSkill, resumeSkillGroup } from "./resume-skill";
-import { resumeSummary } from "./resume-summary";
-import { resumeTalk } from "./resume-talk";
-import { resumeVolunteer } from "./resume-volunteer";
+import { resume } from "./resume.ts";
+import { job } from "../job-schema.ts";
+import { resumeAiChat, resumeAiConversation, resumeAiMessage } from "./resume-ai-chat.ts";
+import { resumeCertification } from "./resume-certification.ts";
+import { resumeContact } from "./resume-contact.ts";
+import { resumeEducation, resumeEducationBullet } from "./resume-education.ts";
+import { resumeExperience, resumeExperienceBullet } from "./resume-experience.ts";
+import { resumeLanguage } from "./resume-language.ts";
+import { resumeLink } from "./resume-link.ts";
+import { resumeNote } from "./resume-note.ts";
+import { resumeProject } from "./resume-project.ts";
+import { resumeSkill, resumeSkillGroup } from "./resume-skill.ts";
+import { resumeSummary } from "./resume-summary.ts";
+import { resumeTalk } from "./resume-talk.ts";
+import { resumeVolunteer } from "./resume-volunteer.ts";
 
 export const resumeRelations = relations(resume, ({ one, many }) => ({
   user: one(user, { fields: [resume.userId], references: [user.id] }),

@@ -1,23 +1,23 @@
-import { publicResume } from "../schema/resume/public-resume";
-import { resume } from "../schema/resume/resume";
+import { publicResume } from "../schema/resume/public-resume.ts";
+import { resume } from "../schema/resume/resume.ts";
 import {
   resumeAiChat,
   resumeAiConversation,
   resumeAiMessage,
-} from "../schema/resume/resume-ai-chat";
-import { resumeCertification } from "../schema/resume/resume-certification";
-import { resumeContact } from "../schema/resume/resume-contact";
-import { resumeEducation, resumeEducationBullet } from "../schema/resume/resume-education";
-import { resumeExperience, resumeExperienceBullet } from "../schema/resume/resume-experience";
-import { resumeLanguage } from "../schema/resume/resume-language";
-import { resumeLink } from "../schema/resume/resume-link";
-import { resumeNote } from "../schema/resume/resume-note";
-import { resumeProject } from "../schema/resume/resume-project";
-import { resumeSkill, resumeSkillGroup } from "../schema/resume/resume-skill";
-import { resumeSummary } from "../schema/resume/resume-summary";
-import { resumeTalk } from "../schema/resume/resume-talk";
-import { resumeVolunteer } from "../schema/resume/resume-volunteer";
-import { drizzleZod } from "./table";
+} from "../schema/resume/resume-ai-chat.ts";
+import { resumeCertification } from "../schema/resume/resume-certification.ts";
+import { resumeContact } from "../schema/resume/resume-contact.ts";
+import { resumeEducation, resumeEducationBullet } from "../schema/resume/resume-education.ts";
+import { resumeExperience, resumeExperienceBullet } from "../schema/resume/resume-experience.ts";
+import { resumeLanguage } from "../schema/resume/resume-language.ts";
+import { resumeLink } from "../schema/resume/resume-link.ts";
+import { resumeNote } from "../schema/resume/resume-note.ts";
+import { resumeProject } from "../schema/resume/resume-project.ts";
+import { resumeSkill, resumeSkillGroup } from "../schema/resume/resume-skill.ts";
+import { resumeSummary } from "../schema/resume/resume-summary.ts";
+import { resumeTalk } from "../schema/resume/resume-talk.ts";
+import { resumeVolunteer } from "../schema/resume/resume-volunteer.ts";
+import { drizzleZod } from "./table.ts";
 
 export const resumeZod = drizzleZod({ table: resume });
 export const publicResumeZod = drizzleZod({ table: publicResume });

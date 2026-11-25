@@ -1,11 +1,11 @@
-import { applicationAnswer } from "../schema/application-answer-schema";
-import { assistantSkill } from "../schema/assistant-skill-schema";
-import { coverLetter } from "../schema/cover-letter-schema";
-import { creditLedger, creditWallet, waitlistEntry } from "../schema/credits-schema";
-import { job } from "../schema/job-schema";
-import { savedProject } from "../schema/saved-project-schema";
-import { syncBackend, syncEvent, syncSquashState } from "../schema/sync-schema";
-import { drizzleZod } from "./table";
+import { applicationAnswer } from "../schema/application-answer-schema.ts";
+import { assistantSkill } from "../schema/assistant-skill-schema.ts";
+import { coverLetter } from "../schema/cover-letter-schema.ts";
+import { creditLedger, creditWallet, waitlistEntry } from "../schema/credits-schema.ts";
+import { job } from "../schema/job-schema.ts";
+import { savedProject } from "../schema/saved-project-schema.ts";
+import { syncBackend, syncEvent, syncSquashState } from "../schema/sync-schema.ts";
+import { drizzleZod } from "./table.ts";
 
 export const jobZod = drizzleZod({ table: job });
 export const coverLetterZod = drizzleZod({ table: coverLetter });

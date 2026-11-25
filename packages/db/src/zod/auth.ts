@@ -12,8 +12,8 @@ import {
   session,
   user,
   verification,
-} from "../schema/auth-schema";
-import { drizzleZod } from "./table";
+} from "../schema/auth-schema.ts";
+import { drizzleZod } from "./table.ts";
 
 export const userZod = drizzleZod({ table: user });
 export const sessionZod = drizzleZod({ table: session });

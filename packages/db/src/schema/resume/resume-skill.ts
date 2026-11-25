@@ -1,5 +1,5 @@
 import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
-import { embeddable, timestamps } from "./shared-columns";
+import { embeddable, timestamps } from "./shared-columns.ts";
 
 /** A reusable group name; each résumé picks its own skills under it (`resume.layout`). */
 export const resumeSkillGroup = sqliteTable(

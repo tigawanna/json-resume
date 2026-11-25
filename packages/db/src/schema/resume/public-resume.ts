@@ -1,6 +1,6 @@
 import { index, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 import { user } from "@repo/db/schema/auth-schema";
-import { timestamps } from "./shared-columns";
+import { timestamps } from "./shared-columns.ts";
 
 /**
  * Published resume snapshot for public share links (`/r/:id`).

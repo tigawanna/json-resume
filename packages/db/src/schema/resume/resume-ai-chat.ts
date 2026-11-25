@@ -1,7 +1,7 @@
 import { index, integer, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 import { user } from "@repo/db/schema/auth-schema";
-import { resume } from "./resume";
-import { timestamps } from "./shared-columns";
+import { resume } from "./resume.ts";
+import { timestamps } from "./shared-columns.ts";
 
 export const resumeAiChat = sqliteTable(
   "resume_ai_chat",

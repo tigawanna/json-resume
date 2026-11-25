@@ -1,6 +1,6 @@
 import { index, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { user } from "@repo/db/schema/auth-schema";
-import { embeddable, timestamps } from "./shared-columns";
+import { embeddable, timestamps } from "./shared-columns.ts";
 
 export const resume = sqliteTable(
   "resume",

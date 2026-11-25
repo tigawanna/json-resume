@@ -1,5 +1,5 @@
 import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
-import { embeddable, timestamps } from "./shared-columns";
+import { embeddable, timestamps } from "./shared-columns.ts";
 
 export const resumeVolunteer = sqliteTable(
   "resume_volunteer",

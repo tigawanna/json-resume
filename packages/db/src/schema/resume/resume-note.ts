@@ -1,5 +1,5 @@
 import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
-import { embeddable, timestamps } from "./shared-columns";
+import { embeddable, timestamps } from "./shared-columns.ts";
 
 /** Footer copy: condensed cover letter, addendum, or other printed notes. */
 export const resumeNote = sqliteTable(

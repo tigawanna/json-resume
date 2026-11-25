@@ -1,1 +1,1 @@
-export { migrationsFolder } from "./migrations";
+export { migrationsFolder } from "./migrations.ts";

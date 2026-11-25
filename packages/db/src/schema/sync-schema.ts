@@ -1,6 +1,6 @@
 import { relations, sql } from "drizzle-orm";
 import { index, integer, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
-import { user } from "./auth-schema";
+import { user } from "./auth-schema.ts";
 
 /**
  * Append-only event log for managed sync.
