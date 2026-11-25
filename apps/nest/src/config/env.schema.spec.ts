@@ -27,6 +27,19 @@ describe("validateEnv", () => {
     ]);
   });
 
+  it("expands ${NAME} references before URL checks", () => {
+    const env = validateEnv({
+      source: {
+        ...required,
+        SERVER_URL: "http://localhost:5040",
+        BETTER_AUTH_URL: "${SERVER_URL}",
+        FRONTEND_URL: "${SERVER_URL}",
+      },
+    });
+    expect(env.BETTER_AUTH_URL).toBe("http://localhost:5040");
+    expect(env.FRONTEND_URL).toBe("http://localhost:5040");
+  });
+
   it("rejects a file database url outside tests", () => {
     expect(() =>
       validateEnv({

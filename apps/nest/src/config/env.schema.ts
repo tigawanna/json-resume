@@ -63,8 +63,9 @@ const EnvSchema = z
 export type AppEnv = z.output<typeof EnvSchema>;
 
 export function validateEnv({ source }: { source: Record<string, unknown> }): AppEnv {
-  const nodeEnv = source.NODE_ENV;
-  const withDefaults = nodeEnv === "test" ? { ...testDefaults, ...source } : source;
+  const expanded = expandEnvReferences({ source });
+  const nodeEnv = expanded.NODE_ENV;
+  const withDefaults = nodeEnv === "test" ? { ...testDefaults, ...expanded } : expanded;
   const parsed = EnvSchema.safeParse(withDefaults);
   if (!parsed.success) {
     const issues = parsed.error.issues
@@ -73,6 +74,19 @@ export function validateEnv({ source }: { source: Record<string, unknown> }): Ap
     throw new Error(`Invalid apps/nest environment:\n${issues}`);
   }
   return parsed.data;
+}
+
+/** Node `--env-file` does not expand `${NAME}`; ConfigModule then keeps those literals. */
+function expandEnvReferences({ source }: { source: Record<string, unknown> }) {
+  const expanded = { ...source };
+  for (const [key, value] of Object.entries(expanded)) {
+    if (typeof value !== "string") continue;
+    expanded[key] = value.replace(/\$\{([A-Za-z_][A-Za-z0-9_]*)\}/g, (match, name: string) => {
+      const resolved = expanded[name];
+      return typeof resolved === "string" ? resolved : match;
+    });
+  }
+  return expanded;
 }
 
 function splitOrigins({ value }: { value: string | undefined }) {
