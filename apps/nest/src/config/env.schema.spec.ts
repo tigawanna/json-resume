@@ -19,9 +19,10 @@ describe("validateEnv", () => {
     });
 
     expect(env.PORT).toBe(3200);
+    expect(env.SERVER_URL).toBe("http://localhost:5040");
     expect(env.TRUSTED_ORIGINS).toEqual([
       "http://localhost:3040",
-      "http://localhost:3100",
+      "http://localhost:5040",
       "https://app.example",
     ]);
   });

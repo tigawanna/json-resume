@@ -8,6 +8,7 @@ import { migrate } from 'drizzle-orm/libsql/migrator';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { ThrottlerGuard } from '@nestjs/throttler';
 import { AppModule } from '../../src/app.module.js';
 import { ADMIN_BYPASS_SECRET, MOCK_AUTH } from '../../src/auth/helpers/auth.constants.js';
 import { configureApp } from '../../src/bootstrap/configure-app.js';
@@ -34,17 +35,25 @@ export async function createMemoryDatabase() {
 export async function createTestApp({
   policy,
   adminBypassSecret,
-}: { policy?: CreditsPolicy; adminBypassSecret?: string } = {}) {
+  throttle = false,
+}: {
+  policy?: CreditsPolicy;
+  adminBypassSecret?: string;
+  throttle?: boolean;
+} = {}) {
   const database = await createMemoryDatabase();
   const db = database.db;
   await seedPersonas({ db });
-  const builder = Test.createTestingModule({ imports: [AppModule] })
+  let builder = Test.createTestingModule({ imports: [AppModule] })
     .overrideProvider(DRIZZLE)
     .useValue(db)
     .overrideProvider(MOCK_AUTH)
     .useValue(true)
     .overrideProvider(ADMIN_BYPASS_SECRET)
     .useValue(adminBypassSecret);
+  if (!throttle) {
+    builder = builder.overrideProvider(ThrottlerGuard).useValue({ canActivate: () => true });
+  }
   const moduleRef = await (
     policy ? builder.overrideProvider(CREDITS_POLICY).useValue(policy) : builder
   ).compile();

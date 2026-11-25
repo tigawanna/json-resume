@@ -5,7 +5,7 @@ import { eq } from "drizzle-orm";
 import request from "supertest";
 import type { App } from "supertest/types.js";
 import type { DrizzleDB } from "../src/database/database.module.js";
-import { WAITLIST_JOIN_RATE_LIMIT } from "../src/waitlist/waitlist.constants.js";
+import { WAITLIST_RATE_LIMIT } from "../src/waitlist/waitlist.constants.js";
 import { createTestApp } from "./support/create-test-app.js";
 import { personas, walletOf } from "./support/personas.js";
 
@@ -160,7 +160,7 @@ describe("waitlist IP throttle", () => {
   let closeDatabase: () => void;
 
   beforeAll(async () => {
-    const started = await createTestApp();
+    const started = await createTestApp({ throttle: true });
     app = started.app;
     closeDatabase = started.close;
   });
@@ -172,7 +172,7 @@ describe("waitlist IP throttle", () => {
 
   it("returns 429 after the join limit from one IP", async () => {
     const server = app.getHttpServer();
-    for (let index = 0; index < WAITLIST_JOIN_RATE_LIMIT.limit; index += 1) {
+    for (let index = 0; index < WAITLIST_RATE_LIMIT.limit; index += 1) {
       await request(server)
         .post("/waitlist")
         .send({ email: `throttle-${index}@example.com`, consent: true })

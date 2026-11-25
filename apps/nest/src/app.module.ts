@@ -8,6 +8,7 @@ import { AppConfigModule } from "./config/app-config.module.js";
 import { CreditsModule } from "./credits/credits.module.js";
 import { DatabaseModule } from "./database/database.module.js";
 import { SyncModule } from "./sync/sync.module.js";
+import { RateLimitModule } from "./rate-limit/rate-limit.module.js";
 import { WaitlistModule } from "./waitlist/waitlist.module.js";
 import type { AppEnv } from "./config/env.schema.js";
 
@@ -18,6 +19,7 @@ export const { ObserveModule, ObserveInstrument } = createObserveModule();
     AppConfigModule,
     DatabaseModule,
     AuthenticationModule,
+    RateLimitModule,
     CreditsModule,
     WaitlistModule,
     SyncModule,

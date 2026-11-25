@@ -19,6 +19,7 @@ export function configureApp({ app }: { app: NestNodeApplication }) {
     .setTitle("Agentic JSON Resume")
     .setDescription("Nest API. Sync handlers are stubs until the sync pass.")
     .setVersion("0.0.1")
+    .addServer(env.get("SERVER_URL", { infer: true }))
     .addCookieAuth("better-auth.session_token")
     .addTag("meta")
     .addTag("auth")

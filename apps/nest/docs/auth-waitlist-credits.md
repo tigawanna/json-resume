@@ -23,6 +23,7 @@ The runtime client is `drizzle-orm/libsql/web` (HTTP). It uses `DATABASE_URL` (`
 
 - Scalar UI: `/docs`
 - OpenAPI JSON: `/docs-json`
+- Document `servers` uses `SERVER_URL` (default `http://localhost:5040`)
 - `ZodValidationPipe` and `ZodSerializerInterceptor` are registered here, because the testing app never runs `main.ts`
 - `cleanupOpenApiDoc` from `nestjs-zod` runs on the document factory
 - Cookie auth is documented. Do not document the test header as a public scheme
@@ -70,9 +71,31 @@ Production never turns `MOCK_AUTH` on. A client cannot become an admin by sendin
 
 Outside production, `ADMIN_BYPASS_SECRET` in env enables header `x-admin`. When the header matches the secret, the guard attaches a synthetic admin (`dev-admin-bypass`). Set the same value in Postman. `NODE_ENV=production` refuses the env var at boot and the factory never injects the secret.
 
+## Rate limiting
+
+`RateLimitModule` is imported in `AppModule` **after** `AuthenticationModule`. `ThrottlerGuard` is a global `APP_GUARD` (`useExisting`, so tests can replace it). Counters are per route and per tracker: `user:<id>` when `request.user` is set, otherwise `ip:<req.ip>`. Over the limit is 429 with `Retry-After`.
+
+The module default is `HTTP_RATE_LIMIT` (`src/rate-limit/rate-limit.constants.ts`: 100 per minute). Tune per controller or handler; do not add another `ThrottlerModule.forRoot`.
+
+```ts
+@Throttle({
+  default: { limit: WAITLIST_RATE_LIMIT.limit, ttl: WAITLIST_RATE_LIMIT.ttlMs },
+})
+@Controller('waitlist')
+export class WaitlistController {}
+```
+
+- Class `@Throttle`: every handler on that controller.
+- Method `@Throttle`: one route only (overrides the class).
+- `@SkipThrottle()`: opt out (health-style routes).
+
+Waitlist uses `WAITLIST_RATE_LIMIT` (5 per minute) in `src/waitlist/waitlist.constants.ts`. `/api/auth/*` and Scalar `/docs` are not Nest handlers, so they are not counted.
+
+E2e calls `createTestApp({ throttle: true })` only when asserting 429. Other tests replace `ThrottlerGuard` with `{ canActivate: () => true }`.
+
 ## Waitlist
 
-`POST /waitlist` is public and always answers `{ joined: true }` with status 200, including duplicates and the honeypot (`website` filled). That avoids email enumeration. Join is IP-throttled (`WAITLIST_JOIN_RATE_LIMIT`: 10 per minute). Claim uses a looser IP cap (`WAITLIST_CLAIM_RATE_LIMIT`: 20 per minute). Over the limit is 429 with `Retry-After`. Express `trust proxy` is on so `req.ip` is the client, not the load balancer.
+`POST /waitlist` is public and always answers `{ joined: true }` with status 200, including duplicates and the honeypot (`website` filled). That avoids email enumeration.
 
 - Email is trimmed and lowercased.
 - `consent` must be `true`.

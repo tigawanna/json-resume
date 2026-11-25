@@ -10,6 +10,9 @@ function optionalSecret() {
     .transform((value) => value || undefined);
 }
 
+const defaultPort = 5040;
+const defaultFrontendPort = 3040;
+
 const testDefaults = {
   DATABASE_URL: "http://127.0.0.1:8080",
   BETTER_AUTH_SECRET: "test-secret-test-secret-test-secret",
@@ -20,12 +23,13 @@ const testDefaults = {
 const EnvSchema = z
   .object({
     NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
-    PORT: z.coerce.number().default(3100),
+    PORT: z.coerce.number().default(defaultPort),
+    SERVER_URL: z.url().default(`http://localhost:${defaultPort}`),
     DATABASE_URL: z.string().min(1),
     DATABASE_AUTH_TOKEN: z.string().optional(),
     BETTER_AUTH_SECRET: z.string().min(1),
-    BETTER_AUTH_URL: z.url().default("http://localhost:3100"),
-    FRONTEND_URL: z.url().default("http://localhost:3040"),
+    BETTER_AUTH_URL: z.url().default(`http://localhost:${defaultPort}`),
+    FRONTEND_URL: z.url().default(`http://localhost:${defaultFrontendPort}`),
     BETTER_AUTH_TRUSTED_ORIGINS: z.string().optional(),
     GITHUB_CLIENT_ID: z.string().min(1),
     GITHUB_CLIENT_SECRET: z.string().min(1),

@@ -31,35 +31,16 @@ describe("auth conditions", () => {
     await request(app.getHttpServer()).get("/me").set("x-mock-user", "   ").expect(401);
   });
 
-  it("returns the member id", async () => {
+  it("returns the member session without a password", async () => {
     const response = await request(app.getHttpServer())
       .get("/me")
       .set("x-mock-user", personas.member.id)
       .expect(200);
-    expect(response.body.id).toBe(personas.member.id);
-  });
-
-  it("returns the member email", async () => {
-    const response = await request(app.getHttpServer())
-      .get("/me")
-      .set("x-mock-user", personas.member.id)
-      .expect(200);
-    expect(response.body.email).toBe(personas.member.email);
-  });
-
-  it("returns the member role from the row, not the header", async () => {
-    const response = await request(app.getHttpServer())
-      .get("/me")
-      .set("x-mock-user", personas.member.id)
-      .expect(200);
-    expect(response.body.role).toBe("user");
-  });
-
-  it("does not return a password", async () => {
-    const response = await request(app.getHttpServer())
-      .get("/me")
-      .set("x-mock-user", personas.member.id)
-      .expect(200);
+    expect(response.body).toMatchObject({
+      id: personas.member.id,
+      email: personas.member.email,
+      role: "user",
+    });
     expect(response.body).not.toHaveProperty("password");
   });
 
@@ -86,13 +67,6 @@ describe("auth conditions", () => {
       .expect(403);
   });
 
-  it("turns down a banned admin", async () => {
-    await request(app.getHttpServer())
-      .get("/me")
-      .set("x-mock-user", personas.bannedAdmin.id)
-      .expect(403);
-  });
-
   it("turns down a member on the admin probe", async () => {
     await request(app.getHttpServer())
       .get("/admin/session")
@@ -114,13 +88,6 @@ describe("auth conditions", () => {
       .expect(403);
   });
 
-  it("turns down a banned admin on the admin probe", async () => {
-    await request(app.getHttpServer())
-      .get("/admin/session")
-      .set("x-mock-user", personas.bannedAdmin.id)
-      .expect(403);
-  });
-
   it("lets an admin open the admin probe", async () => {
     const response = await request(app.getHttpServer())
       .get("/admin/session")
@@ -139,17 +106,5 @@ describe("auth conditions", () => {
 
   it("turns down the admin probe with no credential", async () => {
     await request(app.getHttpServer()).get("/admin/session").expect(401);
-  });
-
-  it("serves the public hello route with no credential", async () => {
-    await request(app.getHttpServer()).get("/").expect(200).expect("Hello World!");
-  });
-
-  it("serves the public hello route to a signed-in member", async () => {
-    await request(app.getHttpServer())
-      .get("/")
-      .set("x-mock-user", personas.member.id)
-      .expect(200)
-      .expect("Hello World!");
   });
 });

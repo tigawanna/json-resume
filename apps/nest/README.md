@@ -44,7 +44,7 @@ $ pnpm run start:dev
 $ pnpm run start:prod
 ```
 
-The app listens on `PORT` from `apps/nest/.env` (default **3100** if unset). These routes are **not** proxied through the web app (`:3040`) or Hono (`:3100`). Hit Nest directly.
+The app listens on `PORT` from `apps/nest/.env` (default **5040** if unset). These routes are **not** proxied through the web app (`:3040`) or Hono (`:3100`). Hit Nest directly.
 
 There is no checked-in OpenAPI file; Nest generates the document at boot.
 
