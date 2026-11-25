@@ -13,7 +13,6 @@ import { createAuth } from './better-auth/create-auth.js';
 import { AppAuthGuard } from './helpers/app-auth.guard.js';
 import { ADMIN_BYPASS_SECRET, MOCK_AUTH } from './helpers/auth.constants.js';
 import { MeController } from './me/me.controller.js';
-import { AdminController } from './admin/admin.controller.js';
 
 @Module({
   imports: [
@@ -39,7 +38,7 @@ import { AdminController } from './admin/admin.controller.js';
       }),
     }),
   ],
-  controllers: [MeController, AdminController],
+  controllers: [MeController],
   providers: [
     AppAuthGuard,
     { provide: APP_GUARD, useExisting: AppAuthGuard },
@@ -48,7 +47,8 @@ import { AdminController } from './admin/admin.controller.js';
       provide: ADMIN_BYPASS_SECRET,
       inject: [ConfigService],
       useFactory: (config: ConfigService<AppEnv, true>) => {
-        if (config.get('NODE_ENV', { infer: true }) === 'production') return undefined;
+        if (config.get('NODE_ENV', { infer: true }) === 'production')
+          return undefined;
         return config.get('ADMIN_BYPASS_SECRET', { infer: true });
       },
     },
