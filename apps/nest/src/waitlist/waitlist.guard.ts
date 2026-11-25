@@ -5,7 +5,7 @@ import {
   Inject,
   Injectable,
 } from "@nestjs/common";
-import type { AppUser } from "../auth/app-user.js";
+import type { AppUser } from "../auth/helpers/app-user.js";
 import type { CreditsPolicy } from "../credits/allocate.js";
 import { CREDITS_POLICY } from "../credits/credits.service.js";
 import { hasJoinedWaitlist } from "../credits/eligibility.js";

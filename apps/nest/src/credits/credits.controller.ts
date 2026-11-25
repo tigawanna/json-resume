@@ -1,10 +1,10 @@
-import { Controller, Get } from "@nestjs/common";
-import { ApiCookieAuth, ApiOkResponse, ApiTags } from "@nestjs/swagger";
-import { createZodDto } from "nestjs-zod";
-import { z } from "zod";
-import type { AppUser } from "../auth/app-user.js";
-import { CurrentUser } from "../auth/auth.decorators.js";
-import { CreditsService } from "./credits.service.js";
+import { Controller, Get } from '@nestjs/common';
+import { ApiCookieAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { createZodDto } from 'nestjs-zod';
+import { z } from 'zod';
+import type { AppUser } from '../auth/helpers/app-user.js';
+import { CurrentUser } from '../auth/helpers/auth.decorators.js';
+import { CreditsService } from './credits.service.js';
 
 const creditsSchema = z.object({
   monthly: z.number(),
@@ -16,9 +16,9 @@ const creditsSchema = z.object({
 
 export class CreditsResponseDto extends createZodDto(creditsSchema) {}
 
-@ApiTags("credits")
+@ApiTags('credits')
 @ApiCookieAuth()
-@Controller("credits")
+@Controller('credits')
 export class CreditsController {
   constructor(private readonly credits: CreditsService) {}
 

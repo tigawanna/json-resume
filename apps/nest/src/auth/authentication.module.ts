@@ -1,14 +1,19 @@
-import { Module } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
-import { APP_GUARD } from "@nestjs/core";
-import { AuthModule } from "@thallesp/nestjs-better-auth";
-import type { AppEnv } from "../config/env.schema.js";
-import { DatabaseModule, DRIZZLE, type DrizzleDB } from "../database/database.module.js";
-import { AdminController } from "./admin.controller.js";
-import { AppAuthGuard } from "./app-auth.guard.js";
-import { MOCK_AUTH } from "./auth.constants.js";
-import { createAuth } from "./create-auth.js";
-import { MeController } from "./me.controller.js";
+import { Module } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
+import { AuthModule } from '@thallesp/nestjs-better-auth';
+import type { AppEnv } from '../config/env.schema.js';
+import {
+  DatabaseModule,
+  DRIZZLE,
+  type DrizzleDB,
+} from '../database/database.module.js';
+
+import { createAuth } from './better-auth/create-auth.js';
+import { AppAuthGuard } from './helpers/app-auth.guard.js';
+import { MOCK_AUTH } from './helpers/auth.constants.js';
+import { MeController } from './me/me.controller.js';
+import { AdminController } from './admin/admin.controller.js';
 
 @Module({
   imports: [
@@ -22,11 +27,13 @@ import { MeController } from "./me.controller.js";
         auth: createAuth({
           db,
           env: {
-            secret: config.get("BETTER_AUTH_SECRET", { infer: true }),
-            baseURL: config.get("BETTER_AUTH_URL", { infer: true }),
-            trustedOrigins: config.get("TRUSTED_ORIGINS", { infer: true }),
-            githubClientId: config.get("GITHUB_CLIENT_ID", { infer: true }),
-            githubClientSecret: config.get("GITHUB_CLIENT_SECRET", { infer: true }),
+            secret: config.get('BETTER_AUTH_SECRET', { infer: true }),
+            baseURL: config.get('BETTER_AUTH_URL', { infer: true }),
+            trustedOrigins: config.get('TRUSTED_ORIGINS', { infer: true }),
+            githubClientId: config.get('GITHUB_CLIENT_ID', { infer: true }),
+            githubClientSecret: config.get('GITHUB_CLIENT_SECRET', {
+              infer: true,
+            }),
           },
         }),
       }),

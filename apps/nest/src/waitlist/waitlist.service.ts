@@ -1,7 +1,7 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { waitlistEntry } from "@repo/db/schema/credits-schema";
 import { eq } from "drizzle-orm";
-import type { AppUser } from "../auth/app-user.js";
+import type { AppUser } from "../auth/helpers/app-user.js";
 import { CreditsService } from "../credits/credits.service.js";
 import { DRIZZLE, type DrizzleDB } from "../database/database.module.js";
 import type { JoinWaitlistDto } from "./join.schema.js";

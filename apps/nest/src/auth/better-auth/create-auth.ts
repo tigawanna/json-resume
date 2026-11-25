@@ -1,14 +1,14 @@
-import { apiKey } from "@better-auth/api-key";
-import { organizationAc, organizationRoles } from "@repo/isomorphic/auth-roles";
-import * as authSchema from "@repo/db/schema/auth-schema";
-import { betterAuth } from "better-auth";
-import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import type { AccessControl } from "better-auth/plugins/access";
-import { admin } from "better-auth/plugins/admin";
-import { jwt } from "better-auth/plugins/jwt";
-import { multiSession } from "better-auth/plugins/multi-session";
-import { organization } from "better-auth/plugins/organization";
-import type { DrizzleDB } from "../database/database.module.js";
+import { apiKey } from '@better-auth/api-key';
+import * as authSchema from '@repo/db/schema/auth-schema';
+import { organizationAc, organizationRoles } from '@repo/isomorphic/auth-roles';
+import { betterAuth } from 'better-auth';
+import { drizzleAdapter } from 'better-auth/adapters/drizzle';
+import type { AccessControl } from 'better-auth/plugins/access';
+import { admin } from 'better-auth/plugins/admin';
+import { jwt } from 'better-auth/plugins/jwt';
+import { multiSession } from 'better-auth/plugins/multi-session';
+import { organization } from 'better-auth/plugins/organization';
+import type { DrizzleDB } from '../../database/database.module.js';
 
 type AuthEnv = {
   secret: string;
@@ -21,17 +21,17 @@ type AuthEnv = {
 export function createAuth({ db, env }: { db: DrizzleDB; env: AuthEnv }) {
   return betterAuth({
     baseURL: env.baseURL,
-    basePath: "/api/auth",
+    basePath: '/api/auth',
     secret: env.secret,
     trustedOrigins: env.trustedOrigins,
     database: drizzleAdapter(db, {
-      provider: "sqlite",
+      provider: 'sqlite',
       schema: authSchema,
     }),
     advanced: {
       database: { joins: true },
       defaultCookieAttributes: {
-        sameSite: "none",
+        sameSite: 'none',
         secure: true,
       },
     },
@@ -50,15 +50,15 @@ export function createAuth({ db, env }: { db: DrizzleDB; env: AuthEnv }) {
       }),
       multiSession(),
       jwt({
-        jwks: { keyPairConfig: { alg: "ES256" } },
+        jwks: { keyPairConfig: { alg: 'ES256' } },
         jwt: {
           issuer: env.baseURL,
           audience: env.baseURL,
-          expirationTime: "15m",
+          expirationTime: '15m',
         },
       }),
       apiKey({
-        defaultPrefix: "ajr",
+        defaultPrefix: 'ajr',
         rateLimit: { enabled: true, timeWindow: 60_000, maxRequests: 120 },
       }),
     ],

@@ -1,9 +1,9 @@
-import { Controller, Get } from "@nestjs/common";
-import { ApiCookieAuth, ApiOkResponse, ApiTags } from "@nestjs/swagger";
-import { createZodDto } from "nestjs-zod";
-import { z } from "zod";
-import { CurrentUser } from "./auth.decorators.js";
-import type { AppUser } from "./app-user.js";
+import { Controller, Get } from '@nestjs/common';
+import { ApiCookieAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { createZodDto } from 'nestjs-zod';
+import { z } from 'zod';
+import type { AppUser } from '../helpers/app-user.js';
+import { CurrentUser } from '../helpers/auth.decorators.js';
 
 const meSchema = z.object({
   id: z.string(),
@@ -15,9 +15,9 @@ const meSchema = z.object({
 
 export class MeResponseDto extends createZodDto(meSchema) {}
 
-@ApiTags("auth")
+@ApiTags('auth')
 @ApiCookieAuth()
-@Controller("me")
+@Controller('me')
 export class MeController {
   @Get()
   @ApiOkResponse({ type: MeResponseDto })

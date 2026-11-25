@@ -1,12 +1,16 @@
-import { Body, Controller, HttpCode, Post } from "@nestjs/common";
-import { ApiCookieAuth, ApiOkResponse, ApiTags } from "@nestjs/swagger";
-import type { AppUser } from "../auth/app-user.js";
-import { CurrentUser, Public } from "../auth/auth.decorators.js";
-import { ClaimResponseDto, JoinWaitlistDto, JoinedResponseDto } from "./join.schema.js";
-import { WaitlistService } from "./waitlist.service.js";
+import { Body, Controller, HttpCode, Post } from '@nestjs/common';
+import { ApiCookieAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import type { AppUser } from '../auth/helpers/app-user.js';
+import { CurrentUser, Public } from '../auth/helpers/auth.decorators.js';
+import {
+  ClaimResponseDto,
+  JoinWaitlistDto,
+  JoinedResponseDto,
+} from './join.schema.js';
+import { WaitlistService } from './waitlist.service.js';
 
-@ApiTags("waitlist")
-@Controller("waitlist")
+@ApiTags('waitlist')
+@Controller('waitlist')
 export class WaitlistController {
   constructor(private readonly waitlist: WaitlistService) {}
 
@@ -18,7 +22,7 @@ export class WaitlistController {
     return this.waitlist.join({ body, current });
   }
 
-  @Post("claim")
+  @Post('claim')
   @HttpCode(200)
   @ApiCookieAuth()
   @ApiOkResponse({ type: ClaimResponseDto })

@@ -5,7 +5,7 @@ import {
   HttpStatus,
   Injectable,
 } from "@nestjs/common";
-import type { AppUser } from "../auth/app-user.js";
+import type { AppUser } from "../auth/helpers/app-user.js";
 import { CreditsService } from "./credits.service.js";
 
 /** Checks that a credit exists. Does not spend it. Sync charging is a later pass. */
