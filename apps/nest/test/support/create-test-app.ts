@@ -1,5 +1,5 @@
 import { createClient } from '@libsql/client';
-import { INestApplication } from '@nestjs/common';
+import type { NestNodeApplication } from '@nestjs/platform-node';
 import { Test } from '@nestjs/testing';
 import { migrationsFolder } from '@repo/db/migrations';
 import { schema } from '@repo/db/schema/index';
@@ -8,10 +8,10 @@ import { migrate } from 'drizzle-orm/libsql/migrator';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { App } from 'supertest/types.js';
 import { AppModule } from '../../src/app.module.js';
 import { ADMIN_BYPASS_SECRET, MOCK_AUTH } from '../../src/auth/helpers/auth.constants.js';
 import { configureApp } from '../../src/bootstrap/configure-app.js';
+import { createHttpAdapter, nestHttpOptions } from '../../src/bootstrap/http-adapter.js';
 import type { CreditsPolicy } from '../../src/credits/allocate.js';
 import { CREDITS_POLICY } from '../../src/credits/credits.service.js';
 import { DRIZZLE } from '../../src/database/database.module.js';
@@ -48,9 +48,10 @@ export async function createTestApp({
   const moduleRef = await (
     policy ? builder.overrideProvider(CREDITS_POLICY).useValue(policy) : builder
   ).compile();
-  const app = moduleRef.createNestApplication<INestApplication<App>>({
-    bodyParser: false,
-  });
+  const app = moduleRef.createNestApplication<NestNodeApplication>(
+    createHttpAdapter(),
+    nestHttpOptions,
+  );
   configureApp({ app });
   await app.init();
   return { app, db, close: () => database.close() };

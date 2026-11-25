@@ -27,7 +27,7 @@ The runtime client is `drizzle-orm/libsql/web` (HTTP). It uses `DATABASE_URL` (`
 - `cleanupOpenApiDoc` from `nestjs-zod` runs on the document factory
 - Cookie auth is documented. Do not document the test header as a public scheme
 
-Nest's body parser is off (`bodyParser: false`) so Better Auth can read the raw body. `@thallesp/nestjs-better-auth` parses JSON for the other routes.
+The app runs on `NodeAdapter` (`@nestjs/platform-node` / `node:http`), not Express. Nest's body parser is off (`bodyParser: false`) so Better Auth can read the raw body. `@thallesp/nestjs-better-auth` parses JSON for the other routes. Trust proxy is `loopback` on the adapter (NodeAdapter does not take an Express hop count).
 
 ## Better Auth
 
@@ -72,7 +72,7 @@ Outside production, `ADMIN_BYPASS_SECRET` in env enables header `x-admin`. When 
 
 ## Waitlist
 
-`POST /waitlist` is public and always answers `{ joined: true }` with status 200, including duplicates and the honeypot (`website` filled). That avoids email enumeration.
+`POST /waitlist` is public and always answers `{ joined: true }` with status 200, including duplicates and the honeypot (`website` filled). That avoids email enumeration. Join is IP-throttled (`WAITLIST_JOIN_RATE_LIMIT`: 10 per minute). Claim uses a looser IP cap (`WAITLIST_CLAIM_RATE_LIMIT`: 20 per minute). Over the limit is 429 with `Retry-After`. Express `trust proxy` is on so `req.ip` is the client, not the load balancer.
 
 - Email is trimmed and lowercased.
 - `consent` must be `true`.

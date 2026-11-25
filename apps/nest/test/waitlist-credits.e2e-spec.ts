@@ -5,6 +5,7 @@ import { eq } from "drizzle-orm";
 import request from "supertest";
 import type { App } from "supertest/types.js";
 import type { DrizzleDB } from "../src/database/database.module.js";
+import { WAITLIST_JOIN_RATE_LIMIT } from "../src/waitlist/waitlist.constants.js";
 import { createTestApp } from "./support/create-test-app.js";
 import { personas, walletOf } from "./support/personas.js";
 
@@ -151,5 +152,35 @@ describe("waitlist required", () => {
       .set("x-mock-user", personas.memberWaitlisted.id)
       .expect(200);
     expect(credits.body.monthly).toBe(CREDIT_POLICY.monthlyCredits);
+  });
+});
+
+describe("waitlist IP throttle", () => {
+  let app: INestApplication<App>;
+  let closeDatabase: () => void;
+
+  beforeAll(async () => {
+    const started = await createTestApp();
+    app = started.app;
+    closeDatabase = started.close;
+  });
+
+  afterAll(async () => {
+    await app.close();
+    closeDatabase();
+  });
+
+  it("returns 429 after the join limit from one IP", async () => {
+    const server = app.getHttpServer();
+    for (let index = 0; index < WAITLIST_JOIN_RATE_LIMIT.limit; index += 1) {
+      await request(server)
+        .post("/waitlist")
+        .send({ email: `throttle-${index}@example.com`, consent: true })
+        .expect(200);
+    }
+    await request(server)
+      .post("/waitlist")
+      .send({ email: "throttle-over@example.com", consent: true })
+      .expect(429);
   });
 });

@@ -7,10 +7,10 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import type { NodeRequest } from '@nestjs/platform-node';
 import { user } from '@repo/db/schema/auth-schema';
 import { AuthService } from '@thallesp/nestjs-better-auth';
 import { eq } from 'drizzle-orm';
-import type { Request } from 'express';
 import { DRIZZLE, type DrizzleDB } from '../../database/database.module.js';
 import type { Auth } from '../better-auth/create-auth.js';
 import { ADMIN_BYPASS_SECRET, IS_PUBLIC, MOCK_AUTH, ROLES } from './auth.constants.js';
@@ -18,7 +18,7 @@ import { DEV_ADMIN_USER, matchesAdminBypassHeader } from './dev-admin-bypass.js'
 import type { UserWithRole } from './utils.js';
 import { hasRole } from './utils.js';
 
-type RequestWithUser = Request & { user?: UserWithRole };
+type RequestWithUser = NodeRequest & { user?: UserWithRole };
 
 @Injectable()
 export class AppAuthGuard implements CanActivate {
@@ -62,7 +62,7 @@ export class AppAuthGuard implements CanActivate {
   }): Promise<UserWithRole | undefined> {
     if (
       matchesAdminBypassHeader({
-        header: request.header('x-admin'),
+        header: firstHeaderValue(request.header('x-admin')),
         secret: this.adminBypassSecret,
       })
     ) {
@@ -86,7 +86,7 @@ export class AppAuthGuard implements CanActivate {
   }: {
     request: RequestWithUser;
   }): Promise<UserWithRole | undefined> {
-    const userId = request.header('x-mock-user')?.trim();
+    const userId = firstHeaderValue(request.header('x-mock-user'))?.trim();
     if (!userId) return undefined;
     const [row] = await this.db.select().from(user).where(eq(user.id, userId)).limit(1);
     if (!row) return undefined;
@@ -101,8 +101,13 @@ export class AppAuthGuard implements CanActivate {
   }
 }
 
+function firstHeaderValue(value: string | string[] | undefined) {
+  if (Array.isArray(value)) return value[0];
+  return value;
+}
+
 /** Copy incoming request headers into the Headers object Better Auth expects. */
-function requestToFetchHeaders({ request }: { request: Request }) {
+function requestToFetchHeaders({ request }: { request: NodeRequest }) {
   const headers = new Headers();
   for (const [key, value] of Object.entries(request.headers)) {
     if (typeof value === 'string') headers.set(key, value);
