@@ -2,6 +2,7 @@ import type { INestApplication } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { Reflector } from "@nestjs/core";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
+import { apiReference } from "@scalar/nestjs-api-reference";
 import { cleanupOpenApiDoc, ZodSerializerInterceptor, ZodValidationPipe } from "nestjs-zod";
 import type { AppEnv } from "../config/env.schema.js";
 
@@ -27,5 +28,11 @@ export function configureApp({ app }: { app: INestApplication }) {
     .build();
 
   const document = () => cleanupOpenApiDoc(SwaggerModule.createDocument(app, config));
-  SwaggerModule.setup("docs", app, document);
+  SwaggerModule.setup("docs", app, document, { ui: false });
+  app.use(
+    "/docs",
+    apiReference({
+      url: "/docs-json",
+    }),
+  );
 }

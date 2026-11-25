@@ -17,11 +17,11 @@ This is the plan for `apps/nest`. Schema and migrations stay in `packages/db`. T
 
 The runtime client is `drizzle-orm/libsql/web` (HTTP). It uses `DATABASE_URL` (`libsql://`, `https://`, or `http://`) and `DATABASE_AUTH_TOKEN`. Tests do not call that server. They open `@libsql/client` with `:memory:`, run the shared migrations, and override the `DRIZZLE` provider. The HTTP driver cannot open a file or memory database.
 
-## Swagger
+## OpenAPI (Scalar)
 
 `configureApp` in `src/bootstrap/configure-app.ts` is called from `main.ts` and from the test app.
 
-- UI: `/docs`
+- Scalar UI: `/docs`
 - OpenAPI JSON: `/docs-json`
 - `ZodValidationPipe` and `ZodSerializerInterceptor` are registered here, because the testing app never runs `main.ts`
 - `cleanupOpenApiDoc` from `nestjs-zod` runs on the document factory

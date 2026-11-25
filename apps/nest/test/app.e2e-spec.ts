@@ -21,4 +21,9 @@ describe("AppController (e2e)", () => {
   it("/ (GET)", () => {
     return request(app.getHttpServer()).get("/").expect(200).expect("Hello World!");
   });
+
+  it("/docs (GET) serves Scalar", async () => {
+    const response = await request(app.getHttpServer()).get("/docs").expect(200);
+    expect(response.text).toContain("Scalar");
+  });
 });
