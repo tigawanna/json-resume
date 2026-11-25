@@ -12,12 +12,12 @@ import { AuthService } from '@thallesp/nestjs-better-auth';
 import { eq } from 'drizzle-orm';
 import type { Request } from 'express';
 import { DRIZZLE, type DrizzleDB } from '../../database/database.module.js';
-import type { AppUser } from './app-user.js';
-import { hasRole } from './app-user.js';
 import type { Auth } from '../better-auth/create-auth.js';
 import { IS_PUBLIC, MOCK_AUTH, ROLES } from './auth.constants.js';
+import type { UserWithRole } from './utils.js';
+import { hasRole } from './utils.js';
 
-type RequestWithUser = Request & { user?: AppUser };
+type RequestWithUser = Request & { user?: UserWithRole };
 
 @Injectable()
 export class AppAuthGuard implements CanActivate {
@@ -57,18 +57,16 @@ export class AppAuthGuard implements CanActivate {
     request,
   }: {
     request: RequestWithUser;
-  }): Promise<AppUser | undefined> {
+  }): Promise<UserWithRole | undefined> {
     if (this.mockAuth) return this.resolveUserFromMockHeader({ request });
     const session = await this.auth.api.getSession({
       headers: requestToFetchHeaders({ request }),
     });
     if (!session) return undefined;
     return {
-      id: session.user.id,
-      email: session.user.email,
-      name: session.user.name,
-      role: session.user.role ?? null,
-      banned: session.user.banned === true,
+      ...session.user,
+      role: session.user.role ?? undefined,
+      banned: session.user.banned ?? null,
     };
   }
 
@@ -77,22 +75,19 @@ export class AppAuthGuard implements CanActivate {
     request,
   }: {
     request: RequestWithUser;
-  }): Promise<AppUser | undefined> {
+  }): Promise<UserWithRole | undefined> {
     const userId = request.header('x-mock-user')?.trim();
     if (!userId) return undefined;
-    const [row] = await this.db
-      .select({
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role,
-        banned: user.banned,
-      })
-      .from(user)
-      .where(eq(user.id, userId))
-      .limit(1);
+    const [row] = await this.db.select().from(user).where(eq(user.id, userId)).limit(1);
     if (!row) return undefined;
-    return { ...row, banned: row.banned === true };
+    return {
+      ...row,
+      role: row.role ?? undefined,
+      image: row.image ?? undefined,
+      banReason: row.banReason ?? undefined,
+      banExpires: row.banExpires ?? undefined,
+      banned: row.banned ?? null,
+    };
   }
 }
 

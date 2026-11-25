@@ -1,6 +1,6 @@
 import { apiKey } from '@better-auth/api-key';
-import * as authSchema from '@repo/db/schema/auth-schema';
 import { organizationAc, organizationRoles } from '@repo/isomorphic/auth-roles';
+import * as authSchema from '@repo/db/schema/auth-schema';
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import type { AccessControl } from 'better-auth/plugins/access';
@@ -66,3 +66,5 @@ export function createAuth({ db, env }: { db: DrizzleDB; env: AuthEnv }) {
 }
 
 export type Auth = ReturnType<typeof createAuth>;
+
+

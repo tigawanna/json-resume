@@ -2,8 +2,8 @@ import { Controller, Get } from '@nestjs/common';
 import { ApiCookieAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
-import type { AppUser } from '../auth/helpers/app-user.js';
 import { CurrentUser } from '../auth/helpers/auth.decorators.js';
+import type { UserWithRole } from '../auth/helpers/utils.js';
 import { CreditsService } from './credits.service.js';
 
 const creditsSchema = z.object({
@@ -24,7 +24,7 @@ export class CreditsController {
 
   @Get()
   @ApiOkResponse({ type: CreditsResponseDto })
-  read(@CurrentUser() current: AppUser) {
+  read(@CurrentUser() current: UserWithRole) {
     return this.credits.read({ userId: current.id });
   }
 }

@@ -1,10 +1,10 @@
-import { Inject, Injectable } from "@nestjs/common";
-import { waitlistEntry } from "@repo/db/schema/credits-schema";
-import { eq } from "drizzle-orm";
-import type { AppUser } from "../auth/helpers/app-user.js";
-import { CreditsService } from "../credits/credits.service.js";
-import { DRIZZLE, type DrizzleDB } from "../database/database.module.js";
-import type { JoinWaitlistDto } from "./join.schema.js";
+import { Inject, Injectable } from '@nestjs/common';
+import { waitlistEntry } from '@repo/db/schema/credits-schema';
+import { eq } from 'drizzle-orm';
+import type { UserWithRole } from '../auth/helpers/utils.js';
+import { CreditsService } from '../credits/credits.service.js';
+import { DRIZZLE, type DrizzleDB } from '../database/database.module.js';
+import type { JoinWaitlistDto } from './join.schema.js';
 
 @Injectable()
 export class WaitlistService {
@@ -13,8 +13,9 @@ export class WaitlistService {
     private readonly credits: CreditsService,
   ) {}
 
-  async join({ body, current }: { body: JoinWaitlistDto; current?: AppUser }) {
-    if (body.website && body.website.trim().length > 0) return { joined: true as const };
+  async join({ body, current }: { body: JoinWaitlistDto; current?: UserWithRole }) {
+    if (body.website && body.website.trim().length > 0)
+      return { joined: true as const };
     const linked = this.linkTarget({ body, current });
     // See if this email already joined.
     const [existing] = await this.db
@@ -24,7 +25,8 @@ export class WaitlistService {
       .limit(1);
 
     if (existing) {
-      if (linked && !existing.userId) await this.claimRow({ id: existing.id, userId: linked.id });
+      if (linked && !existing.userId)
+        await this.claimRow({ id: existing.id, userId: linked.id });
       return { joined: true as const };
     }
 
@@ -45,7 +47,7 @@ export class WaitlistService {
     return { joined: true as const };
   }
 
-  async claim({ current }: { current: AppUser }) {
+  async claim({ current }: { current: UserWithRole }) {
     const email = current.email.trim().toLowerCase();
     // Find an unclaimed waitlist row for this signed-in email.
     const [existing] = await this.db
@@ -58,7 +60,13 @@ export class WaitlistService {
     return { claimed: true };
   }
 
-  private linkTarget({ body, current }: { body: JoinWaitlistDto; current?: AppUser }) {
+  private linkTarget({
+    body,
+    current,
+  }: {
+    body: JoinWaitlistDto;
+    current?: UserWithRole;
+  }) {
     if (!current || current.banned) return undefined;
     if (current.email.trim().toLowerCase() !== body.email) return undefined;
     return current;
