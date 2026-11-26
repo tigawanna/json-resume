@@ -70,6 +70,14 @@ $ pnpm run test:e2e
 $ pnpm run test:cov
 ```
 
+Most e2e specs use an empty migrated SQLite database with `personas` fixtures. The
+`admin-real-data-*.e2e-spec.ts` suites instead boot the app against a snapshot of
+the real local database (`.local-db/json-resume.db`): `copyLocalDatabase()` stages
+the db plus its WAL, runs `VACUUM INTO` a temporary file, and every suite mutates
+only its own copy. Set `NEST_TEST_DATABASE` to test against another local SQLite
+file. No mock repository is involved — auth still uses the `x-mock-user` header
+with a real user row from the snapshot.
+
 ## Deployment
 
 When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.

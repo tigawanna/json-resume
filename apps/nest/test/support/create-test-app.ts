@@ -15,10 +15,12 @@ import { configureApp } from '../../src/bootstrap/configure-app.js';
 import { createHttpAdapter, nestHttpOptions } from '../../src/bootstrap/http-adapter.js';
 import type { CreditsPolicy } from '../../src/credits/allocate.js';
 import { CREDITS_POLICY } from '../../src/credits/credits.service.js';
-import { DRIZZLE } from '../../src/database/database.module.js';
+import { DRIZZLE, type DrizzleDB } from '../../src/database/database.module.js';
 import { seedPersonas } from './personas.js';
 
-export async function createMemoryDatabase() {
+export type TestDatabase = { db: DrizzleDB; close: () => void };
+
+export async function createMemoryDatabase(): Promise<TestDatabase> {
   const directory = mkdtempSync(join(tmpdir(), 'nest-db-'));
   const client = createClient({ url: `file:${join(directory, 'test.db')}` });
   const db = drizzle({ client, schema });
@@ -36,14 +38,17 @@ export async function createTestApp({
   policy,
   adminBypassSecret,
   throttle = false,
+  database: suppliedDatabase,
 }: {
   policy?: CreditsPolicy;
   adminBypassSecret?: string;
   throttle?: boolean;
+  /** Supply a snapshot (see copyLocalDatabase) to reuse real data without mocks. */
+  database?: TestDatabase;
 } = {}) {
-  const database = await createMemoryDatabase();
+  const database = suppliedDatabase ?? (await createMemoryDatabase());
   const db = database.db;
-  await seedPersonas({ db });
+  if (!suppliedDatabase) await seedPersonas({ db });
   let builder = Test.createTestingModule({ imports: [AppModule] })
     .overrideProvider(DRIZZLE)
     .useValue(db)
