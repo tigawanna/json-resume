@@ -20,6 +20,7 @@ export function isEditable({
 }) {
   if (
     mode === 'readonly' ||
+    column.name === 'updated_at' ||
     column.primaryKey ||
     isSecret({ table, column: column.name })
   )

@@ -91,6 +91,34 @@ describe('admin dashboard against a copy of the local database', () => {
     );
   });
 
+  it('counts admin roles with the same whitespace rules as authorization', async () => {
+    const before = await request(app.getHttpServer())
+      .get('/api/admin/stats')
+      .set(admin())
+      .expect(200);
+    const id = crypto.randomUUID();
+    await db.insert(user).values({
+      id,
+      name: 'Whitespace admin',
+      email: `${id}@example.com`,
+      emailVerified: true,
+      role: ' user,\tadmin\n',
+      banned: false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+    try {
+      const after = await request(app.getHttpServer())
+        .get('/api/admin/stats')
+        .set(admin())
+        .expect(200);
+      expect(after.body.admins).toBe(before.body.admins + 1);
+      expect(after.body.users).toBe(before.body.users + 1);
+    } finally {
+      await db.delete(user).where(eq(user.id, id));
+    }
+  });
+
   it('probes the real admin session and refuses unsigned, member and banned users', async () => {
     const probe = await request(app.getHttpServer())
       .get('/api/admin/session')

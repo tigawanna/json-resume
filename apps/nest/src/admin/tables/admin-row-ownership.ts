@@ -3,15 +3,7 @@ import {
   resumeEducation,
   resumeExperience,
 } from '@repo/db/schema/resume';
-import {
-  and,
-  eq,
-  getTableColumns,
-  inArray,
-  isNull,
-  or,
-  type SQL,
-} from 'drizzle-orm';
+import { eq, getTableColumns } from 'drizzle-orm';
 import type { SQLiteColumn, SQLiteTable } from 'drizzle-orm/sqlite-core';
 import type { DrizzleDB } from '../../database/database.module.js';
 import {
@@ -42,54 +34,6 @@ const ownedChildren: Record<string, readonly Reference[]> = {
 
 export const SET_NULL_ON_DELETE = new Set(['resume_skill.group_id']);
 export const NUMERIC_TYPE = /INT|REAL|NUM|DOUBLE|FLOAT|DEC|BOOL/;
-
-export function ownerFilter({
-  db,
-  collectionId,
-  userId,
-}: {
-  db: DrizzleDB;
-  collectionId: CollectionId;
-  userId: string;
-}): SQL {
-  const columns: Record<string, SQLiteColumn> = getTableColumns(
-    tableForCollection({ collectionId }),
-  );
-  const via = ownedViaParent[collectionId];
-  const viaColumn = via ? columns[via.column] : undefined;
-  let viaParent: SQL | null = null;
-  if (via && viaColumn) {
-    const parentColumns: Record<string, SQLiteColumn> = getTableColumns(
-      via.parent,
-    );
-    if (parentColumns.id && parentColumns.userId) {
-      viaParent = inArray(
-        viaColumn,
-        db
-          .select({ id: parentColumns.id })
-          .from(via.parent)
-          .where(eq(parentColumns.userId, userId)),
-      );
-    }
-  }
-  if (columns.userId) {
-    const direct = eq(columns.userId, userId);
-    return viaParent
-      ? (or(direct, and(isNull(columns.userId), viaParent)) ?? direct)
-      : direct;
-  }
-  if (columns.resumeId) {
-    return inArray(
-      columns.resumeId,
-      db
-        .select({ id: resume.id })
-        .from(resume)
-        .where(eq(resume.userId, userId)),
-    );
-  }
-  if (viaParent) return viaParent;
-  throw new Error(`No ownership path for ${collectionId}`);
-}
 
 export function parentOwnershipFor({
   collectionId,
@@ -181,6 +125,45 @@ export function rowsToDeleteWith({
       );
     }
   }
+  return rows;
+}
+
+export async function rowsToDeleteWithFromDb({
+  db,
+  collectionId,
+  parentId,
+}: {
+  db: DrizzleDB;
+  collectionId: CollectionId;
+  parentId: string;
+}) {
+  const rows: Array<{ collectionId: CollectionId; id: string }> = [];
+  const seen = new Set<string>();
+  const visit = async ({ id, parent }: { id: string; parent: CollectionId }) => {
+    for (const owned of ownedChildren[parent] ?? []) {
+      const childCollectionId = owned.collectionId;
+      if (!isCollectionId(childCollectionId)) continue;
+      const table = tableForCollection({ collectionId: childCollectionId });
+      const columns: Record<string, SQLiteColumn> = getTableColumns(table);
+      const parentColumn = columns[owned.field];
+      const idColumn = columns.id;
+      if (!parentColumn || !idColumn) continue;
+      const children = await db
+        .select({ id: idColumn })
+        .from(table)
+        .where(eq(parentColumn, id));
+      for (const child of children) {
+        const childId = child.id;
+        if (typeof childId !== 'string') continue;
+        const key = JSON.stringify([childCollectionId, childId]);
+        if (seen.has(key)) continue;
+        seen.add(key);
+        await visit({ id: childId, parent: childCollectionId });
+        rows.push({ collectionId: childCollectionId, id: childId });
+      }
+    }
+  };
+  await visit({ id: parentId, parent: collectionId });
   return rows;
 }
 

@@ -100,7 +100,7 @@ export class AdminTruncateService {
     if (plan.blockedBy.length > 0) {
       const first = plan.blockedBy[0];
       throw new BadRequestException(
-        `${first?.rows} synced row(s) in ${first?.table} still reference these rows. Truncate that table first.`,
+        `${first?.rows} row(s) in ${first?.table} still reference these rows. Truncate that table first.`,
       );
     }
     if (plan.mode === 'direct') {

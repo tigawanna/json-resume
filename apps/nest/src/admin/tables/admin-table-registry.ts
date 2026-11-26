@@ -85,6 +85,13 @@ export function collectionForTable({
   return null;
 }
 
+export function isLocalOnlyTable({ table }: { table: string }) {
+  return Object.entries(tablesByCollection).some(
+    ([collectionId, tableRef]) =>
+      LOCAL_ONLY_COLLECTIONS.has(collectionId) && getTableName(tableRef) === table,
+  );
+}
+
 export function tableForCollection({
   collectionId,
 }: {

@@ -4,7 +4,8 @@ import { job } from '@repo/db/schema/job-schema';
 import { publicResume } from '@repo/db/schema/resume/public-resume';
 import { resume } from '@repo/db/schema/resume/resume';
 import { syncBackend, syncEvent } from '@repo/db/schema/sync-schema';
-import { count, gt, isNull, sql } from 'drizzle-orm';
+import { count, gt, isNull } from 'drizzle-orm';
+import { hasRole } from '../../auth/helpers/utils.js';
 import { DRIZZLE, type DrizzleDB } from '../../database/database.module.js';
 import type { AdminStats } from './admin-stats.dto.js';
 
@@ -18,8 +19,7 @@ export class AdminStatsService {
     const now = new Date();
     const dayAgo = new Date(now.getTime() - DAY_MS);
     const [
-      [users],
-      [admins],
+      roles,
       [resumes],
       [publicResumes],
       [jobs],
@@ -29,13 +29,7 @@ export class AdminStatsService {
       [activeSessions],
       [backend],
     ] = await Promise.all([
-      this.db.select({ n: count() }).from(user),
-      this.db
-        .select({ n: count() })
-        .from(user)
-        .where(
-          sql`',' || replace(${user.role}, ' ', '') || ',' like '%,admin,%'`,
-        ),
+      this.db.select({ role: user.role }).from(user),
       this.db.select({ n: count() }).from(resume),
       this.db.select({ n: count() }).from(publicResume),
       this.db.select({ n: count() }).from(job),
@@ -59,8 +53,10 @@ export class AdminStatsService {
     ]);
 
     return {
-      users: users?.n ?? 0,
-      admins: admins?.n ?? 0,
+      users: roles.length,
+      admins: roles.filter((row) =>
+        hasRole({ role: row.role, required: ['admin'] }),
+      ).length,
       resumes: resumes?.n ?? 0,
       publicResumes: publicResumes?.n ?? 0,
       jobs: jobs?.n ?? 0,

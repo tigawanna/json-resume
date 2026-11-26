@@ -32,6 +32,8 @@ function toSqlValue({
   if (value === null) return null;
   if (!NUMERIC_TYPE.test(column.type)) return value;
   const trimmed = value.trim();
+  if (/^(true|false)$/i.test(trimmed))
+    return trimmed.toLowerCase() === 'true' ? 1 : 0;
   if (trimmed === '' || !Number.isFinite(Number(trimmed))) {
     throw new BadRequestException(`Column "${column.name}" needs a number`);
   }
@@ -101,12 +103,12 @@ export class AdminRowService {
     }
     if (assignments.length === 0) return { mode, changed: 0 };
     const updatedAt = columns.find((column) => column.name === 'updated_at');
-    if (updatedAt && !('updated_at' in values)) {
-      const stamp = NUMERIC_TYPE.test(updatedAt.type)
-        ? Date.now()
-        : new Date().toISOString();
+    if (updatedAt) {
+      const ident = sql.raw(quoteIdent({ name: 'updated_at' }));
       assignments.push(
-        sql`${sql.raw(quoteIdent({ name: 'updated_at' }))} = ${stamp}`,
+        NUMERIC_TYPE.test(updatedAt.type)
+          ? sql`${ident} = ${Date.now()}`
+          : sql`${ident} = current_timestamp`,
       );
     }
     const target =

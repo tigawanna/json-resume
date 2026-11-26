@@ -11,6 +11,7 @@ import {
 } from './admin-row-ownership.js';
 import {
   collectionForTable,
+  isLocalOnlyTable,
   tableForCollection,
   tableNameForCollection,
   rowModeFor,
@@ -81,7 +82,11 @@ export async function planTruncate({
     const rows = Number(counted.rows[0]?.n ?? 0);
     if (rows === 0) continue;
     const entry = { table: key.table, column: key.from, rows };
-    if (collectionForTable({ table: key.table })) plan.blockedBy.push(entry);
+    if (
+      collectionForTable({ table: key.table }) ||
+      isLocalOnlyTable({ table: key.table })
+    )
+      plan.blockedBy.push(entry);
     else plan.cascades.push(entry);
   }
   return plan;

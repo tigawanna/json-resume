@@ -4,7 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { eq, getTableColumns, sql } from 'drizzle-orm';
+import { eq, getTableColumns, inArray, sql } from 'drizzle-orm';
 import { DRIZZLE, type DrizzleDB } from '../../database/database.module.js';
 import {
   AdminAuditService,
@@ -17,18 +17,15 @@ import {
 import { appendAdminEvent } from './admin-row-events.js';
 import {
   dependentTables,
-  ownerFilter,
-  ruleCollections,
-  rowsToDeleteWith,
+  rowsToDeleteWithFromDb,
   SET_NULL_ON_DELETE,
 } from './admin-row-ownership.js';
 import {
-  isCollectionId,
+  rowModeFor,
   tableForCollection,
   type CollectionId,
 } from './admin-table-registry.js';
 import { resolveSyncedTarget } from './admin-row-target.js';
-import { rowModeFor } from './admin-table-registry.js';
 
 type Row = Record<string, unknown>;
 type Dependent = { collectionId: CollectionId; id: string; row: Row };
@@ -75,7 +72,6 @@ export class AdminRowDeleteService {
     const dependents = target
       ? await this.dependentsOf({
           collectionId: target.collectionId,
-          userId: target.userId,
           parentId: target.id,
         })
       : [];
@@ -123,35 +119,40 @@ export class AdminRowDeleteService {
 
   private async dependentsOf({
     collectionId,
-    userId,
     parentId,
   }: {
     collectionId: CollectionId;
-    userId: string;
     parentId: string;
   }): Promise<Dependent[]> {
-    const loaded = new Map<CollectionId, Row[]>();
-    for (const childId of ruleCollections({ collectionId })) {
-      const rows = await this.db
-        .select()
-        .from(tableForCollection({ collectionId: childId }))
-        .where(ownerFilter({ db: this.db, collectionId: childId, userId }));
-      loaded.set(childId, rows);
+    const references = await rowsToDeleteWithFromDb({
+      db: this.db,
+      collectionId,
+      parentId,
+    });
+    const idsByCollection = new Map<CollectionId, string[]>();
+    for (const reference of references) {
+      const ids = idsByCollection.get(reference.collectionId) ?? [];
+      ids.push(reference.id);
+      idsByCollection.set(reference.collectionId, ids);
     }
-    const rowsOf = ({ collectionId: id }: { collectionId: string }) => {
-      if (!isCollectionId(id)) return [];
-      return loaded.get(id) ?? [];
-    };
-    return rowsToDeleteWith({ collectionId, parentId, rowsOf }).flatMap(
-      (dependent) => {
-        const row = loaded
-          .get(dependent.collectionId)
-          ?.find((candidate) => candidate.id === dependent.id);
-        return row
-          ? [{ collectionId: dependent.collectionId, id: dependent.id, row }]
-          : [];
-      },
-    );
+    const loaded = new Map<CollectionId, Row[]>();
+    for (const [childId, ids] of idsByCollection) {
+      const table = tableForCollection({ collectionId: childId });
+      const idColumn = getTableColumns(table).id;
+      if (!idColumn) continue;
+      loaded.set(
+        childId,
+        await this.db.select().from(table).where(inArray(idColumn, ids)),
+      );
+    }
+    return references.flatMap((reference) => {
+      const row = loaded
+        .get(reference.collectionId)
+        ?.find((candidate) => candidate.id === reference.id);
+      return row
+        ? [{ collectionId: reference.collectionId, id: reference.id, row }]
+        : [];
+    });
   }
 
   private async assertNoChildren({

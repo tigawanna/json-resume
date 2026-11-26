@@ -1,5 +1,5 @@
 import type { INestApplication } from '@nestjs/common';
-import { account } from '@repo/db/schema/auth-schema';
+import { account, user } from '@repo/db/schema/auth-schema';
 import { resume } from '@repo/db/schema/resume/resume';
 import { syncEvent } from '@repo/db/schema/sync-schema';
 import { count, eq } from 'drizzle-orm';
@@ -121,5 +121,43 @@ describe('admin table browser against a copy of the local database', () => {
         ]),
       );
     }
+  });
+
+  it('accepts boolean text and rejects a client-supplied updated_at', async () => {
+    const [row] = (
+      await db.$client.execute({
+        sql: 'select rowid, id, email_verified from user order by rowid limit 1',
+        args: [],
+      })
+    ).rows;
+    expect(row).toBeDefined();
+    const original = Number(row.email_verified) === 1;
+    const response = await request(app.getHttpServer())
+      .patch(`/api/admin/tables/user/rows/${Number(row.rowid)}`)
+      .set(admin())
+      .send({ values: { email_verified: original ? 'false' : 'true' } })
+      .expect(200);
+    expect(response.body).toEqual({ mode: 'direct', changed: 1 });
+
+    const [updated] = await db
+      .select()
+      .from(user)
+      .where(eq(user.id, textValue({ value: row.id })));
+    expect(updated?.emailVerified).toBe(!original);
+
+    const detail = await request(app.getHttpServer())
+      .get(`/api/admin/tables/user/rows/${Number(row.rowid)}`)
+      .set(admin())
+      .expect(200);
+    expect(detail.body.fields).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: 'updated_at', editable: false }),
+      ]),
+    );
+    await request(app.getHttpServer())
+      .patch(`/api/admin/tables/user/rows/${Number(row.rowid)}`)
+      .set(admin())
+      .send({ values: { updated_at: '0' } })
+      .expect(400);
   });
 });

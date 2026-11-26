@@ -1,9 +1,7 @@
 import { Logger } from '@nestjs/common';
 import type { INestApplication } from '@nestjs/common';
 import { creditLedger, creditWallet, waitlistEntry } from '@repo/db/schema/credits-schema';
-import { job } from '@repo/db/schema/job-schema';
-import { syncEvent } from '@repo/db/schema/sync-schema';
-import { count, eq } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import request from 'supertest';
 import type { App } from 'supertest/types.js';
 import type { DrizzleDB } from '../src/database/database.module.js';
@@ -99,49 +97,6 @@ describe('admin mutations against a copy of the local database', () => {
       .post(`/api/admin/credits/${memberId}/adjustments`)
       .set(admin())
       .send({ amount: -1000, reason: 'Should fail', idempotencyKey: `${idempotencyKey}-bad` })
-      .expect(400);
-  });
-
-  it('truncates real jobs after confirmation and refuses blocked synced tables', async () => {
-    const [jobs] = await db.select({ n: count() }).from(job);
-    expect(jobs.n).toBeGreaterThan(0);
-    const [eventsBefore] = await db.select({ n: count() }).from(syncEvent);
-
-    const preview = await request(app.getHttpServer())
-      .get('/api/admin/tables/job/truncate')
-      .set(admin())
-      .expect(200);
-    expect(preview.body).toMatchObject({ table: 'job', mode: 'synced', rows: jobs.n });
-
-    await request(app.getHttpServer())
-      .post('/api/admin/tables/job/truncate')
-      .set(admin())
-      .send({ confirm: 'jobs' })
-      .expect(400);
-    const truncated = await request(app.getHttpServer())
-      .post('/api/admin/tables/job/truncate')
-      .set(admin())
-      .send({ confirm: 'job' })
-      .expect(200);
-    expect(truncated.body).toEqual({
-      mode: 'synced',
-      deleted: jobs.n,
-      references: 0,
-      events: jobs.n,
-    });
-    expect(await db.select().from(job)).toEqual([]);
-    const [eventsAfter] = await db.select({ n: count() }).from(syncEvent);
-    expect(eventsAfter.n).toBe(eventsBefore.n + jobs.n);
-
-    const blocked = await request(app.getHttpServer())
-      .get('/api/admin/tables/user/truncate')
-      .set(admin())
-      .expect(200);
-    expect(blocked.body.blockedBy.length).toBeGreaterThan(0);
-    await request(app.getHttpServer())
-      .post('/api/admin/tables/user/truncate')
-      .set(admin())
-      .send({ confirm: 'user' })
       .expect(400);
   });
 

@@ -34,12 +34,14 @@ The browser discovers tables remotely; table and column identifiers are always
 validated against SQLite metadata and quoted before interpolation. Search values
 and row values are bound parameters. Password/token/secret/private-key columns,
 API keys and verification values are masked. Primary keys, secret columns,
-blobs, and synced identity/ownership/foreign-key columns cannot be edited.
+`updated_at`, blobs, and synced identity/ownership/foreign-key columns cannot be
+edited. Boolean columns accept `"true"` / `"false"` as well as `1` / `0`.
 
 Synced row updates and deletes append `server-admin` sync events in the same
 transaction. Owned experience/education bullets are removed before their parent
 and receive delete events too. Truncate previews are recomputed by the mutation;
-the preview is never trusted as authorization.
+the preview is never trusted as authorization. Local-only résumé AI chat tables
+block parent truncation instead of being silently cascade-deleted.
 
 `sync_event`, `sync_backend` and `__drizzle_migrations` are read-only. Event-log
 truncate previews report `mode: "eventLog"`, but `POST` returns `501` until Nest
