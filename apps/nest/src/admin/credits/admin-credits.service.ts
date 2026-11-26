@@ -1,12 +1,24 @@
-import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { user } from '@repo/db/schema/auth-schema';
 import { creditLedger, creditWallet } from '@repo/db/schema/credits-schema';
 import { and, asc, desc, eq, gt, lt, or, sql } from 'drizzle-orm';
 import { CreditsService } from '../../credits/credits.service.js';
 import { DRIZZLE, type DrizzleDB } from '../../database/database.module.js';
-import { encodeCursor, type CursorQuery } from '../../shared/pagination/cursor.js';
+import {
+  encodeCursor,
+  type CursorQuery,
+} from '../../shared/pagination/cursor.js';
 import type { CursorPaginatedDto } from '../../shared/types/response-shapes.js';
 import type { AdjustCreditsDto } from './admin-credits.dto.js';
+import {
+  AdminAuditService,
+  type AdminActor,
+} from '../audit/admin-audit.service.js';
 
 type CreditLedgerEntry = typeof creditLedger.$inferSelect;
 
@@ -15,6 +27,7 @@ export class AdminCreditsService {
   constructor(
     @Inject(DRIZZLE) private readonly db: DrizzleDB,
     private readonly credits: CreditsService,
+    private readonly audit: AdminAuditService,
   ) {}
 
   async read({ userId }: { userId: string }) {
@@ -42,7 +55,10 @@ export class AdminCreditsService {
           cursor
             ? or(
                 dirct(creditLedger.createdAt, cursor.createdAt),
-                and(eq(creditLedger.createdAt, cursor.createdAt), dirct(creditLedger.id, cursor.id)),
+                and(
+                  eq(creditLedger.createdAt, cursor.createdAt),
+                  dirct(creditLedger.id, cursor.id),
+                ),
               )
             : undefined,
         ),
@@ -66,11 +82,38 @@ export class AdminCreditsService {
   }
 
   /** Positive amounts are `admin_grant`, negative are `admin_adjustment`; both hit the bonus bucket. */
-  async adjust({ userId, adminId, body }: { userId: string; adminId: string; body: AdjustCreditsDto }) {
+  adjust({
+    actor,
+    userId,
+    body,
+  }: {
+    actor: AdminActor;
+    userId: string;
+    body: AdjustCreditsDto;
+  }) {
+    return this.audit.run({
+      action: 'credits.admin-adjust',
+      actor,
+      input: { userId, amount: body.amount, reason: body.reason },
+      execute: () => this.adjustCredits({ userId, adminId: actor.id, body }),
+    });
+  }
+
+  private async adjustCredits({
+    userId,
+    adminId,
+    body,
+  }: {
+    userId: string;
+    adminId: string;
+    body: AdjustCreditsDto;
+  }) {
     await this.assertUser({ userId });
     const { wallet } = await this.credits.allocation({ userId });
     if (wallet.bonusBalance + body.amount < 0) {
-      throw new BadRequestException('Adjustment would make the bonus balance negative');
+      throw new BadRequestException(
+        'Adjustment would make the bonus balance negative',
+      );
     }
     await this.db.transaction(async (tx) => {
       const [entry] = await tx
@@ -89,14 +132,20 @@ export class AdminCreditsService {
       if (!entry) return;
       await tx
         .update(creditWallet)
-        .set({ bonusBalance: sql`${creditWallet.bonusBalance} + ${body.amount}` })
+        .set({
+          bonusBalance: sql`${creditWallet.bonusBalance} + ${body.amount}`,
+        })
         .where(eq(creditWallet.userId, userId));
     });
     return this.credits.read({ userId });
   }
 
   private async assertUser({ userId }: { userId: string }) {
-    const [row] = await this.db.select({ id: user.id }).from(user).where(eq(user.id, userId)).limit(1);
+    const [row] = await this.db
+      .select({ id: user.id })
+      .from(user)
+      .where(eq(user.id, userId))
+      .limit(1);
     if (!row) throw new NotFoundException('User not found');
   }
 }

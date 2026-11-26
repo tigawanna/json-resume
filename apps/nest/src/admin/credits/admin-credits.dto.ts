@@ -9,7 +9,10 @@ export class CreditsUserIdParamDto extends createZodDto(userIdParam) {}
 export class CreditLedgerListQueryDto extends createZodDto(cursorQuery) {}
 
 const adjustCredits = z.object({
-  amount: z.number().int().refine((value) => value !== 0, 'Amount must not be zero'),
+  amount: z
+    .number()
+    .int()
+    .refine((value) => value !== 0, 'Amount must not be zero'),
   reason: z.string().trim().min(1).max(500),
   idempotencyKey: z.string().trim().min(1).max(200),
 });

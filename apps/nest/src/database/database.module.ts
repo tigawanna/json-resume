@@ -1,20 +1,26 @@
-import { Module } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
-import { schema } from "@repo/db/schema/index";
-import { drizzle, type LibSQLDatabase } from "drizzle-orm/libsql";
-import type { AppEnv } from "../config/env.schema.js";
+import { Module } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { schema } from '@repo/db/schema/index';
+import { drizzle } from 'drizzle-orm/libsql';
+import type { AppEnv } from '../config/env.schema.js';
 
-export const DRIZZLE = Symbol("DRIZZLE");
+export const DRIZZLE = Symbol('DRIZZLE');
 
 /** Node libSQL client: accepts remote (libsql/http/ws) and local `file:` URLs. */
-export function createDrizzle({ url, authToken }: { url: string; authToken?: string }) {
+export function createDrizzle({
+  url,
+  authToken,
+}: {
+  url: string;
+  authToken?: string;
+}) {
   return drizzle({
     connection: { url, authToken },
     schema,
   });
 }
 
-export type DrizzleDB = LibSQLDatabase<typeof schema>;
+export type DrizzleDB = ReturnType<typeof createDrizzle>;
 
 @Module({
   providers: [
@@ -23,8 +29,8 @@ export type DrizzleDB = LibSQLDatabase<typeof schema>;
       inject: [ConfigService],
       useFactory: (config: ConfigService<AppEnv, true>) =>
         createDrizzle({
-          url: config.get("DATABASE_URL", { infer: true }),
-          authToken: config.get("DATABASE_AUTH_TOKEN", { infer: true }),
+          url: config.get('DATABASE_URL', { infer: true }),
+          authToken: config.get('DATABASE_AUTH_TOKEN', { infer: true }),
         }),
     },
   ],

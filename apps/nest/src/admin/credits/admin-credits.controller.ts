@@ -39,7 +39,10 @@ export class AdminCreditsController {
   @Get(':userId/ledger')
   @ApiOperation({ summary: "List a user's credit ledger (cursor paginated)" })
   @ApiOkResponse({ type: CursorPaginatedDto })
-  ledger(@Param() { userId }: CreditsUserIdParamDto, @Query() query: CreditLedgerListQueryDto) {
+  ledger(
+    @Param() { userId }: CreditsUserIdParamDto,
+    @Query() query: CreditLedgerListQueryDto,
+  ) {
     return this.credits.ledger({ userId, query });
   }
 
@@ -53,6 +56,6 @@ export class AdminCreditsController {
     @Body() body: AdjustCreditsDto,
     @CurrentUser() current: UserWithRole,
   ) {
-    return this.credits.adjust({ userId, adminId: current.id, body });
+    return this.credits.adjust({ actor: current, userId, body });
   }
 }

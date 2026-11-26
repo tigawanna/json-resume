@@ -48,12 +48,14 @@ The app listens on `PORT` from `apps/nest/.env` (default **5040** if unset). The
 
 There is no checked-in OpenAPI file; Nest generates the document at boot.
 
-| What | Path | Example if `PORT=5040` |
-| --- | --- | --- |
-| Scalar UI | `/api/docs` | http://localhost:5040/api/docs |
+| What         | Path             | Example if `PORT=5040`              |
+| ------------ | ---------------- | ----------------------------------- |
+| Scalar UI    | `/api/docs`      | http://localhost:5040/api/docs      |
 | OpenAPI JSON | `/api/docs-json` | http://localhost:5040/api/docs-json |
 
 HTTP is under `/api` (`/api/me`, `/api/auth/*`, …). OpenAPI `servers` is `SERVER_URL/api`, so Scalar lists `/me` and `/auth/...` against that base. Setup lives in `src/bootstrap/configure-app.ts`.
+
+Admin dashboard and table-browser endpoints are documented in [docs/admin.md](docs/admin.md).
 
 ## Run tests
 

@@ -7,17 +7,31 @@ import {
 } from '@nestjs/common';
 import { waitlistEntry } from '@repo/db/schema/credits-schema';
 import { and, asc, desc, eq, gt, lt, or } from 'drizzle-orm';
-import { encodeCursor, type CursorQuery } from '../../shared/pagination/cursor.js';
+import {
+  encodeCursor,
+  type CursorQuery,
+} from '../../shared/pagination/cursor.js';
 import type { CursorPaginatedDto } from '../../shared/types/response-shapes.js';
 import type { AddWaitlistEntryDto } from './admin-waitlist.dto.js';
+import {
+  AdminAuditService,
+  type AdminActor,
+} from '../audit/admin-audit.service.js';
 
 type WaitlistEntry = typeof waitlistEntry.$inferSelect;
 
 @Injectable()
 export class AdminWaitlistService {
-  constructor(@Inject(DRIZZLE) private readonly db: DrizzleDB) {}
+  constructor(
+    @Inject(DRIZZLE) private readonly db: DrizzleDB,
+    private readonly audit: AdminAuditService,
+  ) {}
 
-  async findAll({ query }: { query: CursorQuery }): Promise<CursorPaginatedDto<WaitlistEntry>> {
+  async findAll({
+    query,
+  }: {
+    query: CursorQuery;
+  }): Promise<CursorPaginatedDto<WaitlistEntry>> {
     const { cursor, direction, limit } = query;
     const forward = direction === 'next';
     const dirct = forward ? lt : gt;
@@ -29,7 +43,10 @@ export class AdminWaitlistService {
         cursor
           ? or(
               dirct(waitlistEntry.createdAt, cursor.createdAt),
-              and(eq(waitlistEntry.createdAt, cursor.createdAt), dirct(waitlistEntry.id, cursor.id)),
+              and(
+                eq(waitlistEntry.createdAt, cursor.createdAt),
+                dirct(waitlistEntry.id, cursor.id),
+              ),
             )
           : undefined,
       )
@@ -61,7 +78,16 @@ export class AdminWaitlistService {
     return row;
   }
 
-  async add({ body }: { body: AddWaitlistEntryDto }) {
+  add({ actor, body }: { actor: AdminActor; body: AddWaitlistEntryDto }) {
+    return this.audit.run({
+      action: 'waitlist.admin-add',
+      actor,
+      input: { email: body.email },
+      execute: () => this.addEntry({ body }),
+    });
+  }
+
+  private async addEntry({ body }: { body: AddWaitlistEntryDto }) {
     const [row] = await this.db
       .insert(waitlistEntry)
       .values({
@@ -75,7 +101,16 @@ export class AdminWaitlistService {
     return row;
   }
 
-  async remove({ id }: { id: string }) {
+  remove({ actor, id }: { actor: AdminActor; id: string }) {
+    return this.audit.run({
+      action: 'waitlist.admin-remove',
+      actor,
+      input: { id },
+      execute: () => this.removeEntry({ id }),
+    });
+  }
+
+  private async removeEntry({ id }: { id: string }) {
     const [row] = await this.db
       .update(waitlistEntry)
       .set({ status: 'removed' })

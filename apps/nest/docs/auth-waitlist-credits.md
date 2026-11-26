@@ -4,11 +4,11 @@ This is the plan for `apps/nest`. Schema and migrations stay in `packages/db`. T
 
 ## Boundaries
 
-| Owns                                        | Location                                                     |
-| ------------------------------------------- | ------------------------------------------------------------ |
-| Tables, relations, SQL migrations           | `packages/db`                                                |
-| Credit amounts and `requireWaitlist`        | `packages/isomorphic` `CREDIT_POLICY`                        |
-| HTTP, guards, Better Auth mount             | `apps/nest`                                                  |
+| Owns                                        | Location                                                             |
+| ------------------------------------------- | -------------------------------------------------------------------- |
+| Tables, relations, SQL migrations           | `packages/db`                                                        |
+| Credit amounts and `requireWaitlist`        | `packages/isomorphic` `CREDIT_POLICY`                                |
+| HTTP, guards, Better Auth mount             | `apps/nest`                                                          |
 | Sync projection, compaction, résumé charges | Not in this pass. `POST /api/sync` and `GET /api/sync` return a stub |
 
 `apps/nest` does not run Drizzle Kit. Generate and apply SQL from `packages/db` (`pnpm --dir packages/db db:generate` / `db:migrate`).
@@ -57,7 +57,7 @@ The library's global `AuthGuard` is disabled. `AppAuthGuard` is the global guard
 
 `GET /api/me` returns `id`, `name`, `email`, `role`, `banned`. No password, token, or account row.
 
-`GET /admin/session` is only a role probe so the guard can be tested. It is not an admin product API.
+`GET /api/admin/session` is only a role probe so the guard can be tested. It is not an admin product API.
 
 ## Mock users
 

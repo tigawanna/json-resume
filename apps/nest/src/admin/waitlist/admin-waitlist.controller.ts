@@ -1,4 +1,12 @@
-import { Body, Controller, Delete, Get, Param, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Query,
+} from '@nestjs/common';
 import {
   ApiConflictResponse,
   ApiCookieAuth,
@@ -9,7 +17,8 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
-import { Roles } from '../../auth/helpers/auth.decorators.js';
+import { CurrentUser, Roles } from '../../auth/helpers/auth.decorators.js';
+import type { UserWithRole } from '../../auth/helpers/utils.js';
 import { CursorPaginatedDto } from '../../shared/types/response-shapes.js';
 import {
   AddWaitlistEntryDto,
@@ -38,8 +47,8 @@ export class AdminWaitlistController {
   @ApiOperation({ summary: 'Add an email to the waitlist' })
   @ApiCreatedResponse({ type: WaitlistEntryDto })
   @ApiConflictResponse({ description: 'Email is already on the waitlist' })
-  add(@Body() body: AddWaitlistEntryDto) {
-    return this.waitlist.add({ body });
+  add(@Body() body: AddWaitlistEntryDto, @CurrentUser() actor: UserWithRole) {
+    return this.waitlist.add({ actor, body });
   }
 
   @Get(':id')
@@ -54,7 +63,10 @@ export class AdminWaitlistController {
   @ApiOperation({ summary: 'Mark a waitlist entry as removed' })
   @ApiOkResponse({ type: WaitlistEntryDto })
   @ApiNotFoundResponse({ description: 'Waitlist entry not found' })
-  remove(@Param() { id }: WaitlistIdParamDto) {
-    return this.waitlist.remove({ id });
+  remove(
+    @Param() { id }: WaitlistIdParamDto,
+    @CurrentUser() actor: UserWithRole,
+  ) {
+    return this.waitlist.remove({ actor, id });
   }
 }
