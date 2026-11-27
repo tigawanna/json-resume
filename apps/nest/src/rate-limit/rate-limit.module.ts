@@ -1,17 +1,28 @@
 import { Module } from "@nestjs/common";
 import { APP_GUARD } from "@nestjs/core";
 import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler";
+import {
+  DatabaseModule,
+  DRIZZLE,
+  type DrizzleDB,
+} from "../database/database.module.js";
+import { DbThrottlerStorage } from "./db-throttler.storage.js";
 import { HTTP_RATE_LIMIT } from "./rate-limit.constants.js";
 
 @Module({
   imports: [
-    ThrottlerModule.forRoot({
-      throttlers: [{ ttl: HTTP_RATE_LIMIT.ttlMs, limit: HTTP_RATE_LIMIT.limit }],
-      getTracker: (req) => {
-        const userId = (req as { user?: { id?: string } }).user?.id;
-        if (userId) return `user:${userId}`;
-        return `ip:${req.ip ?? "unknown"}`;
-      },
+    ThrottlerModule.forRootAsync({
+      imports: [DatabaseModule],
+      inject: [DRIZZLE],
+      useFactory: (db: DrizzleDB) => ({
+        throttlers: [{ ttl: HTTP_RATE_LIMIT.ttlMs, limit: HTTP_RATE_LIMIT.limit }],
+        storage: new DbThrottlerStorage(db),
+        getTracker: (req) => {
+          const userId = (req as { user?: { id?: string } }).user?.id;
+          if (userId) return `user:${userId}`;
+          return `ip:${req.ip ?? "unknown"}`;
+        },
+      }),
     }),
   ],
   providers: [

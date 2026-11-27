@@ -1,15 +1,17 @@
 import {
+  adminEventLogControllerListBackups,
+  adminEventLogControllerSquash,
+  adminStatsControllerRead,
+  adminTablesControllerList,
+  adminTablesControllerPreviewTruncate,
+  adminTablesControllerReadRow,
+  adminTablesControllerTablePage,
+  adminUsersControllerFindAll,
+} from "@/services/nest/client";
+import {
   getAdminEvents,
   getAdminEventsByCollection,
   getAdminEventUsers,
-  getAdminRow,
-  getAdminStats,
-  getAdminTablePage,
-  getAdminTables,
-  getAdminTruncatePreview,
-  getAdminUsers,
-  getEventLogBackups,
-  squashEventLogFn,
 } from "@/modules/admin/admin.functions";
 import type {
   adminEventFilterSchema,
@@ -20,17 +22,17 @@ import type { z } from "zod";
 
 export const adminStatsQueryOptions = queryOptions({
   queryKey: ["admin", "stats"],
-  queryFn: () => getAdminStats(),
+  queryFn: () => adminStatsControllerRead(),
 });
 
 export const adminTablesQueryOptions = queryOptions({
   queryKey: ["admin", "tables"],
-  queryFn: () => getAdminTables(),
+  queryFn: () => adminTablesControllerList(),
 });
 
 export const adminUsersQueryOptions = queryOptions({
   queryKey: ["admin", "users"],
-  queryFn: () => getAdminUsers(),
+  queryFn: () => adminUsersControllerFindAll(),
 });
 
 type AdminEventFilter = z.infer<typeof adminEventFilterSchema>;
@@ -57,7 +59,7 @@ export const adminEventUsersQueryOptions = queryOptions({
 export function adminRowQueryOptions(input: { table: string; rowid: number }) {
   return queryOptions({
     queryKey: ["admin", "row", input],
-    queryFn: () => getAdminRow({ data: input }),
+    queryFn: () => adminTablesControllerReadRow({ path: input }),
   });
 }
 
@@ -67,19 +69,26 @@ export function adminTruncatePreviewQueryOptions(input: {
 }) {
   return queryOptions({
     queryKey: ["admin", "truncate-preview", input],
-    queryFn: () => getAdminTruncatePreview({ data: input }),
+    queryFn: () =>
+      adminTablesControllerPreviewTruncate({
+        path: { table: input.table },
+        query: input.cutoff,
+      }),
   });
 }
 
 export const adminEventLogBackupsQueryOptions = queryOptions({
   queryKey: ["admin", "event-log-backups"],
-  queryFn: () => getEventLogBackups(),
+  queryFn: () => adminEventLogControllerListBackups(),
 });
 
 export function adminSquashPreviewQueryOptions(input: { userId?: string; retentionMs: number }) {
   return queryOptions({
     queryKey: ["admin", "squash-preview", input],
-    queryFn: () => squashEventLogFn({ data: { ...input, dryRun: true } }),
+    queryFn: () =>
+      adminEventLogControllerSquash({
+        body: { ...input, dryRun: true },
+      }),
   });
 }
 
@@ -91,6 +100,10 @@ export function adminTablePageQueryOptions(input: {
 }) {
   return queryOptions({
     queryKey: ["admin", "table", input],
-    queryFn: () => getAdminTablePage({ data: input }),
+    queryFn: () =>
+      adminTablesControllerTablePage({
+        path: { table: input.table },
+        query: { page: input.page, pageSize: input.pageSize, q: input.q },
+      }),
   });
 }

@@ -38,11 +38,14 @@ export async function createTestApp({
   policy,
   adminBypassSecret,
   throttle = false,
+  mockAuth = true,
   database: suppliedDatabase,
 }: {
   policy?: CreditsPolicy;
   adminBypassSecret?: string;
   throttle?: boolean;
+  /** False exercises the real Better Auth cookie path. */
+  mockAuth?: boolean;
   /** Supply a snapshot (see copyLocalDatabase) to reuse real data without mocks. */
   database?: TestDatabase;
 } = {}) {
@@ -53,7 +56,7 @@ export async function createTestApp({
     .overrideProvider(DRIZZLE)
     .useValue(db)
     .overrideProvider(MOCK_AUTH)
-    .useValue(true)
+    .useValue(mockAuth)
     .overrideProvider(ADMIN_BYPASS_SECRET)
     .useValue(adminBypassSecret);
   if (!throttle) {

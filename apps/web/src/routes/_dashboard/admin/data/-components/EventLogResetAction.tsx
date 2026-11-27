@@ -5,7 +5,7 @@ import {
   adminEventLogBackupsQueryOptions,
   adminStatsQueryOptions,
 } from "@/data-access-layer/admin/admin-query-options";
-import { backupAndEmptyEventLogFn } from "@/modules/admin/admin.functions";
+import { emptyEventLog } from "@/data-access-layer/admin/admin-event-log-mutations";
 import { unwrapUnknownError } from "@/utils/errors";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
@@ -23,7 +23,7 @@ export function EventLogResetAction() {
   const events = stats.data?.events ?? 0;
 
   const mutation = useMutation({
-    mutationFn: async () => backupAndEmptyEventLogFn({ data: { confirm, rebuild } }),
+    mutationFn: async () => emptyEventLog({ confirm, rebuild }),
     onSuccess(result) {
       toast.success(`Emptied the event log: ${result.deleted.toLocaleString()} events backed up`, {
         description: [

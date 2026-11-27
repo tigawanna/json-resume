@@ -4,6 +4,7 @@ import * as authSchema from "./auth-schema.ts";
 import * as coverLetterSchema from "./cover-letter-schema.ts";
 import * as creditSchema from "./credits-schema.ts";
 import * as jobSchema from "./job-schema.ts";
+import * as rateLimitSchema from "./rate-limit-schema.ts";
 import * as resumeSchema from "./resume/index.ts";
 import * as savedProjectSchema from "./saved-project-schema.ts";
 import * as syncSchema from "./sync-schema.ts";
@@ -15,6 +16,7 @@ export const schema = {
   ...coverLetterSchema,
   ...creditSchema,
   ...jobSchema,
+  ...rateLimitSchema,
   ...resumeSchema,
   ...savedProjectSchema,
   ...syncSchema,

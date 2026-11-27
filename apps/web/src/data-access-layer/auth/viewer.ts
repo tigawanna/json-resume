@@ -1,16 +1,16 @@
 import { getSessionSafely } from "@/lib/better-auth/auth-session";
-import { authClient, BetterAuthSession } from "@/lib/better-auth/client";
-import { honoClient } from "@/lib/hono/client";
+import { authClient } from "@/lib/better-auth/client";
+import { viewerControllerViewer } from "@/services/nest/client";
+import type { ViewerResponseDto } from "@/services/nest/generated/models";
 import { safeStringToUrl } from "@/utils/url";
 import { queryOptions, useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { redirect } from "@tanstack/react-router";
 import { createMiddleware } from "@tanstack/react-start";
-import { getRequestHeaders } from "@tanstack/react-start/server";
 
-type ViewerUser = BetterAuthSession["user"];
-type ViewerSession = BetterAuthSession["session"];
+type ViewerPayload = ViewerResponseDto;
+type ViewerUser = ViewerPayload["user"];
+type ViewerSession = ViewerPayload["session"];
 
-// export type BetterAuthUserRoles = "tenant" | "staff" | "admin" | "manager";
 export type TViewer = {
   user?: ViewerUser;
   session?: ViewerSession;
@@ -19,25 +19,12 @@ export type TViewerLoginPayload = { email: string; password: string };
 
 const loggedOutViewer = { data: null, error: null } as const;
 
-function viewerRequestHeaders() {
-  if (typeof window !== "undefined") return undefined;
-  const cookie = getRequestHeaders().get("cookie");
-  if (!cookie) return undefined;
-  return { cookie };
-}
-
 export const viewerqueryOptions = queryOptions({
   queryKey: ["viewer"],
   retry: false,
   queryFn: async () => {
     try {
-      const response = await honoClient.api.viewer.$get(undefined, {
-        headers: viewerRequestHeaders(),
-      });
-      if (!response.ok) {
-        return loggedOutViewer;
-      }
-      const session = await response.json();
+      const session = await viewerControllerViewer<true>();
       return {
         data: { user: session.user, session: session.session },
         error: null,

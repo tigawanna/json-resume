@@ -16,7 +16,7 @@ import { mergeAuthOpenApi } from "./merge-auth-openapi.js";
 
 export async function configureApp({ app }: { app: NestNodeApplication }) {
   const env = app.get(ConfigService<AppEnv, true>);
-  app.setGlobalPrefix(API_GLOBAL_PREFIX);
+  app.setGlobalPrefix(API_GLOBAL_PREFIX, { exclude: ["health", "ready"] });
   app.enableCors({
     origin: env.get("TRUSTED_ORIGINS", { infer: true }),
     credentials: true,

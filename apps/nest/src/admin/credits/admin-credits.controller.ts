@@ -1,9 +1,7 @@
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Param, Patch, Post, Query } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiCookieAuth,
-  ApiCreatedResponse,
-  ApiForbiddenResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
@@ -11,10 +9,14 @@ import {
 } from '@nestjs/swagger';
 import { CurrentUser, Roles } from '../../auth/helpers/auth.decorators.js';
 import type { UserWithRole } from '../../auth/helpers/utils.js';
-import { CursorPaginatedDto } from '../../shared/types/response-shapes.js';
+import { ApiErrorDto } from '../../shared/openapi/api-error.dto.js';
+import { ApiAuthResponses } from '../../shared/openapi/auth-responses.decorator.js';
 import {
-  AdjustCreditsDto,
-  AdminCreditsDto,
+  AdminAdjustDto,
+  AdminCreditLedgerPageDto,
+  AdminCreditMutationResponseDto,
+  AdminGrantDto,
+  AdminWalletResponseDto,
   CreditLedgerListQueryDto,
   CreditsUserIdParamDto,
 } from './admin-credits.dto.js';
@@ -23,22 +25,15 @@ import { AdminCreditsService } from './admin-credits.service.js';
 @Roles({ roles: ['admin'] })
 @ApiTags('admin')
 @ApiCookieAuth()
-@ApiForbiddenResponse({ description: 'Admin role required' })
+@ApiAuthResponses({ forbiddenDescription: 'Admin role required' })
+@ApiBadRequestResponse({ type: ApiErrorDto })
 @Controller('admin/credits')
 export class AdminCreditsController {
   constructor(private readonly credits: AdminCreditsService) {}
 
-  @Get(':userId')
-  @ApiOperation({ summary: "Get a user's credit balance" })
-  @ApiOkResponse({ type: AdminCreditsDto })
-  @ApiNotFoundResponse({ description: 'User not found' })
-  read(@Param() { userId }: CreditsUserIdParamDto) {
-    return this.credits.read({ userId });
-  }
-
   @Get(':userId/ledger')
-  @ApiOperation({ summary: "List a user's credit ledger (cursor paginated)" })
-  @ApiOkResponse({ type: CursorPaginatedDto })
+  @ApiOperation({ summary: "List a user's credit ledger" })
+  @ApiOkResponse({ type: AdminCreditLedgerPageDto })
   ledger(
     @Param() { userId }: CreditsUserIdParamDto,
     @Query() query: CreditLedgerListQueryDto,
@@ -46,16 +41,41 @@ export class AdminCreditsController {
     return this.credits.ledger({ userId, query });
   }
 
-  @Post(':userId/adjustments')
-  @ApiOperation({ summary: 'Grant or deduct bonus credits (idempotent)' })
-  @ApiCreatedResponse({ type: AdminCreditsDto })
-  @ApiBadRequestResponse({ description: 'Bonus balance would go negative' })
-  @ApiNotFoundResponse({ description: 'User not found' })
+  @Get(':userId')
+  @ApiOperation({ summary: "Read a user's wallet without allocating credits" })
+  @ApiOkResponse({ type: AdminWalletResponseDto })
+  @ApiNotFoundResponse({ description: 'User not found', type: ApiErrorDto })
+  read(@Param() { userId }: CreditsUserIdParamDto) {
+    return this.credits.read({ userId });
+  }
+
+  @Post(':userId/grants')
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Grant bonus credits' })
+  @ApiOkResponse({ type: AdminCreditMutationResponseDto })
+  @ApiBadRequestResponse({ description: 'User is banned', type: ApiErrorDto })
+  @ApiNotFoundResponse({ description: 'User not found', type: ApiErrorDto })
+  grant(
+    @Param() { userId }: CreditsUserIdParamDto,
+    @Body() body: AdminGrantDto,
+    @CurrentUser() actor: UserWithRole,
+  ) {
+    return this.credits.grant({ actor, userId, body });
+  }
+
+  @Patch(':userId')
+  @ApiOperation({ summary: 'Adjust a monthly or bonus credit balance' })
+  @ApiOkResponse({ type: AdminCreditMutationResponseDto })
+  @ApiBadRequestResponse({
+    description: 'User is banned or the balance would go negative',
+    type: ApiErrorDto,
+  })
+  @ApiNotFoundResponse({ description: 'User not found', type: ApiErrorDto })
   adjust(
     @Param() { userId }: CreditsUserIdParamDto,
-    @Body() body: AdjustCreditsDto,
-    @CurrentUser() current: UserWithRole,
+    @Body() body: AdminAdjustDto,
+    @CurrentUser() actor: UserWithRole,
   ) {
-    return this.credits.adjust({ actor: current, userId, body });
+    return this.credits.adjust({ actor, userId, body });
   }
 }

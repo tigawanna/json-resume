@@ -15,9 +15,9 @@ vi.mock("@/lib/env/client-env", () => ({
   },
 }));
 
-vi.mock("@/lib/hono/client", () => ({
-  get honoClient() {
-    return { api: { wallet: { checks: { $post: mocks.post } } } };
+vi.mock("@/services/nest/client", () => ({
+  get creditsControllerCheck() {
+    return mocks.post;
   },
 }));
 
@@ -30,13 +30,10 @@ import {
 
 function okResponse(available: number) {
   return {
-    ok: true,
-    json: async () => ({
-      available,
-      monthly: available,
-      bonus: 0,
-      resetsAt: "2026-12-01T00:00:00.000Z",
-    }),
+    available,
+    monthly: available,
+    bonus: 0,
+    resetsAt: "2026-12-01T00:00:00.000Z",
   };
 }
 
@@ -63,7 +60,7 @@ describe("ensureResumeCredit", () => {
     mocks.post.mockResolvedValue(okResponse(1));
 
     expect(await ensureResumeCredit({ action: "clone" })).toEqual({ ok: true });
-    expect(mocks.post).toHaveBeenCalledWith({ json: { action: "clone" } });
+    expect(mocks.post).toHaveBeenCalledWith({ body: { action: "clone" } });
   });
 
   it("blocks and notifies at zero credits", async () => {

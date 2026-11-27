@@ -1,8 +1,10 @@
 import { Body, Controller, HttpCode, Post } from "@nestjs/common";
-import { ApiCookieAuth, ApiOkResponse, ApiTags } from "@nestjs/swagger";
+import { ApiBadRequestResponse, ApiCookieAuth, ApiOkResponse, ApiTags } from "@nestjs/swagger";
 import { Throttle } from "@nestjs/throttler";
 import { CurrentUser, Public } from "../auth/helpers/auth.decorators.js";
 import type { UserWithRole } from "../auth/helpers/utils.js";
+import { ApiAuthResponses } from "../shared/openapi/auth-responses.decorator.js";
+import { ApiErrorDto } from "../shared/openapi/api-error.dto.js";
 import {
   ClaimResponseDto,
   JoinWaitlistDto,
@@ -23,6 +25,7 @@ export class WaitlistController {
   @Post()
   @HttpCode(200)
   @ApiOkResponse({ type: JoinedResponseDto })
+  @ApiBadRequestResponse({ type: ApiErrorDto })
   join(@Body() body: JoinWaitlistDto, @CurrentUser() current?: UserWithRole) {
     return this.waitlist.join({ body, current });
   }
@@ -30,6 +33,7 @@ export class WaitlistController {
   @Post("claim")
   @HttpCode(200)
   @ApiCookieAuth()
+  @ApiAuthResponses({ forbiddenDescription: 'Account banned' })
   @ApiOkResponse({ type: ClaimResponseDto })
   claim(@CurrentUser() current: UserWithRole) {
     return this.waitlist.claim({ current });

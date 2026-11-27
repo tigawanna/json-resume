@@ -141,6 +141,13 @@
       "when": 1794916310687,
       "tag": "0019_kind_warpath",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "6",
+      "when": 1795709573113,
+      "tag": "0020_large_quasimodo",
+      "breakpoints": true
     }
   ]
 }

@@ -4,9 +4,10 @@ import { adminClient, jwtClient, multiSessionClient } from "better-auth/client/p
 import { createAuthClient } from "better-auth/react";
 import { clientEnv } from "../env/client-env";
 
-// Auth now lives on `apps/api`. The web app no longer hosts Better Auth.
+// Better Auth lives on apps/nest. The client baseURL is the origin; it appends
+// /api/auth itself, unlike the generated OpenAPI client which uses /api.
 export const authClient = createAuthClient({
-  baseURL: clientEnv.VITE_HONO_API_URL,
+  baseURL: clientEnv.VITE_NEST_API_URL,
   plugins: [adminClient(), multiSessionClient(), apiKeyClient(), jwtClient()],
 });
 

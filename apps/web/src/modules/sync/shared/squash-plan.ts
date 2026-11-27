@@ -1,1 +1,1 @@
-export * from "@api/modules/sync/shared/squash-plan";
+export * from "@repo/isomorphic/sync/squash-plan";

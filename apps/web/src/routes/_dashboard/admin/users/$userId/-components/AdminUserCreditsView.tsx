@@ -52,7 +52,7 @@ export function AdminUserCreditsView() {
         backTo="/admin"
       />
 
-      <WalletSummary monthly={data.wallet.monthly} bonus={data.wallet.bonus} />
+      <WalletSummary monthly={data.wallet.monthlyBalance} bonus={data.wallet.bonusBalance} />
 
       <div className="grid gap-6 px-4 md:grid-cols-2 md:px-6">
         <AdminGrantForm userId={userId} />

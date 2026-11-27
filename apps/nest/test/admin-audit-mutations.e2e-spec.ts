@@ -36,14 +36,13 @@ describe('admin mutation audit logs', () => {
         .set('x-mock-user', personas.admin.id)
         .expect(200);
       await request(app.getHttpServer())
-        .post(`/api/admin/credits/${personas.member.id}/adjustments`)
+        .post(`/api/admin/credits/${personas.member.id}/grants`)
         .set('x-mock-user', personas.admin.id)
         .send({
           amount: 5,
           reason: 'Support grant',
-          idempotencyKey: 'audit-test',
         })
-        .expect(201);
+        .expect(200);
       lines = log.mock.calls.map((call) => String(call[0]));
     } finally {
       log.mockRestore();
@@ -56,7 +55,7 @@ describe('admin mutation audit logs', () => {
       lines.find((line) => line.includes('"action":"waitlist.admin-remove"')),
     ).toContain('"outcome":"success"');
     const creditAudit = lines.find((line) =>
-      line.includes('"action":"credits.admin-adjust"'),
+      line.includes('"action":"credits.admin-grant"'),
     );
     expect(creditAudit).toContain('"outcome":"success"');
     expect(creditAudit).toContain(`"id":"${personas.admin.id}"`);

@@ -20,8 +20,8 @@ import {
 } from "./sync-progress";
 import { syncAuthHeaders } from "./sync-jwt";
 
-const SYNC_URL = `${clientEnv.VITE_HONO_API_URL}/api/sync/events`;
-const COMPACT_URL = `${clientEnv.VITE_HONO_API_URL}/api/sync/compact`;
+const SYNC_URL = `${clientEnv.VITE_NEST_API_URL}/api/sync/events`;
+const COMPACT_URL = `${clientEnv.VITE_NEST_API_URL}/api/sync/compact`;
 
 function parseCompactionOutcome(value: unknown): CompactionOutcome {
   if (value != null && typeof value === "object" && "status" in value) {
@@ -104,8 +104,8 @@ function parsePushResponse(value: unknown): PushResponse {
 }
 
 /**
- * Cookie session plus a Bearer JWT for `/api/sync/*`. The gateway can reject a
- * missing token; Hono still identifies the user from the session cookie.
+ * Cookie session plus a Bearer JWT for `/api/sync/*`. Nest identifies the user
+ * from the session cookie; the token remains available for edge gateways.
  *
  * One call is one request: the library sizes each batch (`syncPreset`) and
  * splits it further on HTTP 413, which it detects via `SyncPushError.status`.

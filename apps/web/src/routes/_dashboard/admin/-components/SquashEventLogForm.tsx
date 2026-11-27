@@ -1,7 +1,7 @@
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { adminSquashPreviewQueryOptions } from "@/data-access-layer/admin/admin-query-options";
-import { squashEventLogFn } from "@/modules/admin/admin.functions";
+import { squashEventLog } from "@/data-access-layer/admin/admin-event-log-mutations";
 import { unwrapUnknownError } from "@/utils/errors";
 import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
@@ -43,7 +43,7 @@ export function SquashEventLogForm({ onDone }: { onDone?: () => void }) {
   });
 
   const mutation = useMutation({
-    mutationFn: async () => squashEventLogFn({ data: input }),
+    mutationFn: async () => squashEventLog(input),
     onSuccess(result) {
       toast.success(`Squashed ${result.removed.toLocaleString()} events`, {
         description: `${result.scanned.toLocaleString()} scanned across ${result.users.toLocaleString()} users · ${result.reasons.superseded.toLocaleString()} replaced by a later edit · ${result.reasons.deleted.toLocaleString()} history of deleted rows`,

@@ -2,7 +2,7 @@ import { defineConfig } from "vite-plus";
 
 export default defineConfig({
   fmt: {
-    ignorePatterns: ["**/routeTree.gen.ts"],
+    ignorePatterns: ["**/routeTree.gen.ts", "**/services/nest/generated/**"],
   },
   staged: {
     "*": (files: readonly string[]) => {
@@ -12,6 +12,7 @@ export default defineConfig({
     },
   },
   lint: {
+    ignorePatterns: ["**/services/nest/generated/**"],
     options: { typeAware: true, typeCheck: true },
     jsPlugins: ["@shadcn/lint"],
     categories: { correctness: "error" },

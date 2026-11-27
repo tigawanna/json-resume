@@ -33,7 +33,6 @@ const EnvSchema = z
     BETTER_AUTH_TRUSTED_ORIGINS: z.string().optional(),
     GITHUB_CLIENT_ID: z.string().min(1),
     GITHUB_CLIENT_SECRET: z.string().min(1),
-    CRON_SECRET: z.string().optional(),
     ADMIN_BYPASS_SECRET: optionalSecret(),
     CREDITS_ENABLED: z.enum(["true"]).optional(),
     CREDITS_START_AT: z.iso.datetime().optional(),

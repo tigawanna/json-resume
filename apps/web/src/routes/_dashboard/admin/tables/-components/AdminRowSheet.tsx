@@ -18,12 +18,9 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { adminRowQueryOptions } from "@/data-access-layer/admin/admin-query-options";
+import { deleteAdminRow, updateAdminRow } from "@/data-access-layer/admin/admin-mutations";
+import type { AdminRowDto } from "@/services/nest/generated/models/AdminRowDto";
 import { useAppForm } from "@/lib/tanstack/form";
-import {
-  deleteAdminRowFn,
-  updateAdminRowFn,
-  type getAdminRow,
-} from "@/modules/admin/admin.functions";
 import { unwrapUnknownError } from "@/utils/errors";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { KeyRound, Lock } from "lucide-react";
@@ -90,7 +87,7 @@ function AdminRowBody({
   return <AdminRowEditor row={query.data} onDone={onDone} />;
 }
 
-type LoadedRow = Awaited<ReturnType<typeof getAdminRow>>;
+type LoadedRow = AdminRowDto;
 
 function AdminRowEditor({ row, onDone }: { row: LoadedRow; onDone: () => void }) {
   const editable = row.fields.filter((field) => field.editable);
@@ -108,7 +105,7 @@ function AdminRowEditor({ row, onDone }: { row: LoadedRow; onDone: () => void })
 
   const updateMutation = useMutation({
     mutationFn: async (values: Record<string, string | null>) =>
-      updateAdminRowFn({ data: { table: row.table, rowid: row.rowid, values } }),
+      updateAdminRow({ table: row.table, rowid: row.rowid, values }),
     onSuccess(result) {
       toast.success(result.changed === 0 ? "Nothing changed" : "Row updated", {
         description:
@@ -125,7 +122,7 @@ function AdminRowEditor({ row, onDone }: { row: LoadedRow; onDone: () => void })
   });
 
   const deleteMutation = useMutation({
-    mutationFn: async () => deleteAdminRowFn({ data: { table: row.table, rowid: row.rowid } }),
+    mutationFn: async () => deleteAdminRow({ table: row.table, rowid: row.rowid }),
     onSuccess(result) {
       toast.success("Row deleted", {
         description:

@@ -1,7 +1,6 @@
 import { CREDIT_POLICY } from "@/config/credits";
 import { clientEnv } from "@/lib/env/client-env";
-import { honoClient } from "@/lib/hono/client";
-import { parseApiError } from "@/lib/hono/parse-api-error";
+import { creditsControllerCheck } from "@/services/nest/client";
 
 /** Fired when a creation is blocked, so the dashboard can show one shared dialog. */
 export const OUT_OF_CREDITS_EVENT = "credits:out-of-credits";
@@ -62,12 +61,9 @@ export async function ensureResumeCredit(input: {
   if (typeof navigator !== "undefined" && navigator.onLine === false) return { ok: true };
 
   try {
-    const response = await honoClient.api.wallet.checks.$post({
-      json: { action: input.action },
+    const { available, resetsAt } = await creditsControllerCheck({
+      body: { action: input.action },
     });
-    if (!response.ok) throw await parseApiError(response, "Could not check your credits");
-
-    const { available, resetsAt } = await response.json();
     if (available >= CREDIT_POLICY.resumeCost) return { ok: true };
 
     const denial: CreditDenial = { action: input.action, available, resetsAt };

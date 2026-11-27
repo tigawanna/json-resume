@@ -2,7 +2,6 @@ import {
   BadRequestException,
   Inject,
   Injectable,
-  NotImplementedException,
 } from '@nestjs/common';
 import { syncEvent } from '@repo/db/schema/sync-schema';
 import { getTableColumns, inArray } from 'drizzle-orm';
@@ -21,6 +20,7 @@ import {
   type CollectionId,
 } from './admin-table-registry.js';
 import { planTruncate } from './admin-truncate-plan.js';
+import { AdminTruncateEventLogService } from './admin-truncate-event-log.service.js';
 import type { TruncateCutoff, TruncatePlan } from './admin-truncate.types.js';
 
 @Injectable()
@@ -28,6 +28,7 @@ export class AdminTruncateService {
   constructor(
     @Inject(DRIZZLE) private readonly db: DrizzleDB,
     private readonly metadata: AdminTableMetadataService,
+    private readonly eventLog: AdminTruncateEventLogService,
     private readonly audit: AdminAuditService,
   ) {}
 
@@ -41,7 +42,8 @@ export class AdminTruncateService {
     return {
       table: plan.table,
       mode: plan.mode,
-      backups: plan.backups,
+      backups:
+        plan.mode === 'eventLog' ? await this.eventLog.preview() : plan.backups,
       cutoffColumns: plan.cutoffColumns,
       rows: plan.rows,
       references: plan.references,
@@ -76,6 +78,7 @@ export class AdminTruncateService {
     table,
     confirm,
     cutoff,
+    rebuild,
   }: {
     table: string;
     confirm: string;
@@ -93,9 +96,7 @@ export class AdminTruncateService {
     if (plan.mode === 'readonly')
       throw new BadRequestException(`${plan.table} is read-only`);
     if (plan.mode === 'eventLog') {
-      throw new NotImplementedException(
-        'Event-log truncation is unavailable until sync projection runs on Nest',
-      );
+      return this.eventLog.truncate({ rebuild });
     }
     if (plan.blockedBy.length > 0) {
       const first = plan.blockedBy[0];

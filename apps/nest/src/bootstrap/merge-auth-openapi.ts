@@ -84,12 +84,12 @@ function renameBetterAuthTag({ name }: { name: string }) {
 function remapAuthPathTags({ paths }: { paths: Record<string, object> }) {
   const remapped: Record<string, object> = {};
   for (const [path, item] of Object.entries(paths)) {
-    remapped[path] = remapPathItemTags({ item });
+    remapped[path] = remapPathItemTags({ item, path });
   }
   return remapped;
 }
 
-function remapPathItemTags({ item }: { item: object }) {
+function remapPathItemTags({ item, path }: { item: object; path: string }) {
   const cloned: Record<string, unknown> = { ...item };
   for (const method of ["get", "post", "put", "patch", "delete"]) {
     const operation = cloned[method];
@@ -100,9 +100,27 @@ function remapPathItemTags({ item }: { item: object }) {
         typeof tag === "string" ? renameBetterAuthTag({ name: tag }) : tag,
       );
     }
+    if (typeof next.operationId !== "string" || next.operationId.length === 0) {
+      next.operationId = betterAuthOperationId({ method, path });
+    }
     cloned[method] = next;
   }
   return cloned;
+}
+
+/**
+ * Better Auth only emits an operationId for endpoints that declare one in
+ * metadata. Synthesize a stable id from the merged path and method so every
+ * generated document entry has a unique, client-safe identifier.
+ */
+function betterAuthOperationId({ method, path }: { method: string; path: string }) {
+  const segments = path.split("/").filter(Boolean);
+  if (segments[0] === "auth") segments.shift();
+  const words = segments
+    .flatMap((segment) => segment.replaceAll("{", "").replaceAll("}", "").split("-"))
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1));
+  const suffix = method.charAt(0).toUpperCase() + method.slice(1);
+  return `betterAuth${words.join("")}${suffix}`;
 }
 
 function jsonRecord({ value }: { value?: Record<string, object> }) {

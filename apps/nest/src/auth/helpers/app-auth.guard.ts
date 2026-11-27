@@ -15,10 +15,10 @@ import { DRIZZLE, type DrizzleDB } from '../../database/database.module.js';
 import type { Auth } from '../better-auth/create-auth.js';
 import { ADMIN_BYPASS_SECRET, IS_PUBLIC, MOCK_AUTH, ROLES } from './auth.constants.js';
 import { DEV_ADMIN_USER, matchesAdminBypassHeader } from './dev-admin-bypass.js';
-import type { UserWithRole } from './utils.js';
+import type { AuthSession, UserWithRole } from './utils.js';
 import { hasRole } from './utils.js';
 
-type RequestWithUser = NodeRequest & { user?: UserWithRole };
+type RequestWithUser = NodeRequest & { user?: UserWithRole; session?: AuthSession };
 
 @Injectable()
 export class AppAuthGuard implements CanActivate {
@@ -40,15 +40,16 @@ export class AppAuthGuard implements CanActivate {
       .switchToHttp()
       .getRequest<RequestWithUser>();
     const current = await this.resolveCurrentUser({ request });
-    if (current) request.user = current;
+    if (current) request.user = current.user;
+    if (current?.session) request.session = current.session;
     if (isPublic) return true;
     if (!current) throw new UnauthorizedException();
-    if (current.banned) throw new ForbiddenException('Account is banned');
+    if (current.user.banned) throw new ForbiddenException('Account is banned');
     const required = this.reflector.getAllAndOverride<string[] | undefined>(
       ROLES,
       [executionContext.getHandler(), executionContext.getClass()],
     );
-    if (required && !hasRole({ role: current.role, required })) {
+    if (required && !hasRole({ role: current.user.role, required })) {
       throw new ForbiddenException('Admin access required');
     }
     return true;
@@ -59,24 +60,30 @@ export class AppAuthGuard implements CanActivate {
     request,
   }: {
     request: RequestWithUser;
-  }): Promise<UserWithRole | undefined> {
+  }): Promise<{ user: UserWithRole; session?: AuthSession } | undefined> {
     if (
       matchesAdminBypassHeader({
         header: firstHeaderValue(request.header('x-admin')),
         secret: this.adminBypassSecret,
       })
     ) {
-      return DEV_ADMIN_USER;
+      return { user: DEV_ADMIN_USER };
     }
-    if (this.mockAuth) return this.resolveUserFromMockHeader({ request });
+    if (this.mockAuth) {
+      const user = await this.resolveUserFromMockHeader({ request });
+      return user ? { user } : undefined;
+    }
     const session = await this.auth.api.getSession({
       headers: requestToFetchHeaders({ request }),
     });
     if (!session) return undefined;
     return {
-      ...session.user,
-      role: session.user.role ?? undefined,
-      banned: session.user.banned ?? null,
+      user: {
+        ...session.user,
+        role: session.user.role ?? undefined,
+        banned: session.user.banned ?? null,
+      },
+      session,
     };
   }
 

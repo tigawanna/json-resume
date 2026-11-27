@@ -1,8 +1,17 @@
+import {
+  adminWaitlistControllerFindAll,
+  adminWaitlistControllerStats,
+  adminWaitlistControllerUpdate,
+  waitlistControllerClaim,
+  waitlistControllerJoin,
+} from "@/services/nest/client";
+import { clientEnv } from "@/lib/env/client-env";
+import type {
+  AdminWaitlistControllerFindAllResponses,
+  AdminWaitlistControllerStatsResponses,
+} from "@/services/nest/generated/models";
 import { mutationOptions, queryOptions } from "@tanstack/react-query";
-import { honoClient } from "@/lib/hono/client";
-import { parseApiError } from "@/lib/hono/parse-api-error";
 
-/** Where a waitlist join came from. `admin` is server-side only. */
 export type WaitlistSource = "landing" | "waitlist-page" | "dashboard";
 
 export type JoinWaitlistInput = {
@@ -13,24 +22,21 @@ export type JoinWaitlistInput = {
   website?: string;
 };
 
-async function joinWaitlist(input: JoinWaitlistInput) {
-  const response = await honoClient.api.waitlist.$post({
-    json: {
-      email: input.email,
-      name: input.name,
-      source: input.source,
-      website: input.website ?? "",
-      consent: true,
-    },
-  });
-  if (!response.ok) throw await parseApiError(response, "Could not join the waitlist");
-  return response.json();
-}
+export const ADMIN_WAITLIST_EXPORT_URL = `${clientEnv.VITE_NEST_API_URL}/api/admin/waitlist/export`;
 
 /** Public join. The API returns the same body for new and existing emails. */
 export const joinWaitlistMutationOptions = mutationOptions({
   mutationKey: ["waitlist", "join"],
-  mutationFn: joinWaitlist,
+  mutationFn: (input: JoinWaitlistInput) =>
+    waitlistControllerJoin({
+      body: {
+        email: input.email,
+        name: input.name,
+        source: input.source,
+        website: input.website ?? "",
+        consent: true,
+      },
+    }),
 });
 
 /**
@@ -39,11 +45,7 @@ export const joinWaitlistMutationOptions = mutationOptions({
  */
 export const claimWaitlistMutationOptions = mutationOptions({
   mutationKey: ["waitlist", "claim"],
-  mutationFn: async () => {
-    const response = await honoClient.api.waitlist.claim.$post();
-    if (!response.ok) throw await parseApiError(response, "Could not link your waitlist entry");
-    return response.json();
-  },
+  mutationFn: () => waitlistControllerClaim(),
 });
 
 export type AdminWaitlistFilters = {
@@ -54,41 +56,22 @@ export type AdminWaitlistFilters = {
   hasAccount?: "true" | "false";
 };
 
-async function fetchAdminWaitlistEntries(input: AdminWaitlistFilters) {
-  const response = await honoClient.api.admin.waitlist.entries.$get({
-    query: {
-      page: String(input.page),
-      perPage: String(input.perPage),
-      q: input.q,
-      status: input.status,
-      hasAccount: input.hasAccount,
-    },
-  });
-  if (!response.ok) throw await parseApiError(response, "Could not load the waitlist");
-  return response.json();
-}
-
-export type AdminWaitlistResponse = Awaited<ReturnType<typeof fetchAdminWaitlistEntries>>;
+export type AdminWaitlistResponse =
+  AdminWaitlistControllerFindAllResponses["200"];
 export type AdminWaitlistEntry = AdminWaitlistResponse["items"][number];
 
 export function adminWaitlistQueryOptions(input: AdminWaitlistFilters) {
   return queryOptions({
     queryKey: ["waitlist", "admin", "list", input],
-    queryFn: () => fetchAdminWaitlistEntries(input),
+    queryFn: () => adminWaitlistControllerFindAll<true>({ query: input }),
   });
 }
 
-export type AdminWaitlistStats = Awaited<ReturnType<typeof fetchAdminWaitlistStats>>;
-
-async function fetchAdminWaitlistStats() {
-  const response = await honoClient.api.admin.waitlist.stats.$get();
-  if (!response.ok) throw await parseApiError(response, "Could not load waitlist stats");
-  return response.json();
-}
+export type AdminWaitlistStats = AdminWaitlistControllerStatsResponses["200"];
 
 export const adminWaitlistStatsQueryOptions = queryOptions({
   queryKey: ["waitlist", "admin", "stats"],
-  queryFn: fetchAdminWaitlistStats,
+  queryFn: () => adminWaitlistControllerStats<true>(),
 });
 
 export type AdminWaitlistPatch = {
@@ -101,14 +84,8 @@ export type AdminWaitlistPatch = {
 export function adminWaitlistUpdateMutationOptions() {
   return mutationOptions({
     mutationKey: ["waitlist", "admin", "update"],
-    mutationFn: async (input: { id: string; patch: AdminWaitlistPatch }) => {
-      const response = await honoClient.api.admin.waitlist.entries[":id"].$patch({
-        param: { id: input.id },
-        json: input.patch,
-      });
-      if (!response.ok) throw await parseApiError(response, "Could not update the entry");
-      return response.json();
-    },
+    mutationFn: (input: { id: string; patch: AdminWaitlistPatch }) =>
+      adminWaitlistControllerUpdate({ path: { id: input.id }, body: input.patch }),
     meta: { invalidates: [["waitlist"]] },
   });
 }

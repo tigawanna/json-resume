@@ -1,5 +1,5 @@
 import { adminStatsQueryOptions } from "@/data-access-layer/admin/admin-query-options";
-import { projectPendingEventsFn } from "@/modules/admin/admin.functions";
+import { projectPendingEvents } from "@/data-access-layer/admin/admin-event-log-mutations";
 import { unwrapUnknownError } from "@/utils/errors";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -10,7 +10,7 @@ export function ProjectionAction() {
   const pending = stats.data?.unprojectedEvents ?? 0;
 
   const mutation = useMutation({
-    mutationFn: async () => projectPendingEventsFn(),
+    mutationFn: async () => projectPendingEvents(),
     onSuccess(result) {
       toast.success(`Applied ${result.projected.toLocaleString()} events to the tables`);
     },

@@ -1,0 +1,1 @@
+export { appControllerGetHello } from "./appControllerGetHello";

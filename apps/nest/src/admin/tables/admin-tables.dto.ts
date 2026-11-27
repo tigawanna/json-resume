@@ -132,10 +132,12 @@ export class AdminRowDeleteResultDto extends createZodDto(
 
 export class AdminTruncateResultDto extends createZodDto(
   z.object({
-    mode: z.enum(['synced', 'direct']),
+    mode: z.enum(['synced', 'direct', 'eventLog']),
     deleted: z.number(),
     references: z.number(),
     events: z.number(),
+    backup: z.string().optional(),
+    users: z.number().optional(),
   }),
 ) {}
 

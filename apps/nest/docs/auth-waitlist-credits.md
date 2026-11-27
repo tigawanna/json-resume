@@ -1,6 +1,6 @@
 # Nest auth, waitlist, credits, and sync
 
-This is the plan for `apps/nest`. Schema and migrations stay in `packages/db`. The Nest app only opens a libSQL HTTP connection and reads that schema. Sync handlers stay empty on purpose.
+This is the plan for `apps/nest`. Schema and migrations stay in `packages/db`. The Nest app owns the HTTP surface, including managed sync push/pull and compaction.
 
 ## Boundaries
 
@@ -8,8 +8,8 @@ This is the plan for `apps/nest`. Schema and migrations stay in `packages/db`. T
 | ------------------------------------------- | -------------------------------------------------------------------- |
 | Tables, relations, SQL migrations           | `packages/db`                                                        |
 | Credit amounts and `requireWaitlist`        | `packages/isomorphic` `CREDIT_POLICY`                                |
-| HTTP, guards, Better Auth mount             | `apps/nest`                                                          |
-| Sync projection, compaction, résumé charges | Not in this pass. `POST /api/sync` and `GET /api/sync` return a stub |
+| HTTP, guards, Better Auth mount, sync       | `apps/nest`                                  |
+| Scheduled/incremental sync compaction       | Follow-up; manual compaction is in Nest     |
 
 `apps/nest` does not run Drizzle Kit. Generate and apply SQL from `packages/db` (`pnpm --dir packages/db db:generate` / `db:migrate`).
 
@@ -57,6 +57,8 @@ The library's global `AuthGuard` is disabled. `AppAuthGuard` is the global guard
 
 `GET /api/me` returns `id`, `name`, `email`, `role`, `banned`. No password, token, or account row.
 
+`GET /api/viewer` returns the full Better Auth payload (`{ user, session }`) used by the web app. Better Auth's `GET /api/auth/get-session` remains available for clients that prefer the generated auth client.
+
 `GET /api/admin/session` is only a role probe so the guard can be tested. It is not an admin product API.
 
 ## Mock users
@@ -76,6 +78,8 @@ Outside production, `ADMIN_BYPASS_SECRET` in env enables header `x-admin`. When 
 ## Rate limiting
 
 `RateLimitModule` is imported in `AppModule` **after** `AuthenticationModule`. `ThrottlerGuard` is a global `APP_GUARD` (`useExisting`, so tests can replace it). Counters are per route and per tracker: `user:<id>` when `request.user` is set, otherwise `ip:<req.ip>`. Over the limit is 429 with `Retry-After`.
+
+`DbThrottlerStorage` keeps counters in the shared `rate_limit_counter` table (migration `0020`), so every instance enforces the same budget. Apply that migration as a release step before the app boots.
 
 The module default is `HTTP_RATE_LIMIT` (`src/rate-limit/rate-limit.constants.ts`: 100 per minute). Tune per controller or handler; do not add another `ThrottlerModule.forRoot`.
 
@@ -117,32 +121,34 @@ E2e calls `createTestApp({ throttle: true })` only when asserting 429. Other tes
 - Bonus balance is left alone.
 - Ledger idempotency keys match the API (`monthly-grant:<userId>:<period>`, `monthly-expiry:<userId>:<period>`).
 
-The response is `{ monthly, bonus, available, monthlyPeriodKey, waitlistJoined }`.
-
 `CREDITS_POLICY` is a provider defaulting to the shared constant. Tests override `requireWaitlist` without editing the package.
 
-This pass does not port admin grants, résumé spend, or overdraft. Those stay in `apps/api` until sync is implemented.
+The response is `{ monthly, bonus, available, monthlyPeriodKey, resetsAt, waitlistJoined, policy }`.
 
-## Sync stub
+`POST /api/credits/checks` allocates without spending and returns `{ available, monthly, bonus, resetsAt }`. `GET /api/credits/ledger` is offset-paginated and includes the current `periodKey`.
 
-`GET /api/sync` and `POST /api/sync` have no projection, no writes, and no credit charge. Both return:
+Résumé spend and overdraft are implemented in projection: one idempotent `resume_spend` per new résumé, monthly balance before bonus, with `CREDITS_START_AT` grandfathering and amount-0 `resume_overdraft` instead of dropping data. Charging only runs when `CREDITS_ENABLED=true`; without it the wallet is still allocated and displayed, and production logs a warning at boot. Keep the web app's `VITE_CREDITS_ENABLED` in sync.
 
-```json
-{ "status": "accepted", "implementation": "pending" }
-```
+## Managed sync
 
-Guards on both routes:
+`POST /api/sync/events` accepts an array of outbound device events. It:
 
-| Guard           | Condition                                  | Status |
-| --------------- | ------------------------------------------ | ------ |
-| `AppAuthGuard`  | No session                                 | 401    |
-| `AppAuthGuard`  | Banned                                     | 403    |
-| `WaitlistGuard` | `requireWaitlist` and no joined entry      | 403    |
-| `CreditsGuard`  | After allocation, `available < resumeCost` | 402    |
+- stamps `userId` from the session, never the body;
+- scopes every projected write to that owner: `id` and `user_id` come from the event row, the delete has an owner predicate, and the upsert's `WHERE user_id = excluded.user_id` stops a caller taking over another user's row by id;
+- retries a failed projection up to three times per batch before stamping it, so a poison event cannot block the log forever;
+- groups by `txId` and writes each group in one transaction;
+- deduplicates retries on `eventId`;
+- acks local-only AI collections without storing them (`globalSeq: 0`);
+- rejects reserved reset markers with `RESERVED_COLLECTION`;
+- projects newly stored events after the batch.
 
-`CreditsGuard` does not decrement the wallet. The charge belongs in the sync work that still needs review. A successful stub leaves the balance unchanged.
+The response is `{ confirmed: [{ eventId, globalSeq }], failed? }`.
 
-When `requireWaitlist` is false, `WaitlistGuard` allows every signed-in user, and allocation still grants the monthly credits.
+`GET /api/sync/events?since=N` returns up to 200 rows or 3.5 MB for the signed-in user, excluding local-only and reset events. It reports `{ events, cursor, hasMore, backendId }`. The backend id is suffixed with the user's latest reset sequence so rebuilt logs force a device reload.
+
+`POST /api/sync/compact` accepts a device-planned proposal. It returns `{ status: "accepted", events }` only when the user's log has not advanced past `baseSeq`; otherwise `{ status: "stale" }`.
+
+All three routes use the global session guard: 401 without a session and 403 for a banned user.
 
 ## Tests
 
@@ -156,17 +162,25 @@ When `requireWaitlist` is false, `WaitlistGuard` allows every signed-in user, an
 - Duplicate join stays `{ joined: true }`
 - Claim links an existing entry
 - `GET /api/credits` reports the grant
-- `POST /api/sync` without a user is 401
-- Signed-in `POST /api/sync` is the stub and does not change the balance
-- With `requireWaitlist: true`, a user who has not joined is 403 and a waitlisted user is accepted
+- `POST /api/sync/events` without a user is 401
+- Signed-in push and pull round-trip an event (`test/sync-events.e2e-spec.ts`)
+- Compaction proposals are accepted once, then stale
+- With `requireWaitlist: true`, only a waitlisted user receives monthly credits
 - A banned user is 403
 
-## Left for the sync pass
+`test/sync-ownership.e2e-spec.ts` covers cross-user update and delete attempts. `test/health.e2e-spec.ts` covers the root probes.
 
-Do not fill these in until the sync design is reviewed:
+## Production bootstrap
 
-- Event ingest, squash, compaction
-- `spendResumeCredit` / overdraft
+- `GET /health` (liveness, no database) and `GET /ready` (database check) are at the **root**, excluded from the `/api` prefix, `@Public()` and `@SkipThrottle()`, and hidden from OpenAPI. `/ready` answers 503 once shutdown begins.
+- `main.ts` calls `app.enableShutdownHooks()` and sets `keepAliveTimeout=65_000` / `headersTimeout=66_000` so a load balancer with a longer idle timeout does not get connection resets.
+- Observe turns on by itself in production when both `OBSERVE_APP_KEY` and `OBSERVE_APP_SECRET` are set; probes are excluded from traces. Without keys it stays off.
+- Apply migrations as a release step (`pnpm --dir packages/db db:migrate`, or `pnpm --dir apps/nest db:migrate`) — the app does not migrate at boot.
+
+## Follow-up sync work
+
+These are intentionally not in the first Nest sync pass:
+
+- Scheduled/incremental squash and cron wiring
 - Idempotency keys on résumé creates
-- JWT authorizer for desktop clients
-- Charging inside `POST /api/sync` (the guard only checks that a credit exists)
+- Gateway JWT enforcement (the cookie session is authoritative in Nest)

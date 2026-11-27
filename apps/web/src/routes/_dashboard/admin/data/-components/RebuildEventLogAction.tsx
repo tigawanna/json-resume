@@ -14,7 +14,10 @@ import { useViewer } from "@/data-access-layer/auth/viewer";
 import { runManagedSync } from "@/data-access-layer/event-sourced/app-settings";
 import { wipeLocalDatabase } from "@/data-access-layer/event-sourced/recovery/local-reset";
 import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
-import { rebuildAllEventLogsFn, rebuildEventLog } from "@/modules/admin/admin.functions";
+import {
+  rebuildAllEventLogs,
+  rebuildEventLog,
+} from "@/data-access-layer/admin/admin-event-log-mutations";
 import { unwrapUnknownError } from "@/utils/errors";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
@@ -44,10 +47,10 @@ export function RebuildEventLogAction() {
         }
       }
       if (isAll) {
-        const result = await rebuildAllEventLogsFn();
+        const result = await rebuildAllEventLogs();
         return { previousEvents: result.previousEvents, insertedEvents: result.insertedEvents };
       }
-      return rebuildEventLog({ data: { userId } });
+      return rebuildEventLog({ userId });
     },
     async onSuccess(result) {
       toast.success("Event log rebuilt", {

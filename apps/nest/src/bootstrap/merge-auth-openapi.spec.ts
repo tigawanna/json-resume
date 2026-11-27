@@ -51,7 +51,13 @@ describe("mergeAuthOpenApi", () => {
       "Better Auth (Admin)",
     ]);
     expect(combined.paths["/auth/sign-in/email"]?.post?.tags).toEqual(["Better Auth"]);
+    expect(combined.paths["/auth/sign-in/email"]?.post?.operationId).toBe(
+      "betterAuthSignInEmailPost",
+    );
     expect(combined.paths["/auth/admin/list-users"]?.get?.tags).toEqual(["Better Auth (Admin)"]);
+    expect(combined.paths["/auth/admin/list-users"]?.get?.operationId).toBe(
+      "betterAuthAdminListUsersGet",
+    );
     expect(combined.components?.schemas).toMatchObject({
       Me: { type: "object" },
       User: { type: "object" },

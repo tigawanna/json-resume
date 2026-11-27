@@ -1,7 +1,7 @@
 import { Logger } from '@nestjs/common';
 import type { INestApplication } from '@nestjs/common';
 import { creditLedger, creditWallet, waitlistEntry } from '@repo/db/schema/credits-schema';
-import { eq } from 'drizzle-orm';
+import { desc, eq } from 'drizzle-orm';
 import request from 'supertest';
 import type { App } from 'supertest/types.js';
 import type { DrizzleDB } from '../src/database/database.module.js';
@@ -74,29 +74,40 @@ describe('admin mutations against a copy of the local database', () => {
       .get(`/api/admin/credits/${memberId}`)
       .set(admin())
       .expect(200);
-    const idempotencyKey = `real-data-${Date.now()}`;
+    expect(before.body).toMatchObject({
+      user: { id: memberId },
+      wallet: { bonusBalance: expect.any(Number) },
+    });
+    const bonusBefore = Number(before.body.wallet.bonusBalance);
     const response = await request(app.getHttpServer())
-      .post(`/api/admin/credits/${memberId}/adjustments`)
+      .post(`/api/admin/credits/${memberId}/grants`)
       .set(admin())
-      .send({ amount: 5, reason: 'Real DB test grant', idempotencyKey })
-      .expect(201);
-    expect(response.body.bonus).toBe(before.body.bonus + 5);
+      .send({ amount: 5, reason: 'Real DB test grant' })
+      .expect(200);
+    expect(response.body.wallet.bonusBalance).toBe(bonusBefore + 5);
 
     const [wallet] = await db
       .select()
       .from(creditWallet)
       .where(eq(creditWallet.userId, memberId));
-    expect(wallet?.bonusBalance).toBe(before.body.bonus + 5);
+    expect(wallet?.bonusBalance).toBe(bonusBefore + 5);
     const [entry] = await db
       .select()
       .from(creditLedger)
-      .where(eq(creditLedger.idempotencyKey, `admin:${idempotencyKey}`));
-    expect(entry).toMatchObject({ userId: memberId, amount: 5, bucket: 'bonus' });
+      .where(eq(creditLedger.userId, memberId))
+      .orderBy(desc(creditLedger.createdAt))
+      .limit(1);
+    expect(entry).toMatchObject({
+      userId: memberId,
+      amount: 5,
+      bucket: 'bonus',
+      type: 'admin_grant',
+    });
 
     await request(app.getHttpServer())
-      .post(`/api/admin/credits/${memberId}/adjustments`)
+      .patch(`/api/admin/credits/${memberId}`)
       .set(admin())
-      .send({ amount: -1000, reason: 'Should fail', idempotencyKey: `${idempotencyKey}-bad` })
+      .send({ bucket: 'bonus', amount: -1000, reason: 'Should fail' })
       .expect(400);
   });
 

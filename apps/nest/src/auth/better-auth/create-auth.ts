@@ -39,6 +39,9 @@ export function createAuth({ db, env }: { db: DrizzleDB; env: AuthEnv }) {
       },
     },
     emailAndPassword: { enabled: true },
+    user: {
+      deleteUser: { enabled: true },
+    },
     socialProviders: {
       github: {
         clientId: env.githubClientId,

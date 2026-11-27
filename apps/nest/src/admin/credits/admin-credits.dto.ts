@@ -1,12 +1,15 @@
-import { creditLedgerZod } from '@repo/db/zod';
+import { creditLedgerZod, creditWalletZod, userZod } from '@repo/db/zod';
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
-import { cursorQuery } from '../../shared/pagination/cursor.js';
 
-const userIdParam = z.object({ userId: z.string().min(1) });
+const userIdParam = z.object({ userId: z.string().min(1).max(64) });
 export class CreditsUserIdParamDto extends createZodDto(userIdParam) {}
 
-export class CreditLedgerListQueryDto extends createZodDto(cursorQuery) {}
+const ledgerQuery = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  perPage: z.coerce.number().int().min(1).max(100).default(20),
+});
+export class CreditLedgerListQueryDto extends createZodDto(ledgerQuery) {}
 
 const adjustCredits = z.object({
   amount: z
@@ -18,16 +21,60 @@ const adjustCredits = z.object({
 });
 export class AdjustCreditsDto extends createZodDto(adjustCredits) {}
 
-const creditLedgerResponse = creditLedgerZod.select.extend({
+export class AdminGrantDto extends createZodDto(
+  z.object({
+    amount: z.number().int().min(1).max(10_000),
+    reason: z.string().trim().min(1).max(500),
+  }),
+) {}
+
+export class AdminAdjustDto extends createZodDto(
+  z.object({
+    bucket: z.enum(['monthly', 'bonus']),
+    amount: z.number().int().refine((value) => value !== 0, 'Amount must not be zero'),
+    reason: z.string().trim().min(1).max(500),
+  }),
+) {}
+
+const creditLedgerEntry = creditLedgerZod.select.extend({
   createdAt: z.iso.datetime(),
 });
-export class CreditLedgerEntryDto extends createZodDto(creditLedgerResponse) {}
+export class CreditLedgerEntryDto extends createZodDto(creditLedgerEntry) {}
 
-const adminCreditsResponse = z.object({
-  monthly: z.number(),
-  bonus: z.number(),
-  available: z.number(),
-  monthlyPeriodKey: z.string().nullable(),
-  waitlistJoined: z.boolean(),
+const creditLedgerPagination = z.object({
+  page: z.number().int().min(1),
+  perPage: z.number().int().min(1),
+  total: z.number().int().nonnegative(),
+  totalPages: z.number().int().min(1),
 });
-export class AdminCreditsDto extends createZodDto(adminCreditsResponse) {}
+
+export class AdminCreditLedgerPageDto extends createZodDto(
+  z.object({
+    items: z.array(creditLedgerEntry),
+    pagination: creditLedgerPagination,
+  }),
+) {}
+
+const creditWallet = creditWalletZod.select.extend({
+  createdAt: z.iso.datetime(),
+  updatedAt: z.iso.datetime(),
+});
+export class CreditWalletDto extends createZodDto(creditWallet) {}
+
+const adminWalletUser = userZod.select
+  .pick({
+    id: true,
+    name: true,
+    email: true,
+    role: true,
+    banned: true,
+  })
+  .extend({ createdAt: z.iso.datetime() });
+
+export class AdminWalletResponseDto extends createZodDto(
+  z.object({ user: adminWalletUser, wallet: creditWallet }),
+) {}
+
+export class AdminCreditMutationResponseDto extends createZodDto(
+  z.object({ wallet: creditWallet }),
+) {}

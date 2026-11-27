@@ -19,7 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { adminTruncatePreviewQueryOptions } from "@/data-access-layer/admin/admin-query-options";
-import { truncateAdminTableFn } from "@/modules/admin/admin.functions";
+import { truncateAdminTable as truncateNestTable } from "@/data-access-layer/admin/admin-mutations";
 import { unwrapUnknownError } from "@/utils/errors";
 import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
 import { Eraser } from "lucide-react";
@@ -74,14 +74,14 @@ function TruncateBody({ table, onDone }: { table: string; onDone: () => void }) 
 
   const mutation = useMutation({
     mutationFn: async () =>
-      truncateAdminTableFn({ data: { table, confirm, cutoff, rebuild: isEventLog && rebuild } }),
+      truncateNestTable({ table, confirm, cutoff, rebuild: isEventLog && rebuild }),
     onSuccess(result) {
       if (result.mode === "eventLog") {
         toast.success(`Emptied ${table}: ${result.deleted.toLocaleString()} events backed up`, {
           description: [
             `Backup: ${result.backup}`,
             result.events > 0
-              ? `Rebuilt ${result.events.toLocaleString()} events for ${result.users.toLocaleString()} users.`
+              ? `Rebuilt ${result.events.toLocaleString()} events for ${(result.users ?? 0).toLocaleString()} users.`
               : null,
           ]
             .filter(Boolean)
@@ -255,7 +255,7 @@ function TruncateBody({ table, onDone }: { table: string; onDone: () => void }) 
                 ))}
                 {preview.blockedBy.map((ref) => (
                   <p key={`${ref.table}.${ref.column}`} className="text-error">
-                    Blocked: {ref.rows.toLocaleString()} synced rows in{" "}
+                    Blocked: {ref.rows.toLocaleString()} rows in{" "}
                     <span className="font-mono">{ref.table}</span> still point here. Truncate that
                     table first.
                   </p>

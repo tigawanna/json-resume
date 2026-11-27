@@ -1,19 +1,19 @@
 import { Controller, Get } from '@nestjs/common';
 import {
   ApiCookieAuth,
-  ApiForbiddenResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
 import { CurrentUser, Roles } from '../../auth/helpers/auth.decorators.js';
 import type { UserWithRole } from '../../auth/helpers/utils.js';
+import { ApiAuthResponses } from '../../shared/openapi/auth-responses.decorator.js';
 import { AdminSessionDto } from './admin-session.dto.js';
 
 @Roles({ roles: ['admin'] })
 @ApiTags('admin')
 @ApiCookieAuth()
-@ApiForbiddenResponse({ description: 'Admin role required' })
+@ApiAuthResponses({ forbiddenDescription: 'Admin role required' })
 @Controller('admin/session')
 export class AdminSessionController {
   @Get()

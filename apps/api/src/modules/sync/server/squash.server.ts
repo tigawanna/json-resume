@@ -7,7 +7,7 @@ import {
   squashUserLogsIncrementally,
   type IncrementalSquashResult,
 } from "./squash-incremental.server";
-import { DEFAULT_RETENTION_MS, planSquash, type SquashReason } from "../shared/squash-plan";
+import { DEFAULT_RETENTION_MS, planSquash, type SquashReason } from "@repo/isomorphic/sync/squash-plan";
 import { SYNC_RESET_COLLECTION } from "../shared/sync-reset";
 
 /**

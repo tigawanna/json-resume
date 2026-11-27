@@ -1,5 +1,8 @@
 import { Input } from "@/components/ui/input";
-import { dropEventLogBackupFn, restoreEventLogBackupFn } from "@/modules/admin/admin.functions";
+import {
+  dropEventLogBackup,
+  restoreEventLogBackup,
+} from "@/data-access-layer/admin/admin-event-log-mutations";
 import { unwrapUnknownError } from "@/utils/errors";
 import { useMutation } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
@@ -30,7 +33,7 @@ function BackupRow({ backup }: { backup: Backup }) {
   const [confirm, setConfirm] = useState("");
 
   const restore = useMutation({
-    mutationFn: async () => restoreEventLogBackupFn({ data: { table: backup.table } }),
+    mutationFn: async () => restoreEventLogBackup({ table: backup.table }),
     onSuccess(result) {
       toast.success(`Restored ${result.restored.toLocaleString()} events from ${backup.table}`);
     },
@@ -41,7 +44,7 @@ function BackupRow({ backup }: { backup: Backup }) {
   });
 
   const drop = useMutation({
-    mutationFn: async () => dropEventLogBackupFn({ data: { table: backup.table, confirm } }),
+    mutationFn: async () => dropEventLogBackup({ table: backup.table, confirm }),
     onSuccess() {
       toast.success(`Dropped ${backup.table}`);
     },

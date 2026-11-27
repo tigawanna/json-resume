@@ -55,6 +55,8 @@ There is no checked-in OpenAPI file; Nest generates the document at boot.
 
 HTTP is under `/api` (`/api/me`, `/api/auth/*`, …). OpenAPI `servers` is `SERVER_URL/api`, so Scalar lists `/me` and `/auth/...` against that base. Setup lives in `src/bootstrap/configure-app.ts`.
 
+Platform probes stay at the root, outside `/api` and outside OpenAPI: `GET /health` (liveness) and `GET /ready` (database readiness, 503 during shutdown).
+
 Admin dashboard and table-browser endpoints are documented in [docs/admin.md](docs/admin.md).
 
 ## Run tests
@@ -80,6 +82,16 @@ with a real user row from the snapshot.
 
 ## Deployment
 
+Build once and run `node dist/main` (`pnpm start:prod`). Set `NODE_ENV=production` and listen on `PORT`; in a container bind `0.0.0.0`. The app applies no migrations at boot — run them as a release step before starting the new version:
+
+```bash
+pnpm --dir apps/nest db:migrate
+```
+
+`main.ts` enables shutdown hooks (so `SIGTERM` closes the database client and flushes telemetry) and keeps idle sockets open for 65 s so a load balancer with a longer idle timeout does not see resets. Point your liveness probe at `/health` and readiness at `/ready`.
+
+Throttler counters live in the shared `rate_limit_counter` table, so multiple instances enforce one budget. `CREDITS_ENABLED=true` must be set for résumé charges; otherwise production logs a warning at boot and every résumé is free. Keep `VITE_CREDITS_ENABLED` in the web app aligned.
+
 When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
 
 If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
@@ -93,9 +105,9 @@ With Mau, you can deploy your application in just a few clicks, allowing you to 
 
 ## Observability
 
-[NestJS Observe](https://observe.nestjs.com) is imported in `AppModule` but **disabled** (`enabled: false`). Nothing is recorded or sent.
+[NestJS Observe](https://observe.nestjs.com) is wired in `AppModule` and turns on automatically in `production` when both `OBSERVE_APP_KEY` and `OBSERVE_APP_SECRET` are set. Outside production, or without keys, it records and sends nothing.
 
-To turn it on later: set `enabled: true` in `src/app.module.ts`, then `npx @nestjs/observe link` (or set `OBSERVE_APP_KEY` and `OBSERVE_APP_SECRET`).
+Run `npx @nestjs/observe link` to issue the key pair into `.env`, then supply the same values as platform secrets in production. `/health` and `/ready` are excluded from traces.
 
 ## Resources
 

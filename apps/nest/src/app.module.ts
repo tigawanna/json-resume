@@ -7,6 +7,7 @@ import { AuthenticationModule } from "./auth/authentication.module.js";
 import { AppConfigModule } from "./config/app-config.module.js";
 import { CreditsModule } from "./credits/credits.module.js";
 import { DatabaseModule } from "./database/database.module.js";
+import { HealthModule } from "./health/health.module.js";
 import { SyncModule } from "./sync/sync.module.js";
 import { RateLimitModule } from "./rate-limit/rate-limit.module.js";
 import { WaitlistModule } from "./waitlist/waitlist.module.js";
@@ -19,6 +20,7 @@ export const { ObserveModule, ObserveInstrument } = createObserveModule();
   imports: [
     AppConfigModule,
     DatabaseModule,
+    HealthModule,
     AuthenticationModule,
     RateLimitModule,
     CreditsModule,
@@ -26,12 +28,20 @@ export const { ObserveModule, ObserveInstrument } = createObserveModule();
     SyncModule,
     ObserveModule.forRootAsync({
       inject: [ConfigService],
-      useFactory: (config: ConfigService<AppEnv, true>) => ({
-        enabled: false,
-        appKey: config.get("OBSERVE_APP_KEY", { infer: true }),
-        appSecret: config.get("OBSERVE_APP_SECRET", { infer: true }),
-        serviceId: "nest",
-      }),
+      useFactory: (config: ConfigService<AppEnv, true>) => {
+        const appKey = config.get("OBSERVE_APP_KEY", { infer: true });
+        const appSecret = config.get("OBSERVE_APP_SECRET", { infer: true });
+        return {
+          // Turns on by itself in production once the keys are linked.
+          enabled:
+            config.get("NODE_ENV", { infer: true }) === "production" &&
+            Boolean(appKey && appSecret),
+          appKey,
+          appSecret,
+          serviceId: "nest",
+          http: { ignore: ["/health", "/ready"] },
+        };
+      },
     }),
     AdminModule,
   ],

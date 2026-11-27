@@ -1,6 +1,6 @@
 import { clientEnv } from "@/lib/env/client-env";
 
-const TOKEN_URL = `${clientEnv.VITE_HONO_API_URL}/api/auth/token`;
+const TOKEN_URL = `${clientEnv.VITE_NEST_API_URL}/api/auth/token`;
 
 let cached: { token: string; expiresAtMs: number } | null = null;
 

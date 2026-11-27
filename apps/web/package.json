@@ -16,7 +16,9 @@
     "auth:migrate": "npx auth@latest generate --output ../../packages/db/src/schema/auth-schema.ts",
     "urgentry": "node --experimental-strip-types scripts/urgentry.ts",
     "gen:favicons": "tsx scripts/favicons.ts",
-    "gen:og": "tsx scripts/og.tsx"
+    "gen:og": "tsx scripts/og.tsx",
+    "gen:api": "kubb generate",
+    "gen:api:check": "kubb generate --check"
   },
   "dependencies": {
     "@base-ui/react": "^1.1.0",
@@ -113,6 +115,8 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@kubb/plugin-fetch": "6.6.0",
+    "@kubb/plugin-ts": "5.7.3",
     "@playwright/test": "^1.60.0",
     "@tanstack/devtools-vite": "^0.5.0",
     "@tanstack/node-db-sqlite-persistence": "^0.2.29",
@@ -134,6 +138,8 @@
     "drizzle-query-logger": "^1.1.2",
     "drizzle-seed": "^0.3.1",
     "jsdom": "^27.4.0",
+    "kubb": "5.27.0",
+    "oxfmt": "0.80.0",
     "png-to-ico": "^3.0.2",
     "react-devtools-cdt-mcp": "^0.1.0",
     "sharp": "^0.35.5",

@@ -13,6 +13,7 @@ import { createAuth } from './better-auth/create-auth.js';
 import { AppAuthGuard } from './helpers/app-auth.guard.js';
 import { ADMIN_BYPASS_SECRET, MOCK_AUTH } from './helpers/auth.constants.js';
 import { MeController } from './me/me.controller.js';
+import { ViewerController } from './viewer/viewer.controller.js';
 
 @Module({
   imports: [
@@ -38,7 +39,7 @@ import { MeController } from './me/me.controller.js';
       }),
     }),
   ],
-  controllers: [MeController],
+  controllers: [MeController, ViewerController],
   providers: [
     AppAuthGuard,
     { provide: APP_GUARD, useExisting: AppAuthGuard },

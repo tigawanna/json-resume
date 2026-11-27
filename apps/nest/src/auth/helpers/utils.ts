@@ -3,6 +3,9 @@ import type { Auth } from '../better-auth/create-auth.js';
 /** Signed-in caller attached to the request by AppAuthGuard. */
 export type UserWithRole = Awaited<ReturnType<Auth['api']['getUser']>>;
 
+/** Full Better Auth session payload attached by AppAuthGuard. */
+export type AuthSession = NonNullable<Awaited<ReturnType<Auth['api']['getSession']>>>;
+
 /** True when the comma-separated Better Auth role string includes any required role. */
 export function hasRole({
   role,

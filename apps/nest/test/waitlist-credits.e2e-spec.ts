@@ -9,7 +9,7 @@ import { WAITLIST_RATE_LIMIT } from "../src/waitlist/waitlist.constants.js";
 import { createTestApp } from "./support/create-test-app.js";
 import { personas, walletOf } from "./support/personas.js";
 
-describe("waitlist, credits, and sync stub", () => {
+describe("waitlist, credits, and sync", () => {
   let app: INestApplication<App>;
   let db: DrizzleDB;
   let closeDatabase: () => void;
@@ -85,36 +85,62 @@ describe("waitlist, credits, and sync stub", () => {
     expect(wallet?.monthlyBalance).toBe(CREDIT_POLICY.monthlyCredits);
   });
 
-  it("reports the grant from GET /credits", async () => {
+  it("reports the grant, reset time, and policy from GET /credits", async () => {
     const response = await request(app.getHttpServer())
       .get("/api/credits")
       .set("x-mock-user", personas.member.id)
       .expect(200);
     expect(response.body.available).toBe(CREDIT_POLICY.monthlyCredits);
     expect(response.body.waitlistJoined).toBe(true);
+    expect(response.body.resetsAt).toEqual(expect.any(String));
+    expect(response.body.policy).toEqual(CREDIT_POLICY);
+  });
+
+  it("checks credits without spending them", async () => {
+    const before = await walletOf({ db, userId: personas.member.id });
+    const response = await request(app.getHttpServer())
+      .post("/api/credits/checks")
+      .set("x-mock-user", personas.member.id)
+      .send({ action: "create" })
+      .expect(200);
+    expect(response.body).toMatchObject({
+      available: before?.monthlyBalance,
+      monthly: before?.monthlyBalance,
+      bonus: before?.bonusBalance,
+      resetsAt: expect.any(String),
+    });
   });
 
   it("turns down an unauthenticated sync call", async () => {
-    await request(app.getHttpServer()).post("/api/sync").expect(401);
-    await request(app.getHttpServer()).get("/api/sync").expect(401);
+    await request(app.getHttpServer()).post("/api/sync/events").send([]).expect(401);
+    await request(app.getHttpServer()).get("/api/sync/events").expect(401);
   });
 
-  it("accepts a sync ping without spending credits", async () => {
-    const before = await walletOf({ db, userId: personas.member.id });
+  it("accepts an empty event batch and returns an empty page", async () => {
     await request(app.getHttpServer())
-      .post("/api/sync")
+      .post("/api/sync/events")
       .set("x-mock-user", personas.member.id)
+      .send([])
       .expect(200)
-      .expect({ status: "accepted", implementation: "pending" });
-    const after = await walletOf({ db, userId: personas.member.id });
-    expect(after?.monthlyBalance).toBe(before?.monthlyBalance);
-    expect(after?.bonusBalance).toBe(before?.bonusBalance);
+      .expect({ confirmed: [] });
+    const response = await request(app.getHttpServer())
+      .get("/api/sync/events")
+      .query({ since: 0 })
+      .set("x-mock-user", personas.member.id)
+      .expect(200);
+    expect(response.body).toMatchObject({
+      events: [],
+      cursor: "0",
+      hasMore: false,
+      backendId: expect.any(String),
+    });
   });
 
   it("turns down a banned user before sync", async () => {
     await request(app.getHttpServer())
-      .post("/api/sync")
+      .post("/api/sync/events")
       .set("x-mock-user", personas.banned.id)
+      .send([])
       .expect(403);
   });
 });
@@ -134,24 +160,18 @@ describe("waitlist required", () => {
     closeDatabase();
   });
 
-  it("turns down sync until the user is on the waitlist", async () => {
-    await request(app.getHttpServer())
-      .post("/api/sync")
+  it("gives monthly credits only to a waitlisted user", async () => {
+    const member = await request(app.getHttpServer())
+      .get("/api/credits")
       .set("x-mock-user", personas.member.id)
-      .expect(403);
-  });
+      .expect(200);
+    expect(member.body.monthly).toBe(0);
 
-  it("accepts sync for a waitlisted user and still does not charge", async () => {
-    await request(app.getHttpServer())
-      .get("/api/sync")
-      .set("x-mock-user", personas.memberWaitlisted.id)
-      .expect(200)
-      .expect({ status: "accepted", implementation: "pending" });
-    const credits = await request(app.getHttpServer())
+    const waitlisted = await request(app.getHttpServer())
       .get("/api/credits")
       .set("x-mock-user", personas.memberWaitlisted.id)
       .expect(200);
-    expect(credits.body.monthly).toBe(CREDIT_POLICY.monthlyCredits);
+    expect(waitlisted.body.monthly).toBe(CREDIT_POLICY.monthlyCredits);
   });
 });
 

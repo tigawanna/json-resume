@@ -1,5 +1,4 @@
-import { adminWaitlistQueryOptions } from "@/data-access-layer/waitlist/waitlist-query-options";
-import { clientEnv } from "@/lib/env/client-env";
+import { ADMIN_WAITLIST_EXPORT_URL, adminWaitlistQueryOptions } from "@/data-access-layer/waitlist/waitlist-query-options";
 import { ADMIN_LIST_PER_PAGE } from "@/components/pagination/constants";
 import { TSRListPagination } from "@/components/pagination/TSRListPagination";
 import { SearchBox } from "@/components/search/SearchBox";
@@ -74,7 +73,7 @@ export function AdminWaitlistList() {
             onChange={(hasAccount) => patchSearch({ hasAccount })}
           />
           <Button type="button" variant="outline" size="sm" asChild data-test="waitlist-export">
-            <a href={`${clientEnv.VITE_HONO_API_URL}/api/admin/waitlist/export`}>Export CSV</a>
+            <a href={ADMIN_WAITLIST_EXPORT_URL}>Export CSV</a>
           </Button>
         </div>
       </div>

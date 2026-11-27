@@ -153,16 +153,23 @@ describe('admin direct table mutations', () => {
     expect(emails.map((row) => row.email)).toContain('new@example.com');
   });
 
-  it('defers event-log truncation instead of projecting or backing it up', async () => {
+  it('backs up and empties the event log instead of deferring truncation', async () => {
     const preview = await request(app.getHttpServer())
       .get('/api/admin/tables/sync_event/truncate')
       .set(admin)
       .expect(200);
     expect(preview.body.mode).toBe('eventLog');
-    await request(app.getHttpServer())
+    const response = await request(app.getHttpServer())
       .post('/api/admin/tables/sync_event/truncate')
       .set(admin)
       .send({ confirm: 'sync_event', rebuild: true })
-      .expect(501);
+      .expect(200);
+    expect(response.body).toMatchObject({
+      mode: 'eventLog',
+      backup: expect.any(String),
+      deleted: expect.any(Number),
+      references: 0,
+      users: expect.any(Number),
+    });
   });
 });

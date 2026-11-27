@@ -25,6 +25,29 @@ This project uses [Vitest](https://vitest.dev/) for testing. You can run the tes
 pnpm test
 ```
 
+## Nest API client
+
+The web app's Nest client is generated with Kubb from the live OpenAPI document.
+Start Nest (`pnpm --dir apps/nest dev`), then run:
+
+```bash
+pnpm --dir apps/web gen:api
+pnpm --dir apps/web gen:api:check
+```
+
+`kubb.config.ts` writes types and Fetch clients to
+`src/services/nest/generated/`. Set `NEST_OPENAPI_URL` to generate from another
+Nest origin. `VITE_NEST_API_URL` is an origin (default
+`http://localhost:5040`): the generated product client uses `${origin}/api`,
+while Better Auth's `authClient` uses the origin and appends `/api/auth` itself.
+Both send cookies. SSR forwards the incoming cookie to Nest because server-side
+fetch has no cookie jar.
+
+Viewer/auth, credits and waitlist, admin table browsing and row mutations,
+event-log backups/projection/rebuild/squash, and managed sync push/pull all use
+Nest. The admin event browser and library compact/prune actions still use the
+legacy server functions until their contracts are moved.
+
 ## Styling
 
 This project uses [Tailwind CSS](https://tailwindcss.com/) for styling.
