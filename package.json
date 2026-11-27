@@ -22,6 +22,7 @@
     "@shadcn/lint": "^0.2.0",
     "@tanstack/intent": "^0.5.5",
     "@typescript/native-preview": "catalog:",
+    "pgboxdb": "0.2.0",
     "turbo": "^2.11.10",
     "typescript": "catalog:",
     "vite-plus": "catalog:"

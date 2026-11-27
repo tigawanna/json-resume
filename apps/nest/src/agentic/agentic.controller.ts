@@ -80,7 +80,7 @@ export class AgenticController {
     return scalarHtml;
   }
 
-  @All('rpc/*')
+  @All('rpc/{*path}')
   async rpcRequest(
     @Req() request: IncomingMessage,
     @Res() response: ServerResponse,
@@ -93,7 +93,7 @@ export class AgenticController {
     });
   }
 
-  @All('*')
+  @All('{*path}')
   async openApiRequest(
     @Req() request: IncomingMessage,
     @Res() response: ServerResponse,

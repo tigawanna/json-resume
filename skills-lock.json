@@ -1,11 +1,18 @@
 {
-  "version": 1,
+  "version": 2,
   "skills": {
     "chrome-extensions": {
       "source": "GoogleChrome/modern-web-guidance",
       "sourceType": "github",
       "skillPath": "skills/chrome-extensions/SKILL.md",
-      "computedHash": "1e8525bb49647008dcd3a6b7e5d3c3207345f086e7a64d7e6d5bcc67dbba7a71"
+      "computedHash": ""
+    },
+    "pgboxdb": {
+      "source": "pgrundev/pgboxdb-plugin",
+      "commit": "aebf7a4c0a5fc709c092e2e50cf5b149494aea31",
+      "sourceType": "github",
+      "skillPath": "skills/pgboxdb/SKILL.md",
+      "computedHash": "ba77563952b839a064dc57bb01dbed97e11bee23b9c33729126263cfc52d7a30"
     }
   }
 }

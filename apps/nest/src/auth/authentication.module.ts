@@ -10,6 +10,8 @@ import { createAuth } from "./better-auth/create-auth.js";
 import { AppAuthGuard } from "./helpers/app-auth.guard.js";
 import { ADMIN_BYPASS_SECRET, MOCK_AUTH } from "./helpers/auth.constants.js";
 import { MeController } from "./me/me.controller.js";
+import { TestUsersController } from "./test-users/test-users.controller.js";
+import { TestUsersService } from "./test-users/test-users.service.js";
 import { ViewerController } from "./viewer/viewer.controller.js";
 
 function shouldParseBody(request: IncomingMessage) {
@@ -48,9 +50,10 @@ function shouldParseBody(request: IncomingMessage) {
       }),
     }),
   ],
-  controllers: [MeController, ViewerController],
+  controllers: [MeController, ViewerController, TestUsersController],
   providers: [
     AppAuthGuard,
+    TestUsersService,
     { provide: APP_GUARD, useExisting: AppAuthGuard },
     { provide: MOCK_AUTH, useValue: false },
     {
