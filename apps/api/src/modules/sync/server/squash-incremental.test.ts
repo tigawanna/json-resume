@@ -10,7 +10,7 @@ import { drizzle } from "drizzle-orm/libsql/node";
 import { migrate } from "drizzle-orm/libsql/migrator";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { SQUASH_STEP_EVENTS, squashUserLogsIncrementally } from "./squash-incremental.server";
-import { SYNC_RESET_COLLECTION } from "../shared/sync-reset";
+import { SYNC_RESET_COLLECTION } from "@repo/isomorphic/sync/reset";
 
 const HOUR = 60 * 60 * 1000;
 const DAY = 24 * HOUR;

@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/sheet";
 import { adminRowQueryOptions } from "@/data-access-layer/admin/admin-query-options";
 import { deleteAdminRow, updateAdminRow } from "@/data-access-layer/admin/admin-mutations";
-import type { AdminRowDto } from "@/services/nest/generated/models/AdminRowDto";
+import type { AdminRowDto } from "@repo/api-contracts/models/AdminRowDto";
 import { useAppForm } from "@/lib/tanstack/form";
 import { unwrapUnknownError } from "@/utils/errors";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -29,22 +29,22 @@ import { toast } from "sonner";
 
 type AdminRowSheetProps = {
   table: string;
-  rowid: number | null;
+  rowKey: string | null;
   onClose: () => void;
 };
 
-export function AdminRowSheet({ table, rowid, onClose }: AdminRowSheetProps) {
+export function AdminRowSheet({ table, rowKey, onClose }: AdminRowSheetProps) {
   return (
-    <Sheet open={rowid !== null} onOpenChange={(open) => (open ? undefined : onClose())}>
+    <Sheet open={rowKey !== null} onOpenChange={(open) => (open ? undefined : onClose())}>
       <SheetContent className="w-full overflow-y-auto sm:max-w-xl" data-test="admin-row-sheet">
         <SheetHeader>
           <SheetTitle className="font-mono">
-            {table} · row {rowid}
+            {table} · row {rowKey}
           </SheetTitle>
           <SheetDescription>Inspect, edit, or delete this row.</SheetDescription>
         </SheetHeader>
-        {rowid !== null ? (
-          <AdminRowBody key={rowid} table={table} rowid={rowid} onDone={onClose} />
+        {rowKey !== null ? (
+          <AdminRowBody key={rowKey} table={table} rowKey={rowKey} onDone={onClose} />
         ) : null}
       </SheetContent>
     </Sheet>
@@ -69,14 +69,14 @@ const modeCopy = {
 
 function AdminRowBody({
   table,
-  rowid,
+  rowKey,
   onDone,
 }: {
   table: string;
-  rowid: number;
+  rowKey: string;
   onDone: () => void;
 }) {
-  const query = useQuery(adminRowQueryOptions({ table, rowid }));
+  const query = useQuery(adminRowQueryOptions({ table, rowKey }));
 
   if (query.error) {
     return <p className="px-4 text-sm text-error">{query.error.message}</p>;
@@ -105,7 +105,7 @@ function AdminRowEditor({ row, onDone }: { row: LoadedRow; onDone: () => void })
 
   const updateMutation = useMutation({
     mutationFn: async (values: Record<string, string | null>) =>
-      updateAdminRow({ table: row.table, rowid: row.rowid, values }),
+      updateAdminRow({ table: row.table, rowKey: row.rowKey, values }),
     onSuccess(result) {
       toast.success(result.changed === 0 ? "Nothing changed" : "Row updated", {
         description:
@@ -122,7 +122,7 @@ function AdminRowEditor({ row, onDone }: { row: LoadedRow; onDone: () => void })
   });
 
   const deleteMutation = useMutation({
-    mutationFn: async () => deleteAdminRow({ table: row.table, rowid: row.rowid }),
+    mutationFn: async () => deleteAdminRow({ table: row.table, rowKey: row.rowKey }),
     onSuccess(result) {
       toast.success("Row deleted", {
         description:

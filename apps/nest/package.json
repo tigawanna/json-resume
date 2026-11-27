@@ -32,6 +32,7 @@
     "@nestjs/platform-node": "^12.6.1",
     "@nestjs/swagger": "^12.1.2",
     "@nestjs/throttler": "^6.8.0",
+    "@repo/api-contracts": "workspace:*",
     "@repo/db": "workspace:*",
     "@repo/isomorphic": "workspace:*",
     "@scalar/nestjs-api-reference": "^1.2.41",

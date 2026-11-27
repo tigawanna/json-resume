@@ -51,9 +51,9 @@ Exit: Nest no longer imports libSQL at runtime, all tests pass on Postgres, and 
 
 - [ ] Fix the web build by deleting dead server modules and migrating/removing the 28 production imports of the deleted DB client.
 - [ ] Keep live résumé/GitHub/AI/admin endpoints working through Nest; do not recreate local-first CRUD as REST.
-- [ ] Add `packages/api-contracts`; freeze response shapes, pagination, errors, and sync payloads.
-- [ ] Use one build-time `API_ORIGIN`; keep `VITE_NEST_API_URL` as a temporary alias.
-- [ ] Regenerate the Kubb client from Nest OpenAPI and add contract tests.
+- [x] Add `packages/api-contracts`; freeze response shapes, pagination, errors, and sync payloads.
+- [x] Use one build-time `API_ORIGIN`; keep `VITE_NEST_API_URL` as a temporary alias.
+- [x] Regenerate the Kubb client from Nest OpenAPI and add contract tests.
 - [ ] Remove the `@api` source alias and Hono runtime coupling from web.
 - [ ] Run Playwright against real Nest + Postgres: signup/login, viewer, sync push/pull, credits, waitlist, admin, and one AI flow.
 - [ ] Deploy web and Nest to staging Cloud Run with Secret Manager and a remote Postgres-compatible database.

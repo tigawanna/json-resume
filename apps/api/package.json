@@ -20,6 +20,7 @@
     "@hono/node-server": "^1.19.17",
     "@hono/zod-validator": "^0.9.1",
     "@libsql/client": "^0.17.2",
+    "@repo/api-contracts": "workspace:*",
     "@repo/db": "workspace:*",
     "@repo/isomorphic": "workspace:*",
     "better-auth": "^1.7.18",

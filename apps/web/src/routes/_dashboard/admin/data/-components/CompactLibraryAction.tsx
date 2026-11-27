@@ -1,4 +1,4 @@
-import { compactLibraryFn } from "@/modules/admin/admin.functions";
+import { adminLibraryControllerCompact } from "@/services/nest/client";
 import { unwrapUnknownError } from "@/utils/errors";
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
@@ -11,7 +11,9 @@ export function CompactLibraryAction() {
 
   const mutation = useMutation({
     mutationFn: async () =>
-      compactLibraryFn({ data: { userId: userId === ALL_USERS ? undefined : userId } }),
+      adminLibraryControllerCompact({
+        body: { userId: userId === ALL_USERS ? undefined : userId },
+      }),
     onSuccess(result) {
       toast.success(`Merge requested for ${result.users.toLocaleString()} users`, {
         description: "The next device each user syncs plans the merge and uploads it.",

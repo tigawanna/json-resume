@@ -1,1 +1,1 @@
-export * from "@api/modules/sync/shared/projection-constraint";
+export * from "@repo/isomorphic/sync/projection-constraint";

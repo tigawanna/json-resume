@@ -29,7 +29,7 @@ type AdminTableViewProps = {
 export function AdminTableView({ table, page, q }: AdminTableViewProps) {
   const navigate = useNavigate();
   const [search, setSearch] = useState(q ?? "");
-  const [selectedRowid, setSelectedRowid] = useState<number | null>(null);
+  const [selectedRowKey, setSelectedRowKey] = useState<string | null>(null);
   const query = useQuery({
     ...adminTablePageQueryOptions({ table, page, pageSize: PAGE_SIZE, q }),
     placeholderData: keepPreviousData,
@@ -115,9 +115,9 @@ export function AdminTableView({ table, page, q }: AdminTableViewProps) {
                 ) : (
                   data.rows.map((row) => (
                     <TableRow
-                      key={row.rowid}
+                      key={row.rowKey}
                       className="cursor-pointer"
-                      onClick={() => setSelectedRowid(row.rowid)}
+                      onClick={() => setSelectedRowKey(row.rowKey)}
                       data-test="admin-table-row"
                     >
                       {data.columns.map((column) => {
@@ -167,7 +167,11 @@ export function AdminTableView({ table, page, q }: AdminTableViewProps) {
         </>
       ) : null}
 
-      <AdminRowSheet table={table} rowid={selectedRowid} onClose={() => setSelectedRowid(null)} />
+      <AdminRowSheet
+        table={table}
+        rowKey={selectedRowKey}
+        onClose={() => setSelectedRowKey(null)}
+      />
     </div>
   );
 }

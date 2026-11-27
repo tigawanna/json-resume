@@ -1,1 +1,1 @@
-export * from "@api/modules/sync/shared/compact-plan";
+export * from "@repo/isomorphic/sync/compact-plan";

@@ -12,7 +12,7 @@ import type {
 import { log as standaloneLog } from "evlog";
 import { z } from "zod";
 import { projectUnappliedSyncEvents } from "./project-legacy.server";
-import { SYNC_RESET_COLLECTION, userBackendId } from "../shared/sync-reset";
+import { SYNC_RESET_COLLECTION, userBackendId } from "@repo/isomorphic/sync/reset";
 
 export const outboundEventSchema = z.object({
   eventId: z.string().min(1),

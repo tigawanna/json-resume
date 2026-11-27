@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { deleteWithReferences } from "@/data-access-layer/event-sourced/rows/library-resolve";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import type { RepositoryResponse } from "@/data-access-layer/github/repos.octo";
+import type { GithubRepo } from "@/data-access-layer/github/repos-query-options";
 import { useViewer } from "@/data-access-layer/auth/viewer";
 import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
 import type { ResumeProject } from "@/data-access-layer/event-sourced/schemas";
@@ -13,7 +13,7 @@ import { Bookmark, BookmarkCheck, ExternalLink, GitFork, Globe, Star } from "luc
 import { toast } from "sonner";
 
 interface RepoCardProps {
-  repo: RepositoryResponse;
+  repo: GithubRepo;
   savedProject: ResumeProject | undefined;
 }
 

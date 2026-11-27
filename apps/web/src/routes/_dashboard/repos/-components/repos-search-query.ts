@@ -1,8 +1,6 @@
-import type {
-  GithubRepoForkFilter,
-  GithubRepoOrder,
-  GithubRepoSort,
-} from "@/data-access-layer/github/repos.functions";
+export type GithubRepoForkFilter = "source" | "all" | "fork";
+export type GithubRepoSort = "updated" | "stars" | "forks" | "help-wanted-issues" | "best-match";
+export type GithubRepoOrder = "desc" | "asc";
 
 export type RepoArchivedFilter = "any" | "active" | "archived";
 

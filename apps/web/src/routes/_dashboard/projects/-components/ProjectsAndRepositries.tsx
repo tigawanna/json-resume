@@ -1,6 +1,6 @@
 import { Empty, EmptyDescription, EmptyTitle } from "@/components/ui/empty";
 import { githubReposCollection } from "@/data-access-layer/github/repos-collections";
-import type { RepositoryResponse } from "@/data-access-layer/github/repos.octo";
+import type { GithubRepo } from "@/data-access-layer/github/repos-query-options";
 import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
 import type { ResumeProject } from "@/data-access-layer/event-sourced/schemas";
 import { useDebouncedValue } from "@/hooks/use-debouncer";
@@ -64,7 +64,7 @@ export function ProjectsAndRepositries() {
 
       // Search filter
       if (debouncedSearch) {
-        query = query.fn.where((row: { repo: RepositoryResponse; saved?: ResumeProject }) => {
+        query = query.fn.where((row: { repo: GithubRepo; saved?: ResumeProject }) => {
           const s = debouncedSearch.toLowerCase();
           const name = row.repo.name?.toLowerCase() ?? "";
           const desc = row.repo.description?.toLowerCase() ?? "";

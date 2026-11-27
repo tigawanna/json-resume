@@ -1,1 +1,1 @@
-export * from "@api/modules/sync/shared/compaction-protocol";
+export * from "@repo/api-contracts/sync/compaction";

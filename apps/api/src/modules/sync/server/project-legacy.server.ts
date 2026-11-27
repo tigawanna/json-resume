@@ -30,12 +30,15 @@ import { syncBackend, syncEvent } from "@repo/db/schema/sync-schema";
 import { and, eq, getTableColumns, isNull, type SQL } from "drizzle-orm";
 import { requestLog } from "@api/lib/evlog/request-log";
 import { log as standaloneLog } from "evlog";
-import { isForeignKeyError, uniqueConstraintColumns } from "../shared/projection-constraint";
+import {
+  isForeignKeyError,
+  uniqueConstraintColumns,
+} from "@repo/isomorphic/sync/projection-constraint";
 import type { SQLiteColumn, SQLiteTable } from "drizzle-orm/sqlite-core";
 import {
   COMPACTION_COLLECTION,
   COMPACTION_REQUEST_COLLECTION,
-} from "../shared/compaction-protocol";
+} from "@repo/api-contracts/sync/compaction";
 import { chargeProjectedResume, isChargeableResumeInsert } from "./resume-credit-charge";
 
 const SKIP_COLLECTIONS = new Set([

@@ -9,8 +9,7 @@
     "declarationMap": false,
     "verbatimModuleSyntax": false,
     "paths": {
-      "@api/*": ["./src/*"],
-      "@/*": ["../../web/src/*"]
+      "@api/*": ["./src/*"]
     }
   },
   "include": ["src/**/*.ts", "tests/**/*.ts", "src/scripts/**/*.ts"]

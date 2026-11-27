@@ -2,12 +2,12 @@ import { apiKeyClient } from "@better-auth/api-key/client";
 import { organizationRoles } from "@repo/isomorphic/auth-roles";
 import { adminClient, jwtClient, multiSessionClient } from "better-auth/client/plugins";
 import { createAuthClient } from "better-auth/react";
-import { clientEnv } from "../env/client-env";
+import { apiOrigin } from "../env/client-env";
 
 // Better Auth lives on apps/nest. The client baseURL is the origin; it appends
 // /api/auth itself, unlike the generated OpenAPI client which uses /api.
 export const authClient = createAuthClient({
-  baseURL: clientEnv.VITE_NEST_API_URL,
+  baseURL: apiOrigin,
   plugins: [adminClient(), multiSessionClient(), apiKeyClient(), jwtClient()],
 });
 

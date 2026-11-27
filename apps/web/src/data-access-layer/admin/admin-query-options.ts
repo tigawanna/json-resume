@@ -1,6 +1,9 @@
 import {
   adminEventLogControllerListBackups,
   adminEventLogControllerSquash,
+  adminEventsControllerByCollection,
+  adminEventsControllerList,
+  adminEventsControllerUsers,
   adminStatsControllerRead,
   adminTablesControllerList,
   adminTablesControllerPreviewTruncate,
@@ -8,11 +11,6 @@ import {
   adminTablesControllerTablePage,
   adminUsersControllerFindAll,
 } from "@/services/nest/client";
-import {
-  getAdminEvents,
-  getAdminEventsByCollection,
-  getAdminEventUsers,
-} from "@/modules/admin/admin.functions";
 import type {
   adminEventFilterSchema,
   adminEventListSchema,
@@ -40,23 +38,23 @@ type AdminEventFilter = z.infer<typeof adminEventFilterSchema>;
 export function adminEventsQueryOptions(input: z.infer<typeof adminEventListSchema>) {
   return queryOptions({
     queryKey: ["admin", "events", "list", input],
-    queryFn: () => getAdminEvents({ data: input }),
+    queryFn: () => adminEventsControllerList({ query: input }),
   });
 }
 
 export function adminEventsByCollectionQueryOptions(filter: AdminEventFilter) {
   return queryOptions({
     queryKey: ["admin", "events", "by-collection", filter],
-    queryFn: () => getAdminEventsByCollection({ data: filter }),
+    queryFn: () => adminEventsControllerByCollection({ query: filter }),
   });
 }
 
 export const adminEventUsersQueryOptions = queryOptions({
   queryKey: ["admin", "events", "users"],
-  queryFn: () => getAdminEventUsers(),
+  queryFn: () => adminEventsControllerUsers(),
 });
 
-export function adminRowQueryOptions(input: { table: string; rowid: number }) {
+export function adminRowQueryOptions(input: { table: string; rowKey: string }) {
   return queryOptions({
     queryKey: ["admin", "row", input],
     queryFn: () => adminTablesControllerReadRow({ path: input }),

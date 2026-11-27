@@ -9,7 +9,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { pruneLibraryFn } from "@/modules/admin/admin.functions";
+import { adminLibraryControllerPrune } from "@/services/nest/client";
 import { unwrapUnknownError } from "@/utils/errors";
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
@@ -22,7 +22,8 @@ export function PruneLibraryAction() {
   const isAll = userId === ALL_USERS;
 
   const mutation = useMutation({
-    mutationFn: async () => pruneLibraryFn({ data: { userId: isAll ? undefined : userId } }),
+    mutationFn: async () =>
+      adminLibraryControllerPrune({ body: { userId: isAll ? undefined : userId } }),
     onSuccess(result) {
       toast.success(`Cleanup requested for ${result.users.toLocaleString()} users`, {
         description: `The next device each user syncs deletes what no résumé uses. Backup: ${result.backup}.`,

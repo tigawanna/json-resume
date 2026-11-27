@@ -1,6 +1,6 @@
 import "@tanstack/react-start/server-only";
 
-import { clientEnv } from "@/lib/env/client-env";
+import { apiOrigin } from "@/lib/env/client-env";
 
 export type ApiKeyPermissionCheck = Record<string, string[]>;
 
@@ -36,7 +36,7 @@ async function verifyApiKeyOnNest(input: {
   key: string;
   permissions?: ApiKeyPermissionCheck;
 }): Promise<NestVerifyResponse | null> {
-  const response = await fetch(`${clientEnv.VITE_NEST_API_URL}/api/auth/api-key/verify`, {
+  const response = await fetch(`${apiOrigin}/api/auth/api-key/verify`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(input),

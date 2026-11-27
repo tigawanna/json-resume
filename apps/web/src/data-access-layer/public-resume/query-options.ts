@@ -1,5 +1,9 @@
+import {
+  publicResumeControllerGetById,
+  publicResumeControllerGetMine,
+  publicResumeControllerList,
+} from "@/services/nest/client";
 import { queryOptions } from "@tanstack/react-query";
-import { getMyPublicResume, getPublicResume, listMyPublicResumes } from "./public-resume.functions";
 
 export const publicResumeKeys = {
   all: ["public-resume"] as const,
@@ -12,13 +16,13 @@ export const publicResumeKeys = {
 export const publicResumeQueryOptions = (id: string) =>
   queryOptions({
     queryKey: publicResumeKeys.byId(id),
-    queryFn: () => getPublicResume({ data: { id } }),
+    queryFn: () => publicResumeControllerGetById({ path: { id } }),
   });
 
 export const myPublicResumeQueryOptions = (sourceResumeId: string) =>
   queryOptions({
     queryKey: publicResumeKeys.mine(sourceResumeId),
-    queryFn: () => getMyPublicResume({ data: { sourceResumeId } }),
+    queryFn: () => publicResumeControllerGetMine({ query: { sourceResumeId } }),
   });
 
 export const myPublicResumesListQueryOptions = (opts: {
@@ -31,12 +35,8 @@ export const myPublicResumesListQueryOptions = (opts: {
   return queryOptions({
     queryKey: publicResumeKeys.list({ keyword: opts.keyword, page }),
     queryFn: () =>
-      listMyPublicResumes({
-        data: {
-          keyword: opts.keyword,
-          limit: opts.limit,
-          offset,
-        },
+      publicResumeControllerList({
+        query: { keyword: opts.keyword, limit: opts.limit, offset },
       }),
   });
 };

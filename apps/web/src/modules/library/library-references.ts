@@ -1,1 +1,1 @@
-export * from "@api/modules/library/library-references";
+export * from "@repo/isomorphic/library/references";

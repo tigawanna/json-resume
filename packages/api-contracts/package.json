@@ -1,0 +1,34 @@
+{
+  "name": "@repo/api-contracts",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./client": "./src/generated/.kubb/client.ts",
+    "./models": "./src/generated/models/index.ts",
+    "./models/*": "./src/generated/models/*.ts",
+    "./clients/*": "./src/generated/clients/*/index.ts",
+    "./sync/compaction": "./src/sync/compaction.ts",
+    "./admin/events": "./src/admin/events.ts"
+  },
+  "scripts": {
+    "build": "vp build",
+    "check-types": "tsc --noEmit",
+    "gen:api": "kubb generate",
+    "gen:api:check": "kubb generate --check"
+  },
+  "dependencies": {
+    "@repo/isomorphic": "workspace:*",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@kubb/plugin-fetch": "6.6.0",
+    "@kubb/plugin-ts": "5.7.3",
+    "@repo/typescript-config": "workspace:*",
+    "@types/node": "^25.2.0",
+    "kubb": "5.27.0",
+    "oxfmt": "0.80.0",
+    "typescript": "catalog:",
+    "vite": "catalog:"
+  }
+}

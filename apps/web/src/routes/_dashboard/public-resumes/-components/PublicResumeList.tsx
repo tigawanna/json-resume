@@ -14,11 +14,11 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useViewer } from "@/data-access-layer/auth/viewer";
-import type { PublicResumeListItemDTO } from "@/data-access-layer/public-resume/public-resume.types";
+import type { PublicResumeListItemDto } from "@repo/api-contracts/models";
 import {
-  renamePublicResume,
-  unpublishPublicResumeById,
-} from "@/data-access-layer/public-resume/public-resume.functions";
+  publicResumeControllerRename,
+  publicResumeControllerUnpublishById,
+} from "@/services/nest/client";
 import {
   myPublicResumesListQueryOptions,
   publicResumeKeys,
@@ -53,7 +53,7 @@ export function PublicResumeList() {
   const { page = 1, q = "" } = search;
   const { clearSearch } = usePageSearchQuery(ROUTE_ID);
   const keyword = q.trim();
-  const [renaming, setRenaming] = useState<PublicResumeListItemDTO | null>(null);
+  const [renaming, setRenaming] = useState<PublicResumeListItemDto | null>(null);
   const [renameTitle, setRenameTitle] = useState("");
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
@@ -67,9 +67,8 @@ export function PublicResumeList() {
   });
 
   const unpublishMutation = useMutation({
-    mutationFn: async (id: string) => unpublishPublicResumeById({ data: { id } }),
+    mutationFn: async (id: string) => publicResumeControllerUnpublishById({ path: { id } }),
     onSuccess(_data, id) {
-      void qc.invalidateQueries({ queryKey: publicResumeKeys.all });
       toast.success("Unpublished");
       qc.removeQueries({ queryKey: publicResumeKeys.byId(id) });
     },
@@ -78,12 +77,13 @@ export function PublicResumeList() {
         description: unwrapUnknownError(err).message,
       });
     },
+    meta: { invalidates: [publicResumeKeys.all] },
   });
 
   const renameMutation = useMutation({
-    mutationFn: async (input: { id: string; title: string }) => renamePublicResume({ data: input }),
+    mutationFn: async (input: { id: string; title: string }) =>
+      publicResumeControllerRename({ path: { id: input.id }, body: { title: input.title } }),
     onSuccess() {
-      void qc.invalidateQueries({ queryKey: publicResumeKeys.all });
       toast.success("Title updated");
       setRenaming(null);
     },
@@ -92,6 +92,7 @@ export function PublicResumeList() {
         description: unwrapUnknownError(err).message,
       });
     },
+    meta: { invalidates: [publicResumeKeys.all] },
   });
 
   async function handleCopy(id: string) {
@@ -239,9 +240,7 @@ export function PublicResumeList() {
             icon={Globe}
             title={row.title}
             subtitle={row.headline || undefined}
-            updatedAt={
-              row.updatedAt instanceof Date ? row.updatedAt.getTime() : Number(row.updatedAt)
-            }
+            updatedAt={new Date(row.updatedAt).getTime()}
             identity={<span className="font-mono text-[11px]">{row.id}</span>}
             onClick={() => {
               window.open(`/r/${row.id}`, "_blank", "noopener,noreferrer");

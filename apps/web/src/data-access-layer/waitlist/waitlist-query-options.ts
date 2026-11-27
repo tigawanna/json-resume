@@ -5,11 +5,11 @@ import {
   waitlistControllerClaim,
   waitlistControllerJoin,
 } from "@/services/nest/client";
-import { clientEnv } from "@/lib/env/client-env";
+import { apiOrigin } from "@/lib/env/client-env";
 import type {
   AdminWaitlistControllerFindAllResponses,
   AdminWaitlistControllerStatsResponses,
-} from "@/services/nest/generated/models";
+} from "@repo/api-contracts/models";
 import { mutationOptions, queryOptions } from "@tanstack/react-query";
 
 export type WaitlistSource = "landing" | "waitlist-page" | "dashboard";
@@ -22,7 +22,7 @@ export type JoinWaitlistInput = {
   website?: string;
 };
 
-export const ADMIN_WAITLIST_EXPORT_URL = `${clientEnv.VITE_NEST_API_URL}/api/admin/waitlist/export`;
+export const ADMIN_WAITLIST_EXPORT_URL = `${apiOrigin}/api/admin/waitlist/export`;
 
 /** Public join. The API returns the same body for new and existing emails. */
 export const joinWaitlistMutationOptions = mutationOptions({
@@ -56,8 +56,7 @@ export type AdminWaitlistFilters = {
   hasAccount?: "true" | "false";
 };
 
-export type AdminWaitlistResponse =
-  AdminWaitlistControllerFindAllResponses["200"];
+export type AdminWaitlistResponse = AdminWaitlistControllerFindAllResponses["200"];
 export type AdminWaitlistEntry = AdminWaitlistResponse["items"][number];
 
 export function adminWaitlistQueryOptions(input: AdminWaitlistFilters) {

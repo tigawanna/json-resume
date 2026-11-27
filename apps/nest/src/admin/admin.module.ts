@@ -7,10 +7,14 @@ import { AdminCreditsController } from './credits/admin-credits.controller.js';
 import { AdminCreditsService } from './credits/admin-credits.service.js';
 import { AdminEventLogController } from './event-log/admin-event-log.controller.js';
 import { AdminEventLogService } from './event-log/admin-event-log.service.js';
+import { AdminEventsController } from './events/admin-events.controller.js';
+import { AdminEventsService } from './events/admin-events.service.js';
 import { EventLogBackupService } from './event-log/event-log-backup.service.js';
 import { EventLogRebuildService } from './event-log/event-log-rebuild.service.js';
 import { EventLogRebuildRows } from './event-log/event-log-rebuild-rows.service.js';
 import { EventLogSquashService } from './event-log/event-log-squash.service.js';
+import { AdminLibraryController } from './library/admin-library.controller.js';
+import { AdminLibraryService } from './library/admin-library.service.js';
 import { AdminSessionController } from './session/admin-session.controller.js';
 import { AdminStatsController } from './stats/admin-stats.controller.js';
 import { AdminStatsService } from './stats/admin-stats.service.js';
@@ -38,6 +42,8 @@ import { AdminWaitlistService } from './waitlist/admin-waitlist.service.js';
     AdminUsersController,
     AdminTablesController,
     AdminEventLogController,
+    AdminEventsController,
+    AdminLibraryController,
   ],
   providers: [
     AdminWaitlistService,
@@ -58,6 +64,8 @@ import { AdminWaitlistService } from './waitlist/admin-waitlist.service.js';
     EventLogRebuildService,
     EventLogRebuildRows,
     EventLogSquashService,
+    AdminEventsService,
+    AdminLibraryService,
   ],
 })
 export class AdminModule {}

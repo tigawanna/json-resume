@@ -4,21 +4,21 @@ import {
   adminTablesControllerUpdateRow,
 } from "@/services/nest/client";
 
-type RowRef = { table: string; rowid: number };
+type RowRef = { table: string; rowKey: string };
 
 export function updateAdminRow({
   table,
-  rowid,
+  rowKey,
   values,
 }: RowRef & { values: Record<string, string | null> }) {
   return adminTablesControllerUpdateRow({
-    path: { table, rowid },
+    path: { table, rowKey },
     body: { values },
   });
 }
 
-export function deleteAdminRow({ table, rowid }: RowRef) {
-  return adminTablesControllerDeleteRow({ path: { table, rowid } });
+export function deleteAdminRow({ table, rowKey }: RowRef) {
+  return adminTablesControllerDeleteRow({ path: { table, rowKey } });
 }
 
 export function truncateAdminTable({

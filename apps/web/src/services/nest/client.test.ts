@@ -9,7 +9,7 @@ describe("Nest Kubb client", () => {
   });
 
   it("uses the Nest origin and sends session cookies", async () => {
-    vi.stubEnv("VITE_NEST_API_URL", "http://localhost:5040");
+    vi.stubEnv("VITE_API_ORIGIN", "http://localhost:5040");
     const fetchMock = mockFetch();
     const { adminStatsControllerRead } = await import("./client");
 
@@ -22,7 +22,7 @@ describe("Nest Kubb client", () => {
   });
 
   it("forwards the incoming cookie when rendering on the server", async () => {
-    vi.stubEnv("VITE_NEST_API_URL", "http://localhost:5040");
+    vi.stubEnv("VITE_API_ORIGIN", "http://localhost:5040");
     vi.doMock("@tanstack/react-start/server", () => ({
       getRequestHeaders: () => new Headers({ cookie: "session=test" }),
     }));

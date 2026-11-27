@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test";
-import { clientEnv } from "../env/client-env";
+import { apiOrigin } from "../env/client-env";
 import { authClient } from "./client";
 
 describe("Better Auth client", () => {
@@ -18,7 +18,7 @@ describe("Better Auth client", () => {
   });
 
   it("reaches the Nest auth origin from env", async () => {
-    const response = await fetch(`${clientEnv.VITE_NEST_API_URL}/api/auth/ok`);
+    const response = await fetch(`${apiOrigin}/api/auth/ok`);
 
     expect(response.ok).toBe(true);
   });

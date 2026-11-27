@@ -1,6 +1,6 @@
 import { authClient } from "@/lib/better-auth/client";
 import { viewerControllerViewer } from "@/services/nest/client";
-import type { ViewerResponseDto } from "@/services/nest/generated/models";
+import type { ViewerResponseDto } from "@repo/api-contracts/models";
 import { safeStringToUrl } from "@/utils/url";
 import { queryOptions, useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { redirect } from "@tanstack/react-router";

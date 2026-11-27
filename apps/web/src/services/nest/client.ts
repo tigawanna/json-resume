@@ -1,11 +1,11 @@
-import { clientEnv } from "@/lib/env/client-env";
+import { apiOrigin } from "@/lib/env/client-env";
 import { createIsomorphicFn } from "@tanstack/react-start";
-import { client } from "./generated/.kubb/client";
+import { client } from "@repo/api-contracts/client";
 
 client.setConfig({
-  // OpenAPI paths omit Nest's global prefix, while VITE_NEST_API_URL stays an
-  // origin because the Better Auth client appends /api/auth itself.
-  baseURL: `${clientEnv.VITE_NEST_API_URL}/api`,
+  // OpenAPI paths omit Nest's global prefix. Better Auth uses the same origin
+  // and appends /api/auth itself.
+  baseURL: `${apiOrigin}/api`,
   credentials: "include",
 });
 
@@ -17,11 +17,13 @@ client.interceptors.request.use(async (request) => {
   return request;
 });
 
-export * from "./generated/clients/admin";
-export * from "./generated/clients/auth";
-export * from "./generated/clients/credits";
-export * from "./generated/clients/sync";
-export * from "./generated/clients/waitlist";
+export * from "@repo/api-contracts/clients/admin";
+export * from "@repo/api-contracts/clients/auth";
+export * from "@repo/api-contracts/clients/credits";
+export * from "@repo/api-contracts/clients/github";
+export * from "@repo/api-contracts/clients/public-resumes";
+export * from "@repo/api-contracts/clients/sync";
+export * from "@repo/api-contracts/clients/waitlist";
 
 const serverRequestCookie = createIsomorphicFn()
   .server(async () => {

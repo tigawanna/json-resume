@@ -1,1 +1,1 @@
-export * from "@api/features/resume/resume-layout";
+export * from "@repo/isomorphic/resume/layout";

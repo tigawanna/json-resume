@@ -9,14 +9,18 @@
   "scripts": {
     "dev": "vp build --watch",
     "build": "vp build",
-    "check-types": "tsc --noEmit"
+    "check-types": "tsc --noEmit",
+    "test": "vitest run"
   },
   "dependencies": {
-    "better-auth": "^1.7.18"
+    "better-auth": "^1.7.18",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
+    "@types/node": "^25.2.0",
     "typescript": "catalog:",
-    "vite": "catalog:"
+    "vite": "catalog:",
+    "vitest": "5.1.0"
   }
 }

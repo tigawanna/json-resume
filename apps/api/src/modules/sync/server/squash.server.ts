@@ -7,8 +7,12 @@ import {
   squashUserLogsIncrementally,
   type IncrementalSquashResult,
 } from "./squash-incremental.server";
-import { DEFAULT_RETENTION_MS, planSquash, type SquashReason } from "@repo/isomorphic/sync/squash-plan";
-import { SYNC_RESET_COLLECTION } from "../shared/sync-reset";
+import {
+  DEFAULT_RETENTION_MS,
+  planSquash,
+  type SquashReason,
+} from "@repo/isomorphic/sync/squash-plan";
+import { SYNC_RESET_COLLECTION } from "@repo/isomorphic/sync/reset";
 
 /**
  * Push dedupes on `event_id`, so a retry of an event that was squashed away

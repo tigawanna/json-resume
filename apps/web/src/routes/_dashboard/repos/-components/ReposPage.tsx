@@ -15,15 +15,17 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { deleteWithReferences } from "@/data-access-layer/event-sourced/rows/library-resolve";
-import { searchGithubRepos, type GithubRepo } from "@/data-access-layer/github/repos.functions";
+import {
+  githubReposQueryOptions,
+  type GithubRepo,
+} from "@/data-access-layer/github/repos-query-options";
 import { RouterPendingComponent } from "@/lib/tanstack/router/RouterPendingComponent";
 import { useViewer } from "@/data-access-layer/auth/viewer";
 import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
-import { queryKeyPrefixes } from "@/data-access-layer/query-keys";
 import { authClient } from "@/lib/better-auth/client";
 import { unwrapUnknownError } from "@/utils/errors";
 import { eq, useLiveQuery } from "@tanstack/react-db";
-import { queryOptions, useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { getRouteApi } from "@tanstack/react-router";
 import { ArrowUpRight, Bookmark, BookmarkCheck, Code2, Github, Loader, Star } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -32,7 +34,6 @@ import { adoptSavedProjects } from "../../-utils/adopt-saved-projects";
 import { joinSearchable, libraryRowBase } from "../../-utils/row-helpers";
 import { REPO_PAGE_ROUTEID } from "./constants";
 import { ReposFilters } from "./ReposFilters";
-import type { RepoSearchFilters } from "./repos-search-query";
 
 function repoSaveLabel(isToggling: boolean, isSaved: boolean) {
   if (isToggling) return <Loader className="size-4 animate-spin" />;
@@ -53,31 +54,6 @@ function repoSaveLabel(isToggling: boolean, isSaved: boolean) {
 }
 
 const routeApi = getRouteApi(REPO_PAGE_ROUTEID);
-
-const GITHUB_REPOS_QUERY_CACHE_MS = 24 * 60 * 60 * 1000;
-
-function githubReposQueryOptions(filters: RepoSearchFilters) {
-  const minStars = filters.minStars ? Number(filters.minStars) : undefined;
-
-  return queryOptions({
-    queryKey: [queryKeyPrefixes.githubRepos, "search", filters] as const,
-    staleTime: GITHUB_REPOS_QUERY_CACHE_MS,
-    gcTime: GITHUB_REPOS_QUERY_CACHE_MS,
-    queryFn: () =>
-      searchGithubRepos({
-        data: {
-          query: filters.query,
-          language: filters.language,
-          topic: filters.topic,
-          minStars: Number.isFinite(minStars) ? minStars : undefined,
-          fork: filters.fork,
-          archived: filters.archived,
-          sort: filters.sort,
-          order: filters.order,
-        },
-      }),
-  });
-}
 
 export function ReposPage() {
   const db = useEventSourcedDb();

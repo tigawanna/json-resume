@@ -17,8 +17,8 @@
     "urgentry": "node --experimental-strip-types scripts/urgentry.ts",
     "gen:favicons": "tsx scripts/favicons.ts",
     "gen:og": "tsx scripts/og.tsx",
-    "gen:api": "kubb generate",
-    "gen:api:check": "kubb generate --check"
+    "gen:api": "pnpm --dir ../../packages/api-contracts gen:api",
+    "gen:api:check": "pnpm --dir ../../packages/api-contracts gen:api:check"
   },
   "dependencies": {
     "@base-ui/react": "^1.1.0",
@@ -38,6 +38,7 @@
     "@orpc/zod": "^1.16.2",
     "@pierre/diffs": "^1.1.15",
     "@react-pdf/renderer": "^4.4.1",
+    "@repo/api-contracts": "workspace:*",
     "@repo/db": "workspace:*",
     "@repo/isomorphic": "workspace:*",
     "@sentry/tanstackstart-react": "^11.11.0",
@@ -91,7 +92,6 @@
     "motion": "^12.38.0",
     "next-themes": "^0.4.6",
     "nitro": "3.0.260903-beta",
-    "octokit": "^5.0.5",
     "prompt-area": "^0.7.1",
     "radix-ui": "^1.4.3",
     "react": "^19.2.5",
@@ -113,8 +113,6 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
-    "@kubb/plugin-fetch": "6.6.0",
-    "@kubb/plugin-ts": "5.7.3",
     "@playwright/test": "^1.60.0",
     "@tanstack/devtools-vite": "^0.5.0",
     "@tanstack/node-db-sqlite-persistence": "^0.2.29",
@@ -136,7 +134,6 @@
     "drizzle-query-logger": "^1.1.2",
     "drizzle-seed": "^0.3.1",
     "jsdom": "^27.4.0",
-    "kubb": "5.27.0",
     "oxfmt": "0.80.0",
     "png-to-ico": "^3.0.2",
     "react-devtools-cdt-mcp": "^0.1.0",

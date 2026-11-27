@@ -1,6 +1,6 @@
 /* Cookie-authenticated HTTP sync transport against /api/sync/events, plus compaction upload. */
 import { SyncPushError } from "event-sourced-collection";
-import { clientEnv } from "@/lib/env/client-env";
+import { apiOrigin } from "@/lib/env/client-env";
 import type {
   PullResponse,
   PushConfirmation,
@@ -20,8 +20,8 @@ import {
 } from "./sync-progress";
 import { syncAuthHeaders } from "./sync-jwt";
 
-const SYNC_URL = `${clientEnv.VITE_NEST_API_URL}/api/sync/events`;
-const COMPACT_URL = `${clientEnv.VITE_NEST_API_URL}/api/sync/compact`;
+const SYNC_URL = `${apiOrigin}/api/sync/events`;
+const COMPACT_URL = `${apiOrigin}/api/sync/compact`;
 
 function parseCompactionOutcome(value: unknown): CompactionOutcome {
   if (value != null && typeof value === "object" && "status" in value) {

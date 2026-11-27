@@ -11,9 +11,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { useViewer } from "@/data-access-layer/auth/viewer";
 import {
-  publishPublicResume,
-  unpublishPublicResume,
-} from "@/data-access-layer/public-resume/public-resume.functions";
+  publicResumeControllerPublish,
+  publicResumeControllerUnpublishBySource,
+} from "@/services/nest/client";
 import {
   myPublicResumeQueryOptions,
   publicResumeKeys,
@@ -66,16 +66,12 @@ export function PublishResumeButton({
 
   const publishMutation = useMutation({
     mutationFn: async () =>
-      publishPublicResume({
-        data: { sourceResumeId, title, document },
-      }),
+      publicResumeControllerPublish({ body: { sourceResumeId, title, document } }),
     onSuccess(data) {
       const wasPublished = Boolean(
         qc.getQueryData(myPublicResumeQueryOptions(sourceResumeId).queryKey),
       );
       qc.setQueryData(myPublicResumeQueryOptions(sourceResumeId).queryKey, data);
-      void qc.invalidateQueries({ queryKey: publicResumeKeys.byId(data.id) });
-      void qc.invalidateQueries({ queryKey: [...publicResumeKeys.all, "list"] });
       toast.success(wasPublished ? "Public link updated" : "Résumé is public");
       setDialogOpen(true);
     },
@@ -84,13 +80,13 @@ export function PublishResumeButton({
         description: unwrapUnknownError(err).message,
       });
     },
+    meta: { invalidates: [publicResumeKeys.all] },
   });
 
   const unpublishMutation = useMutation({
-    mutationFn: async () => unpublishPublicResume({ data: { sourceResumeId } }),
+    mutationFn: async () => publicResumeControllerUnpublishBySource({ body: { sourceResumeId } }),
     onSuccess() {
       qc.setQueryData(myPublicResumeQueryOptions(sourceResumeId).queryKey, null);
-      void qc.invalidateQueries({ queryKey: [...publicResumeKeys.all, "list"] });
       toast.success("Public link removed");
       setDialogOpen(false);
     },
@@ -99,6 +95,7 @@ export function PublishResumeButton({
         description: unwrapUnknownError(err).message,
       });
     },
+    meta: { invalidates: [publicResumeKeys.all] },
   });
 
   async function handleCopy(url: string) {
