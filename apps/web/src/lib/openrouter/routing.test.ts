@@ -4,11 +4,10 @@ import {
   AGENT_MAX_OUTPUT_TOKENS,
   aiRoutingSchema,
   availableOfficialSlugs,
-  buildProviderPreferences,
   DEFAULT_AI_ROUTING,
   officialProviderSlugs,
   resolveRouting,
-} from "./routing";
+} from "@repo/isomorphic/agentic/routing";
 
 function endpoint(
   tag: string,
@@ -90,28 +89,5 @@ describe("resolveRouting", () => {
     );
     expect(aiRoutingSchema.safeParse(resolved).success).toBe(true);
     expect(resolved.maxOutputTokens).toBe(8_192);
-  });
-});
-
-describe("buildProviderPreferences", () => {
-  it("always requires parameters and only pins providers outside auto mode", () => {
-    expect(
-      buildProviderPreferences({
-        mode: "auto",
-        providers: [],
-        allowFallbacks: true,
-        sort: "throughput",
-      }),
-    ).toEqual({
-      requireParameters: true,
-      sort: "throughput",
-    });
-    expect(
-      buildProviderPreferences({
-        mode: "official",
-        providers: ["deepseek"],
-        allowFallbacks: false,
-      }),
-    ).toEqual({ requireParameters: true, order: ["deepseek"], allowFallbacks: false });
   });
 });

@@ -1,4 +1,4 @@
-import type { AiRouting } from "@/lib/openrouter/routing";
+import type { AiRouting } from "@repo/isomorphic/agentic/routing";
 
 /** Short model and provider-routing labels for a composer's model switcher. */
 export function aiModelLabels(

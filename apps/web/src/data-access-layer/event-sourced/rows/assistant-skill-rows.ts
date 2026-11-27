@@ -1,6 +1,7 @@
 /* CRUD and shipped defaults for assistant skills, the instructions the résumé assistants follow. */
 import type { AppDb } from "../collection";
 import type { AssistantSkill, AssistantSkillScope } from "../schemas";
+import { ASSISTANT_SKILL_INSTRUCTIONS_MAX } from "@repo/isomorphic/agentic/limits";
 import { joinSearchable, libraryRowBase, nowMs } from "@/routes/_dashboard/-utils/row-helpers";
 import {
   composeSkillMarkdown,
@@ -623,7 +624,7 @@ export function resetBuiltinAssistantSkill(db: AppDb, skillId: string) {
   });
 }
 
-export const ASSISTANT_SKILL_INSTRUCTIONS_MAX = 40_000;
+export { ASSISTANT_SKILL_INSTRUCTIONS_MAX } from "@repo/isomorphic/agentic/limits";
 
 /** Text appended to a chat's system prompt. Each skill is its markdown file, front matter included. */
 export function formatAssistantSkills(

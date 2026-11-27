@@ -49,8 +49,6 @@ import { Route as DashboardSummariesIndexRouteImport } from './routes/_dashboard
 import { Route as DashboardTalksIndexRouteImport } from './routes/_dashboard/talks/index'
 import { Route as DashboardVolunteersIndexRouteImport } from './routes/_dashboard/volunteers/index'
 import { Route as ApiAiChatLabRouteImport } from './routes/api/ai/chat-lab'
-import { Route as ApiAiDashboardAssistantRouteImport } from './routes/api/ai/dashboard-assistant'
-import { Route as ApiAiEventSourcedResumeTailorRouteImport } from './routes/api/ai/event-sourced-resume-tailor'
 import { Route as RPublicIdIndexRouteImport } from './routes/r/$publicId/index'
 import { Route as DashboardAdminDataIndexRouteImport } from './routes/_dashboard/admin/data/index'
 import { Route as DashboardAdminTablesIndexRouteImport } from './routes/_dashboard/admin/tables/index'
@@ -277,17 +275,6 @@ const ApiAiChatLabRoute = ApiAiChatLabRouteImport.update({
   path: '/api/ai/chat-lab',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiAiDashboardAssistantRoute = ApiAiDashboardAssistantRouteImport.update({
-  id: '/api/ai/dashboard-assistant',
-  path: '/api/ai/dashboard-assistant',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiAiEventSourcedResumeTailorRoute =
-  ApiAiEventSourcedResumeTailorRouteImport.update({
-    id: '/api/ai/event-sourced-resume-tailor',
-    path: '/api/ai/event-sourced-resume-tailor',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const RPublicIdIndexRoute = RPublicIdIndexRouteImport.update({
   id: '/r/$publicId/',
   path: '/r/$publicId/',
@@ -395,8 +382,6 @@ export interface FileRoutesByFullPath {
   '/waitlist/': typeof WaitlistIndexRoute
   '/admin/route': typeof DashboardAdminRouteRoute
   '/api/ai/chat-lab': typeof ApiAiChatLabRoute
-  '/api/ai/dashboard-assistant': typeof ApiAiDashboardAssistantRoute
-  '/api/ai/event-sourced-resume-tailor': typeof ApiAiEventSourcedResumeTailorRoute
   '/admin/': typeof DashboardAdminIndexRoute
   '/application-answers/': typeof DashboardApplicationAnswersIndexRoute
   '/assistant-skills/': typeof DashboardAssistantSkillsIndexRoute
@@ -453,8 +438,6 @@ export interface FileRoutesByTo {
   '/waitlist': typeof WaitlistIndexRoute
   '/admin/route': typeof DashboardAdminRouteRoute
   '/api/ai/chat-lab': typeof ApiAiChatLabRoute
-  '/api/ai/dashboard-assistant': typeof ApiAiDashboardAssistantRoute
-  '/api/ai/event-sourced-resume-tailor': typeof ApiAiEventSourcedResumeTailorRoute
   '/admin': typeof DashboardAdminIndexRoute
   '/application-answers': typeof DashboardApplicationAnswersIndexRoute
   '/assistant-skills': typeof DashboardAssistantSkillsIndexRoute
@@ -514,8 +497,6 @@ export interface FileRoutesById {
   '/waitlist/': typeof WaitlistIndexRoute
   '/_dashboard/admin/route': typeof DashboardAdminRouteRoute
   '/api/ai/chat-lab': typeof ApiAiChatLabRoute
-  '/api/ai/dashboard-assistant': typeof ApiAiDashboardAssistantRoute
-  '/api/ai/event-sourced-resume-tailor': typeof ApiAiEventSourcedResumeTailorRoute
   '/_dashboard/admin/': typeof DashboardAdminIndexRoute
   '/_dashboard/application-answers/': typeof DashboardApplicationAnswersIndexRoute
   '/_dashboard/assistant-skills/': typeof DashboardAssistantSkillsIndexRoute
@@ -575,8 +556,6 @@ export interface FileRouteTypes {
     | '/waitlist/'
     | '/admin/route'
     | '/api/ai/chat-lab'
-    | '/api/ai/dashboard-assistant'
-    | '/api/ai/event-sourced-resume-tailor'
     | '/admin/'
     | '/application-answers/'
     | '/assistant-skills/'
@@ -633,8 +612,6 @@ export interface FileRouteTypes {
     | '/waitlist'
     | '/admin/route'
     | '/api/ai/chat-lab'
-    | '/api/ai/dashboard-assistant'
-    | '/api/ai/event-sourced-resume-tailor'
     | '/admin'
     | '/application-answers'
     | '/assistant-skills'
@@ -693,8 +670,6 @@ export interface FileRouteTypes {
     | '/waitlist/'
     | '/_dashboard/admin/route'
     | '/api/ai/chat-lab'
-    | '/api/ai/dashboard-assistant'
-    | '/api/ai/event-sourced-resume-tailor'
     | '/_dashboard/admin/'
     | '/_dashboard/application-answers/'
     | '/_dashboard/assistant-skills/'
@@ -749,8 +724,6 @@ export interface RootRouteChildren {
   TestIndexRoute: typeof TestIndexRoute
   WaitlistIndexRoute: typeof WaitlistIndexRoute
   ApiAiChatLabRoute: typeof ApiAiChatLabRoute
-  ApiAiDashboardAssistantRoute: typeof ApiAiDashboardAssistantRoute
-  ApiAiEventSourcedResumeTailorRoute: typeof ApiAiEventSourcedResumeTailorRoute
   RPublicIdIndexRoute: typeof RPublicIdIndexRoute
 }
 
@@ -1036,20 +1009,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAiChatLabRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/ai/dashboard-assistant': {
-      id: '/api/ai/dashboard-assistant'
-      path: '/api/ai/dashboard-assistant'
-      fullPath: '/api/ai/dashboard-assistant'
-      preLoaderRoute: typeof ApiAiDashboardAssistantRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/ai/event-sourced-resume-tailor': {
-      id: '/api/ai/event-sourced-resume-tailor'
-      path: '/api/ai/event-sourced-resume-tailor'
-      fullPath: '/api/ai/event-sourced-resume-tailor'
-      preLoaderRoute: typeof ApiAiEventSourcedResumeTailorRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/r/$publicId/': {
       id: '/r/$publicId/'
       path: '/r/$publicId'
@@ -1292,8 +1251,6 @@ const rootRouteChildren: RootRouteChildren = {
   TestIndexRoute: TestIndexRoute,
   WaitlistIndexRoute: WaitlistIndexRoute,
   ApiAiChatLabRoute: ApiAiChatLabRoute,
-  ApiAiDashboardAssistantRoute: ApiAiDashboardAssistantRoute,
-  ApiAiEventSourcedResumeTailorRoute: ApiAiEventSourcedResumeTailorRoute,
   RPublicIdIndexRoute: RPublicIdIndexRoute,
 }
 export const routeTree = rootRouteImport

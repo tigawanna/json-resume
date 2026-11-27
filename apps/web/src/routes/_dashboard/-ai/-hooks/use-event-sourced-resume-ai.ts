@@ -11,6 +11,8 @@ import {
   STALLED_INTERRUPT_MESSAGE,
   failedRunHasReply,
 } from "@/lib/openrouter/chat-error";
+import { aiEventSourcedResumeTailorPath } from "@repo/isomorphic/agentic/routes";
+import { apiOrigin } from "@/lib/env/client-env";
 import { aiModelLabels } from "@/lib/openrouter/model-labels";
 import { eventSourcedResumeAiClientTools } from "../-utils/client-tools";
 import {
@@ -116,7 +118,11 @@ export function useEventSourcedResumeAiChat(options?: {
 
   const chat = useChat({
     threadId: options?.connection ? `chat-lab:${resumeId}` : `event-sourced-resume-ai:${resumeId}`,
-    connection: fetchServerSentEvents(options?.connection ?? "/api/ai/event-sourced-resume-tailor"),
+    connection: options?.connection
+      ? fetchServerSentEvents(options.connection)
+      : fetchServerSentEvents(`${apiOrigin}${aiEventSourcedResumeTailorPath}`, {
+          credentials: "include",
+        }),
     persistence,
     tools: eventSourcedResumeAiClientTools,
     context,

@@ -34,6 +34,7 @@ const EnvSchema = z
     GITHUB_CLIENT_ID: z.string().min(1),
     GITHUB_CLIENT_SECRET: z.string().min(1),
     GITHUB_API_BASE_URL: z.url().default("https://api.github.com"),
+    HOSTED_AI_ALLOW_ANONYMOUS: z.enum(["true"]).optional(),
     ADMIN_BYPASS_SECRET: optionalSecret(),
     CREDITS_ENABLED: z.enum(["true"]).optional(),
     CREDITS_START_AT: z.iso.datetime().optional(),

@@ -1,4 +1,4 @@
-import type { AiRouting } from "@/lib/openrouter/routing";
+import type { AiRouting } from "@repo/isomorphic/agentic/routing";
 
 export type AiStorageType = "local" | "session";
 

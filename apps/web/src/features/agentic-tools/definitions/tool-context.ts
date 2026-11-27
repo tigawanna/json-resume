@@ -1,5 +1,8 @@
 import type { AppDb } from "@/data-access-layer/event-sourced/collection";
+import type { PageToolPack } from "@repo/isomorphic/agentic/definitions/page-tool-pack";
 import type { WorkbenchTab } from "@repo/isomorphic/agentic/tool-schemas/resume/lifecycle";
+
+export type { PageToolPack } from "@repo/isomorphic/agentic/definitions/page-tool-pack";
 
 /**
  * One write tool call: the outbox transactions whose first event got a
@@ -49,15 +52,6 @@ export type ResumeHandoff = {
   reason: string;
   suggestedPrompt: string;
 };
-
-/** Which page pack is live. Tools outside it are not sent to the model. */
-export type PageToolPack =
-  | "library"
-  | "experience"
-  | "job"
-  | "resume-list"
-  | "cover-letter"
-  | "none";
 
 /** The dashboard assistant has no active résumé; it opens one through `handOff`. */
 export type DashboardToolContext = LocalToolContext & {

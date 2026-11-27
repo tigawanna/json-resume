@@ -1,6 +1,6 @@
 import { Pool } from "pg";
 import type { NestNodeApplication } from "@nestjs/platform-node";
-import { Test } from "@nestjs/testing";
+import { Test, type TestingModuleBuilder } from "@nestjs/testing";
 import { schema } from "@repo/db/postgres";
 import { postgresMigrationsFolder } from "@repo/db/postgres/migrations";
 import { drizzle } from "drizzle-orm/node-postgres";
@@ -58,6 +58,7 @@ export async function createTestApp({
   throttle = false,
   mockAuth = true,
   database: suppliedDatabase,
+  override,
 }: {
   policy?: CreditsPolicy;
   adminBypassSecret?: string;
@@ -66,6 +67,8 @@ export async function createTestApp({
   mockAuth?: boolean;
   /** Supply a pre-migrated Postgres test database. */
   database?: TestDatabase;
+  /** Replace providers before compiling, for isolated orchestration tests. */
+  override?: (builder: TestingModuleBuilder) => TestingModuleBuilder;
 } = {}) {
   const database = suppliedDatabase ?? (await createTestDatabase());
   const db = database.db;
@@ -80,8 +83,9 @@ export async function createTestApp({
   if (!throttle) {
     builder = builder.overrideProvider(ThrottlerGuard).useValue({ canActivate: () => true });
   }
+  const configuredBuilder = override ? override(builder) : builder;
   const moduleRef = await (
-    policy ? builder.overrideProvider(CREDITS_POLICY).useValue(policy) : builder
+    policy ? configuredBuilder.overrideProvider(CREDITS_POLICY).useValue(policy) : configuredBuilder
   ).compile();
   const app = moduleRef.createNestApplication<NestNodeApplication>(
     createHttpAdapter(),

@@ -14,6 +14,8 @@ import {
   STALLED_INTERRUPT_MESSAGE,
   failedRunHasReply,
 } from "@/lib/openrouter/chat-error";
+import { aiDashboardAssistantPath } from "@repo/isomorphic/agentic/routes";
+import { apiOrigin } from "@/lib/env/client-env";
 import { isApiKeyErrorMessage } from "@/lib/openrouter/is-api-key-error";
 import { aiModelLabels } from "@/lib/openrouter/model-labels";
 import { newId } from "@/routes/_dashboard/-utils/row-helpers";
@@ -164,7 +166,9 @@ export function useDashboardAssistantChat(options: { onHandedOff: () => void }) 
 
   const chat = useChat({
     threadId: assistantThreadId(activeId || "pending"),
-    connection: fetchServerSentEvents("/api/ai/dashboard-assistant"),
+    connection: fetchServerSentEvents(`${apiOrigin}${aiDashboardAssistantPath}`, {
+      credentials: "include",
+    }),
     persistence,
     tools: pageAssistantClientTools,
     context,

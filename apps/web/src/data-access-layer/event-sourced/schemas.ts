@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { embeddableSchema, timestampsSchema } from "@repo/isomorphic/resume/rows";
-import { aiRoutingSchema } from "@/lib/openrouter/routing";
+import { aiRoutingSchema } from "@repo/isomorphic/agentic/routing";
 
 /**
  * Event-sourced row contracts shared with the API live in

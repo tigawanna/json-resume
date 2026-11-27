@@ -4,7 +4,7 @@ import {
   updateAppSettings,
 } from "@/data-access-layer/event-sourced/app-settings";
 import { useEventSourcedDb } from "@/data-access-layer/event-sourced/provider";
-import { DEFAULT_AI_ROUTING, DEFAULT_MODEL } from "@/lib/openrouter/routing";
+import { DEFAULT_AI_ROUTING, DEFAULT_MODEL } from "@repo/isomorphic/agentic/routing";
 import type { AiSettings } from "@/types/ai-settings";
 import { eq, useLiveQuery } from "@tanstack/react-db";
 import { useEffect, useRef } from "react";
