@@ -13,7 +13,6 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardLayoutRouteImport } from './routes/_dashboard/layout'
 import { Route as AuthLayoutRouteImport } from './routes/auth/layout'
 import { Route as DashboardDashboardRouteImport } from './routes/_dashboard/dashboard'
-import { Route as ApiMcpRouteImport } from './routes/api/mcp'
 import { Route as AuthIndexRouteImport } from './routes/auth/index'
 import { Route as AuthGithubRouteImport } from './routes/auth/github'
 import { Route as AuthSignupRouteImport } from './routes/auth/signup'
@@ -92,11 +91,6 @@ const DashboardDashboardRoute = DashboardDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
   getParentRoute: () => DashboardLayoutRoute,
-} as any)
-const ApiMcpRoute = ApiMcpRouteImport.update({
-  id: '/api/mcp',
-  path: '/api/mcp',
-  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthIndexRoute = AuthIndexRouteImport.update({
   id: '/',
@@ -422,7 +416,6 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthLayoutRouteWithChildren
   '/dashboard': typeof DashboardDashboardRoute
-  '/api/mcp': typeof ApiMcpRoute
   '/auth/github': typeof AuthGithubRoute
   '/auth/signup': typeof AuthSignupRoute
   '/auth/': typeof AuthIndexRoute
@@ -486,7 +479,6 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardDashboardRoute
-  '/api/mcp': typeof ApiMcpRoute
   '/auth/github': typeof AuthGithubRoute
   '/auth/signup': typeof AuthSignupRoute
   '/auth': typeof AuthIndexRoute
@@ -553,7 +545,6 @@ export interface FileRoutesById {
   '/_dashboard': typeof DashboardLayoutRouteWithChildren
   '/auth': typeof AuthLayoutRouteWithChildren
   '/_dashboard/dashboard': typeof DashboardDashboardRoute
-  '/api/mcp': typeof ApiMcpRoute
   '/auth/github': typeof AuthGithubRoute
   '/auth/signup': typeof AuthSignupRoute
   '/auth/': typeof AuthIndexRoute
@@ -620,7 +611,6 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/dashboard'
-    | '/api/mcp'
     | '/auth/github'
     | '/auth/signup'
     | '/auth/'
@@ -684,7 +674,6 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/dashboard'
-    | '/api/mcp'
     | '/auth/github'
     | '/auth/signup'
     | '/auth'
@@ -750,7 +739,6 @@ export interface FileRouteTypes {
     | '/_dashboard'
     | '/auth'
     | '/_dashboard/dashboard'
-    | '/api/mcp'
     | '/auth/github'
     | '/auth/signup'
     | '/auth/'
@@ -816,7 +804,6 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DashboardLayoutRoute: typeof DashboardLayoutRouteWithChildren
   AuthLayoutRoute: typeof AuthLayoutRouteWithChildren
-  ApiMcpRoute: typeof ApiMcpRoute
   PrivacyIndexRoute: typeof PrivacyIndexRoute
   TermsIndexRoute: typeof TermsIndexRoute
   TestIndexRoute: typeof TestIndexRoute
@@ -860,13 +847,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/dashboard'
       preLoaderRoute: typeof DashboardDashboardRouteImport
       parentRoute: typeof DashboardLayoutRoute
-    }
-    '/api/mcp': {
-      id: '/api/mcp'
-      path: '/api/mcp'
-      fullPath: '/api/mcp'
-      preLoaderRoute: typeof ApiMcpRouteImport
-      parentRoute: typeof rootRouteImport
     }
     '/auth/': {
       id: '/auth/'
@@ -1417,7 +1397,6 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DashboardLayoutRoute: DashboardLayoutRouteWithChildren,
   AuthLayoutRoute: AuthLayoutRouteWithChildren,
-  ApiMcpRoute: ApiMcpRoute,
   PrivacyIndexRoute: PrivacyIndexRoute,
   TermsIndexRoute: TermsIndexRoute,
   TestIndexRoute: TestIndexRoute,

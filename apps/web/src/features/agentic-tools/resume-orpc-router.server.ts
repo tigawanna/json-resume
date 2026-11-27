@@ -19,7 +19,7 @@ import { resumeReadProcedure } from "./resume-orpc-base.server";
 // ─── Read procedures ──────────────────────────────────────────────────────────
 // Require resumes:read permission. Safe to expose to read-only API keys.
 // Résumé edits happen on the client and sync as events; there are no server write tools.
-// Input/output schemas come from the shared tool definitions so oRPC, MCP and chat agree.
+// Input/output schemas come from the shared tool definitions so oRPC and chat agree.
 
 const listResumesProcedure = resumeReadProcedure
   .route({

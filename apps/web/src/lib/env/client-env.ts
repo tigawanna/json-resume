@@ -33,3 +33,6 @@ if (!success) {
 }
 
 export const clientEnv = data;
+
+/** Public origin of this web app. Nest owns API secrets; this is only the UI URL. */
+export const siteOrigin = data.VITE_API_URL ?? "http://localhost:3040";

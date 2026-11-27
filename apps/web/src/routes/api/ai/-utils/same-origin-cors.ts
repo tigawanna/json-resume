@@ -1,7 +1,7 @@
-import { serverEnv } from "@/lib/env/server-env";
+import { siteOrigin } from "@/lib/env/client-env";
 
 export const corsHeaders = {
-  "Access-Control-Allow-Origin": serverEnv.FRONTEND_URL,
+  "Access-Control-Allow-Origin": siteOrigin,
   "Access-Control-Allow-Credentials": "true",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type",
@@ -9,7 +9,7 @@ export const corsHeaders = {
 } as const;
 
 export function isAllowedOrigin(request: Request): boolean {
-  return request.headers.get("origin") === serverEnv.FRONTEND_URL;
+  return request.headers.get("origin") === siteOrigin;
 }
 
 export function withCors(response: Response): Response {

@@ -106,7 +106,7 @@ Reference implementation (when in doubt): `/home/dennis/Desktop/code/fullstack/t
 | --- | ------------------------------------------------------------------ | ------ | -------- | ------------------------------------ | --------------------------------------------------- |
 | 53  | `src/routes/api/agentic/rpc/$` (oRPC)                              | *      | session  | `/agentic/*` or keep oRPC mounted    | large; decide whether to keep oRPC or port to Hono. |
 | 54  | `src/routes/api/agentic/openapi(.json)`                            | GET    | none     | `/agentic/openapi.json`              |                                                     |
-| 55  | `src/routes/api/mcp`                                               | *      | session? | `/mcp`                               | MCP server endpoint.                                |
+| 55  | `src/routes/api/mcp`                                               | *      | —        | dropped                              | Resume MCP feature removed.                         |
 | 56  | `src/routes/api/ai/-utils/*` (hosted-ai-session, same-origin-cors) | helper | —        | move helpers into `apps/api/src/lib` |                                                     |
 
 ## Shared DB tables to move into `@repo/db`

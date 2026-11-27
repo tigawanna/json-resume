@@ -1,6 +1,6 @@
 import "@tanstack/react-start/server-only";
 
-import { auth } from "@/lib/auth";
+import { clientEnv } from "@/lib/env/client-env";
 
 export type ApiKeyPermissionCheck = Record<string, string[]>;
 
@@ -8,6 +8,11 @@ export type ApiKeyAuthResult = {
   userId: string;
   keyId: string;
   name: string | null;
+};
+
+type NestVerifyResponse = {
+  valid?: boolean;
+  key?: { id: string; name: string | null; referenceId?: string | null };
 };
 
 export function readApiKeyFromHeaders(headers: Headers): string | null {
@@ -27,6 +32,19 @@ function readApiKey(request: Request): string | null {
   return readApiKeyFromHeaders(request.headers);
 }
 
+async function verifyApiKeyOnNest(input: {
+  key: string;
+  permissions?: ApiKeyPermissionCheck;
+}): Promise<NestVerifyResponse | null> {
+  const response = await fetch(`${clientEnv.VITE_NEST_API_URL}/api/auth/api-key/verify`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+  if (!response.ok) return null;
+  return (await response.json()) as NestVerifyResponse;
+}
+
 export async function authenticateApiKeyHeaders(
   headers: Headers,
   permissions?: ApiKeyPermissionCheck,
@@ -34,18 +52,8 @@ export async function authenticateApiKeyHeaders(
   const key = readApiKeyFromHeaders(headers);
   if (!key) return null;
 
-  const result = await auth.api.verifyApiKey({
-    body: {
-      key,
-      permissions,
-    },
-  });
-
-  if (!result.valid || !result.key) {
-    return null;
-  }
-
-  if (!result.key.referenceId) return null;
+  const result = await verifyApiKeyOnNest({ key, permissions });
+  if (!result?.valid || !result.key?.referenceId) return null;
 
   return {
     userId: result.key.referenceId,

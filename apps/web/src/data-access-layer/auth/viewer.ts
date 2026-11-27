@@ -1,4 +1,3 @@
-import { getSessionSafely } from "@/lib/better-auth/auth-session";
 import { authClient } from "@/lib/better-auth/client";
 import { viewerControllerViewer } from "@/services/nest/client";
 import type { ViewerResponseDto } from "@/services/nest/generated/models";
@@ -19,21 +18,23 @@ export type TViewerLoginPayload = { email: string; password: string };
 
 const loggedOutViewer = { data: null, error: null } as const;
 
+async function loadViewer() {
+  try {
+    const session = await viewerControllerViewer<true>();
+    return {
+      data: { user: session.user, session: session.session },
+      error: null,
+    };
+  } catch (err: unknown) {
+    console.warn("[auth] viewer query failed; treating as logged out", err);
+    return loggedOutViewer;
+  }
+}
+
 export const viewerqueryOptions = queryOptions({
   queryKey: ["viewer"],
   retry: false,
-  queryFn: async () => {
-    try {
-      const session = await viewerControllerViewer<true>();
-      return {
-        data: { user: session.user, session: session.session },
-        error: null,
-      };
-    } catch (err: unknown) {
-      console.warn("[auth] viewer query failed; treating as logged out", err);
-      return loggedOutViewer;
-    }
-  },
+  queryFn: loadViewer,
 });
 
 export function useViewer() {
@@ -58,14 +59,14 @@ export function useViewer() {
 }
 
 export const viewerMiddleware = createMiddleware().server(async ({ next, request }) => {
-  const session = await getSessionSafely(request.headers);
-  if (!session) {
+  const viewer = await loadViewer();
+  if (!viewer.data?.user) {
     const returnTo = safeStringToUrl(request.url)?.pathname ?? "/";
     throw redirect({ to: "/auth", search: { returnTo } });
   }
   return await next({
     context: {
-      viewer: { user: session.user, session: session.session },
+      viewer: viewer.data,
     },
   });
 });

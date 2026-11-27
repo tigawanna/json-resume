@@ -4,20 +4,21 @@ import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 vi.mock("@tanstack/react-start/server-only", () => ({}));
 
-const mockVerifyApiKey = vi.fn();
-vi.mock("@/lib/auth", () => ({
-  auth: {
-    api: {
-      verifyApiKey: (...args: unknown[]) => mockVerifyApiKey(...args),
-    },
-  },
-}));
+const mockFetch = vi.fn();
+vi.stubGlobal("fetch", mockFetch);
 
 import {
   readApiKeyFromHeaders,
   authenticateApiKeyHeaders,
   authenticateApiKeyRequest,
 } from "./api-key.server";
+
+function jsonResponse(body: unknown, ok = true) {
+  return {
+    ok,
+    json: async () => body,
+  };
+}
 
 describe("readApiKeyFromHeaders", () => {
   it("extracts key from x-api-key header", () => {
@@ -55,35 +56,39 @@ describe("readApiKeyFromHeaders", () => {
 
 describe("authenticateApiKeyHeaders", () => {
   beforeEach(() => {
-    mockVerifyApiKey.mockReset();
+    mockFetch.mockReset();
   });
 
   it("returns null when headers contain no key", async () => {
     const result = await authenticateApiKeyHeaders(new Headers());
     expect(result).toBeNull();
-    expect(mockVerifyApiKey).not.toHaveBeenCalled();
+    expect(mockFetch).not.toHaveBeenCalled();
   });
 
-  it("returns null when verifyApiKey reports the key as invalid", async () => {
-    mockVerifyApiKey.mockResolvedValue({ valid: false, key: null });
+  it("returns null when Nest reports the key as invalid", async () => {
+    mockFetch.mockResolvedValue(jsonResponse({ valid: false, key: null }));
     const headers = new Headers({ "x-api-key": "bad-key" });
     expect(await authenticateApiKeyHeaders(headers)).toBeNull();
   });
 
   it("returns null when valid key has no referenceId", async () => {
-    mockVerifyApiKey.mockResolvedValue({
-      valid: true,
-      key: { id: "key-1", name: "test", referenceId: null },
-    });
+    mockFetch.mockResolvedValue(
+      jsonResponse({
+        valid: true,
+        key: { id: "key-1", name: "test", referenceId: null },
+      }),
+    );
     const headers = new Headers({ "x-api-key": "orphan-key" });
     expect(await authenticateApiKeyHeaders(headers)).toBeNull();
   });
 
   it("returns auth result for a valid key with referenceId", async () => {
-    mockVerifyApiKey.mockResolvedValue({
-      valid: true,
-      key: { id: "key-1", name: "My Key", referenceId: "user-123" },
-    });
+    mockFetch.mockResolvedValue(
+      jsonResponse({
+        valid: true,
+        key: { id: "key-1", name: "My Key", referenceId: "user-123" },
+      }),
+    );
     const headers = new Headers({ "x-api-key": "good-key" });
     expect(await authenticateApiKeyHeaders(headers)).toEqual({
       userId: "user-123",
@@ -92,32 +97,38 @@ describe("authenticateApiKeyHeaders", () => {
     });
   });
 
-  it("forwards the requested permissions to verifyApiKey", async () => {
-    mockVerifyApiKey.mockResolvedValue({ valid: false, key: null });
+  it("forwards the requested permissions to Nest", async () => {
+    mockFetch.mockResolvedValue(jsonResponse({ valid: false, key: null }));
     const headers = new Headers({ "x-api-key": "any-key" });
     await authenticateApiKeyHeaders(headers, { resumes: ["read"] });
-    expect(mockVerifyApiKey).toHaveBeenCalledWith({
-      body: { key: "any-key", permissions: { resumes: ["read"] } },
-    });
+    expect(mockFetch).toHaveBeenCalledWith(
+      expect.stringContaining("/api/auth/api-key/verify"),
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({ key: "any-key", permissions: { resumes: ["read"] } }),
+      }),
+    );
   });
 });
 
 describe("authenticateApiKeyRequest", () => {
   beforeEach(() => {
-    mockVerifyApiKey.mockReset();
+    mockFetch.mockReset();
   });
 
   it("returns null when the request carries no API key", async () => {
     const request = new Request("https://example.com", { method: "POST" });
     expect(await authenticateApiKeyRequest(request)).toBeNull();
-    expect(mockVerifyApiKey).not.toHaveBeenCalled();
+    expect(mockFetch).not.toHaveBeenCalled();
   });
 
-  it("delegates to verifyApiKey when an API key is present", async () => {
-    mockVerifyApiKey.mockResolvedValue({
-      valid: true,
-      key: { id: "key-1", name: "Key", referenceId: "user-1" },
-    });
+  it("delegates to Nest when an API key is present", async () => {
+    mockFetch.mockResolvedValue(
+      jsonResponse({
+        valid: true,
+        key: { id: "key-1", name: "Key", referenceId: "user-1" },
+      }),
+    );
     const request = new Request("https://example.com", {
       method: "POST",
       headers: { "x-api-key": "valid-key" },

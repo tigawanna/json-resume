@@ -41,7 +41,6 @@ Playwright starts the app with `DATABASE_URL`, `FRONTEND_URL`, and `VITE_API_URL
 - `replaceResumeContent` cannot delete child rows unless the resume belongs to the current user.
 - Admin or organization roles do not silently widen personal resume access.
 - Browser-held OpenRouter keys are never persisted server-side or exposed in React Query keys.
-- MCP endpoint requires write-scoped API keys; read-only keys cannot reach mutation tools.
 
 ## Test Naming
 

@@ -1,6 +1,6 @@
 import "@tanstack/react-start/server-only";
 
-import { serverEnv } from "@/lib/env/server-env";
+import { siteOrigin } from "@/lib/env/client-env";
 import { OpenAPIGenerator } from "@orpc/openapi";
 import { OpenAPIHandler } from "@orpc/openapi/fetch";
 import { createRouterClient } from "@orpc/server";
@@ -69,14 +69,14 @@ export async function getAgenticOpenApiSpec(): Promise<unknown> {
     info: { title: "Agentic JSON Resume API", version: "0.1.0" },
     // Server URL must include the base path so Scalar constructs correct request URLs.
     // Without it, generated URLs would be missing the /api/agentic prefix.
-    servers: [{ url: `${serverEnv.FRONTEND_URL}${agenticOpenApiBasePath}` }],
+    servers: [{ url: `${siteOrigin}${agenticOpenApiBasePath}` }],
   });
 }
 
 // ─── Server client ────────────────────────────────────────────────────────────
 // Bypasses HTTP entirely — calls procedure handlers in-process. The userId is injected
 // directly into context, so the API key auth middleware short-circuits without a
-// network round-trip to Better Auth. Used by the MCP server and the AI agent.
+// network round-trip to Better Auth. Used by the AI agent.
 export function createResumeAgenticServerClient(userId: string) {
   return createRouterClient(resumeAgenticRouter, {
     context: { userId } satisfies AgenticInitialContext,

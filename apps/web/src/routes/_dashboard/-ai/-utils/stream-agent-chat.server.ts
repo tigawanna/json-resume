@@ -6,7 +6,7 @@ import {
   modelAuthor,
   type AiRouting,
 } from "@/lib/openrouter/routing";
-import { serverEnv } from "@/lib/env/server-env";
+import { siteOrigin } from "@/lib/env/client-env";
 import {
   chat,
   maxIterations,
@@ -39,7 +39,7 @@ function buildTextAdapter(apiKey: string | undefined, model: string | undefined)
   }
 
   return createOpenRouterText(model as never, apiKey, {
-    httpReferer: serverEnv.FRONTEND_URL,
+    httpReferer: siteOrigin,
     retryCodes: RETRY_STATUS_CODES,
     retryConfig: RETRY_CONFIG,
   }) as unknown as AnyTextAdapter;

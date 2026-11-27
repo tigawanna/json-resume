@@ -2,7 +2,7 @@
 
 This folder is the shared server-only tool layer for agentic resume workflows.
 
-The current implementation exposes these read-only, Drizzle-backed tools through MCP, oRPC and OpenAPI-compatible HTTP routes:
+The current implementation exposes these read-only, Drizzle-backed tools through oRPC and OpenAPI-compatible HTTP routes:
 
 - `list_resumes`
 - `get_resume` (shared view with item ids and the linked job; `resumeId` is required remotely)
@@ -18,7 +18,7 @@ Do not duplicate the query logic for future work. Add thin adapters that validat
 ## Existing Files
 
 - `resume-tool-schemas.ts`
-  Shared Zod input and output schemas. Use these schemas for MCP, oRPC procedures, OpenAPI generation, and TanStack AI tool wrappers.
+  Shared Zod input and output schemas. Use these schemas for oRPC procedures, OpenAPI generation, and TanStack AI tool wrappers.
 
 - `resume-tools.server.ts`, `job-tools.server.ts`, `library-tools.server.ts`, `rank-tools.server.ts`
   Server-only implementations. These functions take `{ userId }` plus a validated input object, enforce ownership, and query Drizzle.
@@ -27,22 +27,13 @@ Do not duplicate the query logic for future work. Add thin adapters that validat
   The shared oRPC router, auth middleware, RPC/OpenAPI handlers, OpenAPI generator, and internal typed server client factory.
 
 - `resume-orpc-client.server.ts`
-  Tiny server-only re-export for consumers like MCP and AI orchestration.
+  Tiny server-only re-export for consumers like AI orchestration.
 
 - `definitions/`
-  Isomorphic TanStack AI `toolDefinition()`s (name, description, schemas, MCP annotations, `needsApproval`, `lazy`), one file per domain (`resume-`, `resume-edit-`, `job-`, `library-`, `assistant-definitions.ts`). The single contract for chat, MCP and oRPC. `tool-context.ts` holds `LocalToolContext` (browser tools, with the active résumé getter/setter) and `RemoteToolContext` (`{ userId }`).
+  Isomorphic TanStack AI `toolDefinition()`s (name, description, schemas, `needsApproval`, `lazy`), one file per domain (`resume-`, `resume-edit-`, `job-`, `library-`, `assistant-definitions.ts`). The single contract for chat and oRPC. `tool-context.ts` holds `LocalToolContext` (browser tools, with the active résumé getter/setter) and `RemoteToolContext` (`{ userId }`).
 
 - `shared/`
   Pure isomorphic logic both implementations call: `resume-view.ts` (the `get_resume` output), `job-view.ts` (job rows), `library-view.ts` (library hits), `rank.ts` (keyword scorer), `search-page.ts` (search terms and paging) and `playbooks.ts` (the `get_playbook` text).
-
-- `remote-tools.server.ts`
-  `def.server<RemoteToolContext>()` wrappers around the functions in `resume-tools.server.ts`. `remoteResumeTools` is the list MCP serves.
-
-- `resume-mcp.server.ts`
-  `createMCPServer({ tools: remoteResumeTools })` from `@tanstack/ai-mcp/server`. The route authenticates the API key, then calls `resumeMcpServer.handle(request, { context: { userId } })`.
-
-- `src/routes/api/mcp.ts`
-  Streamable HTTP MCP endpoint protected by a Better Auth API key (`x-api-key` or `Authorization: Bearer`).
 
 - `src/routes/api/agentic/$.ts`
   OpenAPI-compatible catch-all route for `/api/agentic/*`.
@@ -96,11 +87,11 @@ Key behavior:
 
 1. `resume-orpc.server.ts` owns the auth middleware and procedure definitions.
 2. External callers authenticate with Better Auth API keys.
-3. Internal trusted callers use `createResumeAgenticServerClient(userId)`. MCP calls the remote tools directly.
+3. Internal trusted callers use `createResumeAgenticServerClient(userId)`.
 4. Input and output validation come from the shared definitions in `definitions/`.
 5. The OpenAPI catch-all preserves the existing `/api/agentic/...` URLs.
 6. The RPC route is the preferred base for typed programmatic clients.
-7. Shared CORS headers are applied to both agentic HTTP routes and MCP.
+7. Shared CORS headers are applied to the agentic HTTP routes.
 
 Permission shape:
 
@@ -150,7 +141,7 @@ Undo: every write tool runs through `journaled()` in `client-tools.ts`, which re
 
 The page bubble (`page-assistant-packs.ts`) is a separate assistant. It does not get the résumé write tools. Each page sends one pack: `query_collection` and `mutate_collection` for ordinary library rows, the six experience-bullet tools on an experience, and the job / résumé-list tools where a workflow already exists. `mutate_collection` needs approval and cannot touch `resume`, `settings`, or `resumeExperienceBullet`. `search_conversations` reads the browser's other bubble threads. The résumé editor stays on its own tool list.
 
-The prompt only names the active résumé's job (id and label); the model calls `get_job` when it needs the posting text. `list_jobs` and `get_job` also run remotely (MCP tools and `POST /jobs/list`, `POST /jobs/get`), sharing `shared/job-view.ts` with the local versions. `rank_resumes_for_job` runs remotely too (`POST /resumes/rank-for-job`), sharing the keyword scorer in `shared/rank.ts`.
+The prompt only names the active résumé's job (id and label); the model calls `get_job` when it needs the posting text. `list_jobs` and `get_job` also run remotely (`POST /jobs/list`, `POST /jobs/get`), sharing `shared/job-view.ts` with the local versions. `rank_resumes_for_job` runs remotely too (`POST /resumes/rank-for-job`), sharing the keyword scorer in `shared/rank.ts`.
 
 The chat renders messages with `createChatUI` from `@tanstack/ai-react/ui` (`ResumeAiTab/resume-ai-chat-ui.tsx`). It needs a widget for every tool name, so a new tool fails the type check until it is registered there.
 

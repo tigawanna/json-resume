@@ -1,9 +1,9 @@
 import { Octokit } from "octokit";
-import { serverEnv } from "../env/server-env";
 
 export function getOctokit(accessToken: string) {
+  const baseUrl = process.env.GITHUB_API_BASE_URL;
   return new Octokit({
     auth: accessToken,
-    baseUrl: serverEnv.GITHUB_API_BASE_URL,
+    ...(baseUrl ? { baseUrl } : {}),
   });
 }

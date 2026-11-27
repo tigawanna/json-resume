@@ -16,25 +16,24 @@ lazy?, metadata? })`):
   collections; registered with `useChat({ tools, context })`. Bare `def` goes to
   `chat({ tools })` on the server so the model knows the schema.
 - `def.server<RemoteToolContext>(execute)`: server implementation over Drizzle.
-- MCP serves `.server()` tools via `createMCPServer({ tools })`.
 - oRPC procedures use `.input(def.inputSchema).output(def.outputSchema)`.
 
 Rules: writes are client-only (remote copies read-only); reads agents outside the
 app need get both implementations with identical output shapes; schemas stay in
 `resume-tool-schemas.ts` (top-level must be `z.object`; no `z.preprocess`/`z.coerce`);
 context types explicit (`LocalToolContext`, `RemoteToolContext`); approval/lazy
-flags live on the definition; `remoteResumeTools` list is what MCP serves; list
+flags live on the definition; list
 and search tools search and page, never dump (rule 7: `searchPageInputShape` /
 `searchPageOutputShape`, `searchTerms()`, `nextOffset()`).
 
 File layout: `features/agentic-tools/definitions/`, `shared/`,
-`resume-tool-schemas.ts`, `resume-tools.server.ts`, `remote-tools.server.ts`,
-`resume-mcp.server.ts`, `resume-orpc-router.server.ts`;
+`resume-tool-schemas.ts`, `resume-tools.server.ts`,
+`resume-orpc-router.server.ts`;
 `routes/_dashboard/-ai/-utils/client-tools.ts`, `local-*-tools.ts`.
 
 Batches 1-7 are done (foundation/reads, granular writes, item upserts, jobs,
 lifecycle + JD flow, library, hardening including approval UI, lazy tools,
-`get_playbook`, MCP hosting, `undo_last_ai_change`). See the git history /
+`get_playbook`, `undo_last_ai_change`). See the git history /
 original audit for the full tool matrix and per-batch notes.
 
 Remaining tooling items:

@@ -210,7 +210,7 @@ export const FAQ_ITEMS = [
 export const FOOTER_COLUMNS = [
   {
     title: "Product",
-    links: ["Editor", "Library", "PDF export", "MCP + API"],
+    links: ["Editor", "Library", "PDF export", "API"],
   },
   {
     title: "Resources",

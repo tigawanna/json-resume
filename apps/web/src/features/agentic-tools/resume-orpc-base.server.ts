@@ -35,7 +35,7 @@ export const agenticBase = os
 // keeping the authorization contract explicit at the call site rather than buried in middleware.
 function createAgenticProcedure(permissions: ApiKeyPermissionCheck) {
   return agenticBase.use(async ({ context, next }) => {
-    // Internal server-client callers (e.g. MCP server, AI agent) inject userId directly,
+    // Internal server-client callers (e.g. the AI agent) inject userId directly,
     // bypassing API key verification entirely. This avoids a redundant network round-trip
     // to Better Auth when the caller is already trusted server-side code.
     if (context.userId) {
