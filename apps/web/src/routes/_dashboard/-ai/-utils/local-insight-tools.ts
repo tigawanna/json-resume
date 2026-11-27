@@ -7,7 +7,7 @@ import {
   type GetApplicationStatsToolOutput,
   type GetProfileOverviewToolInput,
   type GetProfileOverviewToolOutput,
-} from "@/features/agentic-tools/dashboard-tool-schemas";
+} from "@repo/isomorphic/agentic/tool-schemas/dashboard/index";
 import type { LocalToolContext } from "@/features/agentic-tools/definitions/tool-context";
 
 const RECENT_JOBS = 8;

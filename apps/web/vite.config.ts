@@ -70,6 +70,7 @@ const config = defineConfig({
       },
       prerender: {
         enabled: true,
+        concurrency: 1,
         // Crawl public links, then keep only pages that render without a session.
         // Dashboard, admin, and dev routes live on a pathless layout, so a
         // `/dashboard` prefix check never matches them. Query variants such as

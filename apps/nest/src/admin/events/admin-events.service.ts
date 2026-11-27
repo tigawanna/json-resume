@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { ADMIN_EVENT_SORT_COLUMNS } from '@repo/api-contracts/admin/events';
+import { ADMIN_EVENT_SORT_COLUMNS } from '@repo/isomorphic/admin/event-filters';
 import { user } from '@repo/db/postgres/schema/auth-schema';
 import { syncEvent } from '@repo/db/postgres/schema/sync-schema';
 import {

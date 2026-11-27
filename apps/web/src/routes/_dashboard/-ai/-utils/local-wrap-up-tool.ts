@@ -3,7 +3,7 @@ import {
   wrapUpToolInputSchema,
   type WrapUpToolInput,
   type WrapUpToolOutput,
-} from "@/features/agentic-tools/resume-tool-schemas";
+} from "@repo/isomorphic/agentic/tool-schemas/resume/assistant";
 
 /** Resolves the résumé names for the wrap-up card, dropping ids the model made up. */
 export function wrapUpLocal(

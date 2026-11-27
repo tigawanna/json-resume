@@ -22,7 +22,10 @@ export function EntityViewToggle({ dataTest = "entity-view-toggle" }: EntityView
     if (next === view) return;
     void navigate({
       to: ".",
-      search: (prev) => ({ ...prev, view: next === "cards" ? undefined : next }),
+      search: (prev: Record<string, unknown>) => ({
+        ...prev,
+        view: next === "cards" ? undefined : next,
+      }),
       replace: true,
     });
   }

@@ -19,9 +19,9 @@ import {
   type ListCoverLettersToolOutput,
   type SaveCoverLetterToolInput,
   type SaveCoverLetterToolOutput,
-} from "@/features/agentic-tools/cover-letter-tool-schemas";
+} from "@repo/isomorphic/agentic/tool-schemas/cover-letter";
 import type { LocalToolContext } from "@/features/agentic-tools/definitions/tool-context";
-import { nextOffset, searchTerms } from "@/features/agentic-tools/shared/search-page";
+import { nextOffset, searchTerms } from "@repo/isomorphic/agentic/search-page";
 import { count, eq, queryOnce, type InitialQueryBuilder } from "@tanstack/db";
 import { orIlike } from "../../-utils/list-query";
 import { requireJob } from "./local-job-tools";

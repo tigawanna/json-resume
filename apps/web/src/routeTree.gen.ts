@@ -48,12 +48,9 @@ import { Route as DashboardSkillGroupsIndexRouteImport } from './routes/_dashboa
 import { Route as DashboardSummariesIndexRouteImport } from './routes/_dashboard/summaries/index'
 import { Route as DashboardTalksIndexRouteImport } from './routes/_dashboard/talks/index'
 import { Route as DashboardVolunteersIndexRouteImport } from './routes/_dashboard/volunteers/index'
-import { Route as ApiAgenticSplatRouteImport } from './routes/api/agentic/$'
-import { Route as ApiAgenticOpenapiRouteImport } from './routes/api/agentic/openapi'
 import { Route as ApiAiChatLabRouteImport } from './routes/api/ai/chat-lab'
 import { Route as ApiAiDashboardAssistantRouteImport } from './routes/api/ai/dashboard-assistant'
 import { Route as ApiAiEventSourcedResumeTailorRouteImport } from './routes/api/ai/event-sourced-resume-tailor'
-import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as RPublicIdIndexRouteImport } from './routes/r/$publicId/index'
 import { Route as DashboardAdminDataIndexRouteImport } from './routes/_dashboard/admin/data/index'
 import { Route as DashboardAdminTablesIndexRouteImport } from './routes/_dashboard/admin/tables/index'
@@ -67,8 +64,6 @@ import { Route as DashboardDevPlaceholdersIndexRouteImport } from './routes/_das
 import { Route as DashboardExperiencesExperienceIdIndexRouteImport } from './routes/_dashboard/experiences/$experienceId/index'
 import { Route as DashboardJobsJobIdIndexRouteImport } from './routes/_dashboard/jobs/$jobId/index'
 import { Route as DashboardResumesResumeIdIndexRouteImport } from './routes/_dashboard/resumes/$resumeId/index'
-import { Route as ApiAgenticOpenapiJsonRouteImport } from './routes/api/agentic/openapi.json'
-import { Route as ApiAgenticRpcSplatRouteImport } from './routes/api/agentic/rpc/$'
 import { Route as DashboardAdminTablesTableIndexRouteImport } from './routes/_dashboard/admin/tables/$table/index'
 import { Route as DashboardAdminUsersUserIdIndexRouteImport } from './routes/_dashboard/admin/users/$userId/index'
 import { Route as DashboardResumesResumeIdEventsIndexRouteImport } from './routes/_dashboard/resumes/$resumeId/events/index'
@@ -277,16 +272,6 @@ const DashboardVolunteersIndexRoute =
     path: '/volunteers/',
     getParentRoute: () => DashboardLayoutRoute,
   } as any)
-const ApiAgenticSplatRoute = ApiAgenticSplatRouteImport.update({
-  id: '/api/agentic/$',
-  path: '/api/agentic/$',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiAgenticOpenapiRoute = ApiAgenticOpenapiRouteImport.update({
-  id: '/api/agentic/openapi',
-  path: '/api/agentic/openapi',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiAiChatLabRoute = ApiAiChatLabRouteImport.update({
   id: '/api/ai/chat-lab',
   path: '/api/ai/chat-lab',
@@ -303,11 +288,6 @@ const ApiAiEventSourcedResumeTailorRoute =
     path: '/api/ai/event-sourced-resume-tailor',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
-  id: '/api/auth/$',
-  path: '/api/auth/$',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const RPublicIdIndexRoute = RPublicIdIndexRouteImport.update({
   id: '/r/$publicId/',
   path: '/r/$publicId/',
@@ -383,16 +363,6 @@ const DashboardResumesResumeIdIndexRoute =
     path: '/resumes/$resumeId/',
     getParentRoute: () => DashboardLayoutRoute,
   } as any)
-const ApiAgenticOpenapiJsonRoute = ApiAgenticOpenapiJsonRouteImport.update({
-  id: '/json',
-  path: '/json',
-  getParentRoute: () => ApiAgenticOpenapiRoute,
-} as any)
-const ApiAgenticRpcSplatRoute = ApiAgenticRpcSplatRouteImport.update({
-  id: '/api/agentic/rpc/$',
-  path: '/api/agentic/rpc/$',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const DashboardAdminTablesTableIndexRoute =
   DashboardAdminTablesTableIndexRouteImport.update({
     id: '/admin/tables/$table/',
@@ -424,12 +394,9 @@ export interface FileRoutesByFullPath {
   '/test/': typeof TestIndexRoute
   '/waitlist/': typeof WaitlistIndexRoute
   '/admin/route': typeof DashboardAdminRouteRoute
-  '/api/agentic/$': typeof ApiAgenticSplatRoute
-  '/api/agentic/openapi': typeof ApiAgenticOpenapiRouteWithChildren
   '/api/ai/chat-lab': typeof ApiAiChatLabRoute
   '/api/ai/dashboard-assistant': typeof ApiAiDashboardAssistantRoute
   '/api/ai/event-sourced-resume-tailor': typeof ApiAiEventSourcedResumeTailorRoute
-  '/api/auth/$': typeof ApiAuthSplatRoute
   '/admin/': typeof DashboardAdminIndexRoute
   '/application-answers/': typeof DashboardApplicationAnswersIndexRoute
   '/assistant-skills/': typeof DashboardAssistantSkillsIndexRoute
@@ -458,8 +425,6 @@ export interface FileRoutesByFullPath {
   '/talks/': typeof DashboardTalksIndexRoute
   '/volunteers/': typeof DashboardVolunteersIndexRoute
   '/r/$publicId/': typeof RPublicIdIndexRoute
-  '/api/agentic/openapi/json': typeof ApiAgenticOpenapiJsonRoute
-  '/api/agentic/rpc/$': typeof ApiAgenticRpcSplatRoute
   '/admin/data/': typeof DashboardAdminDataIndexRoute
   '/admin/tables/': typeof DashboardAdminTablesIndexRoute
   '/admin/users/': typeof DashboardAdminUsersIndexRoute
@@ -487,12 +452,9 @@ export interface FileRoutesByTo {
   '/test': typeof TestIndexRoute
   '/waitlist': typeof WaitlistIndexRoute
   '/admin/route': typeof DashboardAdminRouteRoute
-  '/api/agentic/$': typeof ApiAgenticSplatRoute
-  '/api/agentic/openapi': typeof ApiAgenticOpenapiRouteWithChildren
   '/api/ai/chat-lab': typeof ApiAiChatLabRoute
   '/api/ai/dashboard-assistant': typeof ApiAiDashboardAssistantRoute
   '/api/ai/event-sourced-resume-tailor': typeof ApiAiEventSourcedResumeTailorRoute
-  '/api/auth/$': typeof ApiAuthSplatRoute
   '/admin': typeof DashboardAdminIndexRoute
   '/application-answers': typeof DashboardApplicationAnswersIndexRoute
   '/assistant-skills': typeof DashboardAssistantSkillsIndexRoute
@@ -521,8 +483,6 @@ export interface FileRoutesByTo {
   '/talks': typeof DashboardTalksIndexRoute
   '/volunteers': typeof DashboardVolunteersIndexRoute
   '/r/$publicId': typeof RPublicIdIndexRoute
-  '/api/agentic/openapi/json': typeof ApiAgenticOpenapiJsonRoute
-  '/api/agentic/rpc/$': typeof ApiAgenticRpcSplatRoute
   '/admin/data': typeof DashboardAdminDataIndexRoute
   '/admin/tables': typeof DashboardAdminTablesIndexRoute
   '/admin/users': typeof DashboardAdminUsersIndexRoute
@@ -553,12 +513,9 @@ export interface FileRoutesById {
   '/test/': typeof TestIndexRoute
   '/waitlist/': typeof WaitlistIndexRoute
   '/_dashboard/admin/route': typeof DashboardAdminRouteRoute
-  '/api/agentic/$': typeof ApiAgenticSplatRoute
-  '/api/agentic/openapi': typeof ApiAgenticOpenapiRouteWithChildren
   '/api/ai/chat-lab': typeof ApiAiChatLabRoute
   '/api/ai/dashboard-assistant': typeof ApiAiDashboardAssistantRoute
   '/api/ai/event-sourced-resume-tailor': typeof ApiAiEventSourcedResumeTailorRoute
-  '/api/auth/$': typeof ApiAuthSplatRoute
   '/_dashboard/admin/': typeof DashboardAdminIndexRoute
   '/_dashboard/application-answers/': typeof DashboardApplicationAnswersIndexRoute
   '/_dashboard/assistant-skills/': typeof DashboardAssistantSkillsIndexRoute
@@ -587,8 +544,6 @@ export interface FileRoutesById {
   '/_dashboard/talks/': typeof DashboardTalksIndexRoute
   '/_dashboard/volunteers/': typeof DashboardVolunteersIndexRoute
   '/r/$publicId/': typeof RPublicIdIndexRoute
-  '/api/agentic/openapi/json': typeof ApiAgenticOpenapiJsonRoute
-  '/api/agentic/rpc/$': typeof ApiAgenticRpcSplatRoute
   '/_dashboard/admin/data/': typeof DashboardAdminDataIndexRoute
   '/_dashboard/admin/tables/': typeof DashboardAdminTablesIndexRoute
   '/_dashboard/admin/users/': typeof DashboardAdminUsersIndexRoute
@@ -619,12 +574,9 @@ export interface FileRouteTypes {
     | '/test/'
     | '/waitlist/'
     | '/admin/route'
-    | '/api/agentic/$'
-    | '/api/agentic/openapi'
     | '/api/ai/chat-lab'
     | '/api/ai/dashboard-assistant'
     | '/api/ai/event-sourced-resume-tailor'
-    | '/api/auth/$'
     | '/admin/'
     | '/application-answers/'
     | '/assistant-skills/'
@@ -653,8 +605,6 @@ export interface FileRouteTypes {
     | '/talks/'
     | '/volunteers/'
     | '/r/$publicId/'
-    | '/api/agentic/openapi/json'
-    | '/api/agentic/rpc/$'
     | '/admin/data/'
     | '/admin/tables/'
     | '/admin/users/'
@@ -682,12 +632,9 @@ export interface FileRouteTypes {
     | '/test'
     | '/waitlist'
     | '/admin/route'
-    | '/api/agentic/$'
-    | '/api/agentic/openapi'
     | '/api/ai/chat-lab'
     | '/api/ai/dashboard-assistant'
     | '/api/ai/event-sourced-resume-tailor'
-    | '/api/auth/$'
     | '/admin'
     | '/application-answers'
     | '/assistant-skills'
@@ -716,8 +663,6 @@ export interface FileRouteTypes {
     | '/talks'
     | '/volunteers'
     | '/r/$publicId'
-    | '/api/agentic/openapi/json'
-    | '/api/agentic/rpc/$'
     | '/admin/data'
     | '/admin/tables'
     | '/admin/users'
@@ -747,12 +692,9 @@ export interface FileRouteTypes {
     | '/test/'
     | '/waitlist/'
     | '/_dashboard/admin/route'
-    | '/api/agentic/$'
-    | '/api/agentic/openapi'
     | '/api/ai/chat-lab'
     | '/api/ai/dashboard-assistant'
     | '/api/ai/event-sourced-resume-tailor'
-    | '/api/auth/$'
     | '/_dashboard/admin/'
     | '/_dashboard/application-answers/'
     | '/_dashboard/assistant-skills/'
@@ -781,8 +723,6 @@ export interface FileRouteTypes {
     | '/_dashboard/talks/'
     | '/_dashboard/volunteers/'
     | '/r/$publicId/'
-    | '/api/agentic/openapi/json'
-    | '/api/agentic/rpc/$'
     | '/_dashboard/admin/data/'
     | '/_dashboard/admin/tables/'
     | '/_dashboard/admin/users/'
@@ -808,14 +748,10 @@ export interface RootRouteChildren {
   TermsIndexRoute: typeof TermsIndexRoute
   TestIndexRoute: typeof TestIndexRoute
   WaitlistIndexRoute: typeof WaitlistIndexRoute
-  ApiAgenticSplatRoute: typeof ApiAgenticSplatRoute
-  ApiAgenticOpenapiRoute: typeof ApiAgenticOpenapiRouteWithChildren
   ApiAiChatLabRoute: typeof ApiAiChatLabRoute
   ApiAiDashboardAssistantRoute: typeof ApiAiDashboardAssistantRoute
   ApiAiEventSourcedResumeTailorRoute: typeof ApiAiEventSourcedResumeTailorRoute
-  ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   RPublicIdIndexRoute: typeof RPublicIdIndexRoute
-  ApiAgenticRpcSplatRoute: typeof ApiAgenticRpcSplatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1093,20 +1029,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardVolunteersIndexRouteImport
       parentRoute: typeof DashboardLayoutRoute
     }
-    '/api/agentic/$': {
-      id: '/api/agentic/$'
-      path: '/api/agentic/$'
-      fullPath: '/api/agentic/$'
-      preLoaderRoute: typeof ApiAgenticSplatRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/agentic/openapi': {
-      id: '/api/agentic/openapi'
-      path: '/api/agentic/openapi'
-      fullPath: '/api/agentic/openapi'
-      preLoaderRoute: typeof ApiAgenticOpenapiRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/ai/chat-lab': {
       id: '/api/ai/chat-lab'
       path: '/api/ai/chat-lab'
@@ -1126,13 +1048,6 @@ declare module '@tanstack/react-router' {
       path: '/api/ai/event-sourced-resume-tailor'
       fullPath: '/api/ai/event-sourced-resume-tailor'
       preLoaderRoute: typeof ApiAiEventSourcedResumeTailorRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/auth/$': {
-      id: '/api/auth/$'
-      path: '/api/auth/$'
-      fullPath: '/api/auth/$'
-      preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/r/$publicId/': {
@@ -1225,20 +1140,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/resumes/$resumeId/'
       preLoaderRoute: typeof DashboardResumesResumeIdIndexRouteImport
       parentRoute: typeof DashboardLayoutRoute
-    }
-    '/api/agentic/openapi/json': {
-      id: '/api/agentic/openapi/json'
-      path: '/json'
-      fullPath: '/api/agentic/openapi/json'
-      preLoaderRoute: typeof ApiAgenticOpenapiJsonRouteImport
-      parentRoute: typeof ApiAgenticOpenapiRoute
-    }
-    '/api/agentic/rpc/$': {
-      id: '/api/agentic/rpc/$'
-      path: '/api/agentic/rpc/$'
-      fullPath: '/api/agentic/rpc/$'
-      preLoaderRoute: typeof ApiAgenticRpcSplatRouteImport
-      parentRoute: typeof rootRouteImport
     }
     '/_dashboard/admin/tables/$table/': {
       id: '/_dashboard/admin/tables/$table/'
@@ -1382,17 +1283,6 @@ const AuthLayoutRouteWithChildren = AuthLayoutRoute._addFileChildren(
   AuthLayoutRouteChildren,
 )
 
-interface ApiAgenticOpenapiRouteChildren {
-  ApiAgenticOpenapiJsonRoute: typeof ApiAgenticOpenapiJsonRoute
-}
-
-const ApiAgenticOpenapiRouteChildren: ApiAgenticOpenapiRouteChildren = {
-  ApiAgenticOpenapiJsonRoute: ApiAgenticOpenapiJsonRoute,
-}
-
-const ApiAgenticOpenapiRouteWithChildren =
-  ApiAgenticOpenapiRoute._addFileChildren(ApiAgenticOpenapiRouteChildren)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DashboardLayoutRoute: DashboardLayoutRouteWithChildren,
@@ -1401,14 +1291,10 @@ const rootRouteChildren: RootRouteChildren = {
   TermsIndexRoute: TermsIndexRoute,
   TestIndexRoute: TestIndexRoute,
   WaitlistIndexRoute: WaitlistIndexRoute,
-  ApiAgenticSplatRoute: ApiAgenticSplatRoute,
-  ApiAgenticOpenapiRoute: ApiAgenticOpenapiRouteWithChildren,
   ApiAiChatLabRoute: ApiAiChatLabRoute,
   ApiAiDashboardAssistantRoute: ApiAiDashboardAssistantRoute,
   ApiAiEventSourcedResumeTailorRoute: ApiAiEventSourcedResumeTailorRoute,
-  ApiAuthSplatRoute: ApiAuthSplatRoute,
   RPublicIdIndexRoute: RPublicIdIndexRoute,
-  ApiAgenticRpcSplatRoute: ApiAgenticRpcSplatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

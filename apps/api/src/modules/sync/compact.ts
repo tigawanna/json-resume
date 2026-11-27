@@ -4,7 +4,7 @@ import type { AppEnv } from "@api/types";
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { compactOnServer } from "@api/modules/sync/server/compaction/compaction.server";
-import { compactionProposalSchema } from "@repo/api-contracts/sync/compaction";
+import { compactionProposalSchema } from "@repo/isomorphic/sync/compaction-protocol";
 
 export const syncCompactRoute = new Hono<AppEnv>().post(
   "/",

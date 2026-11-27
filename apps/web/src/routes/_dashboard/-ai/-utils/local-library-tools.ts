@@ -17,7 +17,7 @@ import {
   type RankLibraryForJobToolOutput,
   type SearchLibraryToolInput,
   type SearchLibraryToolOutput,
-} from "@/features/agentic-tools/resume-tool-schemas";
+} from "@repo/isomorphic/agentic/tool-schemas/resume/library";
 import {
   bulletHit,
   educationHit,
@@ -29,9 +29,9 @@ import {
   talkHit,
   withOnResume,
   type LibraryHitBase,
-} from "@/features/agentic-tools/shared/library-view";
-import { jobKeywords } from "@/features/agentic-tools/shared/rank";
-import { nextOffset, searchTerms } from "@/features/agentic-tools/shared/search-page";
+} from "@repo/isomorphic/agentic/library-view";
+import { jobKeywords } from "@repo/isomorphic/agentic/rank";
+import { nextOffset, searchTerms } from "@repo/isomorphic/agentic/search-page";
 import { layoutReferencedIds, setExperienceBullets } from "@/features/resume/resume-layout";
 import {
   count,

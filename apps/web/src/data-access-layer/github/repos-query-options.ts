@@ -3,7 +3,7 @@ import { githubControllerSearchRepositories } from "@/services/nest/client";
 import type {
   GithubControllerSearchRepositoriesQuery,
   GithubReposResponseDto,
-} from "@repo/api-contracts/models";
+} from "@/services/nest/generated/models";
 import { queryOptions } from "@tanstack/react-query";
 
 export type GithubRepo = GithubReposResponseDto["repos"][number];

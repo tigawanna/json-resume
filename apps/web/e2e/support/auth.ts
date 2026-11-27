@@ -16,7 +16,9 @@ export async function signUp(page: Page) {
   const email = `e2e-${uniqueId}@example.com`;
   const password = "test-password-123";
 
-  const signupResponse = await page.request.post("/api/auth/sign-up/email", {
+  const nestPort = Number(process.env.PLAYWRIGHT_NEST_PORT ?? 5041);
+  const nestOrigin = `http://127.0.0.1:${nestPort}`;
+  const signupResponse = await page.request.post(`${nestOrigin}/api/auth/sign-up/email`, {
     data: {
       email,
       password,

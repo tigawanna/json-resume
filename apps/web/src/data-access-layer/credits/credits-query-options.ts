@@ -14,7 +14,7 @@ import type {
   CreditsResponseDto,
   CreditLedgerPageDto,
   WalletCheckResponseDto,
-} from "@repo/api-contracts/models";
+} from "@/services/nest/generated/models";
 import { mutationOptions, queryOptions } from "@tanstack/react-query";
 import type { queryKeyPrefixes } from "@/data-access-layer/query-keys";
 

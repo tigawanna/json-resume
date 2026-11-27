@@ -33,7 +33,8 @@ export class PublicResumeService {
       .from(publicResume)
       .where(eq(publicResume.id, id))
       .limit(1);
-    return row ? toDto(row) : null;
+    if (!row) throw new NotFoundException('Public résumé not found');
+    return toDto(row);
   }
 
   async getMine({
@@ -53,7 +54,8 @@ export class PublicResumeService {
         ),
       )
       .limit(1);
-    return row ? toDto(row) : null;
+    if (!row) throw new NotFoundException('Public résumé not found');
+    return toDto(row);
   }
 
   async list({

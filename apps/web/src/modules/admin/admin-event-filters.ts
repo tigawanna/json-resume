@@ -1,1 +1,1 @@
-export * from "@repo/api-contracts/admin/events";
+export * from "@repo/isomorphic/admin/event-filters";

@@ -115,7 +115,7 @@ export function ResponsiveEntityTable<T extends { id: string }>({
   function patchSearch(patch: Record<string, unknown>) {
     void navigate({
       to: ".",
-      search: (prev) => ({
+      search: (prev: Record<string, unknown>) => ({
         ...prev,
         ...patch,
       }),

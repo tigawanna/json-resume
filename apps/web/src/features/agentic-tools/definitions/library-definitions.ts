@@ -6,7 +6,7 @@ import {
   rankLibraryForJobToolOutputSchema,
   searchLibraryToolInputSchema,
   searchLibraryToolOutputSchema,
-} from "../resume-tool-schemas";
+} from "@repo/isomorphic/agentic/tool-schemas/resume/library";
 
 export const searchLibraryToolDefinition = toolDefinition({
   name: "search_library",

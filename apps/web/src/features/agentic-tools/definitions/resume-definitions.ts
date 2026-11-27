@@ -16,7 +16,7 @@ import {
   setActiveResumeToolOutputSchema,
   tailorResumeForJobToolInputSchema,
   tailorResumeForJobToolOutputSchema,
-} from "../resume-tool-schemas";
+} from "@repo/isomorphic/agentic/tool-schemas/resume/index";
 
 export const listResumesToolDefinition = toolDefinition({
   name: "list_resumes",

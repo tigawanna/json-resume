@@ -53,10 +53,8 @@ import {
   upsertTalkToolDefinition,
 } from "@/features/agentic-tools/definitions/resume-edit-definitions";
 import type { LocalToolContext } from "@/features/agentic-tools/definitions/tool-context";
-import {
-  quotePayRateToolInputSchema,
-  type AskUserToolOutput,
-} from "@/features/agentic-tools/resume-tool-schemas";
+import { quotePayRateToolInputSchema } from "@repo/isomorphic/agentic/tool-schemas/resume/job";
+import type { AskUserToolOutput } from "@repo/isomorphic/agentic/tool-schemas/resume/assistant";
 import { quotePayRate } from "@/data-access-layer/event-sourced/rows/pay-quote";
 import {
   removeLocalFromResume,
@@ -105,7 +103,7 @@ import {
 } from "./local-application-answer-tools";
 import { trackAiChange, undoLocalAiChange } from "./local-undo-tools";
 import { wrapUpLocal } from "./local-wrap-up-tool";
-import { getPlaybook } from "@/features/agentic-tools/shared/playbooks";
+import { getPlaybook } from "@repo/isomorphic/agentic/playbooks";
 
 type ClientToolCtx = { context: LocalToolContext };
 

@@ -13,9 +13,9 @@ import {
   type ListResumesToolOutput,
   type SetActiveResumeToolInput,
   type SetActiveResumeToolOutput,
-} from "@/features/agentic-tools/resume-tool-schemas";
-import { resumeView } from "@/features/agentic-tools/shared/resume-view";
-import { nextOffset, searchTerms } from "@/features/agentic-tools/shared/search-page";
+} from "@repo/isomorphic/agentic/tool-schemas/resume/index";
+import { resumeView } from "@repo/isomorphic/agentic/resume-view";
+import { nextOffset, searchTerms } from "@repo/isomorphic/agentic/search-page";
 import { count, eq, queryOnce, type InitialQueryBuilder } from "@tanstack/db";
 import { orIlike } from "../../-utils/list-query";
 

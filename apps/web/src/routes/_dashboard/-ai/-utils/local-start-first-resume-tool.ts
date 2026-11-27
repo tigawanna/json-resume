@@ -4,7 +4,7 @@ import {
   startFirstResumeToolInputSchema,
   type StartFirstResumeToolInput,
   type StartFirstResumeToolOutput,
-} from "@/features/agentic-tools/first-resume-tool-schemas";
+} from "@repo/isomorphic/agentic/tool-schemas/first-resume";
 import { createStarterResumeDocument } from "@/features/resume/starter-resume";
 import { createLocalResume } from "./local-resume-lifecycle-tools";
 import { requireJob } from "./local-job-tools";

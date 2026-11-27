@@ -1,5 +1,5 @@
 import type { AppDb } from "@/data-access-layer/event-sourced/collection";
-import type { QueryCollection } from "@/features/agentic-tools/assistant-data-tool-schemas";
+import type { QueryCollection } from "@repo/isomorphic/agentic/tool-schemas/assistant-data";
 import { jobListLabel } from "@/data-access-layer/event-sourced/rows/job-rows";
 import {
   formatExperienceSnapshot,

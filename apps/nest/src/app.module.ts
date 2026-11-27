@@ -9,12 +9,14 @@ import { CreditsModule } from './credits/credits.module.js';
 import { DatabaseModule } from './database/database.module.js';
 import { GithubModule } from './github/github.module.js';
 import { HealthModule } from './health/health.module.js';
+import { LegacyImportModule } from './legacy-import/legacy-import.module.js';
 import { PublicResumeModule } from './public-resumes/public-resume.module.js';
 import { SyncModule } from './sync/sync.module.js';
 import { RateLimitModule } from './rate-limit/rate-limit.module.js';
 import { WaitlistModule } from './waitlist/waitlist.module.js';
 import type { AppEnv } from './config/env.schema.js';
 import { AdminModule } from './admin/admin.module.js';
+import { AgenticModule } from './agentic/agentic.module.js';
 
 export const { ObserveModule, ObserveInstrument } = createObserveModule();
 
@@ -25,6 +27,7 @@ export const { ObserveModule, ObserveInstrument } = createObserveModule();
     HealthModule,
     GithubModule,
     PublicResumeModule,
+    LegacyImportModule,
     AuthenticationModule,
     RateLimitModule,
     CreditsModule,
@@ -48,6 +51,7 @@ export const { ObserveModule, ObserveInstrument } = createObserveModule();
       },
     }),
     AdminModule,
+    AgenticModule,
   ],
   controllers: [AppController],
   providers: [AppService],

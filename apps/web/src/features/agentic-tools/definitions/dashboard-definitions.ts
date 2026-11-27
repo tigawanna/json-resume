@@ -6,11 +6,11 @@ import {
   getProfileOverviewToolOutputSchema,
   startResumeForJobToolInputSchema,
   startResumeForJobToolOutputSchema,
-} from "../dashboard-tool-schemas";
+} from "@repo/isomorphic/agentic/tool-schemas/dashboard/index";
 import {
   startFirstResumeToolInputSchema,
   startFirstResumeToolOutputSchema,
-} from "../first-resume-tool-schemas";
+} from "@repo/isomorphic/agentic/tool-schemas/first-resume";
 
 export const startResumeForJobToolDefinition = toolDefinition({
   name: "start_resume_for_job",

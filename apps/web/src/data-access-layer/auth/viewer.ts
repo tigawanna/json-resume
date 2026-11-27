@@ -1,6 +1,7 @@
 import { authClient } from "@/lib/better-auth/client";
 import { viewerControllerViewer } from "@/services/nest/client";
-import type { ViewerResponseDto } from "@repo/api-contracts/models";
+import { ResponseError } from "@/services/nest/generated/.kubb/client";
+import type { ViewerResponseDto } from "@/services/nest/generated/models";
 import { safeStringToUrl } from "@/utils/url";
 import { queryOptions, useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { redirect } from "@tanstack/react-router";
@@ -26,7 +27,9 @@ async function loadViewer() {
       error: null,
     };
   } catch (err: unknown) {
-    console.warn("[auth] viewer query failed; treating as logged out", err);
+    if (!(ResponseError.is(err) && err.status === 401)) {
+      console.warn("[auth] viewer query failed; treating as logged out", err);
+    }
     return loggedOutViewer;
   }
 }

@@ -25,9 +25,9 @@ import {
   type RankResumesForJobToolOutput,
   type TailorResumeForJobToolInput,
   type TailorResumeForJobToolOutput,
-} from "@/features/agentic-tools/resume-tool-schemas";
-import { jobKeywords, rankResumes, scoreResume } from "@/features/agentic-tools/shared/rank";
-import { resumeView } from "@/features/agentic-tools/shared/resume-view";
+} from "@repo/isomorphic/agentic/tool-schemas/resume/index";
+import { jobKeywords, rankResumes, scoreResume } from "@repo/isomorphic/agentic/rank";
+import { resumeView } from "@repo/isomorphic/agentic/resume-view";
 import { emptyResumeLayout } from "@/features/resume/resume-layout";
 import { SECTION_KEYS, type ResumeDocumentV1 } from "@/features/resume/resume-schema";
 import { joinSearchable, libraryRowBase } from "../../-utils/row-helpers";

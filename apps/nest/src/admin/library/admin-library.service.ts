@@ -1,5 +1,5 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { compactionRequestEvent } from '@repo/api-contracts/sync/compaction';
+import { compactionRequestEvent } from '@repo/isomorphic/sync/compaction-protocol';
 import { user } from '@repo/db/postgres/schema/auth-schema';
 import { syncEvent } from '@repo/db/postgres/schema/sync-schema';
 import { eq } from 'drizzle-orm';

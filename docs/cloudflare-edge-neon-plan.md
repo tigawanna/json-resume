@@ -100,7 +100,10 @@ Revisit a custom `ChatObject(userId, threadId)` only if concurrent runs, fencing
 
 ## API contract stability
 
-- `packages/api-contracts` owns shared Zod DTOs, errors, route metadata, and event schemas.
+- Nest and Worker handlers own their DTOs; composed Swagger/OpenAPI is the API contract.
+- Swagger is generated from code for now. Once frozen, contract changes are explicitly breaking and must fail consumer contract checks.
+- Kubb clients are generated artifacts, never a parallel source of API interfaces.
+- `@repo/isomorphic` contains only pure runtime logic executed by multiple apps.
 - Keep current `/api` paths stable; version only breaking changes.
 - Generate clients from composed Nest + Worker OpenAPI or run the same contract suite against both.
 - Route modes are `edge | nest | shadow`; shadow compares reads without dual-writing.

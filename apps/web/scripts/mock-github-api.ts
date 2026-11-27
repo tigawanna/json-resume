@@ -14,6 +14,9 @@ type Repo = {
   archived: boolean;
   language: string;
   stargazers_count: number;
+  forks_count: number;
+  created_at: string;
+  visibility: string;
   topics: string[];
   updated_at: string;
 };
@@ -31,6 +34,9 @@ const repos: Repo[] = [
     archived: false,
     language: "TypeScript",
     stargazers_count: 42,
+    forks_count: 5,
+    created_at: "2025-01-01T00:00:00Z",
+    visibility: "public",
     topics: ["resume", "react", "typescript"],
     updated_at: "2026-05-20T12:00:00Z",
   },
@@ -46,6 +52,9 @@ const repos: Repo[] = [
     archived: true,
     language: "JavaScript",
     stargazers_count: 7,
+    forks_count: 1,
+    created_at: "2024-01-01T00:00:00Z",
+    visibility: "public",
     topics: ["portfolio", "archive"],
     updated_at: "2025-10-10T12:00:00Z",
   },
@@ -61,6 +70,9 @@ const repos: Repo[] = [
     archived: false,
     language: "TypeScript",
     stargazers_count: 3,
+    forks_count: 0,
+    created_at: "2025-06-01T00:00:00Z",
+    visibility: "public",
     topics: ["template"],
     updated_at: "2026-01-15T12:00:00Z",
   },

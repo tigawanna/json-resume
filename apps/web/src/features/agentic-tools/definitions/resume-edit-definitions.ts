@@ -28,7 +28,7 @@ import {
   upsertProjectToolOutputSchema,
   upsertTalkToolInputSchema,
   upsertTalkToolOutputSchema,
-} from "../resume-tool-schemas";
+} from "@repo/isomorphic/agentic/tool-schemas/resume/index";
 
 const SHARED_LIBRARY_NOTE =
   "With an id, edits that library item everywhere it appears (every résumé that shows it) and adds it to this résumé if missing; without an id, creates it (or reuses an identical one) and adds it to this résumé. Only the fields you pass change.";

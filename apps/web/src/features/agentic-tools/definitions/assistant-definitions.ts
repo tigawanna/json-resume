@@ -8,7 +8,7 @@ import {
   undoLastAiChangeToolOutputSchema,
   wrapUpToolInputSchema,
   wrapUpToolOutputSchema,
-} from "../resume-tool-schemas";
+} from "@repo/isomorphic/agentic/tool-schemas/resume/assistant";
 
 export const getPlaybookToolDefinition = toolDefinition({
   name: "get_playbook",

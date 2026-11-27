@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useViewer } from "@/data-access-layer/auth/viewer";
-import type { PublicResumeListItemDto } from "@repo/api-contracts/models";
+import type { PublicResumeListItemDto } from "@/services/nest/generated/models";
 import {
   publicResumeControllerRename,
   publicResumeControllerUnpublishById,

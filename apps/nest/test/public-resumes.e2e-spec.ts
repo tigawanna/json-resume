@@ -32,11 +32,10 @@ describe('public résumé API', () => {
     await closeDatabase();
   });
 
-  it('returns null for an anonymous missing snapshot', async () => {
+  it('returns 404 for an anonymous missing snapshot', async () => {
     await request(app.getHttpServer())
       .get('/api/public-resumes/missing')
-      .expect(200)
-      .expect(null);
+      .expect(404);
   });
 
   it('publishes and reads a snapshot without authentication', async () => {
@@ -140,8 +139,7 @@ describe('public résumé API', () => {
       .expect({ success: true });
     await request(app.getHttpServer())
       .get(`/api/public-resumes/${published.body.id}`)
-      .expect(200)
-      .expect(null);
+      .expect(404);
   });
 
   it('does not let another user rename a snapshot', async () => {

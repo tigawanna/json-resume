@@ -35,55 +35,39 @@ pnpm --dir apps/web gen:api
 pnpm --dir apps/web gen:api:check
 ```
 
-`packages/api-contracts/kubb.config.ts` writes shared types and Fetch clients to
-`packages/api-contracts/src/generated/`. Set `NEST_OPENAPI_URL` to generate from
+Nest's Swagger/OpenAPI document is the API contract. `kubb.config.ts` derives
+the web-only types and Fetch client into `src/services/nest/generated/`; there
+is no hand-maintained interface package. Set `NEST_OPENAPI_URL` to generate from
 another Nest origin. `VITE_API_ORIGIN` is the single public API origin (default
 `http://localhost:5040`): the generated product client uses `${origin}/api`,
 while Better Auth's `authClient` uses the origin and appends `/api/auth` itself.
 `VITE_NEST_API_URL` remains a temporary fallback alias. Both send cookies. SSR
 forwards the incoming cookie to Nest because server-side fetch has no cookie jar.
 
-Viewer/auth, credits and waitlist, admin table browsing and row mutations,
-event-log backups/projection/rebuild/squash, and managed sync push/pull all use
-Nest. The admin event browser and library compact/prune actions still use the
-legacy server functions until their contracts are moved.
+Viewer/auth, GitHub search/list, public-résumé snapshots, credits and waitlist,
+admin tables/events/library actions, event-log maintenance, and managed sync all
+use Nest. Legacy remote-library reads and the external agentic API are migrated
+through the same Swagger → Kubb path as their controllers land.
 
 ## Styling
 
 This project uses [Tailwind CSS](https://tailwindcss.com/) for styling.
 
-## Setting up Better Auth
+## Auth and database ownership
 
-1. Generate and set the `BETTER_AUTH_SECRET` environment variable in your `.env.local`:
+Nest owns Better Auth, Postgres access, and API secrets. Configure `apps/nest/.env`
+from `apps/nest/.env.example`; the web app only uses the Better Auth browser
+client and the generated product client. Web must not create a server-side
+Drizzle/Pool client.
 
-   ```bash
-   npx @better-auth/cli secret
-   ```
-
-2. Visit the [Better Auth documentation](https://www.better-auth.com) to unlock the full potential of authentication in your app.
-
-### Adding a Database (Optional)
-
-Better Auth can work in stateless mode, but to persist user data, add a database:
-
-```typescript
-// src/lib/auth.ts
-import { betterAuth } from "better-auth";
-import { Pool } from "pg";
-
-export const auth = betterAuth({
-  database: new Pool({
-    connectionString: process.env.DATABASE_URL,
-  }),
-  // ... rest of config
-});
-```
-
-Then run migrations:
+Apply Postgres migrations from the repository root:
 
 ```bash
-npx @better-auth/cli migrate
+pnpm --dir apps/nest db:migrate:postgres
 ```
+
+Browser OPFS/local event-sourced databases remain client-side and are not server
+persistence.
 
 ## Routing
 

@@ -5,7 +5,7 @@ import {
   undoLastAiChangeToolInputSchema,
   type UndoLastAiChangeToolInput,
   type UndoLastAiChangeToolOutput,
-} from "@/features/agentic-tools/resume-tool-schemas";
+} from "@repo/isomorphic/agentic/tool-schemas/resume/assistant";
 
 function nextOutboxSeq(db: AppDb) {
   return db.collections.outbox.toArray.reduce(

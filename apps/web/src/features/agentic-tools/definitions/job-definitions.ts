@@ -12,7 +12,7 @@ import {
   saveJobToolOutputSchema,
   updateJobToolInputSchema,
   updateJobToolOutputSchema,
-} from "../resume-tool-schemas";
+} from "@repo/isomorphic/agentic/tool-schemas/resume/job";
 
 export const quotePayRateToolDefinition = toolDefinition({
   name: "quote_pay_rate",

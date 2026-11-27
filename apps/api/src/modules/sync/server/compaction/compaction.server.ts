@@ -1,4 +1,4 @@
-import type { CompactionProposal } from "@repo/api-contracts/sync/compaction";
+import type { CompactionProposal } from "@repo/isomorphic/sync/compaction-protocol";
 
 /**
  * Server compaction entrypoint.

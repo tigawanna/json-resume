@@ -1,16 +1,19 @@
 import type { AppDb } from "@/data-access-layer/event-sourced/collection";
-import { listCertifications } from "@/data-access-layer/resume/certifications/certification.functions";
-import { listContacts } from "@/data-access-layer/resume/contacts/contact.functions";
-import { listEducation } from "@/data-access-layer/resume/education/education.functions";
-import { listExperiences } from "@/data-access-layer/resume/experiences/experience.functions";
-import { listLanguages } from "@/data-access-layer/resume/languages/language.functions";
-import { listLinks } from "@/data-access-layer/resume/links/link.functions";
-import { listResumeProjects } from "@/data-access-layer/resume/resume-projects/resume-project.functions";
-import { getResume, listResumes } from "@/data-access-layer/resume/resume.functions";
-import { listSkillGroups } from "@/data-access-layer/resume/skill-groups/skill-group.functions";
-import { listSummaries } from "@/data-access-layer/resume/summaries/summary.functions";
-import { listTalks } from "@/data-access-layer/resume/talks/talk.functions";
-import { listVolunteers } from "@/data-access-layer/resume/volunteers/volunteer.functions";
+import {
+  getResume,
+  listCertifications,
+  listContacts,
+  listEducation,
+  listExperiences,
+  listLanguages,
+  listLinks,
+  listResumeProjects,
+  listResumes,
+  listSkillGroups,
+  listSummaries,
+  listTalks,
+  listVolunteers,
+} from "@/data-access-layer/legacy-import/legacy-import-client";
 import { resolveSkillIds } from "@/data-access-layer/event-sourced/rows/library-resolve";
 import { findExistingByExactTitle, normalizeTitle } from "../find-existing";
 import { attachResumeDetail, insertImportedResume, purgeLocalResumes } from "./resume-import";

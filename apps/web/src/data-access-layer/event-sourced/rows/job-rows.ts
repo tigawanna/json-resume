@@ -6,6 +6,8 @@ import { jobStatusSchema } from "../schemas";
 import { joinSearchable, libraryRowBase, nowMs } from "@/routes/_dashboard/-utils/row-helpers";
 import { quotePayRate } from "./pay-quote";
 
+export { jobListLabel } from "@repo/isomorphic/agentic/job-view";
+
 export const JOB_STATUS_LABELS: Record<JobStatus, string> = {
   saved: "Saved",
   applied: "Applied",
@@ -317,14 +319,6 @@ export function linkedJob(resume: Pick<Resume, "jobId">, jobs: ReadonlyArray<Job
 export function jobDescriptionPreview(text: string, max = 240) {
   const flat = text.trim().replace(/\s+/g, " ");
   return flat.length <= max ? flat : `${flat.slice(0, max - 1)}…`;
-}
-
-export function jobListLabel(job: Pick<Job, "company" | "title" | "description">) {
-  const company = job.company.trim();
-  const title = job.title.trim();
-  if (company && title) return `${company} — ${title}`;
-  if (company || title) return company || title;
-  return jobDescriptionPreview(job.description, 60) || "Untitled job";
 }
 
 /** Jobs matching `query` in any text field, most recently updated first. */

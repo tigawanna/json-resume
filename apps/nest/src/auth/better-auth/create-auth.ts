@@ -17,6 +17,7 @@ type AuthEnv = {
   trustedOrigins: string[];
   githubClientId: string;
   githubClientSecret: string;
+  secureCookies: boolean;
 };
 
 export const AUTH_BASE_PATH = "/api/auth";
@@ -34,8 +35,8 @@ export function createAuth({ db, env }: { db: DrizzleDB; env: AuthEnv }) {
     advanced: {
       database: { joins: true },
       defaultCookieAttributes: {
-        sameSite: "none",
-        secure: true,
+        sameSite: env.secureCookies ? "none" : "lax",
+        secure: env.secureCookies,
       },
     },
     emailAndPassword: { enabled: true },

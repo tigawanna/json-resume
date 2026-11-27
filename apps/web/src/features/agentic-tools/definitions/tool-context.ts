@@ -1,5 +1,5 @@
 import type { AppDb } from "@/data-access-layer/event-sourced/collection";
-import type { WorkbenchTab } from "../resume-tool-schemas";
+import type { WorkbenchTab } from "@repo/isomorphic/agentic/tool-schemas/resume/lifecycle";
 
 /**
  * One write tool call: the outbox transactions whose first event got a

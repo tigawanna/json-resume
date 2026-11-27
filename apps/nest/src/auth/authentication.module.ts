@@ -34,6 +34,8 @@ import { ViewerController } from './viewer/viewer.controller.js';
             githubClientSecret: config.get('GITHUB_CLIENT_SECRET', {
               infer: true,
             }),
+            secureCookies:
+              config.get('NODE_ENV', { infer: true }) === 'production',
           },
         }),
       }),

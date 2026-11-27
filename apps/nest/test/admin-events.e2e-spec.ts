@@ -2,7 +2,7 @@ import type { INestApplication } from '@nestjs/common';
 import {
   COMPACTION_REQUEST_COLLECTION,
   compactionRequestSchema,
-} from '@repo/api-contracts/sync/compaction';
+} from '@repo/isomorphic/sync/compaction-protocol';
 import { syncEvent } from '@repo/db/postgres/schema/sync-schema';
 import { desc, eq } from 'drizzle-orm';
 import request from 'supertest';
@@ -23,26 +23,24 @@ describe('admin events and library actions', () => {
     app = started.app;
     db = started.db;
     closeDatabase = started.close;
-    await db
-      .insert(syncEvent)
-      .values([
-        event({
-          userId: personas.member.id,
-          collectionId: 'resume',
-          key: 'resume-1',
-        }),
-        event({
-          userId: personas.member.id,
-          collectionId: 'job',
-          key: 'job-1',
-          projected: true,
-        }),
-        event({
-          userId: personas.admin.id,
-          collectionId: 'resume',
-          key: 'resume-2',
-        }),
-      ]);
+    await db.insert(syncEvent).values([
+      event({
+        userId: personas.member.id,
+        collectionId: 'resume',
+        key: 'resume-1',
+      }),
+      event({
+        userId: personas.member.id,
+        collectionId: 'job',
+        key: 'job-1',
+        projected: true,
+      }),
+      event({
+        userId: personas.admin.id,
+        collectionId: 'resume',
+        key: 'resume-2',
+      }),
+    ]);
   });
 
   afterAll(async () => {

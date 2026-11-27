@@ -4,8 +4,6 @@ const originSchema = z.url().transform((value) => value.replace(/\/+$/, ""));
 
 const envSchema = z.object({
   VITE_API_URL: z.url().optional(),
-  /** Public origin of `apps/api` (Hono). */
-  VITE_HONO_API_URL: z.url().default("http://localhost:3100"),
   /** Canonical public origin for Nest product and auth routes. */
   VITE_API_ORIGIN: originSchema.optional(),
   /** Temporary alias for VITE_API_ORIGIN. Remove after deploy configs migrate. */
@@ -22,7 +20,6 @@ const envSchema = z.object({
 // drops the values.
 const raw = {
   VITE_API_URL: import.meta.env.VITE_API_URL,
-  VITE_HONO_API_URL: import.meta.env.VITE_HONO_API_URL,
   VITE_API_ORIGIN: import.meta.env.VITE_API_ORIGIN,
   VITE_NEST_API_URL: import.meta.env.VITE_NEST_API_URL,
   VITE_SENTRY_DSN: import.meta.env.VITE_SENTRY_DSN,

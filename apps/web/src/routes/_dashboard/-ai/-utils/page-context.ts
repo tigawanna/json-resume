@@ -1,5 +1,5 @@
 import type { PageToolPack } from "@/features/agentic-tools/definitions/tool-context";
-import type { QueryCollection } from "@/features/agentic-tools/assistant-data-tool-schemas";
+import type { QueryCollection } from "@repo/isomorphic/agentic/tool-schemas/assistant-data";
 
 export type PageSuggestion = { label: string; prompt: string; send: boolean };
 

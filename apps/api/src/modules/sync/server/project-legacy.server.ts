@@ -38,7 +38,7 @@ import type { SQLiteColumn, SQLiteTable } from "drizzle-orm/sqlite-core";
 import {
   COMPACTION_COLLECTION,
   COMPACTION_REQUEST_COLLECTION,
-} from "@repo/api-contracts/sync/compaction";
+} from "@repo/isomorphic/sync/compaction-protocol";
 import { chargeProjectedResume, isChargeableResumeInsert } from "./resume-credit-charge";
 
 const SKIP_COLLECTIONS = new Set([

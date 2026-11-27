@@ -40,7 +40,7 @@ function DashboardShell() {
 
   // Idempotent waitlist claim on dashboard load: links the signed-in account to
   // a waitlist entry with the same email. Best-effort; failures stay silent.
-  const claimWaitlist = useMutation({
+  const { mutate: claimWaitlist } = useMutation({
     ...claimWaitlistMutationOptions,
     onError() {
       // Non-fatal by design.
@@ -48,9 +48,7 @@ function DashboardShell() {
   });
 
   useEffect(() => {
-    if (viewer.user?.id) {
-      claimWaitlist.mutate();
-    }
+    if (viewer.user?.id) claimWaitlist();
   }, [claimWaitlist, viewer.user?.id]);
 
   return (

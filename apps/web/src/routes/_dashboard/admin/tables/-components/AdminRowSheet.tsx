@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/sheet";
 import { adminRowQueryOptions } from "@/data-access-layer/admin/admin-query-options";
 import { deleteAdminRow, updateAdminRow } from "@/data-access-layer/admin/admin-mutations";
-import type { AdminRowDto } from "@repo/api-contracts/models/AdminRowDto";
+import type { AdminRowDto } from "@/services/nest/generated/models/AdminRowDto";
 import { useAppForm } from "@/lib/tanstack/form";
 import { unwrapUnknownError } from "@/utils/errors";
 import { useMutation, useQuery } from "@tanstack/react-query";

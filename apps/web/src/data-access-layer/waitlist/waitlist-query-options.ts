@@ -9,7 +9,7 @@ import { apiOrigin } from "@/lib/env/client-env";
 import type {
   AdminWaitlistControllerFindAllResponses,
   AdminWaitlistControllerStatsResponses,
-} from "@repo/api-contracts/models";
+} from "@/services/nest/generated/models";
 import { mutationOptions, queryOptions } from "@tanstack/react-query";
 
 export type WaitlistSource = "landing" | "waitlist-page" | "dashboard";

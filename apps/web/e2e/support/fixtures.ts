@@ -10,7 +10,7 @@ export { expect } from "@playwright/test";
 type Account = Awaited<ReturnType<typeof signUp>> & { userId: string };
 
 export const BROWSER_DB_FILE = "browser.sqlite";
-export const SERVER_DB_FILE = "server.sqlite";
+export const SERVER_DB_FILE = "server.json";
 
 /**
  * `account` signs a fresh user up in the test's browser context. When the test
@@ -18,7 +18,7 @@ export const SERVER_DB_FILE = "server.sqlite";
  * of sync, plus `artifacts.json` describing them:
  *
  * - `browser.sqlite` — this browser's OPFS database (collections, outbox, inbox)
- * - `server.sqlite` — the sync server's database (`sync_event` + projected tables)
+ * - `server.json` — Nest/Postgres diagnostics (`sync_event` + projected rows)
  */
 export const test = base.extend<{ account: Account }>({
   account: async ({ page }, use, testInfo) => {
@@ -33,8 +33,8 @@ export const test = base.extend<{ account: Account }>({
     await exportBrowserDb(page, browserDb).catch((err: unknown) => {
       errors.push(`browser.sqlite: ${unwrapUnknownError(err).message}`);
     });
-    await snapshotServerDb(serverDb).catch((err: unknown) => {
-      errors.push(`server.sqlite: ${unwrapUnknownError(err).message}`);
+    await snapshotServerDb({ filePath: serverDb, userId: account.userId }).catch((err: unknown) => {
+      errors.push(`server.json: ${unwrapUnknownError(err).message}`);
     });
 
     const manifest = {
@@ -54,9 +54,9 @@ export const test = base.extend<{ account: Account }>({
           "select json_extract(value, '$.collectionId'), json_extract(value, '$.type'), json_extract(value, '$.syncStatus') from outbox order by json_extract(value, '$.localSeq');",
         ],
         serverDb: [
-          "sync_event is the event log every device pushes to; filter by user_id.",
-          "Tables named after the app (resume, resume_experience, …) are projected from sync_event.",
-          `select global_seq, collection_id, type, key, payload from sync_event where user_id = '${account.userId}' order by global_seq;`,
+          "Postgres diagnostics for this test user.",
+          "events is the sync_event log; projectedResumes contains the server-side resume rows.",
+          "Filter events by collection_id and inspect payload/previous JSON.",
         ],
       },
     };

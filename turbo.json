@@ -10,7 +10,6 @@
         "VITE_API_URL",
         "VITE_API_ORIGIN",
         "VITE_NEST_API_URL",
-        "VITE_HONO_API_URL",
         "VITE_SENTRY_DSN",
         "VITE_CREDITS_ENABLED",
         "LOG_DEBUG"

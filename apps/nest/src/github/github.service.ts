@@ -1,12 +1,13 @@
 import { Inject, Injectable, BadGatewayException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { account } from '@repo/db/postgres/schema/auth-schema';
 import { and, eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { DRIZZLE, type DrizzleDB } from '../database/database.module.js';
+import type { AppEnv } from '../config/env.schema.js';
 import { githubRepoSchema, type GithubSearchParams } from './github.dto.js';
 import { buildGithubSearchQuery } from './github-search-query.js';
 
-const GITHUB_API_ORIGIN = 'https://api.github.com';
 const githubUserSchema = z.object({ login: z.string() });
 const githubSearchResponseSchema = z.object({
   items: z.array(githubRepoSchema),
@@ -31,14 +32,17 @@ async function readGithubJson<T>({
 
 @Injectable()
 export class GithubService {
-  constructor(@Inject(DRIZZLE) private readonly db: DrizzleDB) {}
+  constructor(
+    @Inject(DRIZZLE) private readonly db: DrizzleDB,
+    private readonly config: ConfigService<AppEnv, true>,
+  ) {}
 
   async listRepositories({ userId }: { userId: string }) {
     const token = await this.accessToken({ userId });
     if (!token) return { repos: [], hasToken: false };
 
     const response = await fetch(
-      `${GITHUB_API_ORIGIN}/user/repos?per_page=100&sort=updated&direction=desc`,
+      `${this.githubOrigin()}/user/repos?per_page=100&sort=updated&direction=desc`,
       {
         headers: this.headers(token),
       },
@@ -67,7 +71,7 @@ export class GithubService {
       };
     }
 
-    const userResponse = await fetch(`${GITHUB_API_ORIGIN}/user`, {
+    const userResponse = await fetch(`${this.githubOrigin()}/user`, {
       headers: this.headers(token),
     });
     const user = await readGithubJson({
@@ -82,7 +86,7 @@ export class GithubService {
     if (params.sort !== 'best-match') search.set('sort', params.sort);
 
     const response = await fetch(
-      `${GITHUB_API_ORIGIN}/search/repositories?${search}`,
+      `${this.githubOrigin()}/search/repositories?${search}`,
       {
         headers: this.headers(token),
       },
@@ -106,6 +110,12 @@ export class GithubService {
       .where(and(eq(account.userId, userId), eq(account.providerId, 'github')))
       .limit(1);
     return row?.accessToken;
+  }
+
+  private githubOrigin() {
+    return this.config
+      .get('GITHUB_API_BASE_URL', { infer: true })
+      .replace(/\/+$/, '');
   }
 
   private headers(token: string) {

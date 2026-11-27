@@ -14,7 +14,10 @@ export function useResumeFilter(routeID: TRouteID) {
   const routeApi = getRouteApi(routeID);
   const search = routeApi.useSearch();
   const navigate = routeApi.useNavigate();
-  const resumeIds = ("resumeIds" in search ? search.resumeIds : undefined) ?? [];
+  const resumeIds: string[] =
+    "resumeIds" in search && Array.isArray(search.resumeIds)
+      ? search.resumeIds.filter((id: unknown): id is string => typeof id === "string")
+      : [];
   const active = resumeIds.length > 0;
 
   const { data, isLoading } = useLiveQuery(

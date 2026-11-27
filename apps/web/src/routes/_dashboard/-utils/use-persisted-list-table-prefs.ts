@@ -44,7 +44,7 @@ export function usePersistedListTablePrefs(db: AppDb, listKey: string, search: L
       if (!urlHasPrefs && stored && (stored.hidden || stored.sortBy || stored.sortDirection)) {
         void navigate({
           to: ".",
-          search: (prev) => ({
+          search: (prev: Record<string, unknown>) => ({
             ...prev,
             hidden: stored.hidden,
             sortBy: stored.sortBy,

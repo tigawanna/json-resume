@@ -3,14 +3,14 @@ import { deleteWithReferences } from "@/data-access-layer/event-sourced/rows/lib
 import type {
   MutateCollection,
   QueryCollection,
-} from "@/features/agentic-tools/assistant-data-tool-schemas";
+} from "@repo/isomorphic/agentic/tool-schemas/assistant-data";
 import {
   mutateCollectionToolDefinition,
   queryCollectionToolDefinition,
   searchConversationsToolDefinition,
 } from "@/features/agentic-tools/definitions/assistant-data-definitions";
 import type { DashboardToolContext } from "@/features/agentic-tools/definitions/tool-context";
-import { nextOffset, searchTerms } from "@/features/agentic-tools/shared/search-page";
+import { nextOffset, searchTerms } from "@repo/isomorphic/agentic/search-page";
 import { ownedChildren, rowsToDeleteWith } from "@/modules/library/library-references";
 import { joinSearchable, newId, nowMs } from "@/routes/_dashboard/-utils/row-helpers";
 import {

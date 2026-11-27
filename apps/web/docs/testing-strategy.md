@@ -4,15 +4,16 @@ This project should treat data ownership as a first-class security invariant. Th
 
 ## Priority Layers
 
-1. **Data access layer security tests**
-   - Run against a throwaway SQLite database created from the real Drizzle migrations.
+1. **Nest/Postgres data ownership tests**
+   - Run against a throwaway Postgres database created from the real Drizzle migrations.
    - Seed at least two users and two resumes.
    - Assert every list/query helper filters by `userId`.
    - Assert ownership guards reject cross-user resume and child-row IDs.
    - Assert elevated roles do not bypass user ownership unless a function is explicitly designed as an admin-only path.
 
-2. **Server function boundary tests**
-   - Exercise exported TanStack server functions with a mocked viewer context where practical.
+2. **HTTP and generated-client contract tests**
+   - Exercise Nest controllers through Supertest and real Postgres.
+   - Keep Swagger/OpenAPI as the contract; regenerate the web Kubb client and run `gen:api:check`.
    - For every mutation accepting a raw `resumeId` or child ID, include a cross-owner denial case.
    - Keep success-path tests narrow: one representative create/update/delete per section is enough unless behavior differs.
 
@@ -29,10 +30,10 @@ This project should treat data ownership as a first-class security invariant. Th
 ## Commands
 
 - `pnpm test` runs the Vitest suite across the workspace.
-- `pnpm --dir apps/web test:e2e` runs Playwright against a freshly migrated SQLite database at `apps/web/.test/db/e2e.sqlite`.
+- `pnpm --dir apps/web test:e2e` runs Playwright against a freshly migrated Postgres database. Set `E2E_POSTGRES_URL` to an existing Postgres database; its name is reset before the run.
 - `pnpm --dir apps/web test:all` runs the web Vitest suite and then the Playwright suite.
 
-Playwright starts the app with `DATABASE_URL`, `FRONTEND_URL`, and `VITE_API_URL` pointed at the local test server. The database is rebuilt by `apps/web/scripts/setup-test-db.ts` before the server starts, so e2e tests should create their own users and records through the UI or public app APIs.
+Playwright rebuilds the configured Postgres database, runs Nest on `PLAYWRIGHT_NEST_PORT` (default `5041`), and points `VITE_API_ORIGIN` at it. The web dev server runs on `PLAYWRIGHT_PORT` (default `3041`). Tests create users and records through the UI or public app APIs; diagnostics are written as `browser.sqlite` plus `server.json`.
 
 ## Security Regression Checklist
 

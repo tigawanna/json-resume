@@ -3,7 +3,17 @@ import {
   publicResumeControllerGetMine,
   publicResumeControllerList,
 } from "@/services/nest/client";
+import { ResponseError } from "@/services/nest/generated/.kubb/client";
 import { queryOptions } from "@tanstack/react-query";
+
+async function nullWhenMissing<T>({ request }: { request: Promise<T> }): Promise<T | null> {
+  try {
+    return await request;
+  } catch (error: unknown) {
+    if (ResponseError.is(error) && error.status === 404) return null;
+    throw error;
+  }
+}
 
 export const publicResumeKeys = {
   all: ["public-resume"] as const,
@@ -16,13 +26,16 @@ export const publicResumeKeys = {
 export const publicResumeQueryOptions = (id: string) =>
   queryOptions({
     queryKey: publicResumeKeys.byId(id),
-    queryFn: () => publicResumeControllerGetById({ path: { id } }),
+    queryFn: () => nullWhenMissing({ request: publicResumeControllerGetById({ path: { id } }) }),
   });
 
 export const myPublicResumeQueryOptions = (sourceResumeId: string) =>
   queryOptions({
     queryKey: publicResumeKeys.mine(sourceResumeId),
-    queryFn: () => publicResumeControllerGetMine({ query: { sourceResumeId } }),
+    queryFn: () =>
+      nullWhenMissing({
+        request: publicResumeControllerGetMine({ query: { sourceResumeId } }),
+      }),
   });
 
 export const myPublicResumesListQueryOptions = (opts: {

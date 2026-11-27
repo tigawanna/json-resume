@@ -6,7 +6,7 @@ import {
   queryCollectionToolOutputSchema,
   searchConversationsToolInputSchema,
   searchConversationsToolOutputSchema,
-} from "../assistant-data-tool-schemas";
+} from "@repo/isomorphic/agentic/tool-schemas/assistant-data";
 
 const MUTATE_FIELDS = [
   "resumeExperience: company, role, startDate, endDate, location, sortOrder",

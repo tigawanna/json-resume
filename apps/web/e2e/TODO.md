@@ -14,12 +14,12 @@ Last updated: 2026-05-21
 ## Local-first + sync harness (2026-10-08)
 
 The app is local-first now: the editor writes to SQLite in the browser (OPFS) and only
-reaches the server through `/api/sync/events`. The webServer in `playwright.config.ts`
-is the sync server; its SQLite is `.test/db/e2e.sqlite` (reset each run).
+reaches Nest through `/api/sync/events`. The webServer in `playwright.config.ts`
+starts Nest with the configured Postgres database (reset each run).
 
 - Import `test`/`expect` from `support/fixtures.ts` and request `account` for a fresh
   signed-up user. After every such test (pass or fail) its folder under `test-results/`
-  holds `browser.sqlite`, `server.sqlite` and `artifacts.json` (paths, user id, queries).
+  holds `browser.sqlite`, `server.json` and `artifacts.json` (paths, user id, queries).
 - `support/sync.ts`: `enableManagedSync`, `syncNow`. The app does not push after each
   edit, only on load, on enabling sync and on "Sync now".
 - `support/browser-db.ts`: `exportBrowserDb` (leaves the app to release the OPFS lock),

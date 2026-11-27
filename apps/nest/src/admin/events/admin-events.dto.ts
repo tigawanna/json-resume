@@ -1,7 +1,7 @@
 import {
   adminEventFilterSchema,
   adminEventListSchema,
-} from '@repo/api-contracts/admin/events';
+} from '@repo/isomorphic/admin/event-filters';
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
 

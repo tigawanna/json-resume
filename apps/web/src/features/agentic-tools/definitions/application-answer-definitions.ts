@@ -4,7 +4,7 @@ import {
   saveApplicationAnswersToolOutputSchema,
   searchApplicationAnswersToolInputSchema,
   searchApplicationAnswersToolOutputSchema,
-} from "../application-answer-tool-schemas";
+} from "@repo/isomorphic/agentic/tool-schemas/application-answer";
 
 export const saveApplicationAnswersToolDefinition = toolDefinition({
   name: "save_application_answers",

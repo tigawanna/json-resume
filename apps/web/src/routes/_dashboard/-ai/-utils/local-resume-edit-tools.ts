@@ -50,8 +50,8 @@ import {
   type UpsertProjectToolOutput,
   type UpsertTalkToolInput,
   type UpsertTalkToolOutput,
-} from "@/features/agentic-tools/resume-tool-schemas";
-import { parseTalkLinks, parseTech, resumeView } from "@/features/agentic-tools/shared/resume-view";
+} from "@repo/isomorphic/agentic/tool-schemas/resume/index";
+import { parseTalkLinks, parseTech, resumeView } from "@repo/isomorphic/agentic/resume-view";
 import {
   layoutIds,
   removeEntity,

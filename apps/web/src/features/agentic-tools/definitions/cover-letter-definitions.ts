@@ -6,7 +6,7 @@ import {
   listCoverLettersToolOutputSchema,
   saveCoverLetterToolInputSchema,
   saveCoverLetterToolOutputSchema,
-} from "../cover-letter-tool-schemas";
+} from "@repo/isomorphic/agentic/tool-schemas/cover-letter";
 
 export const saveCoverLetterToolDefinition = toolDefinition({
   name: "save_cover_letter",

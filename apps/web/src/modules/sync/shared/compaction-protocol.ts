@@ -1,1 +1,1 @@
-export * from "@repo/api-contracts/sync/compaction";
+export * from "@repo/isomorphic/sync/compaction-protocol";

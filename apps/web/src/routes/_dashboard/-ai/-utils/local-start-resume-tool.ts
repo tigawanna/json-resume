@@ -4,7 +4,7 @@ import {
   startResumeForJobToolInputSchema,
   type StartResumeForJobToolInput,
   type StartResumeForJobToolOutput,
-} from "@/features/agentic-tools/dashboard-tool-schemas";
+} from "@repo/isomorphic/agentic/tool-schemas/dashboard/start-resume";
 import type { DashboardToolContext } from "@/features/agentic-tools/definitions/tool-context";
 import { requireJob } from "./local-job-tools";
 

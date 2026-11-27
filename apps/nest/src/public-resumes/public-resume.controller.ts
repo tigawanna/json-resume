@@ -24,7 +24,6 @@ import {
   PublicResumeListItemDto,
   PublicResumeListQueryDto,
   PublicResumeListResponseDto,
-  publicResumeDtoSchema,
   PublicResumeMutationResponseDto,
   PublicResumeSourceQueryDto,
   PublishPublicResumeDto,
@@ -52,8 +51,8 @@ export class PublicResumeController {
   @Get('mine')
   @ApiCookieAuth()
   @ApiAuthResponses()
-  @ZodSerializerDto(publicResumeDtoSchema.nullable())
-  @ApiOkResponse({ type: PublicResumeDto, nullable: true })
+  @ApiOkResponse({ type: PublicResumeDto })
+  @ApiNotFoundResponse({ type: ApiErrorDto })
   getMine(
     @CurrentUser() current: UserWithRole,
     @Query() query: PublicResumeSourceQueryDto,
@@ -125,8 +124,8 @@ export class PublicResumeController {
 
   @Public()
   @Get(':id')
-  @ZodSerializerDto(publicResumeDtoSchema.nullable())
-  @ApiOkResponse({ type: PublicResumeDto, nullable: true })
+  @ApiOkResponse({ type: PublicResumeDto })
+  @ApiNotFoundResponse({ type: ApiErrorDto })
   getById(@Param() params: PublicResumeIdParamDto) {
     return this.publicResumes.getById({ id: params.id });
   }

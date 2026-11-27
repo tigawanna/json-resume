@@ -24,13 +24,9 @@ import {
   type SaveJobToolOutput,
   type UpdateJobToolInput,
   type UpdateJobToolOutput,
-} from "@/features/agentic-tools/resume-tool-schemas";
-import {
-  jobDetailView,
-  jobRowView,
-  linkedResumesByJob,
-} from "@/features/agentic-tools/shared/job-view";
-import { nextOffset, searchTerms } from "@/features/agentic-tools/shared/search-page";
+} from "@repo/isomorphic/agentic/tool-schemas/resume/job";
+import { jobDetailView, jobRowView, linkedResumesByJob } from "@repo/isomorphic/agentic/job-view";
+import { nextOffset, searchTerms } from "@repo/isomorphic/agentic/search-page";
 import { count, eq, inArray, queryOnce, type InitialQueryBuilder } from "@tanstack/db";
 import { orIlike } from "../../-utils/list-query";
 import { targetResumeId } from "./local-resume-tools";
