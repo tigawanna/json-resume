@@ -1,6 +1,6 @@
 import type { INestApplication } from "@nestjs/common";
 import { CREDIT_POLICY } from "@repo/isomorphic/credits-policy";
-import { waitlistEntry } from "@repo/db/schema/credits-schema";
+import { waitlistEntry } from "@repo/db/postgres/schema/credits-schema";
 import { eq } from "drizzle-orm";
 import request from "supertest";
 import type { App } from "supertest/types.js";
@@ -12,7 +12,7 @@ import { personas, walletOf } from "./support/personas.js";
 describe("waitlist, credits, and sync", () => {
   let app: INestApplication<App>;
   let db: DrizzleDB;
-  let closeDatabase: () => void;
+  let closeDatabase: () => Promise<void>;
 
   beforeAll(async () => {
     const started = await createTestApp();
@@ -23,7 +23,7 @@ describe("waitlist, credits, and sync", () => {
 
   afterAll(async () => {
     await app.close();
-    closeDatabase();
+    await closeDatabase();
   });
 
   it("lets an anonymous visitor join without granting credits", async () => {
@@ -147,7 +147,7 @@ describe("waitlist, credits, and sync", () => {
 
 describe("waitlist required", () => {
   let app: INestApplication<App>;
-  let closeDatabase: () => void;
+  let closeDatabase: () => Promise<void>;
 
   beforeAll(async () => {
     const started = await createTestApp({ policy: { ...CREDIT_POLICY, requireWaitlist: true } });
@@ -157,7 +157,7 @@ describe("waitlist required", () => {
 
   afterAll(async () => {
     await app.close();
-    closeDatabase();
+    await closeDatabase();
   });
 
   it("gives monthly credits only to a waitlisted user", async () => {
@@ -177,7 +177,7 @@ describe("waitlist required", () => {
 
 describe("waitlist IP throttle", () => {
   let app: INestApplication<App>;
-  let closeDatabase: () => void;
+  let closeDatabase: () => Promise<void>;
 
   beforeAll(async () => {
     const started = await createTestApp({ throttle: true });
@@ -187,7 +187,7 @@ describe("waitlist IP throttle", () => {
 
   afterAll(async () => {
     await app.close();
-    closeDatabase();
+    await closeDatabase();
   });
 
   it("returns 429 after the join limit from one IP", async () => {

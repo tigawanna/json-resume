@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { syncBackend, syncEvent } from '@repo/db/schema/sync-schema';
+import { syncBackend, syncEvent } from '@repo/db/postgres/schema/sync-schema';
 import { eq } from 'drizzle-orm';
 import { DRIZZLE, type DrizzleDB } from '../database/database.module.js';
 import type { OutboundEvent } from './sync.dto.js';

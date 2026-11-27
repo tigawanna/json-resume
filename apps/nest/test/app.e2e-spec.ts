@@ -7,7 +7,7 @@ import { createTestApp } from "./support/create-test-app.js";
 
 describe("AppController (e2e)", () => {
   let app: INestApplication<App>;
-  let closeDatabase: () => void;
+  let closeDatabase: () => Promise<void>;
 
   beforeAll(async () => {
     const started = await createTestApp();
@@ -17,7 +17,7 @@ describe("AppController (e2e)", () => {
 
   afterAll(async () => {
     await app.close();
-    closeDatabase();
+    await closeDatabase();
   });
 
   it("/docs (GET) serves Scalar", async () => {

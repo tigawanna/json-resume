@@ -10,5 +10,5 @@
     "declarationMap": false,
     "verbatimModuleSyntax": false
   },
-  "include": ["src/**/*.ts", "drizzle.config.ts"]
+  "include": ["src/**/*.ts", "drizzle.sqlite.config.ts", "drizzle.postgres.config.ts"]
 }

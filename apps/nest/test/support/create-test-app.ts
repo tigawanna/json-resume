@@ -1,37 +1,55 @@
-import { createClient } from '@libsql/client';
-import type { NestNodeApplication } from '@nestjs/platform-node';
-import { Test } from '@nestjs/testing';
-import { migrationsFolder } from '@repo/db/migrations';
-import { schema } from '@repo/db/schema/index';
-import { drizzle } from 'drizzle-orm/libsql';
-import { migrate } from 'drizzle-orm/libsql/migrator';
-import { mkdtempSync, rmSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
-import { ThrottlerGuard } from '@nestjs/throttler';
-import { AppModule } from '../../src/app.module.js';
-import { ADMIN_BYPASS_SECRET, MOCK_AUTH } from '../../src/auth/helpers/auth.constants.js';
-import { configureApp } from '../../src/bootstrap/configure-app.js';
-import { createHttpAdapter, nestHttpOptions } from '../../src/bootstrap/http-adapter.js';
-import type { CreditsPolicy } from '../../src/credits/allocate.js';
-import { CREDITS_POLICY } from '../../src/credits/credits.service.js';
-import { DRIZZLE, type DrizzleDB } from '../../src/database/database.module.js';
-import { seedPersonas } from './personas.js';
+import { Pool } from "pg";
+import type { NestNodeApplication } from "@nestjs/platform-node";
+import { Test } from "@nestjs/testing";
+import { schema } from "@repo/db/postgres";
+import { postgresMigrationsFolder } from "@repo/db/postgres/migrations";
+import { drizzle } from "drizzle-orm/node-postgres";
+import { migrate } from "drizzle-orm/node-postgres/migrator";
+import { ThrottlerGuard } from "@nestjs/throttler";
+import { AppModule } from "../../src/app.module.js";
+import { ADMIN_BYPASS_SECRET, MOCK_AUTH } from "../../src/auth/helpers/auth.constants.js";
+import { configureApp } from "../../src/bootstrap/configure-app.js";
+import { createHttpAdapter, nestHttpOptions } from "../../src/bootstrap/http-adapter.js";
+import type { CreditsPolicy } from "../../src/credits/allocate.js";
+import { CREDITS_POLICY } from "../../src/credits/credits.service.js";
+import { DRIZZLE, type DrizzleDB } from "../../src/database/database.module.js";
+import { seedPersonas } from "./personas.js";
 
-export type TestDatabase = { db: DrizzleDB; close: () => void };
+export type TestDatabase = { db: DrizzleDB; close: () => Promise<void> };
 
-export async function createMemoryDatabase(): Promise<TestDatabase> {
-  const directory = mkdtempSync(join(tmpdir(), 'nest-db-'));
-  const client = createClient({ url: `file:${join(directory, 'test.db')}` });
-  const db = drizzle({ client, schema });
-  await migrate(db, { migrationsFolder });
-  return {
-    db,
-    close() {
-      client.close();
-      rmSync(directory, { recursive: true, force: true });
-    },
-  };
+function requireTestUrl() {
+  const url = process.env.NEST_TEST_POSTGRES_URL;
+  if (!url) throw new Error("NEST_TEST_POSTGRES_URL must point to a Postgres admin/test database");
+  return url;
+}
+
+export async function createTestDatabase(): Promise<TestDatabase> {
+  const adminUrl = requireTestUrl();
+  const databaseName = `nest_test_${crypto.randomUUID().replaceAll("-", "")}`;
+  const admin = new Pool({ connectionString: adminUrl, max: 1 });
+  let pool: Pool | undefined;
+  try {
+    await admin.query(`CREATE DATABASE "${databaseName}"`);
+    const url = new URL(adminUrl);
+    url.pathname = `/${databaseName}`;
+    pool = new Pool({ connectionString: url.toString(), max: 2 });
+    const db = drizzle({ client: pool, schema });
+    await migrate(db, { migrationsFolder: postgresMigrationsFolder });
+    const activePool = pool;
+    return {
+      db,
+      async close() {
+        await activePool.end();
+        await admin.query(`DROP DATABASE "${databaseName}" WITH (FORCE)`);
+        await admin.end();
+      },
+    };
+  } catch (error: unknown) {
+    await pool?.end();
+    await admin.query(`DROP DATABASE IF EXISTS "${databaseName}" WITH (FORCE)`);
+    await admin.end();
+    throw error;
+  }
 }
 
 export async function createTestApp({
@@ -46,10 +64,10 @@ export async function createTestApp({
   throttle?: boolean;
   /** False exercises the real Better Auth cookie path. */
   mockAuth?: boolean;
-  /** Supply a snapshot (see copyLocalDatabase) to reuse real data without mocks. */
+  /** Supply a pre-migrated Postgres test database. */
   database?: TestDatabase;
 } = {}) {
-  const database = suppliedDatabase ?? (await createMemoryDatabase());
+  const database = suppliedDatabase ?? (await createTestDatabase());
   const db = database.db;
   if (!suppliedDatabase) await seedPersonas({ db });
   let builder = Test.createTestingModule({ imports: [AppModule] })

@@ -5,7 +5,7 @@ import { createTestApp } from './support/create-test-app.js';
 
 describe('platform probes', () => {
   let app: INestApplication<App>;
-  let closeDatabase: () => void;
+  let closeDatabase: () => Promise<void>;
 
   beforeAll(async () => {
     const started = await createTestApp();
@@ -15,7 +15,7 @@ describe('platform probes', () => {
 
   afterAll(async () => {
     await app.close();
-    closeDatabase();
+    await closeDatabase();
   });
 
   it('serves liveness at the root without a session', async () => {

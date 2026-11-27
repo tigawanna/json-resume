@@ -17,7 +17,7 @@ type Operation = {
 
 describe('Nest OpenAPI contract', () => {
   let app: INestApplication<App>;
-  let closeDatabase: () => void;
+  let closeDatabase: () => Promise<void>;
   let paths: Record<string, Record<string, Operation>>;
 
   beforeAll(async () => {
@@ -32,7 +32,7 @@ describe('Nest OpenAPI contract', () => {
 
   afterAll(async () => {
     await app.close();
-    closeDatabase();
+    await closeDatabase();
   });
 
   it('gives every operation a unique operationId', () => {

@@ -1,23 +1,23 @@
-import type { INestApplication } from '@nestjs/common';
-import { user } from '@repo/db/schema/auth-schema';
-import { job } from '@repo/db/schema/job-schema';
-import { publicResume } from '@repo/db/schema/resume/public-resume';
-import { resume } from '@repo/db/schema/resume/resume';
-import { syncBackend, syncEvent } from '@repo/db/schema/sync-schema';
-import { count, eq, isNull } from 'drizzle-orm';
-import request from 'supertest';
-import type { App } from 'supertest/types.js';
-import type { DrizzleDB } from '../src/database/database.module.js';
-import { createRealDataApp } from './support/create-real-data-app.js';
+import type { INestApplication } from "@nestjs/common";
+import { user } from "@repo/db/postgres/schema/auth-schema";
+import { job } from "@repo/db/postgres/schema/job-schema";
+import { publicResume } from "@repo/db/postgres/schema/resume/public-resume";
+import { resume } from "@repo/db/postgres/schema/resume/resume";
+import { syncBackend, syncEvent } from "@repo/db/postgres/schema/sync-schema";
+import { count, eq, isNull } from "drizzle-orm";
+import request from "supertest";
+import type { App } from "supertest/types.js";
+import type { DrizzleDB } from "../src/database/database.module.js";
+import { createRealDataApp } from "./support/create-real-data-app.js";
 
-describe('admin dashboard against a copy of the local database', () => {
+describe("admin dashboard against a copy of the local database", () => {
   let app: INestApplication<App>;
   let db: DrizzleDB;
-  let closeDatabase: () => void;
+  let closeDatabase: () => Promise<void>;
   let adminId: string;
   let adminEmail: string;
   let memberId: string;
-  const admin = () => ({ 'x-mock-user': adminId });
+  const admin = () => ({ "x-mock-user": adminId });
 
   beforeAll(async () => {
     const started = await createRealDataApp();
@@ -31,10 +31,10 @@ describe('admin dashboard against a copy of the local database', () => {
 
   afterAll(async () => {
     await app.close();
-    closeDatabase();
+    await closeDatabase();
   });
 
-  it('reports counts computed from the real tables', async () => {
+  it("reports counts computed from the real tables", async () => {
     const [[users], [resumes], [published], [jobs], [events], [unprojected], [backend]] =
       await Promise.all([
         db.select({ n: count() }).from(user),
@@ -46,7 +46,7 @@ describe('admin dashboard against a copy of the local database', () => {
         db.select({ seq: syncBackend.lastProjectedSeq }).from(syncBackend).limit(1),
       ]);
     const response = await request(app.getHttpServer())
-      .get('/api/admin/stats')
+      .get("/api/admin/stats")
       .set(admin())
       .expect(200);
 
@@ -61,13 +61,13 @@ describe('admin dashboard against a copy of the local database', () => {
     });
     expect(response.body.admins).toBeGreaterThanOrEqual(1);
     expect(response.body.activeSessions).toBeGreaterThanOrEqual(0);
-    expect(typeof response.body.eventsLast24h).toBe('number');
+    expect(typeof response.body.eventsLast24h).toBe("number");
   });
 
-  it('lists every real user with counts and no credential fields', async () => {
+  it("lists every real user with counts and no credential fields", async () => {
     const users = await db.select({ id: user.id }).from(user);
     const response = await request(app.getHttpServer())
-      .get('/api/admin/users')
+      .get("/api/admin/users")
       .set(admin())
       .expect(200);
 
@@ -78,38 +78,38 @@ describe('admin dashboard against a copy of the local database', () => {
     expect(row.events).toBeGreaterThan(0);
     expect(Object.keys(row).sort()).toEqual(
       [
-        'banned',
-        'createdAt',
-        'email',
-        'emailVerified',
-        'events',
-        'id',
-        'name',
-        'resumes',
-        'role',
+        "banned",
+        "createdAt",
+        "email",
+        "emailVerified",
+        "events",
+        "id",
+        "name",
+        "resumes",
+        "role",
       ].sort(),
     );
   });
 
-  it('counts admin roles with the same whitespace rules as authorization', async () => {
+  it("counts admin roles with the same whitespace rules as authorization", async () => {
     const before = await request(app.getHttpServer())
-      .get('/api/admin/stats')
+      .get("/api/admin/stats")
       .set(admin())
       .expect(200);
     const id = crypto.randomUUID();
     await db.insert(user).values({
       id,
-      name: 'Whitespace admin',
+      name: "Whitespace admin",
       email: `${id}@example.com`,
       emailVerified: true,
-      role: ' user,\tadmin\n',
+      role: " user,\tadmin\n",
       banned: false,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
     try {
       const after = await request(app.getHttpServer())
-        .get('/api/admin/stats')
+        .get("/api/admin/stats")
         .set(admin())
         .expect(200);
       expect(after.body.admins).toBe(before.body.admins + 1);
@@ -119,25 +119,22 @@ describe('admin dashboard against a copy of the local database', () => {
     }
   });
 
-  it('probes the real admin session and refuses unsigned, member and banned users', async () => {
+  it("probes the real admin session and refuses unsigned, member and banned users", async () => {
     const probe = await request(app.getHttpServer())
-      .get('/api/admin/session')
+      .get("/api/admin/session")
       .set(admin())
       .expect(200);
     expect(probe.body).toMatchObject({ id: adminId, email: adminEmail });
 
-    await request(app.getHttpServer()).get('/api/admin/session').expect(401);
+    await request(app.getHttpServer()).get("/api/admin/session").expect(401);
     await request(app.getHttpServer())
-      .get('/api/admin/session')
-      .set('x-mock-user', memberId)
+      .get("/api/admin/session")
+      .set("x-mock-user", memberId)
       .expect(403);
 
     try {
       await db.update(user).set({ banned: true }).where(eq(user.id, adminId));
-      await request(app.getHttpServer())
-        .get('/api/admin/session')
-        .set(admin())
-        .expect(403);
+      await request(app.getHttpServer()).get("/api/admin/session").set(admin()).expect(403);
     } finally {
       await db.update(user).set({ banned: false }).where(eq(user.id, adminId));
     }

@@ -1,4 +1,4 @@
-import { waitlistEntryZod } from "@repo/db/zod";
+import { waitlistEntryZod } from "@repo/db/postgres/zod";
 import { createZodDto } from "nestjs-zod";
 import { z } from "zod";
 

@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { user } from '@repo/db/schema/auth-schema';
-import { resume } from '@repo/db/schema/resume/resume';
-import { syncEvent } from '@repo/db/schema/sync-schema';
+import { user } from '@repo/db/postgres/schema/auth-schema';
+import { resume } from '@repo/db/postgres/schema/resume/resume';
+import { syncEvent } from '@repo/db/postgres/schema/sync-schema';
 import { getTableName, sql } from 'drizzle-orm';
 import { DRIZZLE, type DrizzleDB } from '../../database/database.module.js';
 import type { AdminUser } from './admin-users.dto.js';

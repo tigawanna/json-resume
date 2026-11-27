@@ -1,1 +1,1 @@
-export { migrationsFolder } from "./migrations.ts";
+export * from "./sqlite/index.ts";

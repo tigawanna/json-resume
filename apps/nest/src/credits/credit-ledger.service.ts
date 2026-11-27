@@ -1,4 +1,4 @@
-import { creditLedger } from '@repo/db/schema/credits-schema';
+import { creditLedger } from '@repo/db/postgres/schema/credits-schema';
 import { asc, count, desc, eq } from 'drizzle-orm';
 import type { DrizzleDB } from '../database/database.module.js';
 

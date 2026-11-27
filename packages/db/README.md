@@ -1,16 +1,52 @@
-Drizzle schema, imported as TypeScript source.
+Drizzle schemas, imported as TypeScript source from one package with explicit dialect folders.
+
+```text
+src/
+  sqlite/                 # Turso + local SQLite
+    schema/
+    zod/
+    index.ts
+    migrations.ts
+  postgres/               # Neon + local Postgres
+    schema/
+    zod/
+    index.ts
+    migrations.ts
+
+drizzle/
+  sqlite/migrations/
+  postgres/migrations/
+```
 
 `vp build` writes `dist/`. `vp dev` is `vp build --watch`.
 
 ## Database commands
 
-Run these from this package. Copy `.env.example` to `.env` and set `DATABASE_URL` first. Drizzle Kit reads that file from this directory.
+Run these from this package. Copy `.env.example` to `.env` first.
+
+SQLite/Turso track:
 
 ```bash
-pnpm --dir packages/db db:generate   # write a migration from the schema
-pnpm --dir packages/db db:migrate    # apply migrations
-pnpm --dir packages/db db:push       # push the schema without a migration
-pnpm --dir packages/db db:studio     # open Drizzle Studio
+pnpm --dir packages/db db:generate
+pnpm --dir packages/db db:migrate
+pnpm --dir packages/db db:push
+pnpm --dir packages/db db:studio
 ```
 
-Migrations are written to `drizzle/migrations`. The web and API apps do not have their own copies of these scripts.
+Postgres track:
+
+```bash
+pnpm --dir packages/db db:generate:postgres
+pnpm --dir packages/db db:migrate:postgres
+```
+
+## Imports
+
+Prefer explicit dialect exports:
+
+```ts
+import { resume } from "@repo/db/sqlite/schema/resume";
+import { resume } from "@repo/db/postgres/schema/resume";
+```
+
+Legacy `@repo/db/schema/*`, `@repo/db/zod`, and `@repo/db/migrations` aliases still point to SQLite so web/API can migrate incrementally. Do not replay SQLite migrations against Postgres.

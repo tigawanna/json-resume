@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import type { NodeRequest } from '@nestjs/platform-node';
-import { user } from '@repo/db/schema/auth-schema';
+import { user } from '@repo/db/postgres/schema/auth-schema';
 import { AuthService } from '@thallesp/nestjs-better-auth';
 import { eq } from 'drizzle-orm';
 import { DRIZZLE, type DrizzleDB } from '../../database/database.module.js';

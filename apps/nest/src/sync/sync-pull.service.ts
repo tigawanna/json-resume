@@ -1,13 +1,13 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { syncBackend, syncEvent } from '@repo/db/schema/sync-schema';
-import { and, eq, gt, lte, max, notInArray, sql } from 'drizzle-orm';
-import { DRIZZLE, type DrizzleDB } from '../database/database.module.js';
+import { Inject, Injectable } from "@nestjs/common";
+import { syncBackend, syncEvent } from "@repo/db/postgres/schema/sync-schema";
+import { and, eq, gt, lte, max, notInArray, sql } from "drizzle-orm";
+import { DRIZZLE, type DrizzleDB } from "../database/database.module.js";
 
 type ServerEvent = {
   globalSeq: number;
   eventId: string;
   collectionId: string;
-  type: 'insert' | 'update' | 'delete';
+  type: "insert" | "update" | "delete";
   key: string;
   payload: Record<string, unknown>;
   previous: Record<string, unknown> | null;
@@ -21,8 +21,8 @@ type ServerEvent = {
 const PULL_LIMIT = 200;
 const PULL_MAX_BYTES = 3_500_000;
 const PULL_ROW_OVERHEAD_BYTES = 512;
-const LOCAL_ONLY_COLLECTIONS = ['resumeAiChat', 'resumeAiConversation', 'resumeAiMessage'];
-const RESET_COLLECTION = '__sync_reset__';
+const LOCAL_ONLY_COLLECTIONS = ["resumeAiChat", "resumeAiConversation", "resumeAiMessage"];
+const RESET_COLLECTION = "__sync_reset__";
 
 @Injectable()
 export class SyncPullService {
@@ -37,7 +37,7 @@ export class SyncPullService {
     const sizes = await this.db
       .select({
         globalSeq: syncEvent.globalSeq,
-        bytes: sql<number>`length(cast(${syncEvent.payload} as blob)) + coalesce(length(cast(${syncEvent.previous} as blob)), 0)`,
+        bytes: sql<number>`octet_length(${syncEvent.payload}) + coalesce(octet_length(${syncEvent.previous}), 0)`,
       })
       .from(syncEvent)
       .where(filter)
@@ -100,14 +100,14 @@ export class SyncPullService {
       .where(and(eq(syncEvent.collectionId, RESET_COLLECTION), eq(syncEvent.key, userId)));
     return reset?.seq == null
       ? (backend?.backendId ?? crypto.randomUUID())
-      : `${backend?.backendId ?? ''}:${reset.seq}`;
+      : `${backend?.backendId ?? ""}:${reset.seq}`;
   }
 }
 
 function parseJsonObject(raw: string | null): Record<string, unknown> | null {
   if (raw == null) return null;
   const parsed: unknown = JSON.parse(raw);
-  if (parsed == null || typeof parsed !== 'object' || Array.isArray(parsed)) return null;
+  if (parsed == null || typeof parsed !== "object" || Array.isArray(parsed)) return null;
   const record: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(parsed)) record[key] = value;
   return record;

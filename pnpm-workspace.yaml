@@ -33,6 +33,7 @@ overrides:
   # this repo uses it. Drop the package so it cannot fork the Drizzle install.
   "@prisma/client": "-"
   prisma: "-"
+  "@electric-sql/pglite": "-"
   "@types/react": ^19.2.14
   "@types/react-dom": ^19.2.3
   "@babel/core": ^7.29.13

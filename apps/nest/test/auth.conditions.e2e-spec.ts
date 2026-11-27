@@ -6,7 +6,7 @@ import { personas } from "./support/personas.js";
 
 describe("auth conditions", () => {
   let app: INestApplication<App>;
-  let closeDatabase: () => void;
+  let closeDatabase: () => Promise<void>;
 
   beforeAll(async () => {
     const started = await createTestApp();
@@ -16,7 +16,7 @@ describe("auth conditions", () => {
 
   afterAll(async () => {
     await app.close();
-    closeDatabase();
+    await closeDatabase();
   });
 
   it("turns down /me with no credential", async () => {

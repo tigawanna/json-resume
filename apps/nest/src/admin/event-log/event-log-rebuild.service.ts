@@ -1,11 +1,11 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { user } from '@repo/db/schema/auth-schema';
-import { syncEvent } from '@repo/db/schema/sync-schema';
-import { count, eq, notInArray } from 'drizzle-orm';
-import { DRIZZLE, type DrizzleDB } from '../../database/database.module.js';
-import { EventLogProjectionService } from '../../sync/event-log-projection.service.js';
-import { toPayload } from '../tables/admin-sync-payload.js';
-import { EventLogRebuildRows } from './event-log-rebuild-rows.service.js';
+import { Inject, Injectable } from "@nestjs/common";
+import { user } from "@repo/db/postgres/schema/auth-schema";
+import { syncEvent } from "@repo/db/postgres/schema/sync-schema";
+import { count, eq, notInArray } from "drizzle-orm";
+import { DRIZZLE, type DrizzleDB } from "../../database/database.module.js";
+import { EventLogProjectionService } from "../../sync/event-log-projection.service.js";
+import { toPayload } from "../tables/admin-sync-payload.js";
+import { EventLogRebuildRows } from "./event-log-rebuild-rows.service.js";
 
 type RebuildUserResult = {
   previousEvents: number;
@@ -21,8 +21,8 @@ type RebuildAllResult = {
   projectedFirst: number;
 };
 
-const CLIENT_ID = 'server-rebuild';
-const RESET_COLLECTION = '__sync_reset__';
+const CLIENT_ID = "server-rebuild";
+const RESET_COLLECTION = "__sync_reset__";
 const INSERT_CHUNK = 50;
 
 @Injectable()
@@ -48,14 +48,15 @@ export class EventLogRebuildService {
           eventId: crypto.randomUUID(),
           userId,
           collectionId,
-          type: 'insert',
+          type: "insert",
           key: String(row.id),
           payload: JSON.stringify(payload),
           previous: null,
           txId,
           clientId: CLIENT_ID,
           schemaVersion: 1,
-          clientTimestamp: typeof payload.updatedAt === 'number' ? payload.updatedAt : now.getTime(),
+          clientTimestamp:
+            typeof payload.updatedAt === "number" ? payload.updatedAt : now.getTime(),
           projectedAt: now,
         });
       }
@@ -95,7 +96,7 @@ export class EventLogRebuildService {
       users: userIds.length,
       previousEvents: before?.n ?? 0,
       insertedEvents,
-      orphanEvents: orphans.rowsAffected,
+      orphanEvents: orphans.rowCount ?? 0,
       projectedFirst,
     } satisfies RebuildAllResult;
   }
@@ -116,7 +117,7 @@ function resetMarker({
     eventId: crypto.randomUUID(),
     userId,
     collectionId: RESET_COLLECTION,
-    type: 'insert',
+    type: "insert",
     key: userId,
     payload: JSON.stringify({ rebuiltAt: now.getTime(), events }),
     previous: null,

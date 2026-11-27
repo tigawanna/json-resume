@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-const REMOTE_DATABASE_URL = /^(libsql|https?|wss?):\/\/|^file:/;
+const POSTGRES_URL = /^postgres(?:ql)?:\/\//;
 
 function optionalSecret() {
   return z
@@ -14,7 +14,7 @@ const defaultPort = 5040;
 const defaultFrontendPort = 3040;
 
 const testDefaults = {
-  DATABASE_URL: "http://127.0.0.1:8080",
+  POSTGRES_URL: "postgresql://postgres:postgres@127.0.0.1:5432/agentic_json_resume_nest_test",
   BETTER_AUTH_SECRET: "test-secret-test-secret-test-secret",
   GITHUB_CLIENT_ID: "test-github-id",
   GITHUB_CLIENT_SECRET: "test-github-secret",
@@ -25,8 +25,8 @@ const EnvSchema = z
     NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
     PORT: z.coerce.number().default(defaultPort),
     SERVER_URL: z.url().default(`http://localhost:${defaultPort}`),
-    DATABASE_URL: z.string().min(1),
-    DATABASE_AUTH_TOKEN: z.string().optional(),
+    POSTGRES_URL: z.string().min(1),
+    POSTGRES_POOL_MAX: z.coerce.number().int().min(1).max(20).default(2),
     BETTER_AUTH_SECRET: z.string().min(1),
     BETTER_AUTH_URL: z.url().default(`http://localhost:${defaultPort}`),
     FRONTEND_URL: z.url().default(`http://localhost:${defaultFrontendPort}`),
@@ -39,9 +39,9 @@ const EnvSchema = z
     OBSERVE_APP_KEY: optionalSecret(),
     OBSERVE_APP_SECRET: optionalSecret(),
   })
-  .refine((env) => env.NODE_ENV === "test" || REMOTE_DATABASE_URL.test(env.DATABASE_URL), {
-    path: ["DATABASE_URL"],
-    message: "use a libsql://, https://, http:// or file: URL",
+  .refine((env) => env.NODE_ENV === "test" || POSTGRES_URL.test(env.POSTGRES_URL), {
+    path: ["POSTGRES_URL"],
+    message: "use a postgres:// or postgresql:// URL",
   })
   .refine((env) => env.NODE_ENV !== "production" || !env.ADMIN_BYPASS_SECRET, {
     path: ["ADMIN_BYPASS_SECRET"],
@@ -49,7 +49,6 @@ const EnvSchema = z
   })
   .transform((env) => ({
     ...env,
-    DATABASE_AUTH_TOKEN: env.DATABASE_AUTH_TOKEN?.trim() || undefined,
     TRUSTED_ORIGINS: uniqueOrigins({
       origins: [
         env.FRONTEND_URL,

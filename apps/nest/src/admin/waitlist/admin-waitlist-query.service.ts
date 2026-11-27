@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { user } from '@repo/db/schema/auth-schema';
-import { waitlistEntry } from '@repo/db/schema/credits-schema';
+import { user } from '@repo/db/postgres/schema/auth-schema';
+import { waitlistEntry } from '@repo/db/postgres/schema/credits-schema';
 import {
   and,
   asc,

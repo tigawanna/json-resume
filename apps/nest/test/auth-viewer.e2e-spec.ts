@@ -5,7 +5,7 @@ import { createTestApp } from './support/create-test-app.js';
 
 describe('auth viewer', () => {
   let app: INestApplication<App>;
-  let closeDatabase: () => void;
+  let closeDatabase: () => Promise<void>;
 
   beforeAll(async () => {
     const started = await createTestApp({ mockAuth: false });
@@ -15,7 +15,7 @@ describe('auth viewer', () => {
 
   afterAll(async () => {
     await app.close();
-    closeDatabase();
+    await closeDatabase();
   });
 
   it('returns the full signed-in Better Auth payload', async () => {

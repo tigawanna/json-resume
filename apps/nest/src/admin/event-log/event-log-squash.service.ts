@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { syncEvent } from '@repo/db/schema/sync-schema';
+import { syncEvent } from '@repo/db/postgres/schema/sync-schema';
 import { eq, inArray } from 'drizzle-orm';
 import {
   DEFAULT_RETENTION_MS,

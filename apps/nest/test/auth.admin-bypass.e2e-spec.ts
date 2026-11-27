@@ -7,7 +7,7 @@ const secret = "postman-dev-key";
 
 describe("auth admin bypass", () => {
   let app: INestApplication<App>;
-  let closeDatabase: () => void;
+  let closeDatabase: () => Promise<void>;
 
   beforeAll(async () => {
     const started = await createTestApp({ adminBypassSecret: secret });
@@ -17,7 +17,7 @@ describe("auth admin bypass", () => {
 
   afterAll(async () => {
     await app.close();
-    closeDatabase();
+    await closeDatabase();
   });
 
   it("lets x-admin through /me as admin", async () => {

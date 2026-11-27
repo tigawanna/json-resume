@@ -1,4 +1,4 @@
-import { creditWallet } from '@repo/db/schema/credits-schema';
+import { creditWallet } from '@repo/db/postgres/schema/credits-schema';
 import { eq } from 'drizzle-orm';
 import type { DrizzleDB } from '../database/database.module.js';
 

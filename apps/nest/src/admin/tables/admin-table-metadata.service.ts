@@ -1,56 +1,14 @@
-import { NotFoundException, Inject, Injectable } from '@nestjs/common';
-import type { InValue, Row as LibsqlRow, Value } from '@libsql/client';
-import { DRIZZLE, type DrizzleDB } from '../../database/database.module.js';
-import type { AdminCell, AdminColumn } from './admin-tables.dto.js';
+import { NotFoundException, Inject, Injectable } from "@nestjs/common";
+import { sql, type SQL } from "drizzle-orm";
+import { DRIZZLE, type DrizzleDB } from "../../database/database.module.js";
+import type { AdminColumn } from "./admin-tables.dto.js";
+import { decodeAdminRowKey } from "./admin-row-key.js";
+import type { AdminForeignKey } from "./admin-table-metadata-helpers.js";
 
-export type AdminForeignKey = { table: string; from: string; to: string };
+export { escapeLike, isSecret, quoteIdent, toCell } from "./admin-table-metadata-helpers.js";
+export type { AdminForeignKey } from "./admin-table-metadata-helpers.js";
 
-const SECRET_COLUMN = /password|token|secret|private_?key/i;
-const SECRET_COLUMNS_BY_TABLE: Record<string, readonly string[]> = {
-  apikey: ['key'],
-  verification: ['value'],
-};
-const MAX_CELL_CHARS = 1_000;
-export const ROWID_ALIAS = '__admin_rowid';
-
-export function quoteIdent({ name }: { name: string }) {
-  return `"${name.replaceAll('"', '""')}"`;
-}
-
-export function escapeLike({ value }: { value: string }) {
-  return value.replace(/[\\%_]/g, (character) => `\\${character}`);
-}
-
-function textOf(value: Value | undefined): string {
-  if (value == null || value instanceof ArrayBuffer) return '';
-  return String(value);
-}
-
-export function isSecret({ table, column }: { table: string; column: string }) {
-  return (
-    SECRET_COLUMN.test(column) ||
-    (SECRET_COLUMNS_BY_TABLE[table] ?? []).includes(column)
-  );
-}
-
-export function toCell({
-  table,
-  column,
-  value,
-}: {
-  table: string;
-  column: string;
-  value: Value | undefined;
-}): AdminCell {
-  if (value == null) return null;
-  if (isSecret({ table, column })) return '••••••';
-  if (value instanceof ArrayBuffer) return `<binary ${value.byteLength} bytes>`;
-  if (typeof value === 'bigint') return value.toString();
-  if (typeof value === 'number') return value;
-  return value.length > MAX_CELL_CHARS
-    ? `${value.slice(0, MAX_CELL_CHARS)}… (${value.length.toLocaleString()} chars)`
-    : value;
-}
+type Row = Record<string, unknown>;
 
 @Injectable()
 export class AdminTableMetadataService {
@@ -62,7 +20,7 @@ export class AdminTableMetadataService {
       names.map(async (name) => {
         const [columns, counted] = await Promise.all([
           this.columns({ table: name }),
-          this.count({ table: name, where: '1 = 1', args: [] }),
+          this.count({ table: name }),
         ]);
         return { name, rowCount: counted, columns };
       }),
@@ -70,12 +28,13 @@ export class AdminTableMetadataService {
   }
 
   async tableNames() {
-    const result = await this.db.$client.execute(
-      "select name, sql from sqlite_master where type = 'table' and name not like 'sqlite_%' order by name",
-    );
-    return result.rows
-      .filter((row) => !/without\s+rowid/i.test(textOf(row.sql)))
-      .map((row) => textOf(row.name));
+    const result = await this.db.execute(sql`
+      select table_name from information_schema.tables
+      where table_schema = 'public' and table_type = 'BASE TABLE'
+        and table_name not like '\\_%' escape '\\'
+      order by table_name
+    `);
+    return result.rows.map((row) => String(row.table_name));
   }
 
   async requireTable({ table }: { table: string }) {
@@ -86,25 +45,61 @@ export class AdminTableMetadataService {
   }
 
   async columns({ table }: { table: string }): Promise<AdminColumn[]> {
-    const result = await this.db.$client.execute(
-      `pragma table_info(${quoteIdent({ name: table })})`,
-    );
+    const result = await this.db.execute(sql`
+      select c.column_name, c.data_type, c.is_nullable,
+        exists (
+          select 1 from information_schema.table_constraints tc
+          join information_schema.key_column_usage kcu
+            on kcu.constraint_name = tc.constraint_name
+           and kcu.table_schema = tc.table_schema
+          where tc.table_schema = 'public' and tc.table_name = ${table}
+            and tc.constraint_type = 'PRIMARY KEY' and kcu.column_name = c.column_name
+        ) as primary_key
+      from information_schema.columns c
+      where c.table_schema = 'public' and c.table_name = ${table}
+      order by c.ordinal_position
+    `);
     return result.rows.map((row) => ({
-      name: textOf(row.name),
-      type: textOf(row.type).toUpperCase(),
-      notNull: Number(row.notnull) === 1,
-      primaryKey: Number(row.pk) > 0,
+      name: String(row.column_name),
+      type: String(row.data_type).toUpperCase(),
+      notNull: row.is_nullable === "NO",
+      primaryKey: row.primary_key === true,
     }));
   }
 
+  async primaryKeyColumns({ table }: { table: string }) {
+    const result = await this.db.execute(sql`
+      select kcu.column_name
+      from information_schema.table_constraints tc
+      join information_schema.key_column_usage kcu
+        on kcu.constraint_name = tc.constraint_name
+       and kcu.table_schema = tc.table_schema
+      where tc.table_schema = 'public' and tc.table_name = ${table}
+        and tc.constraint_type = 'PRIMARY KEY'
+      order by kcu.ordinal_position
+    `);
+    return result.rows.map((row) => String(row.column_name));
+  }
+
   async foreignKeys({ table }: { table: string }): Promise<AdminForeignKey[]> {
-    const result = await this.db.$client.execute(
-      `pragma foreign_key_list(${quoteIdent({ name: table })})`,
-    );
+    const result = await this.db.execute(sql`
+      select kcu.column_name as from_column, ccu.table_name as foreign_table,
+        ccu.column_name as to_column
+      from information_schema.table_constraints tc
+      join information_schema.key_column_usage kcu
+        on kcu.constraint_name = tc.constraint_name
+       and kcu.table_schema = tc.table_schema
+      join information_schema.constraint_column_usage ccu
+        on ccu.constraint_name = tc.constraint_name
+       and ccu.table_schema = tc.table_schema
+      where tc.table_schema = 'public' and tc.table_name = ${table}
+        and tc.constraint_type = 'FOREIGN KEY'
+      order by kcu.ordinal_position
+    `);
     return result.rows.map((row) => ({
-      table: textOf(row.table),
-      from: textOf(row.from),
-      to: textOf(row.to),
+      table: String(row.foreign_table),
+      from: String(row.from_column),
+      to: String(row.to_column),
     }));
   }
 
@@ -120,36 +115,32 @@ export class AdminTableMetadataService {
     return lists.flat();
   }
 
-  async readRawRow({
-    table,
-    rowid,
-  }: {
-    table: string;
-    rowid: number;
-  }): Promise<LibsqlRow> {
-    const result = await this.db.$client.execute({
-      sql: `select * from ${quoteIdent({ name: table })} where rowid = ?`,
-      args: [rowid],
-    });
+  async rowKeyWhere({ table, rowKey }: { table: string; rowKey: string }) {
+    const columns = await this.primaryKeyColumns({ table });
+    const values = decodeAdminRowKey({ rowKey });
+    if (columns.length !== values.length)
+      throw new NotFoundException("Row key does not match table");
+    return sql.join(
+      columns.map((column, index) => sql`${sql.identifier(column)} = ${values[index]}`),
+      sql` and `,
+    );
+  }
+
+  async readRawRow({ table, rowKey }: { table: string; rowKey: string }): Promise<Row> {
+    const where = await this.rowKeyWhere({ table, rowKey });
+    const result = await this.db.execute(sql`
+      select * from ${sql.identifier(table)} where ${where}
+    `);
     const row = result.rows[0];
-    if (!row)
-      throw new NotFoundException(`Row ${rowid} no longer exists in ${table}`);
+    if (!row) throw new NotFoundException(`Row no longer exists in ${table}`);
     return row;
   }
 
-  async count({
-    table,
-    where,
-    args,
-  }: {
-    table: string;
-    where: string;
-    args: InValue[];
-  }) {
-    const result = await this.db.$client.execute({
-      sql: `select count(*) as n from ${quoteIdent({ name: table })} where ${where}`,
-      args,
-    });
+  async count({ table, where }: { table: string; where?: SQL }) {
+    const result = await this.db.execute(sql`
+      select count(*) as n from ${sql.identifier(table)}
+      ${where ? sql`where ${where}` : sql``}
+    `);
     return Number(result.rows[0]?.n ?? 0);
   }
 }

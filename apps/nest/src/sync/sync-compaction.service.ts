@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { syncEvent } from '@repo/db/schema/sync-schema';
+import { syncEvent } from '@repo/db/postgres/schema/sync-schema';
 import { eq, max } from 'drizzle-orm';
 import { DRIZZLE, type DrizzleDB } from '../database/database.module.js';
 import { EventLogProjectionService } from './event-log-projection.service.js';

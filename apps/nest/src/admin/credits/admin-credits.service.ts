@@ -4,8 +4,8 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { user } from '@repo/db/schema/auth-schema';
-import { creditLedger, creditWallet } from '@repo/db/schema/credits-schema';
+import { user } from '@repo/db/postgres/schema/auth-schema';
+import { creditLedger, creditWallet } from '@repo/db/postgres/schema/credits-schema';
 import { eq, getTableColumns } from 'drizzle-orm';
 import { CreditLedgerService, type CreditLedgerPage } from '../../credits/credit-ledger.service.js';
 import { DRIZZLE, type DrizzleDB } from '../../database/database.module.js';

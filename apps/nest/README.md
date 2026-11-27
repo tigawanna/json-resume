@@ -73,19 +73,18 @@ $ pnpm run test:cov
 ```
 
 Most e2e specs use an empty migrated SQLite database with `personas` fixtures. The
-`admin-real-data-*.e2e-spec.ts` suites instead boot the app against a snapshot of
-the real local database (`.local-db/json-resume.db`): `copyLocalDatabase()` stages
-the db plus its WAL, runs `VACUUM INTO` a temporary file, and every suite mutates
-only its own copy. Set `NEST_TEST_DATABASE` to test against another local SQLite
-file. No mock repository is involved — auth still uses the `x-mock-user` header
-with a real user row from the snapshot.
+`admin-real-data-*.e2e-spec.ts` suites boot the app against a clone of a migrated
+Postgres snapshot. Set `NEST_TEST_POSTGRES_URL` to an admin/test role that can
+create databases and `NEST_TEST_POSTGRES_SOURCE` to the snapshot database. Each
+suite creates and drops its own clone; no mock repository is involved — auth
+still uses the `x-mock-user` header with a real user row from the snapshot.
 
 ## Deployment
 
-Build once and run `node dist/main` (`pnpm start:prod`). Set `NODE_ENV=production` and listen on `PORT`; in a container bind `0.0.0.0`. The app applies no migrations at boot — run them as a release step before starting the new version:
+Build once and run `node dist/main` (`pnpm start:prod`). Set `NODE_ENV=production`, `POSTGRES_URL`, and `POSTGRES_POOL_MAX`; listen on `PORT` and in a container bind `0.0.0.0`. The app applies no migrations at boot — run them as a release step before starting the new version:
 
 ```bash
-pnpm --dir apps/nest db:migrate
+pnpm --dir apps/nest db:migrate:postgres
 ```
 
 `main.ts` enables shutdown hooks (so `SIGTERM` closes the database client and flushes telemetry) and keeps idle sockets open for 65 s so a load balancer with a longer idle timeout does not see resets. Point your liveness probe at `/health` and readiness at `/ready`.

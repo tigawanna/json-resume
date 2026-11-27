@@ -1,12 +1,9 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { DRIZZLE, type DrizzleDB } from '../../database/database.module.js';
-import {
-  escapeLike,
-  quoteIdent,
-  ROWID_ALIAS,
-  toCell,
-} from './admin-table-metadata.service.js';
-import { AdminTableMetadataService } from './admin-table-metadata.service.js';
+import { Inject, Injectable } from "@nestjs/common";
+import { sql } from "drizzle-orm";
+import { DRIZZLE, type DrizzleDB } from "../../database/database.module.js";
+import { encodeAdminRowKeyFromRow } from "./admin-row-key.js";
+import { escapeLike, toCell } from "./admin-table-metadata-helpers.js";
+import { AdminTableMetadataService } from "./admin-table-metadata.service.js";
 
 @Injectable()
 export class AdminTableBrowserService {
@@ -31,31 +28,36 @@ export class AdminTableBrowserService {
     q?: string;
   }) {
     const name = await this.metadata.requireTable({ table });
-    const columns = await this.metadata.columns({ table: name });
-    const from = quoteIdent({ name });
-    const query = q?.trim();
-    const args: Array<string | number> = [];
-    let condition = '1 = 1';
-    if (query && columns.length > 0) {
-      condition = columns
-        .map(
-          (column) =>
-            `cast(${quoteIdent({ name: column.name })} as text) like ? escape '\\'`,
-        )
-        .join(' or ');
-      for (const _column of columns)
-        args.push(`%${escapeLike({ value: query })}%`);
-    }
-    const where = condition === '1 = 1' ? '' : `where ${condition}`;
-
-    const [total, rows] = await Promise.all([
-      this.metadata.count({ table: name, where: condition, args }),
-      this.db.$client.execute({
-        sql: `select rowid as ${ROWID_ALIAS}, * from ${from} ${where} order by rowid desc limit ? offset ?`,
-        args: [...args, pageSize, page * pageSize],
-      }),
+    const [columns, primaryKeys] = await Promise.all([
+      this.metadata.columns({ table: name }),
+      this.metadata.primaryKeyColumns({ table: name }),
     ]);
-
+    const query = q?.trim();
+    const condition =
+      query && columns.length > 0
+        ? sql.join(
+            columns.map(
+              (column) =>
+                sql`cast(${sql.identifier(column.name)} as text) like ${`%${escapeLike({ value: query })}%`} escape '\\'`,
+            ),
+            sql` or `,
+          )
+        : undefined;
+    const orderColumns =
+      primaryKeys.length > 0 ? primaryKeys : columns.slice(0, 1).map(({ name }) => name);
+    const order = sql.join(
+      orderColumns.map((column) => sql`${sql.identifier(column)} desc`),
+      sql`, `,
+    );
+    const [total, rows] = await Promise.all([
+      this.metadata.count({ table: name, where: condition }),
+      this.db.execute(sql`
+        select * from ${sql.identifier(name)}
+        ${condition ? sql`where ${condition}` : sql``}
+        order by ${order}
+        limit ${pageSize} offset ${page * pageSize}
+      `),
+    ]);
     return {
       table: name,
       total,
@@ -71,7 +73,7 @@ export class AdminTableBrowserService {
             value: row[column.name],
           });
         }
-        return { rowid: Number(row[ROWID_ALIAS]), cells };
+        return { rowKey: encodeAdminRowKeyFromRow({ row, columns: primaryKeys }), cells };
       }),
     };
   }

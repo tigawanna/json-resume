@@ -1,6 +1,6 @@
 import type { INestApplication } from '@nestjs/common';
 import { CREDIT_POLICY } from '@repo/isomorphic/credits-policy';
-import { creditLedger, creditWallet } from '@repo/db/schema/credits-schema';
+import { creditLedger, creditWallet } from '@repo/db/postgres/schema/credits-schema';
 import { and, eq } from 'drizzle-orm';
 import request from 'supertest';
 import type { App } from 'supertest/types.js';
@@ -12,7 +12,7 @@ import { seedSyncEvent } from './support/seed-sync-event.js';
 describe('resume credit charging during projection', () => {
   let app: INestApplication<App>;
   let db: DrizzleDB;
-  let closeDatabase: () => void;
+  let closeDatabase: () => Promise<void>;
   const admin = () => ({ 'x-mock-user': personas.admin.id });
 
   beforeAll(async () => {
@@ -24,7 +24,7 @@ describe('resume credit charging during projection', () => {
 
   afterAll(async () => {
     await app.close();
-    closeDatabase();
+    await closeDatabase();
   });
 
   it('charges one monthly credit for a new resume and never double-charges a replay', async () => {
@@ -94,7 +94,7 @@ describe('resume credit charging during projection', () => {
 describe('resume credit overdraft', () => {
   let app: INestApplication<App>;
   let db: DrizzleDB;
-  let closeDatabase: () => void;
+  let closeDatabase: () => Promise<void>;
 
   beforeAll(async () => {
     const started = await createTestApp({
@@ -107,7 +107,7 @@ describe('resume credit overdraft', () => {
 
   afterAll(async () => {
     await app.close();
-    closeDatabase();
+    await closeDatabase();
   });
 
   it('records an overdraft instead of dropping a resume with no credits', async () => {

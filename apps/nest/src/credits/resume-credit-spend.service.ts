@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { creditLedger, creditWallet } from '@repo/db/schema/credits-schema';
+import { creditLedger, creditWallet } from '@repo/db/postgres/schema/credits-schema';
 import { eq } from 'drizzle-orm';
 import { DRIZZLE, type DrizzleDB } from '../database/database.module.js';
 import { CreditWalletService } from './credit-wallet.service.js';

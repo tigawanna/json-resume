@@ -4,8 +4,8 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { user } from '@repo/db/schema/auth-schema';
-import { waitlistEntry } from '@repo/db/schema/credits-schema';
+import { user } from '@repo/db/postgres/schema/auth-schema';
+import { waitlistEntry } from '@repo/db/postgres/schema/credits-schema';
 import { eq } from 'drizzle-orm';
 import { DRIZZLE, type DrizzleDB } from '../../database/database.module.js';
 import {

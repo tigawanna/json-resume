@@ -1,14 +1,4 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  HttpCode,
-  Param,
-  Patch,
-  Post,
-  Query,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Query } from "@nestjs/common";
 import {
   ApiBadRequestResponse,
   ApiCookieAuth,
@@ -17,16 +7,16 @@ import {
   ApiOkResponse,
   ApiOperation,
   ApiTags,
-} from '@nestjs/swagger';
-import { CurrentUser, Roles } from '../../auth/helpers/auth.decorators.js';
-import type { UserWithRole } from '../../auth/helpers/utils.js';
-import { ApiAuthResponses } from '../../shared/openapi/auth-responses.decorator.js';
-import { ApiErrorDto } from '../../shared/openapi/api-error.dto.js';
-import { AdminTableBrowserService } from './admin-table-browser.service.js';
-import { AdminRowDeleteService } from './admin-row-delete.service.js';
-import { AdminRowService } from './admin-row.service.js';
-import { AdminRowReadService } from './admin-row-read.service.js';
-import { AdminTruncateService } from './admin-truncate.service.js';
+} from "@nestjs/swagger";
+import { CurrentUser, Roles } from "../../auth/helpers/auth.decorators.js";
+import type { UserWithRole } from "../../auth/helpers/utils.js";
+import { ApiAuthResponses } from "../../shared/openapi/auth-responses.decorator.js";
+import { ApiErrorDto } from "../../shared/openapi/api-error.dto.js";
+import { AdminTableBrowserService } from "./admin-table-browser.service.js";
+import { AdminRowDeleteService } from "./admin-row-delete.service.js";
+import { AdminRowService } from "./admin-row.service.js";
+import { AdminRowReadService } from "./admin-row-read.service.js";
+import { AdminTruncateService } from "./admin-truncate.service.js";
 import {
   AdminRowDto,
   AdminRowDeleteResultDto,
@@ -41,15 +31,15 @@ import {
   AdminTruncateResultDto,
   TruncateAdminTableDto,
   UpdateAdminRowDto,
-} from './admin-tables.dto.js';
-import type { TruncateCutoff } from './admin-truncate.types.js';
+} from "./admin-tables.dto.js";
+import type { TruncateCutoff } from "./admin-truncate.types.js";
 
-@Roles({ roles: ['admin'] })
-@ApiTags('admin')
+@Roles({ roles: ["admin"] })
+@ApiTags("admin")
 @ApiCookieAuth()
-@ApiAuthResponses({ forbiddenDescription: 'Admin role required' })
+@ApiAuthResponses({ forbiddenDescription: "Admin role required" })
 @ApiBadRequestResponse({ type: ApiErrorDto })
-@Controller('admin/tables')
+@Controller("admin/tables")
 export class AdminTablesController {
   constructor(
     private readonly browser: AdminTableBrowserService,
@@ -60,51 +50,48 @@ export class AdminTablesController {
   ) {}
 
   @Get()
-  @ApiOperation({ summary: 'List database tables and their columns' })
+  @ApiOperation({ summary: "List database tables and their columns" })
   @ApiOkResponse({ type: AdminTableDto, isArray: true })
   list() {
     return this.browser.list();
   }
 
-  @Get(':table/rows/:rowid')
-  @ApiOperation({ summary: 'Inspect a database row' })
+  @Get(":table/rows/:rowKey")
+  @ApiOperation({ summary: "Inspect a database row" })
   @ApiOkResponse({ type: AdminRowDto })
-  @ApiNotFoundResponse({ description: 'Table or row not found', type: ApiErrorDto })
-  readRow(@Param() { table, rowid }: AdminRowParamDto) {
-    return this.readRows.read({ table, rowid });
+  @ApiNotFoundResponse({ description: "Table or row not found", type: ApiErrorDto })
+  readRow(@Param() { table, rowKey }: AdminRowParamDto) {
+    return this.readRows.read({ table, rowKey });
   }
 
-  @Patch(':table/rows/:rowid')
-  @ApiOperation({ summary: 'Update editable cells in a database row' })
+  @Patch(":table/rows/:rowKey")
+  @ApiOperation({ summary: "Update editable cells in a database row" })
   @ApiOkResponse({ type: AdminRowUpdateResultDto })
   @ApiBadRequestResponse({
-    description: 'Read-only table or invalid column/value',
+    description: "Read-only table or invalid column/value",
     type: ApiErrorDto,
   })
   updateRow(
-    @Param() { table, rowid }: AdminRowParamDto,
+    @Param() { table, rowKey }: AdminRowParamDto,
     @Body() body: UpdateAdminRowDto,
     @CurrentUser() actor: UserWithRole,
   ) {
-    return this.rows.update({ actor, table, rowid, values: body.values });
+    return this.rows.update({ actor, table, rowKey, values: body.values });
   }
 
-  @Delete(':table/rows/:rowid')
+  @Delete(":table/rows/:rowKey")
   @ApiOperation({
-    summary: 'Delete a database row and its owned sync children',
+    summary: "Delete a database row and its owned sync children",
   })
   @ApiOkResponse({ type: AdminRowDeleteResultDto })
-  @ApiBadRequestResponse({ description: 'Read-only table or referencing rows', type: ApiErrorDto })
-  deleteRow(
-    @Param() { table, rowid }: AdminRowParamDto,
-    @CurrentUser() actor: UserWithRole,
-  ) {
-    return this.deleteRows.remove({ actor, table, rowid });
+  @ApiBadRequestResponse({ description: "Read-only table or referencing rows", type: ApiErrorDto })
+  deleteRow(@Param() { table, rowKey }: AdminRowParamDto, @CurrentUser() actor: UserWithRole) {
+    return this.deleteRows.remove({ actor, table, rowKey });
   }
 
-  @Get(':table/truncate')
+  @Get(":table/truncate")
   @ApiOperation({
-    summary: 'Preview truncating a table or rows older than a cutoff',
+    summary: "Preview truncating a table or rows older than a cutoff",
   })
   @ApiOkResponse({ type: AdminTruncatePreviewDto })
   previewTruncate(
@@ -117,16 +104,16 @@ export class AdminTablesController {
     return this.truncate.preview({ table, cutoff });
   }
 
-  @Post(':table/truncate')
+  @Post(":table/truncate")
   @HttpCode(200)
-  @ApiOperation({ summary: 'Truncate a table or rows older than a cutoff' })
+  @ApiOperation({ summary: "Truncate a table or rows older than a cutoff" })
   @ApiOkResponse({ type: AdminTruncateResultDto })
   @ApiBadRequestResponse({
-    description: 'Confirmation mismatch, read-only table or blocked references',
+    description: "Confirmation mismatch, read-only table or blocked references",
     type: ApiErrorDto,
   })
   @ApiNotImplementedResponse({
-    description: 'Event-log operations require Nest sync projection',
+    description: "Event-log operations require Nest sync projection",
     type: ApiErrorDto,
   })
   truncateTable(
@@ -143,14 +130,11 @@ export class AdminTablesController {
     });
   }
 
-  @Get(':table')
-  @ApiOperation({ summary: 'Browse a paginated database table' })
+  @Get(":table")
+  @ApiOperation({ summary: "Browse a paginated database table" })
   @ApiOkResponse({ type: AdminTablePageDto })
-  @ApiNotFoundResponse({ description: 'Table not found', type: ApiErrorDto })
-  tablePage(
-    @Param() { table }: AdminTableParamDto,
-    @Query() query: AdminTablePageQueryDto,
-  ) {
+  @ApiNotFoundResponse({ description: "Table not found", type: ApiErrorDto })
+  tablePage(@Param() { table }: AdminTableParamDto, @Query() query: AdminTablePageQueryDto) {
     return this.browser.page({
       table,
       page: query.page,

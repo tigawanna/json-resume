@@ -1,45 +1,31 @@
-import {
-  resume,
-  resumeEducation,
-  resumeExperience,
-} from '@repo/db/schema/resume';
-import { eq, getTableColumns } from 'drizzle-orm';
-import type { SQLiteColumn, SQLiteTable } from 'drizzle-orm/sqlite-core';
-import type { DrizzleDB } from '../../database/database.module.js';
+import { resume, resumeEducation, resumeExperience } from "@repo/db/postgres/schema/resume";
+import { eq, getTableColumns } from "drizzle-orm";
+import type { PgColumn, PgTable } from "drizzle-orm/pg-core";
+import type { DrizzleDB } from "../../database/database.module.js";
 import {
   isCollectionId,
   tableForCollection,
   tableNameForCollection,
   type CollectionId,
-} from './admin-table-registry.js';
+} from "./admin-table-registry.js";
 
 type Row = Record<string, unknown>;
 type Reference = { collectionId: string; field: string };
 
-const ownedViaParent: Partial<
-  Record<CollectionId, { column: string; parent: SQLiteTable }>
-> = {
-  resumeExperienceBullet: { column: 'experienceId', parent: resumeExperience },
-  resumeEducationBullet: { column: 'educationId', parent: resumeEducation },
+const ownedViaParent: Partial<Record<CollectionId, { column: string; parent: PgTable }>> = {
+  resumeExperienceBullet: { column: "experienceId", parent: resumeExperience },
+  resumeEducationBullet: { column: "educationId", parent: resumeEducation },
 };
 
 const ownedChildren: Record<string, readonly Reference[]> = {
-  resumeExperience: [
-    { collectionId: 'resumeExperienceBullet', field: 'experienceId' },
-  ],
-  resumeEducation: [
-    { collectionId: 'resumeEducationBullet', field: 'educationId' },
-  ],
+  resumeExperience: [{ collectionId: "resumeExperienceBullet", field: "experienceId" }],
+  resumeEducation: [{ collectionId: "resumeEducationBullet", field: "educationId" }],
 };
 
-export const SET_NULL_ON_DELETE = new Set(['resume_skill.group_id']);
+export const SET_NULL_ON_DELETE = new Set(["resume_skill.group_id"]);
 export const NUMERIC_TYPE = /INT|REAL|NUM|DOUBLE|FLOAT|DEC|BOOL/;
 
-export function parentOwnershipFor({
-  collectionId,
-}: {
-  collectionId: CollectionId;
-}) {
+export function parentOwnershipFor({ collectionId }: { collectionId: CollectionId }) {
   return ownedViaParent[collectionId];
 }
 
@@ -52,8 +38,8 @@ export async function ownerOf({
   collectionId: CollectionId;
   row: Row;
 }): Promise<string> {
-  if (typeof row.userId === 'string') return row.userId;
-  if (typeof row.resumeId === 'string') {
+  if (typeof row.userId === "string") return row.userId;
+  if (typeof row.resumeId === "string") {
     const [owner] = await db
       .select({ userId: resume.userId })
       .from(resume)
@@ -63,15 +49,15 @@ export async function ownerOf({
   }
   const via = ownedViaParent[collectionId];
   const parentId = via ? row[via.column] : undefined;
-  if (typeof parentId === 'string') {
-    if (collectionId === 'resumeExperienceBullet') {
+  if (typeof parentId === "string") {
+    if (collectionId === "resumeExperienceBullet") {
       const [owner] = await db
         .select({ userId: resumeExperience.userId })
         .from(resumeExperience)
         .where(eq(resumeExperience.id, parentId))
         .limit(1);
       if (owner?.userId) return owner.userId;
-    } else if (collectionId === 'resumeEducationBullet') {
+    } else if (collectionId === "resumeEducationBullet") {
       const [owner] = await db
         .select({ userId: resumeEducation.userId })
         .from(resumeEducation)
@@ -83,11 +69,7 @@ export async function ownerOf({
   throw new Error(`Cannot tell which user owns this ${collectionId} row`);
 }
 
-export function ruleCollections({
-  collectionId,
-}: {
-  collectionId: CollectionId;
-}) {
+export function ruleCollections({ collectionId }: { collectionId: CollectionId }) {
   const collections = new Set<CollectionId>();
   const visit = ({ id }: { id: string }) => {
     for (const owned of ownedChildren[id] ?? []) {
@@ -114,7 +96,7 @@ export function rowsToDeleteWith({
   for (const owned of ownedChildren[collectionId] ?? []) {
     if (!isCollectionId(owned.collectionId)) continue;
     for (const row of rowsOf({ collectionId: owned.collectionId })) {
-      if (row[owned.field] !== parentId || typeof row.id !== 'string') continue;
+      if (row[owned.field] !== parentId || typeof row.id !== "string") continue;
       rows.push(
         ...rowsToDeleteWith({
           collectionId: owned.collectionId,
@@ -144,17 +126,14 @@ export async function rowsToDeleteWithFromDb({
       const childCollectionId = owned.collectionId;
       if (!isCollectionId(childCollectionId)) continue;
       const table = tableForCollection({ collectionId: childCollectionId });
-      const columns: Record<string, SQLiteColumn> = getTableColumns(table);
+      const columns: Record<string, PgColumn> = getTableColumns(table);
       const parentColumn = columns[owned.field];
       const idColumn = columns.id;
       if (!parentColumn || !idColumn) continue;
-      const children = await db
-        .select({ id: idColumn })
-        .from(table)
-        .where(eq(parentColumn, id));
+      const children = await db.select({ id: idColumn }).from(table).where(eq(parentColumn, id));
       for (const child of children) {
         const childId = child.id;
-        if (typeof childId !== 'string') continue;
+        if (typeof childId !== "string") continue;
         const key = JSON.stringify([childCollectionId, childId]);
         if (seen.has(key)) continue;
         seen.add(key);
@@ -167,11 +146,7 @@ export async function rowsToDeleteWithFromDb({
   return rows;
 }
 
-export function dependentTables({
-  collectionId,
-}: {
-  collectionId: CollectionId;
-}) {
+export function dependentTables({ collectionId }: { collectionId: CollectionId }) {
   return new Set(
     [...ruleCollections({ collectionId })].map((id) =>
       tableNameForCollection({ collectionId: id }),

@@ -39,7 +39,8 @@
     },
     "test:e2e": {
       "dependsOn": ["^build"],
-      "cache": false
+      "cache": false,
+      "env": ["POSTGRES_URL", "NEST_TEST_POSTGRES_URL", "NEST_TEST_POSTGRES_SOURCE"]
     },
     "test:e2e:smoke": {
       "dependsOn": ["^build"],

@@ -1,4 +1,4 @@
-import { syncEvent } from '@repo/db/schema/sync-schema';
+import { syncEvent } from '@repo/db/postgres/schema/sync-schema';
 import { eq, getTableColumns } from 'drizzle-orm';
 import type { DrizzleDB } from '../../database/database.module.js';
 import {

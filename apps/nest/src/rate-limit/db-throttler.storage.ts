@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type { ThrottlerStorage } from '@nestjs/throttler';
-import { rateLimitCounter } from '@repo/db/schema/rate-limit-schema';
+import { rateLimitCounter } from '@repo/db/postgres/schema/rate-limit-schema';
 import { eq, sql } from 'drizzle-orm';
 import { DRIZZLE, type DrizzleDB } from '../database/database.module.js';
 

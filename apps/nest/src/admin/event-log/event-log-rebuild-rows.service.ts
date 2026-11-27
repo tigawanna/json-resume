@@ -1,15 +1,15 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { resume } from '@repo/db/schema/resume';
-import { and, eq, getTableColumns, inArray, isNull, or } from 'drizzle-orm';
-import type { SQL } from 'drizzle-orm';
-import type { SQLiteColumn } from 'drizzle-orm/sqlite-core';
-import { DRIZZLE, type DrizzleDB } from '../../database/database.module.js';
+import { Inject, Injectable } from "@nestjs/common";
+import { resume } from "@repo/db/postgres/schema/resume/index";
+import { and, eq, getTableColumns, inArray, isNull, or } from "drizzle-orm";
+import type { SQL } from "drizzle-orm";
+import type { PgColumn } from "drizzle-orm/pg-core";
+import { DRIZZLE, type DrizzleDB } from "../../database/database.module.js";
 import {
   isCollectionId,
   tableForCollection,
   tablesByCollection,
   type CollectionId,
-} from '../tables/admin-table-registry.js';
+} from "../tables/admin-table-registry.js";
 
 type Row = Record<string, unknown>;
 
@@ -22,16 +22,23 @@ export class EventLogRebuildRows {
     for (const collectionId of Object.keys(tablesByCollection)) {
       if (!isCollectionId(collectionId)) continue;
       const table = tableForCollection({ collectionId });
-      const rows = await this.db.select().from(table).where(this.ownerFilter({ collectionId, userId }));
+      const rows = await this.db
+        .select()
+        .from(table)
+        .where(this.ownerFilter({ collectionId, userId }));
       rowsByCollection.set(collectionId, rows);
     }
     return rowsByCollection;
   }
 
-  private ownerFilter({ collectionId, userId }: { collectionId: CollectionId; userId: string }): SQL {
-    const columns: Record<string, SQLiteColumn> = getTableColumns(
-      tableForCollection({ collectionId }),
-    );
+  private ownerFilter({
+    collectionId,
+    userId,
+  }: {
+    collectionId: CollectionId;
+    userId: string;
+  }): SQL {
+    const columns: Record<string, PgColumn> = getTableColumns(tableForCollection({ collectionId }));
     const viaParent = this.viaParentFilter({ columns, collectionId, userId });
     if (columns.userId) {
       if (!viaParent) return eq(columns.userId, userId);
@@ -54,14 +61,14 @@ export class EventLogRebuildRows {
     collectionId,
     userId,
   }: {
-    columns: Record<string, SQLiteColumn>;
+    columns: Record<string, PgColumn>;
     collectionId: CollectionId;
     userId: string;
   }): SQL | undefined {
     const parent = parentOf({ collectionId });
     const viaColumn = parent ? columns[parent.column] : undefined;
     if (!parent || !viaColumn) return undefined;
-    const parentColumns: Record<string, SQLiteColumn> = getTableColumns(parent.table);
+    const parentColumns: Record<string, PgColumn> = getTableColumns(parent.table);
     if (!parentColumns.id || !parentColumns.userId) return undefined;
     return inArray(
       viaColumn,
@@ -74,9 +81,12 @@ export class EventLogRebuildRows {
 }
 
 function parentOf({ collectionId }: { collectionId: CollectionId }) {
-  if (collectionId === 'resumeExperienceBullet')
-    return { column: 'experienceId', table: tablesByCollection.resumeExperience };
-  if (collectionId === 'resumeEducationBullet')
-    return { column: 'educationId', table: tablesByCollection.resumeEducation };
+  if (collectionId === "resumeExperienceBullet")
+    return {
+      column: "experienceId",
+      table: tablesByCollection.resumeExperience,
+    };
+  if (collectionId === "resumeEducationBullet")
+    return { column: "educationId", table: tablesByCollection.resumeEducation };
   return undefined;
 }

@@ -1,15 +1,15 @@
-import { apiKey } from '@better-auth/api-key';
-import { organizationAc, organizationRoles } from '@repo/isomorphic/auth-roles';
-import * as authSchema from '@repo/db/schema/auth-schema';
-import { betterAuth } from 'better-auth';
-import { drizzleAdapter } from 'better-auth/adapters/drizzle';
-import type { AccessControl } from 'better-auth/plugins/access';
-import { admin } from 'better-auth/plugins/admin';
-import { jwt } from 'better-auth/plugins/jwt';
-import { multiSession } from 'better-auth/plugins/multi-session';
-import { openAPI } from 'better-auth/plugins';
-import { organization } from 'better-auth/plugins/organization';
-import type { DrizzleDB } from '../../database/database.module.js';
+import { apiKey } from "@better-auth/api-key";
+import { organizationAc, organizationRoles } from "@repo/isomorphic/auth-roles";
+import * as authSchema from "@repo/db/postgres/schema/auth-schema";
+import { betterAuth } from "better-auth";
+import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import type { AccessControl } from "better-auth/plugins/access";
+import { admin } from "better-auth/plugins/admin";
+import { jwt } from "better-auth/plugins/jwt";
+import { multiSession } from "better-auth/plugins/multi-session";
+import { openAPI } from "better-auth/plugins";
+import { organization } from "better-auth/plugins/organization";
+import type { DrizzleDB } from "../../database/database.module.js";
 
 type AuthEnv = {
   secret: string;
@@ -19,7 +19,7 @@ type AuthEnv = {
   githubClientSecret: string;
 };
 
-export const AUTH_BASE_PATH = '/api/auth';
+export const AUTH_BASE_PATH = "/api/auth";
 
 export function createAuth({ db, env }: { db: DrizzleDB; env: AuthEnv }) {
   return betterAuth({
@@ -28,13 +28,13 @@ export function createAuth({ db, env }: { db: DrizzleDB; env: AuthEnv }) {
     secret: env.secret,
     trustedOrigins: env.trustedOrigins,
     database: drizzleAdapter(db, {
-      provider: 'sqlite',
+      provider: "pg",
       schema: authSchema,
     }),
     advanced: {
       database: { joins: true },
       defaultCookieAttributes: {
-        sameSite: 'none',
+        sameSite: "none",
         secure: true,
       },
     },
@@ -56,15 +56,15 @@ export function createAuth({ db, env }: { db: DrizzleDB; env: AuthEnv }) {
       }),
       multiSession(),
       jwt({
-        jwks: { keyPairConfig: { alg: 'ES256' } },
+        jwks: { keyPairConfig: { alg: "ES256" } },
         jwt: {
           issuer: env.baseURL,
           audience: env.baseURL,
-          expirationTime: '15m',
+          expirationTime: "15m",
         },
       }),
       apiKey({
-        defaultPrefix: 'ajr',
+        defaultPrefix: "ajr",
         rateLimit: { enabled: true, timeWindow: 60_000, maxRequests: 120 },
       }),
       openAPI({ disableDefaultReference: true }),
@@ -73,5 +73,3 @@ export function createAuth({ db, env }: { db: DrizzleDB; env: AuthEnv }) {
 }
 
 export type Auth = ReturnType<typeof createAuth>;
-
-

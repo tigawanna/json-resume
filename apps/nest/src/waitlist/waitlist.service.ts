@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { waitlistEntry } from '@repo/db/schema/credits-schema';
+import { waitlistEntry } from '@repo/db/postgres/schema/credits-schema';
 import { eq } from 'drizzle-orm';
 import type { UserWithRole } from '../auth/helpers/utils.js';
 import { CreditsService } from '../credits/credits.service.js';

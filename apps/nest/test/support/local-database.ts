@@ -1,59 +1,43 @@
-import { createClient } from '@libsql/client';
-import { schema } from '@repo/db/schema/index';
-import { drizzle } from 'drizzle-orm/libsql';
-import { copyFileSync, existsSync, mkdtempSync, rmSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
-import type { TestDatabase } from './create-test-app.js';
+import { Pool } from "pg";
+import { schema } from "@repo/db/postgres";
+import { drizzle } from "drizzle-orm/node-postgres";
+import type { TestDatabase } from "./create-test-app.js";
 
-const DEFAULT_SOURCE = resolve(
-  import.meta.dirname,
-  '../../../../.local-db/json-resume.db',
-);
+function databaseNameOf({ url }: { url: string }) {
+  const name = decodeURIComponent(new URL(url).pathname.replace(/^\//, ""));
+  if (!/^[a-z0-9_]+$/i.test(name)) throw new Error("Invalid source database name");
+  return name;
+}
 
-/**
- * Materialize a compact snapshot of the real local SQLite database.
- *
- * The source may have an uncheckpointed WAL, so stage the db/-wal/-shm together
- * and let VACUUM INTO produce a consistent file in a temporary directory. Tests
- * can then mutate the snapshot freely without touching the developer's copy.
- */
-export async function copyLocalDatabase({
-  source = process.env.NEST_TEST_DATABASE ?? DEFAULT_SOURCE,
-}: {
-  source?: string;
-} = {}): Promise<TestDatabase> {
-  const directory = mkdtempSync(join(tmpdir(), 'nest-real-db-'));
-  const staged = join(directory, 'source.db');
-  const snapshot = join(directory, 'test.db');
-  let client: ReturnType<typeof createClient> | undefined;
-
+/** Clone a migrated local Postgres snapshot without touching the source database. */
+export async function copyLocalDatabase(): Promise<TestDatabase> {
+  const sourceUrl = process.env.NEST_TEST_POSTGRES_SOURCE;
+  if (!sourceUrl) {
+    throw new Error("NEST_TEST_POSTGRES_SOURCE must point to a migrated Postgres snapshot");
+  }
+  const sourceName = databaseNameOf({ url: sourceUrl });
+  const databaseName = `nest_snapshot_${crypto.randomUUID().replaceAll("-", "")}`;
+  const admin = new Pool({ connectionString: sourceUrl, max: 1 });
+  let pool: Pool | undefined;
   try {
-    for (const suffix of ['', '-wal', '-shm']) {
-      const from = `${source}${suffix}`;
-      if (existsSync(from)) copyFileSync(from, `${staged}${suffix}`);
-    }
-    client = createClient({ url: `file:${staged}` });
-    await client.execute({
-      sql: `vacuum into '${snapshot.replaceAll("'", "''")}'`,
-      args: [],
-    });
-    client.close();
-    client = undefined;
-    for (const suffix of ['', '-wal', '-shm'])
-      rmSync(`${staged}${suffix}`, { force: true });
-
-    const snapshotClient = createClient({ url: `file:${snapshot}` });
+    await admin.query(`CREATE DATABASE "${databaseName}" WITH TEMPLATE "${sourceName}"`);
+    const url = new URL(sourceUrl);
+    url.pathname = `/${databaseName}`;
+    pool = new Pool({ connectionString: url.toString(), max: 2 });
+    const db = drizzle({ client: pool, schema });
+    const activePool = pool;
     return {
-      db: drizzle({ client: snapshotClient, schema }),
-      close() {
-        snapshotClient.close();
-        rmSync(directory, { recursive: true, force: true });
+      db,
+      async close() {
+        await activePool.end();
+        await admin.query(`DROP DATABASE "${databaseName}" WITH (FORCE)`);
+        await admin.end();
       },
     };
   } catch (error: unknown) {
-    client?.close();
-    rmSync(directory, { recursive: true, force: true });
+    await pool?.end();
+    await admin.query(`DROP DATABASE IF EXISTS "${databaseName}" WITH (FORCE)`);
+    await admin.end();
     throw error;
   }
 }

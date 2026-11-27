@@ -1,7 +1,7 @@
 import { validateEnv } from "./env.schema.js";
 
 const required = {
-  DATABASE_URL: "libsql://example.turso.io",
+  POSTGRES_URL: "postgresql://example.com/resume",
   BETTER_AUTH_SECRET: "secret",
   GITHUB_CLIENT_ID: "id",
   GITHUB_CLIENT_SECRET: "gh-secret",
@@ -40,22 +40,25 @@ describe("validateEnv", () => {
     expect(env.FRONTEND_URL).toBe("http://localhost:5040");
   });
 
-  it("accepts a file database url", () => {
-    const env = validateEnv({ source: { ...required, DATABASE_URL: "file:local.db" } });
-    expect(env.DATABASE_URL).toBe("file:local.db");
+  it("accepts a postgres database url and coerces pool size", () => {
+    const env = validateEnv({
+      source: { ...required, POSTGRES_URL: "postgres://localhost/db", POSTGRES_POOL_MAX: "4" },
+    });
+    expect(env.POSTGRES_URL).toBe("postgres://localhost/db");
+    expect(env.POSTGRES_POOL_MAX).toBe(4);
   });
 
-  it("rejects an unsupported database url", () => {
+  it("rejects a non-postgres database url", () => {
     expect(() =>
       validateEnv({
-        source: { ...required, DATABASE_URL: "postgres://localhost/db" },
+        source: { ...required, POSTGRES_URL: "libsql://example.turso.io" },
       }),
-    ).toThrow(/DATABASE_URL/);
+    ).toThrow(/POSTGRES_URL/);
   });
 
-  it("fills placeholder secrets when NODE_ENV is test", () => {
+  it("fills placeholder secrets and Postgres URL when NODE_ENV is test", () => {
     const env = validateEnv({ source: { NODE_ENV: "test" } });
-    expect(env.DATABASE_URL).toBe("http://127.0.0.1:8080");
+    expect(env.POSTGRES_URL).toContain("postgresql://");
     expect(env.BETTER_AUTH_SECRET).toBe("test-secret-test-secret-test-secret");
   });
 

@@ -4,18 +4,18 @@ This is the plan for `apps/nest`. Schema and migrations stay in `packages/db`. T
 
 ## Boundaries
 
-| Owns                                        | Location                                                             |
-| ------------------------------------------- | -------------------------------------------------------------------- |
-| Tables, relations, SQL migrations           | `packages/db`                                                        |
-| Credit amounts and `requireWaitlist`        | `packages/isomorphic` `CREDIT_POLICY`                                |
-| HTTP, guards, Better Auth mount, sync       | `apps/nest`                                  |
-| Scheduled/incremental sync compaction       | Follow-up; manual compaction is in Nest     |
+| Owns                                  | Location                                |
+| ------------------------------------- | --------------------------------------- |
+| Tables, relations, SQL migrations     | `packages/db`                           |
+| Credit amounts and `requireWaitlist`  | `packages/isomorphic` `CREDIT_POLICY`   |
+| HTTP, guards, Better Auth mount, sync | `apps/nest`                             |
+| Scheduled/incremental sync compaction | Follow-up; manual compaction is in Nest |
 
-`apps/nest` does not run Drizzle Kit. Generate and apply SQL from `packages/db` (`pnpm --dir packages/db db:generate` / `db:migrate`).
+`apps/nest` does not run Drizzle Kit. Generate and apply Postgres SQL from `packages/db` (`pnpm --dir packages/db db:generate:postgres` / `db:migrate:postgres`).
 
 `drizzle-orm`, `drizzle-zod`, and `drizzle-kit` are catalog entries in `pnpm-workspace.yaml`. `apps/api`, `apps/web`, `apps/nest`, and `packages/db` depend on `catalog:`. There is no `link:` dependency and no Prisma package. Prisma was only an optional peer that a failed install materialized; it is not part of this app.
 
-The runtime client is `drizzle-orm/libsql/web` (HTTP). It uses `DATABASE_URL` (`libsql://`, `https://`, or `http://`) and `DATABASE_AUTH_TOKEN`. Tests do not call that server. They open `@libsql/client` with `:memory:`, run the shared migrations, and override the `DRIZZLE` provider. The HTTP driver cannot open a file or memory database.
+The runtime client is `drizzle-orm/node-postgres` with `pg.Pool`. It uses `POSTGRES_URL` and `POSTGRES_POOL_MAX`. Tests create isolated Postgres databases through `NEST_TEST_POSTGRES_URL`, run the Postgres migrations, and override the `DRIZZLE` provider. Real-data suites clone `NEST_TEST_POSTGRES_SOURCE`.
 
 ## OpenAPI (Scalar)
 
@@ -38,7 +38,7 @@ The app runs on `NodeAdapter` (`@nestjs/platform-node` / `node:http`), not Expre
 
 Mirrored from `apps/api`:
 
-- Drizzle adapter, SQLite, `packages/db` auth tables
+- Drizzle adapter, Postgres, `packages/db` Postgres auth tables
 - Email and password
 - GitHub provider
 - Plugins: `admin`, `organization` (shared access control), `multiSession`, API keys, ES256 JWT
@@ -87,7 +87,7 @@ The module default is `HTTP_RATE_LIMIT` (`src/rate-limit/rate-limit.constants.ts
 @Throttle({
   default: { limit: WAITLIST_RATE_LIMIT.limit, ttl: WAITLIST_RATE_LIMIT.ttlMs },
 })
-@Controller('waitlist')
+@Controller("waitlist")
 export class WaitlistController {}
 ```
 
@@ -175,7 +175,7 @@ All three routes use the global session guard: 401 without a session and 403 for
 - `GET /health` (liveness, no database) and `GET /ready` (database check) are at the **root**, excluded from the `/api` prefix, `@Public()` and `@SkipThrottle()`, and hidden from OpenAPI. `/ready` answers 503 once shutdown begins.
 - `main.ts` calls `app.enableShutdownHooks()` and sets `keepAliveTimeout=65_000` / `headersTimeout=66_000` so a load balancer with a longer idle timeout does not get connection resets.
 - Observe turns on by itself in production when both `OBSERVE_APP_KEY` and `OBSERVE_APP_SECRET` are set; probes are excluded from traces. Without keys it stays off.
-- Apply migrations as a release step (`pnpm --dir packages/db db:migrate`, or `pnpm --dir apps/nest db:migrate`) — the app does not migrate at boot.
+- Apply migrations as a release step (`pnpm --dir packages/db db:migrate:postgres`, or `pnpm --dir apps/nest db:migrate:postgres`) — the app does not migrate at boot.
 
 ## Follow-up sync work
 

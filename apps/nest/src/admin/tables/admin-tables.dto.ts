@@ -1,12 +1,8 @@
-import { createZodDto } from 'nestjs-zod';
-import { z } from 'zod';
+import { createZodDto } from "nestjs-zod";
+import { z } from "zod";
 
 const tableName = z.string().min(1).max(255);
-const safeInteger = z
-  .number()
-  .int()
-  .min(Number.MIN_SAFE_INTEGER)
-  .max(Number.MAX_SAFE_INTEGER);
+const safeInteger = z.number().int().min(Number.MIN_SAFE_INTEGER).max(Number.MAX_SAFE_INTEGER);
 
 export const adminColumnSchema = z.object({
   name: z.string(),
@@ -16,33 +12,21 @@ export const adminColumnSchema = z.object({
 });
 export type AdminColumn = z.infer<typeof adminColumnSchema>;
 
-export const adminCellSchema = z.union([
-  z.string(),
-  z.number(),
-  z.boolean(),
-  z.null(),
-]);
+export const adminCellSchema = z.union([z.string(), z.number(), z.boolean(), z.null()]);
 export type AdminCell = z.infer<typeof adminCellSchema>;
 
-export const adminRowModeSchema = z.enum(['synced', 'direct', 'readonly']);
+export const adminRowModeSchema = z.enum(["synced", "direct", "readonly"]);
 export type AdminRowMode = z.infer<typeof adminRowModeSchema>;
 
-export class AdminTableParamDto extends createZodDto(
-  z.object({ table: tableName }),
-) {}
+export class AdminTableParamDto extends createZodDto(z.object({ table: tableName })) {}
 
 export class AdminRowParamDto extends createZodDto(
-  z.object({ table: tableName, rowid: z.coerce.number().int() }),
+  z.object({ table: tableName, rowKey: z.string().min(1).max(4_096) }),
 ) {}
 
 export class AdminTablePageQueryDto extends createZodDto(
   z.object({
-    page: z.coerce
-      .number()
-      .int()
-      .min(0)
-      .max(Number.MAX_SAFE_INTEGER)
-      .default(0),
+    page: z.coerce.number().int().min(0).max(Number.MAX_SAFE_INTEGER).default(0),
     pageSize: z.coerce.number().int().min(1).max(200).default(50),
     q: z.string().max(500).optional(),
   }),
@@ -58,20 +42,15 @@ export class AdminTruncatePreviewQueryDto extends createZodDto(
       column: z.string().min(1).max(255).optional(),
       before: z.coerce.number().int().optional(),
     })
-    .refine(
-      ({ column, before }) => (column === undefined) === (before === undefined),
-      {
-        message: 'column and before must be supplied together',
-      },
-    ),
+    .refine(({ column, before }) => (column === undefined) === (before === undefined), {
+      message: "column and before must be supplied together",
+    }),
 ) {}
 
 export class TruncateAdminTableDto extends createZodDto(
   z.object({
     confirm: z.string().max(255),
-    cutoff: z
-      .object({ column: z.string().min(1).max(255), before: safeInteger })
-      .optional(),
+    cutoff: z.object({ column: z.string().min(1).max(255), before: safeInteger }).optional(),
     rebuild: z.boolean().optional(),
   }),
 ) {}
@@ -93,7 +72,7 @@ export class AdminTablePageDto extends createZodDto(
     columns: z.array(adminColumnSchema),
     rows: z.array(
       z.object({
-        rowid: z.number(),
+        rowKey: z.string(),
         cells: z.record(z.string(), adminCellSchema),
       }),
     ),
@@ -103,7 +82,7 @@ export class AdminTablePageDto extends createZodDto(
 export class AdminRowDto extends createZodDto(
   z.object({
     table: z.string(),
-    rowid: z.number(),
+    rowKey: z.string(),
     mode: adminRowModeSchema,
     fields: z.array(
       z.object({
@@ -112,7 +91,7 @@ export class AdminRowDto extends createZodDto(
         primaryKey: z.boolean(),
         notNull: z.boolean(),
         value: z.union([z.string(), z.number(), z.null()]),
-        kind: z.enum(['value', 'secret', 'binary']),
+        kind: z.enum(["value", "secret", "binary"]),
         editable: z.boolean(),
       }),
     ),
@@ -120,19 +99,19 @@ export class AdminRowDto extends createZodDto(
 ) {}
 
 export class AdminRowUpdateResultDto extends createZodDto(
-  z.object({ mode: z.enum(['synced', 'direct']), changed: z.number() }),
+  z.object({ mode: z.enum(["synced", "direct"]), changed: z.number() }),
 ) {}
 
 export class AdminRowDeleteResultDto extends createZodDto(
   z.object({
-    mode: z.enum(['synced', 'direct']),
+    mode: z.enum(["synced", "direct"]),
     deletedReferences: z.number(),
   }),
 ) {}
 
 export class AdminTruncateResultDto extends createZodDto(
   z.object({
-    mode: z.enum(['synced', 'direct', 'eventLog']),
+    mode: z.enum(["synced", "direct", "eventLog"]),
     deleted: z.number(),
     references: z.number(),
     events: z.number(),
@@ -144,18 +123,12 @@ export class AdminTruncateResultDto extends createZodDto(
 export class AdminTruncatePreviewDto extends createZodDto(
   z.object({
     table: z.string(),
-    mode: z.enum(['synced', 'direct', 'readonly', 'eventLog']),
-    backups: z.array(
-      z.object({ table: z.string(), rows: z.number(), createdAt: z.number() }),
-    ),
+    mode: z.enum(["synced", "direct", "readonly", "eventLog"]),
+    backups: z.array(z.object({ table: z.string(), rows: z.number(), createdAt: z.number() })),
     cutoffColumns: z.array(z.string()),
     rows: z.number(),
     references: z.array(z.object({ table: z.string(), rows: z.number() })),
-    blockedBy: z.array(
-      z.object({ table: z.string(), column: z.string(), rows: z.number() }),
-    ),
-    cascades: z.array(
-      z.object({ table: z.string(), column: z.string(), rows: z.number() }),
-    ),
+    blockedBy: z.array(z.object({ table: z.string(), column: z.string(), rows: z.number() })),
+    cascades: z.array(z.object({ table: z.string(), column: z.string(), rows: z.number() })),
   }),
 ) {}

@@ -1,5 +1,5 @@
 import type { INestApplication } from '@nestjs/common';
-import { resume } from '@repo/db/schema/resume';
+import { resume } from '@repo/db/postgres/schema/resume';
 import { eq } from 'drizzle-orm';
 import request from 'supertest';
 import type { App } from 'supertest/types.js';
@@ -9,7 +9,7 @@ import { personas } from './support/personas.js';
 describe('sync event ownership', () => {
   let app: INestApplication<App>;
   let db: Awaited<ReturnType<typeof createTestApp>>['db'];
-  let closeDatabase: () => void;
+  let closeDatabase: () => Promise<void>;
 
   const event = ({
     collectionId = 'resume',
@@ -60,7 +60,7 @@ describe('sync event ownership', () => {
 
   afterAll(async () => {
     await app.close();
-    closeDatabase();
+    await closeDatabase();
   });
 
   it('does not overwrite another user row even when the payload carries a userId', async () => {

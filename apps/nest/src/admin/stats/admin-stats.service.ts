@@ -1,9 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { session, user } from '@repo/db/schema/auth-schema';
-import { job } from '@repo/db/schema/job-schema';
-import { publicResume } from '@repo/db/schema/resume/public-resume';
-import { resume } from '@repo/db/schema/resume/resume';
-import { syncBackend, syncEvent } from '@repo/db/schema/sync-schema';
+import { session, user } from '@repo/db/postgres/schema/auth-schema';
+import { job } from '@repo/db/postgres/schema/job-schema';
+import { publicResume } from '@repo/db/postgres/schema/resume/public-resume';
+import { resume } from '@repo/db/postgres/schema/resume/resume';
+import { syncBackend, syncEvent } from '@repo/db/postgres/schema/sync-schema';
 import { count, gt, isNull } from 'drizzle-orm';
 import { hasRole } from '../../auth/helpers/utils.js';
 import { DRIZZLE, type DrizzleDB } from '../../database/database.module.js';

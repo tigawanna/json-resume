@@ -1,9 +1,9 @@
-import type { InValue } from '@libsql/client';
-import type { AdminRowMode } from './admin-tables.dto.js';
-import type { CollectionId } from './admin-table-registry.js';
+import type { SQL } from "drizzle-orm";
+import type { AdminRowMode } from "./admin-tables.dto.js";
+import type { CollectionId } from "./admin-table-registry.js";
 
 export type TruncateCutoff = { column: string; before: number };
-export type TruncateMode = AdminRowMode | 'eventLog';
+export type TruncateMode = AdminRowMode | "eventLog";
 export type DeleteTarget = {
   collectionId: CollectionId;
   row: Record<string, unknown>;
@@ -19,5 +19,5 @@ export type TruncatePlan = {
   blockedBy: Array<{ table: string; column: string; rows: number }>;
   cascades: Array<{ table: string; column: string; rows: number }>;
   targets: DeleteTarget[];
-  where: { sql: string; args: InValue[] };
+  where: SQL;
 };

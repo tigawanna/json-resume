@@ -1,4 +1,4 @@
-import { user } from '@repo/db/schema/auth-schema';
+import { user } from '@repo/db/postgres/schema/auth-schema';
 import { createTestApp } from './create-test-app.js';
 import { copyLocalDatabase } from './local-database.js';
 
@@ -11,7 +11,7 @@ export async function createRealDataApp() {
   const member = users.find((row) => !isAdmin(row) && !row.banned);
   if (!admin || !member) {
     await started.app.close();
-    started.close();
+    await started.close();
     throw new Error('local DB snapshot needs an admin and an unbanned non-admin user');
   }
   return { ...started, admin, member };

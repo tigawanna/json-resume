@@ -1,31 +1,16 @@
-import {
-  BadRequestException,
-  Inject,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
-import { eq, getTableColumns, inArray, sql } from 'drizzle-orm';
-import { DRIZZLE, type DrizzleDB } from '../../database/database.module.js';
-import {
-  AdminAuditService,
-  type AdminActor,
-} from '../audit/admin-audit.service.js';
-import {
-  quoteIdent,
-  AdminTableMetadataService,
-} from './admin-table-metadata.service.js';
-import { appendAdminEvent } from './admin-row-events.js';
+import { BadRequestException, Inject, Injectable, NotFoundException } from "@nestjs/common";
+import { eq, getTableColumns, inArray, sql } from "drizzle-orm";
+import { DRIZZLE, type DrizzleDB } from "../../database/database.module.js";
+import { AdminAuditService, type AdminActor } from "../audit/admin-audit.service.js";
+import { AdminTableMetadataService } from "./admin-table-metadata.service.js";
+import { appendAdminEvent } from "./admin-row-events.js";
 import {
   dependentTables,
   rowsToDeleteWithFromDb,
   SET_NULL_ON_DELETE,
-} from './admin-row-ownership.js';
-import {
-  rowModeFor,
-  tableForCollection,
-  type CollectionId,
-} from './admin-table-registry.js';
-import { resolveSyncedTarget } from './admin-row-target.js';
+} from "./admin-row-ownership.js";
+import { rowModeFor, tableForCollection, type CollectionId } from "./admin-table-registry.js";
+import { resolveSyncedTarget } from "./admin-row-target.js";
 
 type Row = Record<string, unknown>;
 type Dependent = { collectionId: CollectionId; id: string; row: Row };
@@ -38,35 +23,26 @@ export class AdminRowDeleteService {
     private readonly audit: AdminAuditService,
   ) {}
 
-  remove({
-    actor,
-    table,
-    rowid,
-  }: {
-    actor: AdminActor;
-    table: string;
-    rowid: number;
-  }) {
+  remove({ actor, table, rowKey }: { actor: AdminActor; table: string; rowKey: string }) {
     return this.audit.run({
-      action: 'delete-row',
+      action: "delete-row",
       actor,
-      input: { table, rowid },
-      execute: () => this.removeRow({ table, rowid }),
+      input: { table, rowKey },
+      execute: () => this.removeRow({ table, rowKey }),
     });
   }
 
-  private async removeRow({ table, rowid }: { table: string; rowid: number }) {
+  private async removeRow({ table, rowKey }: { table: string; rowKey: string }) {
     const name = await this.metadata.requireTable({ table });
     const mode = rowModeFor({ table: name });
-    if (mode === 'readonly')
-      throw new BadRequestException(`${name} is read-only`);
+    if (mode === "readonly") throw new BadRequestException(`${name} is read-only`);
     const target =
-      mode === 'synced'
+      mode === "synced"
         ? await resolveSyncedTarget({
             db: this.db,
             metadata: this.metadata,
             table: name,
-            rowid,
+            rowKey,
           })
         : null;
     const dependents = target
@@ -78,7 +54,7 @@ export class AdminRowDeleteService {
     if (target)
       await this.assertNoChildren({
         table: name,
-        rowid,
+        rowKey,
         handled: dependentTables({ collectionId: target.collectionId }),
       });
 
@@ -90,27 +66,26 @@ export class AdminRowDeleteService {
           );
           if (!columns.id) continue;
           await tx
-            .delete(
-              tableForCollection({ collectionId: dependent.collectionId }),
-            )
+            .delete(tableForCollection({ collectionId: dependent.collectionId }))
             .where(eq(columns.id, dependent.id));
           await appendAdminEvent({
             tx,
             collectionId: dependent.collectionId,
             userId: target.userId,
-            type: 'delete',
+            type: "delete",
             row: dependent.row,
           });
         }
       }
-      const result = await tx.run(sqlDelete({ table: name, rowid }));
-      if (result.rowsAffected === 0)
-        throw new NotFoundException(`Row ${rowid} no longer exists in ${name}`);
+      const where = await this.metadata.rowKeyWhere({ table: name, rowKey });
+      const result = await tx.execute(sql`delete from ${sql.identifier(name)} where ${where}`);
+      if ((result.rowCount ?? 0) === 0)
+        throw new NotFoundException(`Row no longer exists in ${name}`);
       if (target)
         await appendAdminEvent({
           tx,
           ...target,
-          type: 'delete',
+          type: "delete",
           row: target.row,
         });
     });
@@ -140,43 +115,33 @@ export class AdminRowDeleteService {
       const table = tableForCollection({ collectionId: childId });
       const idColumn = getTableColumns(table).id;
       if (!idColumn) continue;
-      loaded.set(
-        childId,
-        await this.db.select().from(table).where(inArray(idColumn, ids)),
-      );
+      loaded.set(childId, await this.db.select().from(table).where(inArray(idColumn, ids)));
     }
     return references.flatMap((reference) => {
       const row = loaded
         .get(reference.collectionId)
         ?.find((candidate) => candidate.id === reference.id);
-      return row
-        ? [{ collectionId: reference.collectionId, id: reference.id, row }]
-        : [];
+      return row ? [{ collectionId: reference.collectionId, id: reference.id, row }] : [];
     });
   }
 
   private async assertNoChildren({
     table,
-    rowid,
+    rowKey,
     handled,
   }: {
     table: string;
-    rowid: number;
+    rowKey: string;
     handled: Set<string>;
   }) {
-    const row = await this.metadata.readRawRow({ table, rowid });
+    const row = await this.metadata.readRawRow({ table, rowKey });
     for (const key of await this.metadata.referencingForeignKeys({ table })) {
-      if (
-        handled.has(key.table) ||
-        SET_NULL_ON_DELETE.has(`${key.table}.${key.from}`)
-      )
-        continue;
-      const value = row[key.to || 'id'];
-      if (value == null || value instanceof ArrayBuffer) continue;
+      if (handled.has(key.table) || SET_NULL_ON_DELETE.has(`${key.table}.${key.from}`)) continue;
+      const value = row[key.to || "id"];
+      if (value == null || value instanceof Uint8Array) continue;
       const counted = await this.metadata.count({
         table: key.table,
-        where: `${quoteIdent({ name: key.from })} = ?`,
-        args: [value],
+        where: sql`${sql.identifier(key.from)} = ${value}`,
       });
       if (counted > 0) {
         throw new BadRequestException(
@@ -185,8 +150,4 @@ export class AdminRowDeleteService {
       }
     }
   }
-}
-
-function sqlDelete({ table, rowid }: { table: string; rowid: number }) {
-  return sql`delete from ${sql.raw(quoteIdent({ name: table }))} where rowid = ${rowid}`;
 }

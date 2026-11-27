@@ -3,7 +3,7 @@ import { defineConfig } from "vite-plus";
 export default defineConfig({
   build: {
     lib: {
-      entry: ["src/schema/auth-schema.ts"],
+      entry: ["src/sqlite/schema/auth-schema.ts", "src/postgres/schema/auth-schema.ts"],
       formats: ["es"],
     },
     rolldownOptions: {

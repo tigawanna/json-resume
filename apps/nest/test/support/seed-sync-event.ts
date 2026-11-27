@@ -1,4 +1,4 @@
-import { syncEvent } from '@repo/db/schema/sync-schema';
+import { syncEvent } from '@repo/db/postgres/schema/sync-schema';
 import type { DrizzleDB } from '../../src/database/database.module.js';
 
 export async function seedSyncEvent({

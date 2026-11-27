@@ -1,4 +1,4 @@
-import { userZod } from "@repo/db/zod";
+import { userZod } from "@repo/db/postgres/zod";
 import { createZodDto } from "nestjs-zod";
 
 const meSchema = userZod.select.pick({

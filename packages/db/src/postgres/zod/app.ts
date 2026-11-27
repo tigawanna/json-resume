@@ -1,0 +1,20 @@
+import { applicationAnswer } from "../schema/application-answer-schema.ts";
+import { assistantSkill } from "../schema/assistant-skill-schema.ts";
+import { coverLetter } from "../schema/cover-letter-schema.ts";
+import { creditLedger, creditWallet, waitlistEntry } from "../schema/credits-schema.ts";
+import { job } from "../schema/job-schema.ts";
+import { savedProject } from "../schema/saved-project-schema.ts";
+import { syncBackend, syncEvent, syncSquashState } from "../schema/sync-schema.ts";
+import { drizzleEmbeddableZod, drizzleZod } from "./table.ts";
+
+export const jobZod = drizzleEmbeddableZod({ table: job });
+export const coverLetterZod = drizzleEmbeddableZod({ table: coverLetter });
+export const applicationAnswerZod = drizzleEmbeddableZod({ table: applicationAnswer });
+export const assistantSkillZod = drizzleEmbeddableZod({ table: assistantSkill });
+export const savedProjectZod = drizzleEmbeddableZod({ table: savedProject });
+export const creditWalletZod = drizzleZod({ table: creditWallet });
+export const creditLedgerZod = drizzleZod({ table: creditLedger });
+export const waitlistEntryZod = drizzleZod({ table: waitlistEntry });
+export const syncEventZod = drizzleZod({ table: syncEvent });
+export const syncSquashStateZod = drizzleZod({ table: syncSquashState });
+export const syncBackendZod = drizzleZod({ table: syncBackend });

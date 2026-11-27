@@ -1,4 +1,4 @@
-import { creditLedgerZod, creditWalletZod, userZod } from '@repo/db/zod';
+import { creditLedgerZod, creditWalletZod, userZod } from '@repo/db/postgres/zod';
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
 

@@ -1,5 +1,5 @@
-import { user } from "@repo/db/schema/auth-schema";
-import { creditWallet, waitlistEntry } from "@repo/db/schema/credits-schema";
+import { user } from "@repo/db/postgres/schema/auth-schema";
+import { creditWallet, waitlistEntry } from "@repo/db/postgres/schema/credits-schema";
 import { eq } from "drizzle-orm";
 import type { DrizzleDB } from "../../src/database/database.module.js";
 

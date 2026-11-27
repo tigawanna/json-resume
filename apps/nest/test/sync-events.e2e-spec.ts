@@ -1,6 +1,6 @@
 import type { INestApplication } from '@nestjs/common';
-import { resume } from '@repo/db/schema/resume';
-import { syncEvent } from '@repo/db/schema/sync-schema';
+import { resume } from '@repo/db/postgres/schema/resume';
+import { syncEvent } from '@repo/db/postgres/schema/sync-schema';
 import { eq, max } from 'drizzle-orm';
 import request from 'supertest';
 import type { App } from 'supertest/types.js';
@@ -11,7 +11,7 @@ import { personas } from './support/personas.js';
 describe('managed sync events', () => {
   let app: INestApplication<App>;
   let db: DrizzleDB;
-  let closeDatabase: () => void;
+  let closeDatabase: () => Promise<void>;
   const eventId = crypto.randomUUID();
   const event = {
     eventId,
@@ -35,7 +35,7 @@ describe('managed sync events', () => {
 
   afterAll(async () => {
     await app.close();
-    closeDatabase();
+    await closeDatabase();
   });
 
   it('pushes, projects, deduplicates, and pulls an event', async () => {

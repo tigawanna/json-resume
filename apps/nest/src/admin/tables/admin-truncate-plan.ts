@@ -1,28 +1,22 @@
-import type { DrizzleDB } from '../../database/database.module.js';
-import {
-  quoteIdent,
-  AdminTableMetadataService,
-} from './admin-table-metadata.service.js';
+import { sql } from "drizzle-orm";
+import type { DrizzleDB } from "../../database/database.module.js";
+import { AdminTableMetadataService } from "./admin-table-metadata.service.js";
 import {
   dependentTables,
   ruleCollections,
   rowsToDeleteWith,
   SET_NULL_ON_DELETE,
-} from './admin-row-ownership.js';
+} from "./admin-row-ownership.js";
 import {
   collectionForTable,
   isLocalOnlyTable,
   tableForCollection,
   tableNameForCollection,
   rowModeFor,
-} from './admin-table-registry.js';
-import { cutoffColumnsOf, whereFor } from './admin-truncate-where.js';
-import { createOwnerResolver } from './admin-truncate-owners.js';
-import type {
-  DeleteTarget,
-  TruncateCutoff,
-  TruncatePlan,
-} from './admin-truncate.types.js';
+} from "./admin-table-registry.js";
+import { cutoffColumnsOf, whereFor } from "./admin-truncate-where.js";
+import { createOwnerResolver } from "./admin-truncate-owners.js";
+import type { DeleteTarget, TruncateCutoff, TruncatePlan } from "./admin-truncate.types.js";
 
 export async function planTruncate({
   db,
@@ -36,8 +30,8 @@ export async function planTruncate({
   cutoff?: TruncateCutoff;
 }): Promise<TruncatePlan> {
   const name = await metadata.requireTable({ table });
-  const isEventLog = name === 'sync_event';
-  const mode = isEventLog ? 'eventLog' : rowModeFor({ table: name });
+  const isEventLog = name === "sync_event";
+  const mode = isEventLog ? "eventLog" : rowModeFor({ table: name });
   const columns = await metadata.columns({ table: name });
   const cutoffColumns = isEventLog ? [] : cutoffColumnsOf({ columns });
   const where = whereFor({
@@ -57,35 +51,30 @@ export async function planTruncate({
     targets: [],
     where,
   };
-  if (mode === 'readonly') return plan;
+  if (mode === "readonly") return plan;
   plan.rows = await metadata.count({
     table: name,
-    where: where.sql,
-    args: where.args,
+    where,
   });
   if (isEventLog) return plan;
 
-  const collectionId =
-    mode === 'synced' ? collectionForTable({ table: name }) : null;
+  const collectionId = mode === "synced" ? collectionForTable({ table: name }) : null;
   if (collectionId) await planSyncedTargets({ db, plan, collectionId, where });
 
-  const handledTables = collectionId
-    ? dependentTables({ collectionId })
-    : new Set<string>();
+  const handledTables = collectionId ? dependentTables({ collectionId }) : new Set<string>();
   for (const key of await metadata.referencingForeignKeys({ table: name })) {
     if (handledTables.has(key.table)) continue;
     if (SET_NULL_ON_DELETE.has(`${key.table}.${key.from}`)) continue;
-    const counted = await db.$client.execute({
-      sql: `select count(*) as n from ${quoteIdent({ name: key.table })} where ${quoteIdent({ name: key.from })} in (select ${quoteIdent({ name: key.to || 'id' })} from ${quoteIdent({ name: name })} where ${where.sql})`,
-      args: where.args,
-    });
+    const counted = await db.execute(sql`
+      select count(*) as n from ${sql.identifier(key.table)}
+      where ${sql.identifier(key.from)} in (
+        select ${sql.identifier(key.to || "id")} from ${sql.identifier(name)} where ${where}
+      )
+    `);
     const rows = Number(counted.rows[0]?.n ?? 0);
     if (rows === 0) continue;
     const entry = { table: key.table, column: key.from, rows };
-    if (
-      collectionForTable({ table: key.table }) ||
-      isLocalOnlyTable({ table: key.table })
-    )
+    if (collectionForTable({ table: key.table }) || isLocalOnlyTable({ table: key.table }))
       plan.blockedBy.push(entry);
     else plan.cascades.push(entry);
   }
@@ -101,37 +90,30 @@ async function planSyncedTargets({
   db: DrizzleDB;
   plan: TruncatePlan;
   collectionId: NonNullable<ReturnType<typeof collectionForTable>>;
-  where: TruncatePlan['where'];
+  where: TruncatePlan["where"];
 }) {
   const ownerOf = createOwnerResolver({ db });
   const parents = await db.select().from(tableForCollection({ collectionId }));
-  const selected = await db.$client.execute({
-    sql: `select id from ${quoteIdent({ name: plan.table })} where ${where.sql}`,
-    args: where.args,
-  });
+  const selected = await db.execute(sql`
+    select id from ${sql.identifier(plan.table)} where ${where}
+  `);
   const targetIds = new Set(
-    selected.rows.flatMap((row) =>
-      typeof row.id === 'string' ? [row.id] : [],
-    ),
+    selected.rows.flatMap((row) => (typeof row.id === "string" ? [row.id] : [])),
   );
   const children = new Map<string, Array<Record<string, unknown>>>();
   for (const childId of ruleCollections({ collectionId })) {
-    children.set(
-      childId,
-      await db.select().from(tableForCollection({ collectionId: childId })),
-    );
+    children.set(childId, await db.select().from(tableForCollection({ collectionId: childId })));
   }
   const seen = new Set<string>();
   const dependents: DeleteTarget[] = [];
   for (const parent of parents) {
-    if (typeof parent.id !== 'string' || !targetIds.has(parent.id)) continue;
+    if (typeof parent.id !== "string" || !targetIds.has(parent.id)) continue;
     plan.targets.push({
       collectionId,
       row: parent,
       userId: await ownerOf({ collectionId, row: parent }),
     });
-    const rowsOf = ({ collectionId: id }: { collectionId: string }) =>
-      children.get(id) ?? [];
+    const rowsOf = ({ collectionId: id }: { collectionId: string }) => children.get(id) ?? [];
     for (const dependent of rowsToDeleteWith({
       collectionId,
       parentId: parent.id,
@@ -140,9 +122,7 @@ async function planSyncedTargets({
       const key = `${dependent.collectionId}:${dependent.id}`;
       if (seen.has(key)) continue;
       seen.add(key);
-      const row = children
-        .get(dependent.collectionId)
-        ?.find((child) => child.id === dependent.id);
+      const row = children.get(dependent.collectionId)?.find((child) => child.id === dependent.id);
       if (!row) continue;
       dependents.push({
         collectionId: dependent.collectionId,

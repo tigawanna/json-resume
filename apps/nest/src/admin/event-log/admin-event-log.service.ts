@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { getTableName } from 'drizzle-orm';
-import { syncEvent } from '@repo/db/schema/sync-schema';
+import { syncEvent } from '@repo/db/postgres/schema/sync-schema';
 import {
   AdminAuditService,
   type AdminActor,
