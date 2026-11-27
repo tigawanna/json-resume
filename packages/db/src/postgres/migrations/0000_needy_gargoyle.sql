@@ -294,8 +294,8 @@ CREATE TABLE "job" (
 CREATE TABLE "rate_limit_counter" (
 	"key" text PRIMARY KEY NOT NULL,
 	"hits" integer DEFAULT 0 NOT NULL,
-	"expires_at" integer NOT NULL,
-	"blocked_until" integer DEFAULT 0 NOT NULL
+	"expires_at" bigint NOT NULL,
+	"blocked_until" bigint DEFAULT 0 NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "public_resume" (
@@ -600,7 +600,7 @@ CREATE TABLE "sync_event" (
 	"tx_id" text NOT NULL,
 	"client_id" text NOT NULL,
 	"schema_version" integer DEFAULT 1 NOT NULL,
-	"client_timestamp" integer NOT NULL,
+	"client_timestamp" bigint NOT NULL,
 	"server_timestamp" timestamp (3) with time zone DEFAULT now() NOT NULL,
 	"projected_at" timestamp (3) with time zone
 );

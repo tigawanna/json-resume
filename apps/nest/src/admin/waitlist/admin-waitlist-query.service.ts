@@ -9,7 +9,7 @@ import {
   eq,
   isNotNull,
   isNull,
-  like,
+  ilike,
   or,
   type SQL,
 } from 'drizzle-orm';
@@ -76,7 +76,12 @@ export class AdminWaitlistQueryService {
       this.db
         .select({ n: count() })
         .from(waitlistEntry)
-        .where(and(eq(waitlistEntry.status, 'joined'), isNotNull(waitlistEntry.userId))),
+        .where(
+          and(
+            eq(waitlistEntry.status, 'joined'),
+            isNotNull(waitlistEntry.userId),
+          ),
+        ),
       this.db
         .select({ n: count() })
         .from(waitlistEntry)
@@ -107,18 +112,24 @@ export class AdminWaitlistQueryService {
     return buildWaitlistCsv({ rows });
   }
 
-  private filterOf({ query }: { query: WaitlistListQueryDto }): SQL | undefined {
+  private filterOf({
+    query,
+  }: {
+    query: WaitlistListQueryDto;
+  }): SQL | undefined {
     const filters: Array<SQL | undefined> = [];
     if (query.q)
       filters.push(
         or(
-          like(waitlistEntry.email, `%${query.q}%`),
-          like(waitlistEntry.name, `%${query.q}%`),
+          ilike(waitlistEntry.email, `%${query.q}%`),
+          ilike(waitlistEntry.name, `%${query.q}%`),
         ),
       );
     if (query.status) filters.push(eq(waitlistEntry.status, query.status));
-    if (query.hasAccount === 'true') filters.push(isNotNull(waitlistEntry.userId));
-    if (query.hasAccount === 'false') filters.push(isNull(waitlistEntry.userId));
+    if (query.hasAccount === 'true')
+      filters.push(isNotNull(waitlistEntry.userId));
+    if (query.hasAccount === 'false')
+      filters.push(isNull(waitlistEntry.userId));
     const defined = filters.filter((filter): filter is SQL => Boolean(filter));
     return defined.length > 0 ? and(...defined) : undefined;
   }
@@ -130,7 +141,8 @@ type WaitlistExportRow = Pick<
 > & { userEmail: string | null };
 
 function buildWaitlistCsv({ rows }: { rows: WaitlistExportRow[] }) {
-  const header = 'email,name,status,source,userId,userEmail,consentAt,createdAt';
+  const header =
+    'email,name,status,source,userId,userEmail,consentAt,createdAt';
   const body = rows.map((row) =>
     [
       row.email,

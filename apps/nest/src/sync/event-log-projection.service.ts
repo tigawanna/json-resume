@@ -1,11 +1,18 @@
-import { Inject, Injectable, Logger } from "@nestjs/common";
-import { syncBackend, syncEvent } from "@repo/db/postgres/schema/sync-schema";
-import { eq, getTableColumns, getTableName, isNull } from "drizzle-orm";
-import type { PgColumn } from "drizzle-orm/pg-core";
-import { DRIZZLE, type DrizzleDB } from "../database/database.module.js";
-import { ResumeCreditChargeService } from "../credits/resume-credit-charge.service.js";
-import { isCollectionId, tableForCollection } from "../admin/tables/admin-table-registry.js";
-import { applyProjectedRow, createdAtOf, payloadOf } from "./event-log-projection-row.js";
+import { Inject, Injectable, Logger } from '@nestjs/common';
+import { syncBackend, syncEvent } from '@repo/db/postgres/schema/sync-schema';
+import { eq, getTableColumns, getTableName, isNull } from 'drizzle-orm';
+import type { PgColumn } from 'drizzle-orm/pg-core';
+import { DRIZZLE, type DrizzleDB } from '../database/database.module.js';
+import { ResumeCreditChargeService } from '../credits/resume-credit-charge.service.js';
+import {
+  isCollectionId,
+  tableForCollection,
+} from '../admin/tables/admin-table-registry.js';
+import {
+  applyProjectedRow,
+  createdAtOf,
+  payloadOf,
+} from './event-log-projection-row.js';
 
 type SyncEventRow = typeof syncEvent.$inferSelect;
 
@@ -13,10 +20,10 @@ const BATCH_SIZE = 500;
 const MAX_ROUNDS = 50;
 const MAX_ATTEMPTS = 3;
 const SKIP_COLLECTIONS = new Set([
-  "settings",
-  "__sync_reset__",
-  "__compaction__",
-  "__compaction_request__",
+  'settings',
+  '__sync_reset__',
+  '__compaction__',
+  '__compaction_request__',
 ]);
 
 @Injectable()
@@ -60,7 +67,10 @@ export class EventLogProjectionService {
 
   /** Every write is scoped to the event owner; payload ids never take over another user's row. */
   private async apply({ event }: { event: SyncEventRow }): Promise<boolean> {
-    if (SKIP_COLLECTIONS.has(event.collectionId) || !isCollectionId(event.collectionId))
+    if (
+      SKIP_COLLECTIONS.has(event.collectionId) ||
+      !isCollectionId(event.collectionId)
+    )
       return true;
     try {
       const table = tableForCollection({ collectionId: event.collectionId });
@@ -71,7 +81,11 @@ export class EventLogProjectionService {
         tableName: getTableName(table),
         columns,
       });
-      if (applied && event.collectionId === "resume" && event.type === "insert") {
+      if (
+        applied &&
+        event.collectionId === 'resume' &&
+        event.type === 'insert'
+      ) {
         await this.charges.chargeProjectedResume({
           userId: event.userId,
           resumeId: event.key,
@@ -79,7 +93,13 @@ export class EventLogProjectionService {
         });
       }
       return true;
-    } catch {
+    } catch (error: unknown) {
+      this.logger.warn(
+        `sync.projection_failed ${JSON.stringify({
+          eventId: event.eventId,
+          error: error instanceof Error ? error.message : String(error),
+        })}`,
+      );
       return false;
     }
   }

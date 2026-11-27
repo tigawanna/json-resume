@@ -55,7 +55,7 @@ export async function applyProjectedRow({
     insert into ${sql.identifier(tableName)} (${sql.join(names, sql`, `)})
     values (${sql.join(values, sql`, `)})
     on conflict (${sql.identifier(idColumn.name)}) do update set ${sql.join(updates, sql`, `)}
-    where ${sql.identifier(ownerColumn.name)} = excluded.${sql.identifier(ownerColumn.name)}
+    where ${sql.identifier(tableName)}.${sql.identifier(ownerColumn.name)} = excluded.${sql.identifier(ownerColumn.name)}
     returning 1
   `);
   return (result.rowCount ?? 0) > 0;

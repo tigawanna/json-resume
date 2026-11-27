@@ -87,7 +87,7 @@ Build once and run `node dist/main` (`pnpm start:prod`). Set `NODE_ENV=productio
 pnpm --dir apps/nest db:migrate:postgres
 ```
 
-`main.ts` enables shutdown hooks (so `SIGTERM` closes the database client and flushes telemetry) and keeps idle sockets open for 65 s so a load balancer with a longer idle timeout does not see resets. Point your liveness probe at `/health` and readiness at `/ready`.
+`main.ts` handles `SIGTERM`/`SIGINT` explicitly, closes the Nest app and Postgres pool, and force-exits before the 8-second shutdown deadline. It also keeps idle sockets open for 65 s so a load balancer with a longer idle timeout does not see resets. Point your liveness probe at `/health` and readiness at `/ready`.
 
 Throttler counters live in the shared `rate_limit_counter` table, so multiple instances enforce one budget. `CREDITS_ENABLED=true` must be set for résumé charges; otherwise production logs a warning at boot and every résumé is free. Keep `VITE_CREDITS_ENABLED` in the web app aligned.
 

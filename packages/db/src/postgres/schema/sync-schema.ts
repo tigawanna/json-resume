@@ -32,7 +32,7 @@ export const syncEvent = pgTable(
     txId: text("tx_id").notNull(),
     clientId: text("client_id").notNull(),
     schemaVersion: integer("schema_version").default(1).notNull(),
-    clientTimestamp: integer("client_timestamp").notNull(),
+    clientTimestamp: bigint("client_timestamp", { mode: "number" }).notNull(),
     serverTimestamp: timestamptz("server_timestamp").defaultNow().notNull(),
     projectedAt: timestamptz("projected_at"),
   },

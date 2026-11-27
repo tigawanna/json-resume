@@ -87,7 +87,7 @@ The module default is `HTTP_RATE_LIMIT` (`src/rate-limit/rate-limit.constants.ts
 @Throttle({
   default: { limit: WAITLIST_RATE_LIMIT.limit, ttl: WAITLIST_RATE_LIMIT.ttlMs },
 })
-@Controller("waitlist")
+@Controller('waitlist')
 export class WaitlistController {}
 ```
 
@@ -173,7 +173,7 @@ All three routes use the global session guard: 401 without a session and 403 for
 ## Production bootstrap
 
 - `GET /health` (liveness, no database) and `GET /ready` (database check) are at the **root**, excluded from the `/api` prefix, `@Public()` and `@SkipThrottle()`, and hidden from OpenAPI. `/ready` answers 503 once shutdown begins.
-- `main.ts` calls `app.enableShutdownHooks()` and sets `keepAliveTimeout=65_000` / `headersTimeout=66_000` so a load balancer with a longer idle timeout does not get connection resets.
+- `main.ts` handles `SIGTERM`/`SIGINT` explicitly, closes the app/pool, and force-exits before an 8-second deadline. It sets `keepAliveTimeout=65_000` / `headersTimeout=66_000` so a load balancer with a longer idle timeout does not get connection resets.
 - Observe turns on by itself in production when both `OBSERVE_APP_KEY` and `OBSERVE_APP_SECRET` are set; probes are excluded from traces. Without keys it stays off.
 - Apply migrations as a release step (`pnpm --dir packages/db db:migrate:postgres`, or `pnpm --dir apps/nest db:migrate:postgres`) — the app does not migrate at boot.
 

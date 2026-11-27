@@ -10,12 +10,12 @@ src/
   postgres/               # Neon + local Postgres
     schema/
     zod/
+    migrations/
     index.ts
     migrations.ts
 
 drizzle/
   sqlite/migrations/
-  postgres/migrations/
 ```
 
 `vp build` writes `dist/`. `vp dev` is `vp build --watch`.
